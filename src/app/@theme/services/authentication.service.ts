@@ -38,7 +38,7 @@ export class AuthenticationService {
   }
 
   login(email: string, password: string) {
-    return this.http.post<User>(`${environment.apiUrl}/api/account/login`, { email, password }).pipe(
+    return this.http.post<User>(`${environment.apiUrl}/api/Account/Login`, { email, password }).pipe(
       map((user: User) => {
         // Explicitly define the type for 'user'
         // Store user details and JWT token in local storage
