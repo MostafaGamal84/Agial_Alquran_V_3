@@ -1,7 +1,7 @@
 // angular import
 import { Component, effect, inject } from '@angular/core';
 import { NgClass, NgStyle } from '@angular/common';
-import { RouterLink, RouterOutlet } from '@angular/router';
+import { RouterLink, RouterOutlet, Router } from '@angular/router';
 
 // service
 import { BuyNowLinkService } from 'src/app/@theme/services/buy-now-link.service';
@@ -48,6 +48,7 @@ export class GuestComponent {
   buyNowLinkService = inject(BuyNowLinkService);
   authenticationService = inject(AuthenticationService);
   private themeService = inject(ThemeLayoutService);
+  private router = inject(Router);
 
   // public props
   navDataShow!: boolean;
@@ -72,10 +73,14 @@ export class GuestComponent {
     window.open(window.location.href.replace(window.location.search, '') + item.url + this.buyNowLinkService.queryString, '_blank');
   }
   openDashboard() {
-    window.open(
-      window.location.href.replace(window.location.href, '') + 'dashboard/default' + this.buyNowLinkService.queryString,
-      '_blank'
-    );
+    if (this.authenticationService.currentUserValue) {
+      window.open(
+        window.location.href.replace(window.location.href, '') + 'dashboard/default' + this.buyNowLinkService.queryString,
+        '_blank'
+      );
+    } else {
+      this.router.navigate(['/login']);
+    }
   }
   toggleIcon(): void {
     this.dropDownIcon = 'custom-arrowUp2';
