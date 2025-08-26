@@ -11,6 +11,16 @@ import { Role } from '../types/role';
 // Import the 'map' operator from 'rxjs/operators'
 import { map } from 'rxjs/operators';
 
+interface VerifyCodeResponse {
+  isSuccess: boolean;
+  errors: string[];
+  data: {
+    email: string;
+    code: string;
+    passwordIsCorrect: boolean;
+  };
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthenticationService {
   private router = inject(Router);
@@ -66,6 +76,10 @@ export class AuthenticationService {
         return user;
       })
     );
+  }
+
+  verifyCode(code: string, email?: string) {
+    return this.http.post<VerifyCodeResponse>(`${environment.apiUrl}/api/Account/verify-code`, { email, code });
   }
 
   isLoggedIn() {

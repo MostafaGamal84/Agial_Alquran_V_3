@@ -20,27 +20,27 @@
           <div class="row text-center">
             <div class="col-3 g-0">
               <mat-form-field appearance="fill" class="otp-input wid-80">
-                <input matInput #input maxlength="1" placeholder="0" />
+                <input matInput maxlength="1" placeholder="0" [(ngModel)]="codeDigits[0]" />
               </mat-form-field>
             </div>
             <div class="col-3">
               <mat-form-field appearance="fill" class="otp-input wid-80">
-                <input matInput #input maxlength="1" placeholder="0" />
+                <input matInput maxlength="1" placeholder="0" [(ngModel)]="codeDigits[1]" />
               </mat-form-field>
             </div>
             <div class="col-3">
               <mat-form-field appearance="fill" class="otp-input wid-80">
-                <input matInput #input maxlength="1" placeholder="0" />
+                <input matInput maxlength="1" placeholder="0" [(ngModel)]="codeDigits[2]" />
               </mat-form-field>
             </div>
             <div class="col-3">
               <mat-form-field appearance="fill" class="otp-input wid-80">
-                <input matInput #input maxlength="1" placeholder="0" />
+                <input matInput maxlength="1" placeholder="0" [(ngModel)]="codeDigits[3]" />
               </mat-form-field>
             </div>
           </div>
           <div class="grid">
-            <button mat-flat-button color="primary" class="b-rad-20 m-t-20">Reset Password</button>
+            <button mat-flat-button color="primary" class="b-rad-20 m-t-20" (click)="verify()">Verify</button>
           </div>
           <div class="flex m-t-20">
             <p class="text-muted m-b-0">Did not receive the email?</p>
