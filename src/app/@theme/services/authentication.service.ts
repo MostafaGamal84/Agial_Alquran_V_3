@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 // project import
 import { environment } from 'src/environments/environment';
 import { User } from '../types/user';
+import { Role } from '../types/role';
 
 // Import the 'map' operator from 'rxjs/operators'
 import { map } from 'rxjs/operators';
@@ -22,8 +23,14 @@ export class AuthenticationService {
     // Initialize the signal with the current user from localStorage
     const storedUser = localStorage.getItem('currentUser');
     if (storedUser) {
-      this.currentUserSignal.set(JSON.parse(storedUser) as User);
-      this.isLogin = true;
+      try {
+        this.currentUserSignal.set(JSON.parse(storedUser) as User);
+        this.isLogin = true;
+      } catch (err) {
+        // If stored data is corrupted, remove it and keep the user logged out
+        console.error('Failed to parse stored user', err);
+        localStorage.removeItem('currentUser');
+      }
     }
   }
 
@@ -35,6 +42,16 @@ export class AuthenticationService {
   public get currentUserName(): string | null {
     const currentUser = this.currentUserValue;
     return currentUser ? currentUser.user.name : null;
+  }
+
+  public getRole(): Role | null {
+    try {
+      const currentUser = this.currentUserValue;
+      return currentUser?.user?.role ?? null;
+    } catch (err) {
+      console.error('Error retrieving user role', err);
+      return null;
+    }
   }
 
   login(email: string, password: string) {
