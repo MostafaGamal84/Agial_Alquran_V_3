@@ -1,0 +1,79 @@
+<div class="project-body p-20">
+  <div class="row">
+    <div class="col-lg-7 col-xl-8">
+      <ul class="list-inline m-b-15">
+        <li class="list-inline-item">
+          <select class="select-item">
+            <option>Today</option>
+            <option>Weekly</option>
+            <option selected>Monthly</option>
+          </select>
+        </li>
+        <li class="list-inline-item">
+          <a href="javascript:" class="avatar avatar-s border">
+            <i class="ti ti-external-link f-20"></i>
+          </a>
+        </li>
+        <li class="list-inline-item">
+          <a href="javascript:" class="avatar avatar-s border">
+            <i class="ti ti-arrows-diagonal f-20"></i>
+          </a>
+        </li>
+        <li class="list-inline-item">
+          <a href="javascript:" [matMenuTriggerFor]="paymentInfo" class="avatar avatar-s border">
+            <mat-menu #paymentInfo="matMenu">
+              <a href="javascript:" mat-menu-item>Name</a>
+              <a href="javascript:" mat-menu-item>Date</a>
+              <a href="javascript:" mat-menu-item>Rating</a>
+              <a href="javascript:" mat-menu-item>Unread</a>
+            </mat-menu>
+            <i class="ti ti-dots f-20"></i>
+          </a>
+        </li>
+      </ul>
+      <apx-chart
+        [series]="chartOptions.series"
+        [chart]="chartOptions.chart"
+        [colors]="overOptionsColor"
+        [plotOptions]="chartOptions.plotOptions"
+        [legend]="chartOptions.legend"
+        [grid]="chartOptions.grid"
+        [xaxis]="chartOptions.xaxis"
+        [dataLabels]="chartOptions.dataLabels"
+        [stroke]="chartOptions.stroke"
+        [fill]="chartOptions.fill"
+        [tooltip]="chartOptions.tooltip"
+      ></apx-chart>
+    </div>
+    <div class="col-lg-5 col-xl-4">
+      <ul class="list-group project-report">
+        @for (list of project_report; track list) {
+          <li class="list-group-item">
+            <div class="flex align-item-center">
+              <div class="flex-shrink-0">
+                <div class="avatar avatar-s bg-accent-200">
+                  <i class="{{ list.icon }} f-20"></i>
+                </div>
+              </div>
+              <div class="flex-grow-1 m-l-15">
+                <div class="row">
+                  <div class="col-6 m-t-5">
+                    <div class="text-muted f-w-500">{{ list.title }}</div>
+                    <div class="f-w-600">{{ list.amount }}</div>
+                  </div>
+                  <div class="col-6 m-t-5 text-end">
+                    <div class="f-w-600">{{ list.number }}</div>
+                    <div class="{{ list.color }}  mat-caption f-w-500">
+                      <i class="{{ list.icon_2 }}"></i>
+                      {{ list.percentage }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </li>
+        }
+      </ul>
+    </div>
+  </div>
+</div>
