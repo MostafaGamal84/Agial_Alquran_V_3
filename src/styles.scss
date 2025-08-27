@@ -143,3 +143,14 @@
 
 // grid
 @import './app/@theme/styles/grid';
+
+// toast styles
+.toast-success {
+  background-color: #4caf50;
+  color: #fff;
+}
+
+.toast-error {
+  background-color: #f44336;
+  color: #fff;
+}
