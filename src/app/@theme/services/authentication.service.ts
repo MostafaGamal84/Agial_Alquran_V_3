@@ -123,6 +123,7 @@ export class AuthenticationService {
     // Remove user from local storage to log user out
     localStorage.removeItem('currentUser');
     this.isLogin = false;
+    this.pendingEmail = null;
     // Update the signal to null
     this.currentUserSignal.set(null);
     this.router.navigate(['/login']);
