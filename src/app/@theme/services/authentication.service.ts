@@ -8,18 +8,26 @@ import { environment } from 'src/environments/environment';
 import { User } from '../types/user';
 import { Role } from '../types/role';
 
-// Import the 'map' operator from 'rxjs/operators'
-import { map } from 'rxjs/operators';
-
-interface VerifyCodeResponse {
-  isSuccess: boolean;
-  errors: string[];
-  data: {
-    email: string;
-    code: string;
-    passwordIsCorrect: boolean;
-  };
+interface ApiError {
+  fieldName: string;
+  code: string;
+  message: string;
+  fieldLang: string | null;
 }
+
+interface LoginData {
+  email: string;
+  code: string;
+  passwordIsCorrect: boolean;
+}
+
+interface LoginResponse {
+  isSuccess: boolean;
+  errors: ApiError[];
+  data: LoginData | null;
+}
+
+type VerifyCodeResponse = LoginResponse;
 
 @Injectable({ providedIn: 'root' })
 export class AuthenticationService {
@@ -28,6 +36,7 @@ export class AuthenticationService {
 
   private currentUserSignal = signal<User | null>(null);
   isLogin: boolean = false;
+  pendingEmail: string | null = null;
 
   constructor() {
     // Initialize the signal with the current user from localStorage
@@ -65,17 +74,7 @@ export class AuthenticationService {
   }
 
   login(email: string, password: string) {
-    return this.http.post<User>(`${environment.apiUrl}/api/Account/Login`, { email, password }).pipe(
-      map((user: User) => {
-        // Explicitly define the type for 'user'
-        // Store user details and JWT token in local storage
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        this.isLogin = true;
-        // Update the signal with the new user
-        this.currentUserSignal.set(user);
-        return user;
-      })
-    );
+    return this.http.post<LoginResponse>(`${environment.apiUrl}/api/Account/Login`, { email, password });
   }
 
   verifyCode(code: string, email?: string) {
