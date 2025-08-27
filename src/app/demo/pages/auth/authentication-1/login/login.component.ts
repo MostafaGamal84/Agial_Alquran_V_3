@@ -51,8 +51,8 @@ export class LoginComponent implements OnInit {
       }
     }
 
-    // get return url from route parameters or default to '/'
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'];
+    // get return url from route parameters or fall back to code verification
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/authentication-1/code-verify';
   }
 
   // convenience getter for easy access to form fields
@@ -77,7 +77,7 @@ export class LoginComponent implements OnInit {
           this.loading = false;
           if (res?.isSuccess && res?.data?.passwordIsCorrect) {
             this.authenticationService.pendingEmail = res.data.email;
-            this.router.navigate(['/authentication-1/code-verify']);
+            this.router.navigateByUrl(this.returnUrl);
           } else if (res?.errors?.length) {
             this.error = res.errors[0].message;
           } else {
