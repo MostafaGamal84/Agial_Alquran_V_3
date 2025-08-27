@@ -2,6 +2,7 @@ import { Role } from './role';
 
 export class User {
   serviceToken!: string;
+  refreshToken?: string;
   user!: {
     firstName?: string;
     lastName?: string;
