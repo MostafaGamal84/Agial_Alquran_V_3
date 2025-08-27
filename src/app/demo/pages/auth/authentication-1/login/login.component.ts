@@ -11,6 +11,7 @@ import { AuthenticationService } from 'src/app/@theme/services/authentication.se
 import { FormBuilder, FormGroup, FormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { ToastService } from 'src/app/@theme/services/toast.service';
 
 interface Roles {
   name: string;
@@ -30,6 +31,7 @@ export class LoginComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   authenticationService = inject(AuthenticationService);
+  private toast = inject(ToastService);
 
   // public props
   hide = true;
@@ -37,7 +39,6 @@ export class LoginComponent implements OnInit {
   loading = false;
   submitted = false;
   returnUrl: string;
-  error = '';
 
   ngOnInit() {
     this.loginForm = this.formBuilder.group({
@@ -77,16 +78,17 @@ export class LoginComponent implements OnInit {
           this.loading = false;
           if (res?.isSuccess && res?.data?.passwordIsCorrect) {
             this.authenticationService.pendingEmail = res.data.email;
+            this.toast.success('Login successful');
             this.router.navigateByUrl(this.returnUrl);
           } else if (res?.errors?.length) {
-            this.error = res.errors[0].message;
+            this.toast.error(res.errors[0].message);
           } else {
-            this.error = 'Login failed';
+            this.toast.error('Login failed');
           }
         },
         error: () => {
           this.loading = false;
-          this.error = 'Login failed';
+          this.toast.error('Login failed');
         }
       });
   }
