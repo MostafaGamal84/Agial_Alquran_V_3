@@ -38,9 +38,15 @@ export class TeacherAddComponent implements OnInit {
     if (this.basicInfoForm.valid) {
       const model: CreateUserDto = this.basicInfoForm.value;
       this.userService.createUser(model).subscribe({
-        next: () => {
-          this.toast.success('User created successfully');
-          this.basicInfoForm.reset();
+        next: (res) => {
+          if (res?.isSuccess) {
+            this.toast.success(res.message || 'User created successfully');
+            this.basicInfoForm.reset();
+          } else if (res?.errors?.length) {
+            res.errors.forEach((e) => this.toast.error(e.message));
+          } else {
+            this.toast.error('Error creating user');
+          }
         },
         error: () => this.toast.error('Error creating user')
       });
