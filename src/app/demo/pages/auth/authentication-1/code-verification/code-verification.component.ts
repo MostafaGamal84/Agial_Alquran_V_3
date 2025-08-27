@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
 // material import
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { ToastService } from 'src/app/@theme/services/toast.service';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -20,7 +20,7 @@ import { DASHBOARD_PATH } from 'src/app/app-config';
 export class CodeVerificationComponent {
   private authService = inject(AuthenticationService);
   private router = inject(Router);
-  private snackBar = inject(MatSnackBar);
+  private toast = inject(ToastService);
 
   codeDigits: string[] = ['', '', '', ''];
 
@@ -31,24 +31,16 @@ export class CodeVerificationComponent {
         .subscribe({
           next: (res) => {
             if (res?.isSuccess) {
-              this.snackBar.open('Verification successful', 'Close', {
-                duration: 3000
-              });
+              this.toast.success('Verification successful');
               this.router.navigate([DASHBOARD_PATH]);
             } else if (res?.errors?.length) {
-              this.snackBar.open(res.errors[0].message, 'Close', {
-                duration: 3000
-              });
+              this.toast.error(res.errors[0].message);
             } else {
-              this.snackBar.open('Verification failed', 'Close', {
-                duration: 3000
-              });
+              this.toast.error('Verification failed');
             }
           },
         error: () => {
-          this.snackBar.open('Verification failed', 'Close', {
-            duration: 3000
-          });
+          this.toast.error('Verification failed');
         }
       });
   }
