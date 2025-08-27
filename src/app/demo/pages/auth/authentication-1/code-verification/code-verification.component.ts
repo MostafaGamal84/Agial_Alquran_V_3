@@ -26,25 +26,25 @@ export class CodeVerificationComponent {
 
   verify() {
     const code = this.codeDigits.join('');
-    this.authService
-      .verifyCode(code, this.authService.pendingEmail ?? undefined)
-      .subscribe({
-        next: (res) => {
-          if (res?.isSuccess && res?.data?.passwordIsCorrect) {
-            this.snackBar.open('Verification successful', 'Close', {
-              duration: 3000
-            });
-            this.router.navigate([DASHBOARD_PATH]);
-          } else if (res?.errors?.length) {
-            this.snackBar.open(res.errors[0].message, 'Close', {
-              duration: 3000
-            });
-          } else {
-            this.snackBar.open('Verification failed', 'Close', {
-              duration: 3000
-            });
-          }
-        },
+      this.authService
+        .verifyCode(code, this.authService.pendingEmail ?? undefined)
+        .subscribe({
+          next: (res) => {
+            if (res?.isSuccess) {
+              this.snackBar.open('Verification successful', 'Close', {
+                duration: 3000
+              });
+              this.router.navigate([DASHBOARD_PATH]);
+            } else if (res?.errors?.length) {
+              this.snackBar.open(res.errors[0].message, 'Close', {
+                duration: 3000
+              });
+            } else {
+              this.snackBar.open('Verification failed', 'Close', {
+                duration: 3000
+              });
+            }
+          },
         error: () => {
           this.snackBar.open('Verification failed', 'Close', {
             duration: 3000

@@ -135,7 +135,6 @@ const routes: Routes = [
       },
       {
         path: 'authentication-1',
-        canActivateChild: [AuthGuardChild],
         loadChildren: () => import('./demo/pages/auth/authentication-1/authentication-1.module').then((e) => e.Authentication1Module),
         data: { roles: [Role.Admin, Role.User] }
       },

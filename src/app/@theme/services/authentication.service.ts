@@ -2,6 +2,7 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { tap } from 'rxjs/operators';
 
 // project import
 import { environment } from 'src/environments/environment';
@@ -27,7 +28,18 @@ interface LoginResponse {
   data: LoginData | null;
 }
 
-type VerifyCodeResponse = LoginResponse;
+interface VerifyCodeData {
+  token: string;
+  refreshToken: string;
+  username: string;
+  role: number | null;
+}
+
+interface VerifyCodeResponse {
+  isSuccess: boolean;
+  errors: ApiError[];
+  data: VerifyCodeData | null;
+}
 
 @Injectable({ providedIn: 'root' })
 export class AuthenticationService {
@@ -78,7 +90,29 @@ export class AuthenticationService {
   }
 
   verifyCode(code: string, email?: string) {
-    return this.http.post<VerifyCodeResponse>(`${environment.apiUrl}/api/Account/verify-code`, { email, code });
+    return this.http
+      .post<VerifyCodeResponse>(`${environment.apiUrl}/api/Account/VerifyCode`, { email, code })
+      .pipe(
+        tap((res) => {
+          if (res.isSuccess && res.data) {
+            const user: User = {
+              serviceToken: res.data.token,
+              refreshToken: res.data.refreshToken,
+              user: {
+                id: '',
+                email: email ?? '',
+                password: '',
+                name: res.data.username,
+                role: res.data.role === 1 ? Role.Admin : Role.User
+              }
+            };
+            localStorage.setItem('currentUser', JSON.stringify(user));
+            this.currentUserSignal.set(user);
+            this.isLogin = true;
+            this.pendingEmail = null;
+          }
+        })
+      );
   }
 
   isLoggedIn() {
