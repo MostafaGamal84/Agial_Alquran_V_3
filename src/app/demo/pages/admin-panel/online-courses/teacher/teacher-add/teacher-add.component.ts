@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
+import { UserService, CreateUserDto } from 'src/app/@theme/services/user.service';
 
 @Component({
   selector: 'app-teacher-add',
@@ -13,41 +14,31 @@ import { SharedModule } from 'src/app/demo/shared/shared.module';
 })
 export class TeacherAddComponent implements OnInit {
   private fb = inject(FormBuilder);
+  private userService = inject(UserService);
 
   basicInfoForm!: FormGroup;
 
   ngOnInit(): void {
-    this.basicInfoForm = this.fb.group(
-      {
-        firstName: ['', Validators.required],
-        lastName: ['', Validators.required],
-        email: ['', [Validators.required, Validators.email]],
-        joiningDate: ['', Validators.required],
-        password: ['', [Validators.required, Validators.minLength(6)]],
-        confirmPassword: ['', Validators.required],
-        mobileNumber: ['', [Validators.required, Validators.pattern('^[0-9]{10}$'), Validators.minLength(10), Validators.maxLength(10)]],
-        gender: ['', Validators.required],
-        designation: ['', Validators.required],
-        department: ['', Validators.required],
-        dateOfBirth: ['', Validators.required],
-        education: ['', Validators.required],
-        file: [null, Validators.required]
-      },
-      {
-        validators: this.matchPasswords // custom validator for password match
-      }
-    );
-  }
-
-  matchPasswords(group: FormGroup) {
-    const pass = group.get('password')?.value;
-    const confirmPass = group.get('confirmPassword')?.value;
-    return pass === confirmPass ? null : { passwordMismatch: true };
+    this.basicInfoForm = this.fb.group({
+      fullName: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      mobile: ['', Validators.required],
+      secondMobile: [''],
+      passwordHash: ['', [Validators.required, Validators.minLength(6)]],
+      userTypeId: [null, Validators.required],
+      nationalityId: [null, Validators.required],
+      governorateId: [null, Validators.required],
+      branchId: [null, Validators.required]
+    });
   }
 
   onSubmit() {
     if (this.basicInfoForm.valid) {
-      console.log(this.basicInfoForm.value);
+      const model: CreateUserDto = this.basicInfoForm.value;
+      this.userService.createUser(model).subscribe({
+        next: (res) => console.log('User created', res),
+        error: (err) => console.error('Error creating user', err)
+      });
     } else {
       this.basicInfoForm.markAllAsTouched();
     }

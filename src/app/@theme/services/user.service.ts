@@ -1,0 +1,25 @@
+import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { Observable } from 'rxjs';
+import { environment } from 'src/environments/environment';
+
+export interface CreateUserDto {
+  fullName?: string;
+  email?: string;
+  mobile?: string;
+  secondMobile?: string;
+  passwordHash?: string;
+  userTypeId?: number;
+  nationalityId?: number;
+  governorateId?: number;
+  branchId?: number;
+}
+
+@Injectable({ providedIn: 'root' })
+export class UserService {
+  private http = inject(HttpClient);
+
+  createUser(model: CreateUserDto): Observable<unknown> {
+    return this.http.post(`${environment.apiUrl}/api/User/Create`, model);
+  }
+}
