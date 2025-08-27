@@ -15,11 +15,26 @@ export interface CreateUserDto {
   branchId?: number;
 }
 
+// Generic API response interfaces
+export interface ApiError {
+  fieldName: string;
+  code: string;
+  message: string;
+  fieldLang: string | null;
+}
+
+export interface ApiResponse<T> {
+  isSuccess: boolean;
+  errors: ApiError[];
+  data: T;
+  message?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class UserService {
   private http = inject(HttpClient);
 
-  createUser(model: CreateUserDto): Observable<unknown> {
-    return this.http.post(`${environment.apiUrl}/api/User/Create`, model);
+  createUser(model: CreateUserDto): Observable<ApiResponse<boolean>> {
+    return this.http.post<ApiResponse<boolean>>(`${environment.apiUrl}/api/User/Create`, model);
   }
 }
