@@ -8,7 +8,6 @@ import { first } from 'rxjs/operators';
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
-import { DASHBOARD_PATH } from 'src/app/app-config';
 import { FormBuilder, FormGroup, FormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -48,7 +47,7 @@ export class LoginComponent implements OnInit {
 
     if (window.location.pathname !== '/authentication-1/login') {
       if (this.authenticationService.currentUserValue) {
-        this.router.navigate([DASHBOARD_PATH]);
+        this.router.navigate(['/']);
       }
     }
 
@@ -73,15 +72,23 @@ export class LoginComponent implements OnInit {
     this.authenticationService
       .login(this.formValues['email'].value, this.formValues['password'].value)
       .pipe(first())
-      .subscribe(
-        () => {
-          this.router.navigate([DASHBOARD_PATH]);
-        },
-        (error) => {
-          this.error = error;
+      .subscribe({
+        next: (res) => {
           this.loading = false;
+          if (res?.isSuccess && res?.data?.passwordIsCorrect) {
+            this.authenticationService.pendingEmail = res.data.email;
+            this.router.navigate(['/authentication-1/code-verify']);
+          } else if (res?.errors?.length) {
+            this.error = res.errors[0].message;
+          } else {
+            this.error = 'Login failed';
+          }
+        },
+        error: () => {
+          this.loading = false;
+          this.error = 'Login failed';
         }
-      );
+      });
   }
 
   roles: Roles[] = [
