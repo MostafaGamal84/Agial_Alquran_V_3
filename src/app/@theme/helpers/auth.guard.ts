@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Router, CanActivateChild, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { Router, CanActivateChild, ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree } from '@angular/router';
 
 import { AuthenticationService } from '../services/authentication.service';
 
@@ -20,22 +20,20 @@ export class AuthGuardChild implements CanActivateChild {
    * If the user is not logged in, redirects to the login page with the return URL and returns false.
    */
 
-  canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
+  canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | UrlTree {
     const userRole = this.authenticationService.getRole();
 
     if (userRole && this.authenticationService.isLoggedIn()) {
       const { roles } = route.data;
       if (roles && !roles.includes(userRole)) {
         // User not authorized, redirect to unauthorized page
-        this.router.navigate(['/unauthorized']);
-        return false;
+        return this.router.parseUrl('/unauthorized');
       }
       // User is logged in and authorized for child routes
       return true;
     }
 
     // User not logged in or role unavailable, redirect to login page
-    this.router.navigate(['/login'], { queryParams: { returnUrl: state.url } });
-    return false;
+    return this.router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
   }
 }
