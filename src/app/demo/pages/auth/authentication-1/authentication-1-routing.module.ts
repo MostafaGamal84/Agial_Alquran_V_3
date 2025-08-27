@@ -1,6 +1,7 @@
 // angular import
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { PendingEmailGuard } from 'src/app/@theme/helpers/pending-email.guard';
 
 // type
 import { Role } from 'src/app/@theme/types/role';
@@ -37,6 +38,7 @@ const routes: Routes = [
       {
         path: 'code-verify',
         loadComponent: () => import('./code-verification/code-verification.component').then((c) => c.CodeVerificationComponent),
+        canActivate: [PendingEmailGuard],
         data: { roles: [Role.Admin, Role.User] }
       }
     ]
