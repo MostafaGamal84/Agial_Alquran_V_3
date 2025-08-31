@@ -36,41 +36,47 @@
             <span>OR</span>
           </div>
           <div class="text-center m-b-25 f-20 f-w-500">Sign up with your work email.</div>
-          <div class="row text-start">
-            <div class="col-md-6">
-              <mat-label>First Name</mat-label>
+          <form class="row text-start" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+            <div class="col-12">
+              <label class="f-w-500">Full Name</label>
               <mat-form-field appearance="outline" class="w-100 m-t-5">
-                <input type="text" matInput placeholder="First Name" />
-              </mat-form-field>
-            </div>
-            <div class="col-md-6">
-              <label for="name" class="f-w-500">Last Name</label>
-              <mat-form-field appearance="outline" class="w-100 m-t-5">
-                <input type="text" matInput placeholder="Last Name" />
+                <input type="text" matInput formControlName="fullName" placeholder="Full Name" />
               </mat-form-field>
             </div>
             <div class="col-12">
-              <label for="name" class="f-w-500">Enter Your Email</label>
+              <label class="f-w-500">Enter Your Email</label>
               <mat-form-field appearance="outline" class="w-100 m-t-5">
-                <input matInput [formControl]="email" required placeholder="Email Address" />
-                @if (email.invalid) {
+                <input matInput formControlName="email" required placeholder="Email Address" />
+                @if (form['email'].invalid && (form['email'].dirty || form['email'].touched)) {
                   <mat-error>{{ getErrorMessage() }}</mat-error>
                 }
               </mat-form-field>
             </div>
             <div class="col-12">
-              <label for="name" class="f-w-500">Enter your password</label>
+              <label class="f-w-500">Mobile</label>
               <mat-form-field appearance="outline" class="w-100 m-t-5">
-                <input matInput [type]="hide ? 'password' : 'text'" placeholder="Enter Password" />
+                <input matInput formControlName="mobile" placeholder="Mobile" />
+              </mat-form-field>
+            </div>
+            <div class="col-12">
+              <label class="f-w-500">Second Mobile</label>
+              <mat-form-field appearance="outline" class="w-100 m-t-5">
+                <input matInput formControlName="secondMobile" placeholder="Second Mobile" />
+              </mat-form-field>
+            </div>
+            <div class="col-12">
+              <label class="f-w-500">Enter your password</label>
+              <mat-form-field appearance="outline" class="w-100 m-t-5">
+                <input matInput [type]="hide ? 'password' : 'text'" formControlName="passwordHash" placeholder="Enter Password" />
                 <button mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hide">
                   <mat-icon>{{ hide ? 'visibility_off' : 'visibility' }}</mat-icon>
                 </button>
               </mat-form-field>
             </div>
             <div class="col-12">
-              <label for="name" class="f-w-500">Enter your Confirm Password</label>
+              <label class="f-w-500">Enter your Confirm Password</label>
               <mat-form-field appearance="outline" class="w-100 m-t-5">
-                <input matInput [type]="coHide ? 'password' : 'text'" placeholder="Enter Confirm Password" />
+                <input matInput [type]="coHide ? 'password' : 'text'" formControlName="confirmPassword" placeholder="Enter Confirm Password" />
                 <button
                   mat-icon-button
                   matSuffix
@@ -82,13 +88,39 @@
                 </button>
               </mat-form-field>
             </div>
-          </div>
-          <div class="check-me">
-            <mat-checkbox class="float-start" checked color="primary">I agree to all the Terms & Condition</mat-checkbox>
-          </div>
-          <div class="grid">
-            <button mat-flat-button color="primary" class="b-rad-20 m-t-15">Register</button>
-          </div>
+            <div class="col-12">
+              <label class="f-w-500">User Type</label>
+              <mat-form-field appearance="outline" class="w-100 m-t-5">
+                <mat-select formControlName="userTypeId" placeholder="Select user type">
+                  <mat-option *ngFor="let t of userTypes" [value]="t.id">{{ t.label }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+            <div class="col-12">
+              <label class="f-w-500">Nationality Id</label>
+              <mat-form-field appearance="outline" class="w-100 m-t-5">
+                <input matInput formControlName="nationalityId" type="number" placeholder="Nationality Id" />
+              </mat-form-field>
+            </div>
+            <div class="col-12">
+              <label class="f-w-500">Governorate Id</label>
+              <mat-form-field appearance="outline" class="w-100 m-t-5">
+                <input matInput formControlName="governorateId" type="number" placeholder="Governorate Id" />
+              </mat-form-field>
+            </div>
+            <div class="col-12">
+              <label class="f-w-500">Branch Id</label>
+              <mat-form-field appearance="outline" class="w-100 m-t-5">
+                <input matInput formControlName="branchId" type="number" placeholder="Branch Id" />
+              </mat-form-field>
+            </div>
+            <div class="check-me">
+              <mat-checkbox class="float-start" color="primary">I agree to all the Terms & Condition</mat-checkbox>
+            </div>
+            <div class="grid">
+              <button mat-flat-button color="primary" class="b-rad-20 m-t-15" type="submit">Register</button>
+            </div>
+          </form>
           <div class="check-me m-t-15">
             <div class="text-muted">Don't have an Account?</div>
             <a class="text-primary-500" [routerLink]="[this.authenticationService.isLoggedIn() ? '/authentication-1/login' : '/login']">
