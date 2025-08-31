@@ -109,9 +109,11 @@
               </mat-form-field>
             </div>
             <div class="col-12">
-              <label class="f-w-500">Branch Id</label>
+              <label class="f-w-500">Branch</label>
               <mat-form-field appearance="outline" class="w-100 m-t-5">
-                <input matInput formControlName="branchId" type="number" placeholder="Branch Id" />
+                <mat-select formControlName="branchId" placeholder="Select branch">
+                  <mat-option *ngFor="let t of Branch" [value]="t.id">{{ t.label }}</mat-option>
+                </mat-select>
               </mat-form-field>
             </div>
             <div class="check-me">

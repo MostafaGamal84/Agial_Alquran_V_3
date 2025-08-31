@@ -2,7 +2,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -10,6 +10,7 @@ import { AuthenticationService } from 'src/app/@theme/services/authentication.se
 import { UserService, CreateUserDto } from 'src/app/@theme/services/user.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
+import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 
 @Component({
   selector: 'app-register',
@@ -29,13 +30,16 @@ export class RegisterComponent implements OnInit {
   registerForm!: FormGroup;
 
   userTypes = [
-    { id: UserTypesEnum.Admin, label: 'Admin' },
-    { id: UserTypesEnum.Manager, label: 'Manager' },
-    { id: UserTypesEnum.BranchLeader, label: 'Branch Leader' },
-    { id: UserTypesEnum.Teacher, label: 'Teacher' },
-    { id: UserTypesEnum.Student, label: 'Student' }
+    { id: UserTypesEnum.Manager, label: 'مشرف' },
+    { id: UserTypesEnum.BranchLeader, label: 'مسئول فرع' },
+    { id: UserTypesEnum.Teacher, label: 'معلم' },
+    { id: UserTypesEnum.Student, label: 'طالب' }
   ];
-
+  Branch = [
+    { id: BranchesEnum.Mens, label: 'الرجال' },
+    { id: BranchesEnum.Women, label: 'النساء' },
+  ];
+constructor(private router:Router ) {}
   ngOnInit(): void {
     this.registerForm = this.fb.group({
       fullName: ['', Validators.required],
@@ -93,6 +97,7 @@ export class RegisterComponent implements OnInit {
         if (res.isSuccess) {
           this.toast.success(res.message || 'User created successfully');
           this.registerForm.reset();
+          this.router.navigate(['/login']);
         } else if (res.errors?.length) {
           res.errors.forEach((e) => this.toast.error(e.message));
         } else {
