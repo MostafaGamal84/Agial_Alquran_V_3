@@ -1,4 +1,4 @@
-import { Role } from './role';
+import { UserTypesEnum } from './UserTypesEnum';
 
 export class User {
   serviceToken!: string;
@@ -10,6 +10,6 @@ export class User {
     email: string;
     password: string;
     name: string;
-    role: Role;
+    role: UserTypesEnum;
   };
 }

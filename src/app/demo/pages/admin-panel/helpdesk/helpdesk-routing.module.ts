@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 //type
-import { Role } from 'src/app/@theme/types/role';
+import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 
 const routes: Routes = [
   {
@@ -12,17 +12,17 @@ const routes: Routes = [
       {
         path: 'dashboard',
         loadComponent: () => import('./helpdesk-dashboard/helpdesk-dashboard.component').then((c) => c.HelpdeskDashboardComponent),
-        data: { roles: [Role.Admin] }
+        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager,UserTypesEnum.BranchLeader,UserTypesEnum.Student,UserTypesEnum.Teacher] }
       },
       {
         path: 'ticket',
         loadChildren: () => import('./helpdesk-ticket/helpdesk-ticket.module').then((m) => m.HelpdeskTicketModule),
-        data: { roles: [Role.Admin, Role.User] }
+        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager,UserTypesEnum.BranchLeader,UserTypesEnum.Student,UserTypesEnum.Teacher] }
       },
       {
         path: 'customer',
         loadComponent: () => import('./helpdesk-customer/helpdesk-customer.component').then((c) => c.HelpdeskCustomerComponent),
-        data: { roles: [Role.Admin, Role.User] }
+        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager,UserTypesEnum.BranchLeader,UserTypesEnum.Student,UserTypesEnum.Teacher] }
       }
     ]
   }

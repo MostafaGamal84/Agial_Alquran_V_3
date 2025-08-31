@@ -4,7 +4,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { PendingEmailGuard } from 'src/app/@theme/helpers/pending-email.guard';
 
 // type
-import { Role } from 'src/app/@theme/types/role';
+import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 
 const routes: Routes = [
   {
@@ -13,33 +13,33 @@ const routes: Routes = [
       {
         path: 'login',
         loadComponent: () => import('./login/login.component').then((c) => c.LoginComponent),
-        data: { roles: [Role.Admin, Role.User] }
+        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager,UserTypesEnum.BranchLeader,UserTypesEnum.Student,UserTypesEnum.Teacher] }
       },
       {
         path: 'register',
         loadComponent: () => import('./register/register.component').then((c) => c.RegisterComponent),
-        data: { roles: [Role.Admin, Role.User] }
+        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Student] }
       },
       {
         path: 'forgot-password',
         loadComponent: () => import('./forgot-password/forgot-password.component').then((c) => c.ForgotPasswordComponent),
-        data: { roles: [Role.Admin, Role.User] }
+        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager,UserTypesEnum.BranchLeader,UserTypesEnum.Student,UserTypesEnum.Teacher] }
       },
       {
         path: 'reset-password',
         loadComponent: () => import('./reset-password/reset-password.component').then((c) => c.ResetPasswordComponent),
-        data: { roles: [Role.Admin, Role.User] }
+        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager,UserTypesEnum.BranchLeader,UserTypesEnum.Student,UserTypesEnum.Teacher] }
       },
       {
         path: 'check-mail',
         loadComponent: () => import('./check-mail/check-mail.component').then((c) => c.CheckMailComponent),
-        data: { roles: [Role.Admin, Role.User] }
+        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager,UserTypesEnum.BranchLeader,UserTypesEnum.Student,UserTypesEnum.Teacher] }
       },
       {
         path: 'code-verify',
         loadComponent: () => import('./code-verification/code-verification.component').then((c) => c.CodeVerificationComponent),
         canActivate: [PendingEmailGuard],
-        data: { roles: [Role.Admin, Role.User] }
+        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager,UserTypesEnum.BranchLeader,UserTypesEnum.Student,UserTypesEnum.Teacher] }
       }
     ]
   }

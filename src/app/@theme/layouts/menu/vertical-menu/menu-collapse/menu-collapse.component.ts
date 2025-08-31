@@ -9,7 +9,7 @@ import { NavigationItem } from 'src/app/@theme/types/navigation';
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { MenuItemVerticalComponent } from '../menu-item/menu-item.component';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
-import { Role } from 'src/app/@theme/types/role';
+import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 
 @Component({
   selector: 'app-menu-collapse',
@@ -69,7 +69,7 @@ export class MenuCollapseComponent implements OnInit {
     /**
      * current login user role
      */
-    const currentUserRole = this.authenticationService.currentUserValue?.user.role || Role.Admin;
+    const currentUserRole = this.authenticationService.currentUserValue?.user.role || UserTypesEnum.Admin;
 
     /**
      * items parent role

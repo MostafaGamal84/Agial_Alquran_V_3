@@ -6,7 +6,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { UserProfilesComponent } from './user-profiles.component';
 
 // type
-import { Role } from 'src/app/@theme/types/role';
+import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 
 const routes: Routes = [
   {
@@ -21,22 +21,22 @@ const routes: Routes = [
       {
         path: 'personal',
         loadComponent: () => import('./us-personal/us-personal.component').then((c) => c.UsPersonalComponent),
-        data: { roles: [Role.Admin, Role.User] }
+        data: { roles: [UserTypesEnum.Admin,] }
       },
       {
         path: 'payment',
         loadComponent: () => import('./us-payment/us-payment.component').then((c) => c.UsPaymentComponent),
-        data: { roles: [Role.Admin, Role.User] }
+        data: { roles: [UserTypesEnum.Admin,] }
       },
       {
         path: 'password',
         loadComponent: () => import('./us-password/us-password.component').then((c) => c.UsPasswordComponent),
-        data: { roles: [Role.Admin] }
+        data: { roles: [UserTypesEnum.Admin] }
       },
       {
         path: 'setting',
         loadComponent: () => import('./us-setting/us-setting.component').then((c) => c.UsSettingComponent),
-        data: { roles: [Role.Admin, Role.User] }
+        data: { roles: [UserTypesEnum.Admin, ] }
       }
     ]
   }

@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 // Type
-import { Role } from 'src/app/@theme/types/role';
+import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 
 const routes: Routes = [
   {
@@ -12,22 +12,22 @@ const routes: Routes = [
       {
         path: 'layout',
         loadChildren: () => import('./frm-layouts/frm-layouts.module').then((m) => m.FrmLayoutsModule),
-        data: { roles: [Role.Admin, Role.User] }
+        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager] }
       },
       {
         path: 'plugins',
         loadChildren: () => import('./frm-plugins/frm-plugins.module').then((m) => m.FrmPluginsModule),
-        data: { roles: [Role.Admin, Role.User] }
+        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager] }
       },
       {
         path: 'validation',
         loadComponent: () => import('./forms-validation/forms-validation.component').then((c) => c.FormsValidationComponent),
-        data: { roles: [Role.Admin, Role.User] }
+        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager] }
       },
       {
         path: 'wizard',
         loadComponent: () => import('./forms-wizard/forms-wizard.component').then((c) => c.FormsWizardComponent),
-        data: { roles: [Role.Admin, Role.User] }
+        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager] }
       }
     ]
   }

@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 //type
-import { Role } from 'src/app/@theme/types/role';
+import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 
 const routes: Routes = [
   {
@@ -12,22 +12,22 @@ const routes: Routes = [
       {
         path: 'dashboard',
         loadComponent: () => import('./membership-dashboard/membership-dashboard.component').then((c) => c.MembershipDashboardComponent),
-        data: { roles: [Role.Admin] }
+        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager,UserTypesEnum.BranchLeader,UserTypesEnum.Student,UserTypesEnum.Teacher] }
       },
       {
         path: 'list',
         loadComponent: () => import('./membership-list/membership-list.component').then((c) => c.MembershipListComponent),
-        data: { roles: [Role.Admin, Role.User] }
+        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager,UserTypesEnum.BranchLeader,UserTypesEnum.Student,UserTypesEnum.Teacher] }
       },
       {
         path: 'price',
         loadComponent: () => import('./membership-price/membership-price.component').then((c) => c.MembershipPriceComponent),
-        data: { roles: [Role.Admin, Role.User] }
+        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager,UserTypesEnum.BranchLeader,UserTypesEnum.Student,UserTypesEnum.Teacher] }
       },
       {
         path: 'setting',
         loadComponent: () => import('./membership-setting/membership-setting.component').then((c) => c.MembershipSettingComponent),
-        data: { roles: [Role.Admin, Role.User] }
+        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager,UserTypesEnum.BranchLeader,UserTypesEnum.Student,UserTypesEnum.Teacher] }
       }
     ]
   }

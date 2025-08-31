@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 // Type
-import { Role } from 'src/app/@theme/types/role';
+import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 
 const routes: Routes = [
   {
@@ -12,12 +12,12 @@ const routes: Routes = [
       {
         path: 'price-1',
         loadComponent: () => import('./pricing/pricing.component').then((c) => c.PricingComponent),
-        data: { roles: [Role.Admin, Role.User] }
+        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager] }
       },
       {
         path: 'price-2',
         loadComponent: () => import('./price-two/price-two.component').then((c) => c.PriceTwoComponent),
-        data: { roles: [Role.Admin, Role.User] }
+        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager] }
       }
     ]
   }

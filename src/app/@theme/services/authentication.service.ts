@@ -7,7 +7,7 @@ import { tap } from 'rxjs/operators';
 // project import
 import { environment } from 'src/environments/environment';
 import { User } from '../types/user';
-import { Role } from '../types/role';
+import { UserTypesEnum } from '../types/UserTypesEnum';
 
 interface ApiError {
   fieldName: string;
@@ -75,7 +75,7 @@ export class AuthenticationService {
     return currentUser ? currentUser.user.name : null;
   }
 
-  public getRole(): Role | null {
+  public getRole(): UserTypesEnum | null {
     try {
       const currentUser = this.currentUserValue;
       return currentUser?.user?.role ?? null;
@@ -103,7 +103,7 @@ export class AuthenticationService {
                 email: email ?? '',
                 password: '',
                 name: res.data.username,
-                role: res.data.role === 1 ? Role.Admin : Role.User
+                role: res.data.role === 1 ? UserTypesEnum.Admin : UserTypesEnum.Manager
               }
             };
             localStorage.setItem('currentUser', JSON.stringify(user));

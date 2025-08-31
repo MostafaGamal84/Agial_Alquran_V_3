@@ -30,7 +30,7 @@ import { environment } from 'src/environments/environment';
 
 //type
 import { Navigation } from 'src/app/@theme/types/navigation';
-import { Role } from 'src/app/@theme/types/role';
+import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 
 @Component({
   selector: 'app-admin',
@@ -96,7 +96,7 @@ export class AdminComponent implements OnInit, AfterViewInit {
      * current login user role
      */
     const currentUser = this.authenticationService.currentUserValue;
-    const userRoles = currentUser?.user.role ? [currentUser.user.role] : [Role.Admin];
+    const userRoles = currentUser?.user.role ? [currentUser.user.role] : [UserTypesEnum.Admin.toString()];
 
     /**
      * Role base menu filtering
@@ -115,7 +115,7 @@ export class AdminComponent implements OnInit, AfterViewInit {
   /**
    * Role base menu filtering
    */
-  RoleBaseFilterMenu(menus: Navigation[], userRoles: string[], parentRoles: string[] = [Role.Admin]): Navigation[] {
+  RoleBaseFilterMenu(menus: Navigation[], userRoles: string[], parentRoles: string[] = [UserTypesEnum.Admin.toString(),UserTypesEnum.Manager.toString()]): Navigation[] {
     return menus.map((item) => {
       // If item doesn't have a specific role, inherit roles from parent
       const itemRoles = item.role ? item.role : parentRoles;
