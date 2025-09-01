@@ -1,5 +1,5 @@
 // angular import
-import { AfterViewInit, Component, viewChild } from '@angular/core';
+import { AfterViewInit, Component, OnInit, inject, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -10,18 +10,8 @@ import { MatSort } from '@angular/material/sort';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
-import { teacherList } from 'src/app/fake-data/teacher_list';
-
-export interface teacherList {
-  name: string;
-  img: string;
-  department: string;
-  qualification: string;
-  mobile: string;
-  date: string;
-}
-
-const ELEMENT_DATA: teacherList[] = teacherList;
+import { LookupService, LookUpUserDto } from 'src/app/@theme/services/lookup.service';
+import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 
 @Component({
   selector: 'app-teacher-list',
@@ -29,10 +19,12 @@ const ELEMENT_DATA: teacherList[] = teacherList;
   templateUrl: './teacher-list.component.html',
   styleUrl: './teacher-list.component.scss'
 })
-export class TeacherListComponent implements AfterViewInit {
+export class TeacherListComponent implements OnInit, AfterViewInit {
+  private lookupService = inject(LookupService);
+
   // public props
-  displayedColumns: string[] = ['name', 'department', 'qualification', 'mobile', 'date', 'action'];
-  dataSource = new MatTableDataSource(ELEMENT_DATA);
+  displayedColumns: string[] = ['fullName', 'email', 'mobile', 'nationality', 'action'];
+  dataSource = new MatTableDataSource<LookUpUserDto>();
 
   // paginator
   readonly paginator = viewChild(MatPaginator);
@@ -46,6 +38,16 @@ export class TeacherListComponent implements AfterViewInit {
     if (this.dataSource.paginator) {
       this.dataSource.paginator.firstPage();
     }
+  }
+
+  ngOnInit() {
+    this.lookupService.getUsersByUserType(Number(UserTypesEnum.Teacher)).subscribe((res) => {
+      if (res.isSuccess && res.data) {
+        this.dataSource.data = res.data;
+      } else {
+        this.dataSource.data = [];
+      }
+    });
   }
 
   // life cycle event
