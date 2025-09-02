@@ -1,27 +1,20 @@
 // angular import
-import { AfterViewInit, Component, viewChild } from '@angular/core';
+import { AfterViewInit, Component, OnInit, inject, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 // angular material
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
-import { studentList } from 'src/app/fake-data/student_list';
-
-export interface studentList {
-  name: string;
-  img: string;
-  department: string;
-  qualification: string;
-  mobile: string;
-  date: string;
-}
-
-const ELEMENT_DATA: studentList[] = studentList;
+import {
+  LookupService,
+  LookUpUserDto,
+  FilteredResultRequestDto,
+} from 'src/app/@theme/services/lookup.service';
+import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 
 @Component({
   selector: 'app-student-list',
@@ -29,28 +22,51 @@ const ELEMENT_DATA: studentList[] = studentList;
   templateUrl: './student-list.component.html',
   styleUrl: './student-list.component.scss'
 })
-export class StudentListComponent implements AfterViewInit {
+export class StudentListComponent implements OnInit, AfterViewInit {
+  private lookupService = inject(LookupService);
+
   // public props
-  displayedColumns: string[] = ['name', 'department', 'qualification', 'mobile', 'date', 'action'];
-  dataSource = new MatTableDataSource(ELEMENT_DATA);
+  displayedColumns: string[] = ['fullName', 'email', 'mobile', 'nationality', 'action'];
+  dataSource = new MatTableDataSource<LookUpUserDto>();
+  totalCount = 0;
+  filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
 
   // paginator
   readonly paginator = viewChild(MatPaginator);
-  readonly sort = viewChild(MatSort);
 
   // table search filter
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+    this.filter.searchTerm = filterValue.trim().toLowerCase();
+    this.filter.skipCount = 0;
+    this.paginator().firstPage();
+    this.loadStudents();
+  }
 
-    if (this.dataSource.paginator) {
-      this.dataSource.paginator.firstPage();
-    }
+  ngOnInit() {
+    this.loadStudents();
+  }
+
+  private loadStudents() {
+    this.lookupService
+      .getUsersByUserType(this.filter, Number(UserTypesEnum.Student))
+      .subscribe((res) => {
+        if (res.isSuccess && res.data?.items) {
+          this.dataSource.data = res.data.items;
+          this.totalCount = res.data.totalCount;
+        } else {
+          this.dataSource.data = [];
+          this.totalCount = 0;
+        }
+      });
   }
 
   // life cycle event
   ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator()!;
-    this.dataSource.sort = this.sort()!;
+    this.paginator().page.subscribe(() => {
+      this.filter.skipCount = this.paginator().pageIndex * this.paginator().pageSize;
+      this.filter.maxResultCount = this.paginator().pageSize;
+      this.loadStudents();
+    });
   }
 }
