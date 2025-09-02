@@ -44,10 +44,25 @@ export interface PagedResultDto<T> {
   items: T[];
 }
 
+export interface NationalityDto {
+  id: number;
+  name: string;
+  telCode: number;
+}
+
+export interface GovernorateDto {
+  id: number;
+  name: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class LookupService {
   private http = inject(HttpClient);
-  getUsersByUserType(filter: FilteredResultRequestDto, userTypeId: number): Observable<ApiResponse<PagedResultDto<LookUpUserDto>>> {
+
+  getUsersByUserType(
+    filter: FilteredResultRequestDto,
+    userTypeId: number
+  ): Observable<ApiResponse<PagedResultDto<LookUpUserDto>>> {
     let params = new HttpParams().set('UserTypeId', userTypeId.toString());
     if (filter.skipCount !== undefined) {
       params = params.set('SkipCount', filter.skipCount.toString());
@@ -74,6 +89,18 @@ export class LookupService {
     return this.http.get<ApiResponse<PagedResultDto<LookUpUserDto>>>(
       `${environment.apiUrl}/api/LookUp/GetUsersByUserType`,
       { params }
+    );
+  }
+
+  getAllNationalities(): Observable<ApiResponse<NationalityDto[]>> {
+    return this.http.get<ApiResponse<NationalityDto[]>>(
+      `${environment.apiUrl}/api/LookUp/GetAllNationality`
+    );
+  }
+
+  getAllGovernorates(): Observable<ApiResponse<GovernorateDto[]>> {
+    return this.http.get<ApiResponse<GovernorateDto[]>>(
+      `${environment.apiUrl}/api/LookUp/GetAllGovernorate`
     );
   }
 }

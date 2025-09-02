@@ -97,15 +97,19 @@
               </mat-form-field>
             </div>
             <div class="col-12">
-              <label class="f-w-500">Nationality Id</label>
+              <label class="f-w-500">Nationality</label>
               <mat-form-field appearance="outline" class="w-100 m-t-5">
-                <input matInput formControlName="nationalityId" type="number" placeholder="Nationality Id" />
+                <mat-select formControlName="nationalityId" placeholder="Select nationality">
+                  <mat-option *ngFor="let n of nationalities" [value]="n.id">{{ n.name }}</mat-option>
+                </mat-select>
               </mat-form-field>
             </div>
             <div class="col-12">
-              <label class="f-w-500">Governorate Id</label>
+              <label class="f-w-500">Governorate</label>
               <mat-form-field appearance="outline" class="w-100 m-t-5">
-                <input matInput formControlName="governorateId" type="number" placeholder="Governorate Id" />
+                <mat-select formControlName="governorateId" placeholder="Select governorate">
+                  <mat-option *ngFor="let g of governorates" [value]="g.id">{{ g.name }}</mat-option>
+                </mat-select>
               </mat-form-field>
             </div>
             <div class="col-12">

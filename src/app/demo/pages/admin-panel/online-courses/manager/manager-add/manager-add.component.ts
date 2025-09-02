@@ -1,16 +1,18 @@
 // angular import
 import { Component, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { UserService, CreateUserDto } from 'src/app/@theme/services/user.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
+import { LookupService, NationalityDto, GovernorateDto } from 'src/app/@theme/services/lookup.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 
 @Component({
   selector: 'app-manager-add',
-  imports: [SharedModule],
+  imports: [CommonModule, SharedModule],
   templateUrl: './manager-add.component.html',
   styleUrl: './manager-add.component.scss'
 })
@@ -18,8 +20,12 @@ export class ManagerAddComponent implements OnInit {
   private fb = inject(FormBuilder);
   private userService = inject(UserService);
   private toast = inject(ToastService);
+  private lookupService = inject(LookupService);
 
   basicInfoForm!: FormGroup;
+
+  nationalities: NationalityDto[] = [];
+  governorates: GovernorateDto[] = [];
 
   ngOnInit(): void {
     this.basicInfoForm = this.fb.group({
@@ -31,6 +37,18 @@ export class ManagerAddComponent implements OnInit {
       nationalityId: [null, Validators.required],
       governorateId: [null, Validators.required],
       branchId: [null, Validators.required]
+    });
+
+    this.lookupService.getAllNationalities().subscribe((res) => {
+      if (res.isSuccess) {
+        this.nationalities = res.data;
+      }
+    });
+
+    this.lookupService.getAllGovernorates().subscribe((res) => {
+      if (res.isSuccess) {
+        this.governorates = res.data;
+      }
     });
   }
 

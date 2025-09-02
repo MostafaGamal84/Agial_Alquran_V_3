@@ -11,6 +11,7 @@ import { UserService, CreateUserDto } from 'src/app/@theme/services/user.service
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
+import { LookupService, NationalityDto, GovernorateDto } from 'src/app/@theme/services/lookup.service';
 
 @Component({
   selector: 'app-register',
@@ -22,12 +23,17 @@ export class RegisterComponent implements OnInit {
   private fb = inject(FormBuilder);
   private userService = inject(UserService);
   private toast = inject(ToastService);
+  private lookupService = inject(LookupService);
+    private router = inject(Router);
   authenticationService = inject(AuthenticationService);
 
   // public props
   hide = true;
   coHide = true;
   registerForm!: FormGroup;
+
+  nationalities: NationalityDto[] = [];
+  governorates: GovernorateDto[] = [];
 
   userTypes = [
     { id: UserTypesEnum.Manager, label: 'مشرف' },
@@ -39,7 +45,6 @@ export class RegisterComponent implements OnInit {
     { id: BranchesEnum.Mens, label: 'الرجال' },
     { id: BranchesEnum.Women, label: 'النساء' },
   ];
-constructor(private router:Router ) {}
   ngOnInit(): void {
     this.registerForm = this.fb.group({
       fullName: ['', Validators.required],
@@ -52,6 +57,18 @@ constructor(private router:Router ) {}
       nationalityId: [null, Validators.required],
       governorateId: [null, Validators.required],
       branchId: [null, Validators.required]
+    });
+
+    this.lookupService.getAllNationalities().subscribe((res) => {
+      if (res.isSuccess) {
+        this.nationalities = res.data;
+      }
+    });
+
+    this.lookupService.getAllGovernorates().subscribe((res) => {
+      if (res.isSuccess) {
+        this.governorates = res.data;
+      }
     });
   }
 

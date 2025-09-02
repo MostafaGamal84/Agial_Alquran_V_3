@@ -1,15 +1,17 @@
 // angular import
 import { Component, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { UserService, CreateUserDto } from 'src/app/@theme/services/user.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
+import { LookupService, NationalityDto, GovernorateDto } from 'src/app/@theme/services/lookup.service';
 
 @Component({
   selector: 'app-student-add',
-  imports: [SharedModule],
+  imports: [CommonModule, SharedModule],
   templateUrl: './student-add.component.html',
   styleUrl: './student-add.component.scss'
 })
@@ -17,8 +19,12 @@ export class StudentAddComponent implements OnInit {
   private fb = inject(FormBuilder);
   private userService = inject(UserService);
   private toast = inject(ToastService);
+  private lookupService = inject(LookupService);
 
   basicInfoForm!: FormGroup;
+
+  nationalities: NationalityDto[] = [];
+  governorates: GovernorateDto[] = [];
 
   ngOnInit(): void {
     this.basicInfoForm = this.fb.group({
@@ -31,6 +37,18 @@ export class StudentAddComponent implements OnInit {
       nationalityId: [null, Validators.required],
       governorateId: [null, Validators.required],
       branchId: [null, Validators.required]
+    });
+
+    this.lookupService.getAllNationalities().subscribe((res) => {
+      if (res.isSuccess) {
+        this.nationalities = res.data;
+      }
+    });
+
+    this.lookupService.getAllGovernorates().subscribe((res) => {
+      if (res.isSuccess) {
+        this.governorates = res.data;
+      }
     });
   }
 
