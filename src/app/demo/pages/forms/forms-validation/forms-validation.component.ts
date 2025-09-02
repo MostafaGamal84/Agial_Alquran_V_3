@@ -7,6 +7,7 @@ import { SharedModule } from 'src/app/demo/shared/shared.module';
 
 // third party
 import { NarikCustomValidatorsModule } from '@narik/custom-validators';
+import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 
 export class FormInput {
   email!: string;
@@ -23,7 +24,8 @@ export class FormInput {
 
 @Component({
   selector: 'app-forms-validation',
-  imports: [CommonModule, SharedModule, NarikCustomValidatorsModule],
+  imports: [CommonModule, SharedModule, NarikCustomValidatorsModule, NgxMaskDirective],
+  providers: [provideNgxMask()],
   templateUrl: './forms-validation.component.html',
   styleUrls: ['./forms-validation.component.scss']
 })

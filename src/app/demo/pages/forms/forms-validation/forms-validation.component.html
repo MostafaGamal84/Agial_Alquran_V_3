@@ -127,15 +127,17 @@
                 matInput
                 type="text"
                 name="validation-phone"
-                placeholder="Enter Contact Number"
+                mask="000000000000000"
+                prefix="+"
+                [dropSpecialCharacters]="false"
+                placeholder="+123456789012345"
                 [ngClass]="{
                   'is-invalid': !phone.valid && (phone.dirty || phone.touched || isSubmit)
                 }"
                 #phone="ngModel"
                 required
-                maxlength="12"
                 minlength="10"
-                phone="IN"
+                maxlength="15"
                 [(ngModel)]="formInput.phone"
               />
               @if (!phone.valid && (phone.dirty || phone.touched || isSubmit)) {

@@ -37,7 +37,14 @@
             <div class="col-12">
               <label for="phone" class="f-w-500">Phone Number</label>
               <mat-form-field appearance="outline" class="w-100 m-t-5">
-                <input type="number" matInput placeholder="Phone Number" />
+                <input
+                  matInput
+                  type="text"
+                  mask="000000000000000"
+                  prefix="+"
+                  [dropSpecialCharacters]="false"
+                  placeholder="+123456789012345"
+                />
               </mat-form-field>
             </div>
             <div class="col-12">

@@ -29,7 +29,14 @@
                   {{ c.name }} ({{ c.dialCode }})
                 </mat-option>
               </mat-select>
-              <input matInput type="text" placeholder="Enter Mobile" formControlName="mobile" />
+              <input
+                matInput
+                type="text"
+                placeholder="123456789012345"
+                formControlName="mobile"
+                mask="000000000000000"
+                [dropSpecialCharacters]="false"
+              />
               @if (basicInfoForm.get('mobile')?.touched && basicInfoForm.get('mobile')?.invalid) {
                 <mat-error>Mobile is required</mat-error>
               }
@@ -43,7 +50,14 @@
                   {{ c.name }} ({{ c.dialCode }})
                 </mat-option>
               </mat-select>
-              <input matInput type="text" placeholder="Enter Second Mobile" formControlName="secondMobile" />
+              <input
+                matInput
+                type="text"
+                placeholder="123456789012345"
+                formControlName="secondMobile"
+                mask="000000000000000"
+                [dropSpecialCharacters]="false"
+              />
             </mat-form-field>
           </div>
           <div class="col-md-6">
