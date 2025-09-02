@@ -3,13 +3,15 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, Validators } from '@angular/forms';
 import { BreakpointObserver } from '@angular/cdk/layout';
+import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 
 // project import
 import { SharedModule } from '../../shared/shared.module';
 
 @Component({
   selector: 'app-contact-us',
-  imports: [CommonModule, SharedModule],
+  imports: [CommonModule, SharedModule, NgxMaskDirective],
+  providers: [provideNgxMask()],
   templateUrl: './contact-us.component.html',
   styleUrls: ['./contact-us.component.scss']
 })
