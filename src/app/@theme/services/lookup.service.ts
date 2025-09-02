@@ -29,15 +29,36 @@ export interface ApiResponse<T> {
   data: T;
 }
 
+export interface FilteredResultRequestDto {
+  skipCount?: number;
+  searchTerm?: string;
+  filter?: string;
+  lang?: string;
+  sortingDirection?: string;
+  sortBy?: string;
+  maxResultCount?: number;
+}
+
+export interface PagedResultDto<T> {
+  totalCount: number;
+  items: T[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class LookupService {
   private http = inject(HttpClient);
-
-  getUsersByUserType(userTypeId: number): Observable<ApiResponse<LookUpUserDto[]>> {
-    return this.http.get<ApiResponse<LookUpUserDto[]>>(
-      `${environment.apiUrl}/api/LookUp/GetUsersByUserType`,
-      { params: { UserTypeId: userTypeId } }
-    );
+  getUsersByUserType(filter: FilteredResultRequestDto, userTypeId: number): Observable<ApiResponse<PagedResultDto<LookUpUserDto>>> {
+    return this.http.get<ApiResponse<PagedResultDto<LookUpUserDto>>>(`${environment.apiUrl}/api/LookUp/GetUsersByUserType`, {
+      params: {
+        UserTypeId: userTypeId,
+        SkipCount: filter.skipCount,
+        MaxResultCount: filter.maxResultCount,
+        SearchTerm: filter.searchTerm,
+        Filter: filter.filter,
+        Lang: filter.lang,
+        SortingDirection: filter.sortingDirection,
+        SortBy: filter.sortBy
+      }
+    });
   }
 }
-
