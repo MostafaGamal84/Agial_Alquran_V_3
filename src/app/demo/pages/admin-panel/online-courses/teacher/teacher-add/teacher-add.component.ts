@@ -8,6 +8,7 @@ import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { UserService, CreateUserDto } from 'src/app/@theme/services/user.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { LookupService, NationalityDto, GovernorateDto } from 'src/app/@theme/services/lookup.service';
+import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 
 @Component({
   selector: 'app-teacher-add',
@@ -55,6 +56,7 @@ export class TeacherAddComponent implements OnInit {
   onSubmit() {
     if (this.basicInfoForm.valid) {
       const model: CreateUserDto = this.basicInfoForm.value;
+      model.userTypeId = Number(UserTypesEnum.Teacher); 
       this.userService.createUser(model).subscribe({
         next: (res) => {
           if (res?.isSuccess) {
