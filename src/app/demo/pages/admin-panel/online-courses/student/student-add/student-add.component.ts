@@ -54,7 +54,6 @@ export class StudentAddComponent implements OnInit {
       secondMobileCountryDialCode: [''],
       secondMobile: [''],
       passwordHash: ['', [Validators.required, Validators.minLength(6)]],
-      userTypeId: [null, Validators.required],
       nationalityId: [null, Validators.required],
       governorateId: [null, Validators.required],
       branchId: [null, Validators.required]
