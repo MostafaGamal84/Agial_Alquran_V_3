@@ -41,9 +41,10 @@ export class TeacherListComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    this.lookupService.getUsersByUserType(Number(UserTypesEnum.Teacher)).subscribe((res) => {
-      if (res.isSuccess && res.data) {
-        this.dataSource.data = res.data;
+    const filter = { skipCount: 0, maxResultCount: 25 };
+    this.lookupService.getUsersByUserType(filter, Number(UserTypesEnum.Teacher)).subscribe((res) => {
+      if (res.isSuccess && res.data?.items) {
+        this.dataSource.data = res.data.items;
       } else {
         this.dataSource.data = [];
       }
