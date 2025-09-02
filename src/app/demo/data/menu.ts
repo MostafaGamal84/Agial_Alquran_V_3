@@ -108,6 +108,33 @@ export const menus: Navigation[] = [
     role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
           },
           {
+            id: 'manager',
+            title: 'Manager',
+            type: 'collapse',
+            role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+            children: [
+              {
+                id: 'list',
+                title: 'List',
+                type: 'item',
+                url: '/online-course/manager/list'
+              },
+              {
+                id: 'apply',
+                title: 'Apply',
+                type: 'item',
+                url: '/online-course/manager/apply'
+              },
+              {
+                id: 'add',
+                title: 'Add',
+                type: 'item',
+                url: '/online-course/manager/add',
+    role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+              }
+            ]
+          },
+          {
             id: 'teacher',
             title: 'Teacher',
             type: 'collapse',
