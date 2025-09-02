@@ -65,7 +65,6 @@ export class RegisterComponent implements OnInit {
       fullName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       mobileCountryDialCode: [null, Validators.required],
-      countryDialCode: [null, Validators.required],
       mobile: ['', Validators.required],
       secondMobileCountryDialCode: [''],
       secondMobile: [''],

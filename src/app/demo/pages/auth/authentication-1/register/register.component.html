@@ -53,22 +53,14 @@
               </mat-form-field>
             </div>
             <div class="col-12">
-              <label class="f-w-500">Country</label>
-              <mat-form-field appearance="outline" class="w-100 m-t-5">
-                <mat-select formControlName="countryDialCode" placeholder="Select Country">
-                  <mat-option *ngFor="let c of countries" [value]="c.dialCode">
-                    {{ c.name }} ({{ c.dialCode }})
-                  </mat-option>
-                </mat-select>
-              </mat-form-field>
-            </div>
-            <div class="col-12">
               <label class="f-w-500">Mobile</label>
               <mat-form-field appearance="outline" class="w-100 m-t-5">
                 <mat-select
                   formControlName="mobileCountryDialCode"
                   (selectionChange)="onCountryCodeChange('mobileCountryDialCode')"
                   matPrefix
+                  class="dial-code-select"
+
                 >
                   <mat-option *ngFor="let c of countries" [value]="c.dialCode">
                     {{ c.name }} ({{ c.dialCode }})
@@ -89,6 +81,9 @@
                   formControlName="secondMobileCountryDialCode"
                   (selectionChange)="onCountryCodeChange('secondMobileCountryDialCode')"
                   matPrefix
+                  class="dial-code-select"
+
+
                 >
                   <mat-option *ngFor="let c of countries" [value]="c.dialCode">
                     {{ c.name }} ({{ c.dialCode }})
