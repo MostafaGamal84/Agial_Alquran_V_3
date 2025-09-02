@@ -61,7 +61,8 @@ const Revenue_Data = revenueData;
 })
 export class WidgetDataComponent implements AfterViewInit {
   // public props
-  readonly paginator = viewChild(MatPaginator);
+readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
+
 
   // table data come
   displayedColumns: string[] = ['name', 'status', 'price', 'sales', 'rating'];

@@ -26,7 +26,8 @@ import { tableCollapseData } from 'src/app/fake-data/table_collapse';
 export class MaterialTableComponent implements AfterViewInit {
   // public props
   readonly table = viewChild(MatTable);
-  readonly paginator = viewChild(MatPaginator);
+readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
+
 
   // add and Remove Data table
   displayedColumns: string[] = ['position', 'name', 'weight', 'symbol'];

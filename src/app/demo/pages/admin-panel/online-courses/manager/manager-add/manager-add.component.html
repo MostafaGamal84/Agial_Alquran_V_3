@@ -45,15 +45,7 @@
               }
             </mat-form-field>
           </div>
-          <div class="col-md-6">
-            <mat-form-field appearance="outline" class="w-100 m-b-10">
-              <mat-label>User Type Id</mat-label>
-              <input matInput type="number" placeholder="Enter User Type Id" formControlName="userTypeId" />
-              @if (basicInfoForm.get('userTypeId')?.touched && basicInfoForm.get('userTypeId')?.invalid) {
-                <mat-error>User type id is required</mat-error>
-              }
-            </mat-form-field>
-          </div>
+         
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100 m-b-10">
               <mat-label>Nationality Id</mat-label>

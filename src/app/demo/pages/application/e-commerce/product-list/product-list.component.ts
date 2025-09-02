@@ -31,7 +31,8 @@ export class ProductListComponent implements AfterViewInit, OnInit {
   private productService = inject(ProductService);
 
   // public props
-  readonly paginator = viewChild(MatPaginator);
+readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
+
   readonly sort = viewChild(MatSort);
   dataSource: MatTableDataSource<Products>;
   selection: SelectionModel<Products>;

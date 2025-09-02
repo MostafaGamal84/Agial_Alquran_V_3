@@ -6,6 +6,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { UserService, CreateUserDto } from 'src/app/@theme/services/user.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
+import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 
 @Component({
   selector: 'app-manager-add',
@@ -27,7 +28,6 @@ export class ManagerAddComponent implements OnInit {
       mobile: ['', Validators.required],
       secondMobile: [''],
       passwordHash: ['', [Validators.required, Validators.minLength(6)]],
-      userTypeId: [null, Validators.required],
       nationalityId: [null, Validators.required],
       governorateId: [null, Validators.required],
       branchId: [null, Validators.required]
@@ -37,6 +37,7 @@ export class ManagerAddComponent implements OnInit {
   onSubmit() {
     if (this.basicInfoForm.valid) {
       const model: CreateUserDto = this.basicInfoForm.value;
+      model.userTypeId = Number(UserTypesEnum.Manager); // Manager
       this.userService.createUser(model).subscribe({
         next: (res) => {
           if (res?.isSuccess) {

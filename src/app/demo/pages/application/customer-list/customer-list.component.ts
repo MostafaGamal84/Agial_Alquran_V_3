@@ -40,7 +40,8 @@ export class CustomerListComponent implements AfterViewInit {
   dataSource = new MatTableDataSource(ELEMENT_DATA);
 
   // paginator
-  readonly paginator = viewChild(MatPaginator);
+readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
+
   readonly sort = viewChild(MatSort);
 
   // table search filter

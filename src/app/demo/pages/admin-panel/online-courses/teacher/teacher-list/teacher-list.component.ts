@@ -32,14 +32,15 @@ export class TeacherListComponent implements OnInit, AfterViewInit {
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
 
   // paginator
-  readonly paginator = viewChild(MatPaginator);
+readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
+
 
   // table search filter
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     this.filter.searchTerm = filterValue.trim().toLowerCase();
     this.filter.skipCount = 0;
-    this.paginator().firstPage();
+    this.paginator()?.firstPage();
     this.loadTeachers();
   }
 
