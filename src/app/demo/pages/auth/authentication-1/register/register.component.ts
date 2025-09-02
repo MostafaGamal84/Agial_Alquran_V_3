@@ -113,9 +113,7 @@ export class RegisterComponent implements OnInit {
       mobile: `${formValue.mobileCountryDialCode}${formValue.mobile}`,
       secondMobile: formValue.secondMobile
         ? `${formValue.secondMobileCountryDialCode}${formValue.secondMobile}`
-      mobile: `${formValue.countryDialCode}${formValue.mobile}`,
-      secondMobile: formValue.secondMobile
-        ? `${formValue.countryDialCode}${formValue.secondMobile}`
+      
         : undefined,
       passwordHash: formValue.passwordHash,
       userTypeId: Number(formValue.userTypeId),

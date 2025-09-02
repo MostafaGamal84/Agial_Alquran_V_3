@@ -83,7 +83,6 @@ export class StudentAddComponent implements OnInit {
         branchId: formValue.branchId,
       };
 
-      const model: CreateUserDto = this.basicInfoForm.value;
        model.userTypeId = Number(UserTypesEnum.Student); 
 
       this.userService.createUser(model).subscribe({
