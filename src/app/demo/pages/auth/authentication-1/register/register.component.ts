@@ -12,6 +12,7 @@ import { ToastService } from 'src/app/@theme/services/toast.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 import { LookupService, NationalityDto, GovernorateDto } from 'src/app/@theme/services/lookup.service';
+import { CountryService, Country } from 'src/app/@theme/services/country.service';
 
 @Component({
   selector: 'app-register',
@@ -24,6 +25,7 @@ export class RegisterComponent implements OnInit {
   private userService = inject(UserService);
   private toast = inject(ToastService);
   private lookupService = inject(LookupService);
+  private countryService = inject(CountryService);
     private router = inject(Router);
   authenticationService = inject(AuthenticationService);
 
@@ -34,6 +36,7 @@ export class RegisterComponent implements OnInit {
 
   nationalities: NationalityDto[] = [];
   governorates: GovernorateDto[] = [];
+  countries: Country[] = [];
 
   userTypes = [
     { id: UserTypesEnum.Manager, label: 'مشرف' },
@@ -49,6 +52,7 @@ export class RegisterComponent implements OnInit {
     this.registerForm = this.fb.group({
       fullName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
+      countryDialCode: [null, Validators.required],
       mobile: ['', Validators.required],
       secondMobile: [''],
       passwordHash: ['', [Validators.required, Validators.minLength(6)]],
@@ -69,6 +73,10 @@ export class RegisterComponent implements OnInit {
       if (res.isSuccess) {
         this.governorates = res.data;
       }
+    });
+
+    this.countryService.getCountries().subscribe((data) => {
+      this.countries = data;
     });
   }
 
@@ -100,8 +108,10 @@ export class RegisterComponent implements OnInit {
     const model: CreateUserDto = {
       fullName: formValue.fullName,
       email: formValue.email,
-      mobile: formValue.mobile,
-      secondMobile: formValue.secondMobile,
+      mobile: `${formValue.countryDialCode}${formValue.mobile}`,
+      secondMobile: formValue.secondMobile
+        ? `${formValue.countryDialCode}${formValue.secondMobile}`
+        : undefined,
       passwordHash: formValue.passwordHash,
       userTypeId: Number(formValue.userTypeId),
       nationalityId: formValue.nationalityId,
