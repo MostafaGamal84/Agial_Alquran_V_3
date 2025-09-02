@@ -26,7 +26,7 @@ export class RegisterComponent implements OnInit {
   private toast = inject(ToastService);
   private lookupService = inject(LookupService);
   private countryService = inject(CountryService);
-    private router = inject(Router);
+  private router = inject(Router);
   authenticationService = inject(AuthenticationService);
 
   // public props
