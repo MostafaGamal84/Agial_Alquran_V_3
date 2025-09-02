@@ -6,11 +6,14 @@ import { RouterModule } from '@angular/router';
 // angular material
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
-import { LookupService, LookUpUserDto } from 'src/app/@theme/services/lookup.service';
+import {
+  LookupService,
+  LookUpUserDto,
+  FilteredResultRequestDto,
+} from 'src/app/@theme/services/lookup.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 
 @Component({
@@ -25,35 +28,45 @@ export class TeacherListComponent implements OnInit, AfterViewInit {
   // public props
   displayedColumns: string[] = ['fullName', 'email', 'mobile', 'nationality', 'action'];
   dataSource = new MatTableDataSource<LookUpUserDto>();
+  totalCount = 0;
+  filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
 
   // paginator
   readonly paginator = viewChild(MatPaginator);
-  readonly sort = viewChild(MatSort);
 
   // table search filter
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
-
-    if (this.dataSource.paginator) {
-      this.dataSource.paginator.firstPage();
-    }
+    this.filter.searchTerm = filterValue.trim().toLowerCase();
+    this.filter.skipCount = 0;
+    this.paginator().firstPage();
+    this.loadTeachers();
   }
 
   ngOnInit() {
-    const filter = { skipCount: 0, maxResultCount: 25 };
-    this.lookupService.getUsersByUserType(filter, Number(UserTypesEnum.Teacher)).subscribe((res) => {
-      if (res.isSuccess && res.data?.items) {
-        this.dataSource.data = res.data.items;
-      } else {
-        this.dataSource.data = [];
-      }
-    });
+    this.loadTeachers();
+  }
+
+  private loadTeachers() {
+    this.lookupService
+      .getUsersByUserType(this.filter, Number(UserTypesEnum.Teacher))
+      .subscribe((res) => {
+        if (res.isSuccess && res.data?.items) {
+          this.dataSource.data = res.data.items;
+          this.totalCount = res.data.totalCount;
+        } else {
+          this.dataSource.data = [];
+          this.totalCount = 0;
+        }
+      });
   }
 
   // life cycle event
   ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator()!;
-    this.dataSource.sort = this.sort()!;
+    this.paginator().page.subscribe(() => {
+      this.filter.skipCount = this.paginator().pageIndex * this.paginator().pageSize;
+      this.filter.maxResultCount = this.paginator().pageSize;
+      this.loadTeachers();
+    });
   }
 }
