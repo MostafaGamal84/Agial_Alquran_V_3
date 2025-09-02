@@ -2,7 +2,8 @@ import { Directive, HostListener, inject } from '@angular/core';
 import { MatSelect } from '@angular/material/select';
 
 @Directive({
-  selector: 'mat-select[appOpenSelectOnType]'
+  selector: 'mat-select[appOpenSelectOnType]',
+  standalone: true
 })
 export class OpenSelectOnTypeDirective {
   private matSelect = inject(MatSelect);

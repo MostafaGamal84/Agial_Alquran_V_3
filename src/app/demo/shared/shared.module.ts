@@ -88,7 +88,8 @@ const MaterialModules = [
 ];
 
 @NgModule({
-  declarations: [OpenSelectOnTypeDirective],
+
+  declarations: [],
   imports: [
     CommonModule,
     MaterialModules,
@@ -101,7 +102,8 @@ const MaterialModules = [
         useClass: CustomTranslateLoader
       }
     }),
-    CardComponent
+    CardComponent,
+    OpenSelectOnTypeDirective
   ],
   exports: [MaterialModules, FormsModule, ReactiveFormsModule, NgScrollbarModule, TranslateModule, CardComponent, OpenSelectOnTypeDirective]
 })
