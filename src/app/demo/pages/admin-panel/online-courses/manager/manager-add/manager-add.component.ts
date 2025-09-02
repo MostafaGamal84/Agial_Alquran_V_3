@@ -11,6 +11,7 @@ import { ToastService } from 'src/app/@theme/services/toast.service';
 import { LookupService, NationalityDto, GovernorateDto } from 'src/app/@theme/services/lookup.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { CountryService, Country } from 'src/app/@theme/services/country.service';
+import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 
 @Component({
   selector: 'app-manager-add',
@@ -31,6 +32,10 @@ export class ManagerAddComponent implements OnInit {
   nationalities: NationalityDto[] = [];
   governorates: GovernorateDto[] = [];
   countries: Country[] = [];
+  Branch = [
+    { id: BranchesEnum.Mens, label: 'الرجال' },
+    { id: BranchesEnum.Women, label: 'النساء' }
+  ];
 
   phoneFormats: Record<string, { mask: string; placeholder: string }> = {
     '+1': { mask: '000-000-0000', placeholder: '123-456-7890' },

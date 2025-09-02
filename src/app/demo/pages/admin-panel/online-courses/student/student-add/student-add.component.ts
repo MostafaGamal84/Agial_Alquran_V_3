@@ -13,6 +13,7 @@ import { LookupService, NationalityDto, GovernorateDto } from 'src/app/@theme/se
 import { CountryService, Country } from 'src/app/@theme/services/country.service';
 
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
+import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 
 
 @Component({
@@ -34,6 +35,10 @@ export class StudentAddComponent implements OnInit {
   nationalities: NationalityDto[] = [];
   governorates: GovernorateDto[] = [];
   countries: Country[] = [];
+  Branch = [
+    { id: BranchesEnum.Mens, label: 'الرجال' },
+    { id: BranchesEnum.Women, label: 'النساء' }
+  ];
 
   phoneFormats: Record<string, { mask: string; placeholder: string }> = {
     '+1': { mask: '000-000-0000', placeholder: '123-456-7890' },
@@ -111,9 +116,8 @@ export class StudentAddComponent implements OnInit {
         nationalityId: formValue.nationalityId,
         governorateId: formValue.governorateId,
         branchId: formValue.branchId,
+        userTypeId: Number(UserTypesEnum.Student),
       };
-
-       model.userTypeId = Number(UserTypesEnum.Student); 
 
       this.userService.createUser(model).subscribe({
         next: (res) => {
