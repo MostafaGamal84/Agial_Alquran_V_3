@@ -105,8 +105,10 @@
           </div>
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100 m-b-10">
-              <mat-label>Branch Id</mat-label>
-              <input matInput type="number" placeholder="Enter Branch Id" formControlName="branchId" />
+              <mat-label>Branch</mat-label>
+              <mat-select formControlName="branchId" placeholder="Select Branch" appOpenSelectOnType>
+                <mat-option *ngFor="let b of Branch" [value]="b.id">{{ b.label }}</mat-option>
+              </mat-select>
               @if (basicInfoForm.get('branchId')?.touched && basicInfoForm.get('branchId')?.invalid) {
                 <mat-error>Branch id is required</mat-error>
               }
