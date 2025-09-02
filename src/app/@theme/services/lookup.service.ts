@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
@@ -48,17 +48,32 @@ export interface PagedResultDto<T> {
 export class LookupService {
   private http = inject(HttpClient);
   getUsersByUserType(filter: FilteredResultRequestDto, userTypeId: number): Observable<ApiResponse<PagedResultDto<LookUpUserDto>>> {
-    return this.http.get<ApiResponse<PagedResultDto<LookUpUserDto>>>(`${environment.apiUrl}/api/LookUp/GetUsersByUserType`, {
-      params: {
-        UserTypeId: userTypeId,
-        SkipCount: filter.skipCount,
-        MaxResultCount: filter.maxResultCount,
-        SearchTerm: filter.searchTerm,
-        Filter: filter.filter,
-        Lang: filter.lang,
-        SortingDirection: filter.sortingDirection,
-        SortBy: filter.sortBy
-      }
-    });
+    let params = new HttpParams().set('UserTypeId', userTypeId.toString());
+    if (filter.skipCount !== undefined) {
+      params = params.set('SkipCount', filter.skipCount.toString());
+    }
+    if (filter.maxResultCount !== undefined) {
+      params = params.set('MaxResultCount', filter.maxResultCount.toString());
+    }
+    if (filter.searchTerm) {
+      params = params.set('SearchTerm', filter.searchTerm);
+    }
+    if (filter.filter) {
+      params = params.set('Filter', filter.filter);
+    }
+    if (filter.lang) {
+      params = params.set('Lang', filter.lang);
+    }
+    if (filter.sortingDirection) {
+      params = params.set('SortingDirection', filter.sortingDirection);
+    }
+    if (filter.sortBy) {
+      params = params.set('SortBy', filter.sortBy);
+    }
+
+    return this.http.get<ApiResponse<PagedResultDto<LookUpUserDto>>>(
+      `${environment.apiUrl}/api/LookUp/GetUsersByUserType`,
+      { params }
+    );
   }
 }
