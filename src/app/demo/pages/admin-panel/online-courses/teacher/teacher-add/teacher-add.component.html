@@ -29,6 +29,7 @@
                 (selectionChange)="onCountryCodeChange('mobileCountryDialCode')"
                 matPrefix
                 appOpenSelectOnType
+                placeholder="+1"
               >
                 <mat-option *ngFor="let c of countries" [value]="c.dialCode">
                   {{ c.name }} ({{ c.dialCode }})
@@ -57,6 +58,7 @@
                 (selectionChange)="onCountryCodeChange('secondMobileCountryDialCode')"
                 matPrefix
                 appOpenSelectOnType
+                placeholder="+1"
               >
                 <mat-option *ngFor="let c of countries" [value]="c.dialCode">
                   {{ c.name }} ({{ c.dialCode }})
