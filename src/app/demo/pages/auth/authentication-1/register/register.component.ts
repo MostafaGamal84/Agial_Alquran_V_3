@@ -3,6 +3,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -16,9 +17,10 @@ import { CountryService, Country } from 'src/app/@theme/services/country.service
 
 @Component({
   selector: 'app-register',
-  imports: [CommonModule, SharedModule, RouterModule],
+  imports: [CommonModule, SharedModule, RouterModule, NgxMaskDirective],
   templateUrl: './register.component.html',
-  styleUrls: ['./register.component.scss', '../authentication-1.scss', '../../authentication.scss']
+  styleUrls: ['./register.component.scss', '../authentication-1.scss', '../../authentication.scss'],
+  providers: [provideNgxMask()]
 })
 export class RegisterComponent implements OnInit {
   private fb = inject(FormBuilder);
@@ -37,6 +39,16 @@ export class RegisterComponent implements OnInit {
   nationalities: NationalityDto[] = [];
   governorates: GovernorateDto[] = [];
   countries: Country[] = [];
+
+  phoneFormats: Record<string, { mask: string; placeholder: string }> = {
+    '+1': { mask: '000-000-0000', placeholder: '123-456-7890' },
+    '+44': { mask: '0000 000000', placeholder: '7123 456789' },
+    '+966': { mask: '0000000000', placeholder: '5XXXXXXXXX' }
+  };
+  mobileMask = '';
+  mobilePlaceholder = '';
+  secondMobileMask = '';
+  secondMobilePlaceholder = '';
 
   userTypes = [
     { id: UserTypesEnum.Manager, label: 'مشرف' },
@@ -95,6 +107,24 @@ export class RegisterComponent implements OnInit {
     return this.form['email'].hasError('email') ? 'Not a valid email' : '';
   }
 
+  onCountryCodeChange(
+    control: 'mobileCountryDialCode' | 'secondMobileCountryDialCode'
+  ) {
+    const code = this.registerForm.get(control)?.value;
+    const format =
+      this.phoneFormats[code] || {
+        mask: '0000000000',
+        placeholder: '##########'
+      };
+    if (control === 'mobileCountryDialCode') {
+      this.mobileMask = format.mask;
+      this.mobilePlaceholder = format.placeholder;
+    } else {
+      this.secondMobileMask = format.mask;
+      this.secondMobilePlaceholder = format.placeholder;
+    }
+  }
+
   onSubmit() {
     if (this.registerForm.invalid) {
       this.registerForm.markAllAsTouched();
@@ -107,13 +137,13 @@ export class RegisterComponent implements OnInit {
     }
 
     const formValue = this.registerForm.value;
+    const clean = (v: string) => v.replace(/\D/g, '');
     const model: CreateUserDto = {
       fullName: formValue.fullName,
       email: formValue.email,
-      mobile: `${formValue.mobileCountryDialCode}${formValue.mobile}`,
+      mobile: `${formValue.mobileCountryDialCode}${clean(formValue.mobile)}`,
       secondMobile: formValue.secondMobile
-        ? `${formValue.secondMobileCountryDialCode}${formValue.secondMobile}`
-      
+        ? `${formValue.secondMobileCountryDialCode}${clean(formValue.secondMobile)}`
         : undefined,
       passwordHash: formValue.passwordHash,
       userTypeId: Number(formValue.userTypeId),
