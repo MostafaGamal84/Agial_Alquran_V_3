@@ -24,7 +24,12 @@
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100 m-b-10">
               <mat-label>Mobile</mat-label>
-              <mat-select formControlName="mobileCountryDialCode" matPrefix appOpenSelectOnType>
+              <mat-select
+                formControlName="mobileCountryDialCode"
+                (selectionChange)="onCountryCodeChange('mobileCountryDialCode')"
+                matPrefix
+                appOpenSelectOnType
+              >
                 <mat-option *ngFor="let c of countries" [value]="c.dialCode">
                   {{ c.name }} ({{ c.dialCode }})
                 </mat-option>
@@ -32,10 +37,11 @@
               <input
                 matInput
                 type="text"
-                placeholder="123456789012345"
                 formControlName="mobile"
-                mask="000000000000000"
+                [mask]="mobileMask"
+                [placeholder]="mobilePlaceholder"
                 [dropSpecialCharacters]="false"
+                (click)="$event.stopPropagation()"
               />
               @if (basicInfoForm.get('mobile')?.touched && basicInfoForm.get('mobile')?.invalid) {
                 <mat-error>Mobile is required</mat-error>
@@ -45,7 +51,12 @@
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100 m-b-10">
               <mat-label>Second Mobile</mat-label>
-              <mat-select formControlName="secondMobileCountryDialCode" matPrefix appOpenSelectOnType>
+              <mat-select
+                formControlName="secondMobileCountryDialCode"
+                (selectionChange)="onCountryCodeChange('secondMobileCountryDialCode')"
+                matPrefix
+                appOpenSelectOnType
+              >
                 <mat-option *ngFor="let c of countries" [value]="c.dialCode">
                   {{ c.name }} ({{ c.dialCode }})
                 </mat-option>
@@ -53,10 +64,11 @@
               <input
                 matInput
                 type="text"
-                placeholder="123456789012345"
                 formControlName="secondMobile"
-                mask="000000000000000"
+                [mask]="secondMobileMask"
+                [placeholder]="secondMobilePlaceholder"
                 [dropSpecialCharacters]="false"
+                (click)="$event.stopPropagation()"
               />
             </mat-form-field>
           </div>

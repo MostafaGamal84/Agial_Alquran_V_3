@@ -35,6 +35,16 @@ export class StudentAddComponent implements OnInit {
   governorates: GovernorateDto[] = [];
   countries: Country[] = [];
 
+  phoneFormats: Record<string, { mask: string; placeholder: string }> = {
+    '+1': { mask: '000-000-0000', placeholder: '123-456-7890' },
+    '+44': { mask: '0000 000000', placeholder: '7123 456789' },
+    '+966': { mask: '0000000000', placeholder: '5XXXXXXXXX' }
+  };
+  mobileMask = '';
+  mobilePlaceholder = '';
+  secondMobileMask = '';
+  secondMobilePlaceholder = '';
+
   ngOnInit(): void {
     this.basicInfoForm = this.fb.group({
       fullName: ['', Validators.required],
@@ -67,19 +77,38 @@ export class StudentAddComponent implements OnInit {
     });
   }
 
+  onCountryCodeChange(
+    control: 'mobileCountryDialCode' | 'secondMobileCountryDialCode'
+  ) {
+    const code = this.basicInfoForm.get(control)?.value;
+    const format =
+      this.phoneFormats[code] || {
+        mask: '000000000000000',
+        placeholder: '123456789012345'
+      };
+    if (control === 'mobileCountryDialCode') {
+      this.mobileMask = format.mask;
+      this.mobilePlaceholder = format.placeholder;
+    } else {
+      this.secondMobileMask = format.mask;
+      this.secondMobilePlaceholder = format.placeholder;
+    }
+  }
+
   onSubmit() {
     if (this.basicInfoForm.valid) {
 
       const formValue = this.basicInfoForm.value;
+      const clean = (v: string) => v.replace(/\D/g, '');
       const model: CreateUserDto = {
         fullName: formValue.fullName,
         email: formValue.email,
-        mobile: `${formValue.mobileCountryDialCode}${formValue.mobile}`,
+        mobile: `${formValue.mobileCountryDialCode}${clean(formValue.mobile)}`,
         secondMobile: formValue.secondMobile
-          ? `${formValue.secondMobileCountryDialCode}${formValue.secondMobile}`
+          ? `${formValue.secondMobileCountryDialCode}${clean(formValue.secondMobile)}`
           : undefined,
         passwordHash: formValue.passwordHash,
-       
+
         nationalityId: formValue.nationalityId,
         governorateId: formValue.governorateId,
         branchId: formValue.branchId,
