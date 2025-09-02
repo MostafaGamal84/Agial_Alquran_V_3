@@ -88,6 +88,8 @@ const MaterialModules = [
 ];
 
 @NgModule({
+
+  declarations: [],
   imports: [
     CommonModule,
     MaterialModules,
