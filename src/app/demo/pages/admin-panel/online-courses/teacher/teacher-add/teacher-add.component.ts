@@ -8,6 +8,7 @@ import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { UserService, CreateUserDto } from 'src/app/@theme/services/user.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { LookupService, NationalityDto, GovernorateDto } from 'src/app/@theme/services/lookup.service';
+import { CountryService, Country } from 'src/app/@theme/services/country.service';
 
 @Component({
   selector: 'app-teacher-add',
@@ -20,17 +21,21 @@ export class TeacherAddComponent implements OnInit {
   private userService = inject(UserService);
   private toast = inject(ToastService);
   private lookupService = inject(LookupService);
+  private countryService = inject(CountryService);
 
   basicInfoForm!: FormGroup;
 
   nationalities: NationalityDto[] = [];
   governorates: GovernorateDto[] = [];
+  countries: Country[] = [];
 
   ngOnInit(): void {
     this.basicInfoForm = this.fb.group({
       fullName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
+      mobileCountryDialCode: [null, Validators.required],
       mobile: ['', Validators.required],
+      secondMobileCountryDialCode: [''],
       secondMobile: [''],
       passwordHash: ['', [Validators.required, Validators.minLength(6)]],
       userTypeId: [null, Validators.required],
@@ -50,11 +55,28 @@ export class TeacherAddComponent implements OnInit {
         this.governorates = res.data;
       }
     });
+
+    this.countryService.getCountries().subscribe((data) => {
+      this.countries = data;
+    });
   }
 
   onSubmit() {
     if (this.basicInfoForm.valid) {
-      const model: CreateUserDto = this.basicInfoForm.value;
+      const formValue = this.basicInfoForm.value;
+      const model: CreateUserDto = {
+        fullName: formValue.fullName,
+        email: formValue.email,
+        mobile: `${formValue.mobileCountryDialCode}${formValue.mobile}`,
+        secondMobile: formValue.secondMobile
+          ? `${formValue.secondMobileCountryDialCode}${formValue.secondMobile}`
+          : undefined,
+        passwordHash: formValue.passwordHash,
+        userTypeId: formValue.userTypeId ? Number(formValue.userTypeId) : undefined,
+        nationalityId: formValue.nationalityId,
+        governorateId: formValue.governorateId,
+        branchId: formValue.branchId,
+      };
       this.userService.createUser(model).subscribe({
         next: (res) => {
           if (res?.isSuccess) {
