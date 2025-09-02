@@ -8,7 +8,11 @@ import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { UserService, CreateUserDto } from 'src/app/@theme/services/user.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { LookupService, NationalityDto, GovernorateDto } from 'src/app/@theme/services/lookup.service';
+
 import { CountryService, Country } from 'src/app/@theme/services/country.service';
+
+import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
+
 
 @Component({
   selector: 'app-student-add',
@@ -63,6 +67,7 @@ export class StudentAddComponent implements OnInit {
 
   onSubmit() {
     if (this.basicInfoForm.valid) {
+
       const formValue = this.basicInfoForm.value;
       const model: CreateUserDto = {
         fullName: formValue.fullName,
@@ -72,11 +77,15 @@ export class StudentAddComponent implements OnInit {
           ? `${formValue.secondMobileCountryDialCode}${formValue.secondMobile}`
           : undefined,
         passwordHash: formValue.passwordHash,
-        userTypeId: formValue.userTypeId ? Number(formValue.userTypeId) : undefined,
+       
         nationalityId: formValue.nationalityId,
         governorateId: formValue.governorateId,
         branchId: formValue.branchId,
       };
+
+      const model: CreateUserDto = this.basicInfoForm.value;
+       model.userTypeId = Number(UserTypesEnum.Student); 
+
       this.userService.createUser(model).subscribe({
         next: (res) => {
           if (res?.isSuccess) {

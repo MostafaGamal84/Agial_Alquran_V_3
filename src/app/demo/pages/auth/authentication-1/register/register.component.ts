@@ -53,6 +53,7 @@ export class RegisterComponent implements OnInit {
       fullName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       mobileCountryDialCode: [null, Validators.required],
+      countryDialCode: [null, Validators.required],
       mobile: ['', Validators.required],
       secondMobileCountryDialCode: [''],
       secondMobile: [''],
@@ -112,6 +113,9 @@ export class RegisterComponent implements OnInit {
       mobile: `${formValue.mobileCountryDialCode}${formValue.mobile}`,
       secondMobile: formValue.secondMobile
         ? `${formValue.secondMobileCountryDialCode}${formValue.secondMobile}`
+      mobile: `${formValue.countryDialCode}${formValue.mobile}`,
+      secondMobile: formValue.secondMobile
+        ? `${formValue.countryDialCode}${formValue.secondMobile}`
         : undefined,
       passwordHash: formValue.passwordHash,
       userTypeId: Number(formValue.userTypeId),

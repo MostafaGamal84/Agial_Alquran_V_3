@@ -9,6 +9,7 @@ import { UserService, CreateUserDto } from 'src/app/@theme/services/user.service
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { LookupService, NationalityDto, GovernorateDto } from 'src/app/@theme/services/lookup.service';
 import { CountryService, Country } from 'src/app/@theme/services/country.service';
+import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 
 @Component({
   selector: 'app-teacher-add',
@@ -72,11 +73,14 @@ export class TeacherAddComponent implements OnInit {
           ? `${formValue.secondMobileCountryDialCode}${formValue.secondMobile}`
           : undefined,
         passwordHash: formValue.passwordHash,
-        userTypeId: formValue.userTypeId ? Number(formValue.userTypeId) : undefined,
         nationalityId: formValue.nationalityId,
         governorateId: formValue.governorateId,
         branchId: formValue.branchId,
       };
+
+      const model: CreateUserDto = this.basicInfoForm.value;
+      model.userTypeId = Number(UserTypesEnum.Teacher); 
+
       this.userService.createUser(model).subscribe({
         next: (res) => {
           if (res?.isSuccess) {
