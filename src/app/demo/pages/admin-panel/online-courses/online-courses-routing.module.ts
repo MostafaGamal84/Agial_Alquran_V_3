@@ -13,11 +13,16 @@ const routes: Routes = [
         loadComponent: () => import('./online-dashboard/online-dashboard.component').then((c) => c.OnlineDashboardComponent),
         data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager,UserTypesEnum.BranchLeader,UserTypesEnum.Student,UserTypesEnum.Teacher] }
       },
-      {
-        path: 'teacher',
-        loadChildren: () => import('./teacher/teacher.module').then((m) => m.TeacherModule),
-        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager,UserTypesEnum.BranchLeader,UserTypesEnum.Student,UserTypesEnum.Teacher] }
-      },
+        {
+          path: 'manager',
+          loadChildren: () => import('./manager/manager.module').then((m) => m.ManagerModule),
+          data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager,UserTypesEnum.BranchLeader,UserTypesEnum.Student,UserTypesEnum.Teacher] }
+        },
+        {
+          path: 'teacher',
+          loadChildren: () => import('./teacher/teacher.module').then((m) => m.TeacherModule),
+          data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager,UserTypesEnum.BranchLeader,UserTypesEnum.Student,UserTypesEnum.Teacher] }
+        },
       {
         path: 'student',
         loadChildren: () => import('./student/student.module').then((m) => m.StudentModule),
