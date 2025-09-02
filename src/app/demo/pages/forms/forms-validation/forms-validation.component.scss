@@ -1,1 +1,16 @@
-// This file is intentionally left empty to allow customers to add custom CSS if needed.
+.editForm {
+  label {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    display: block;
+  }
+
+  .mat-mdc-form-field {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  .text-center {
+    margin-top: 1.5rem;
+  }
+}

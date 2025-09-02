@@ -1,3 +1,14 @@
+form {
+  .mat-mdc-form-field {
+    width: 100%;
+    margin-bottom: 1rem;
+
+    .mdc-floating-label {
+      font-weight: 500;
+    }
+  }
+}
+
 .file-upload {
   display: block;
   border: 1px solid var(--accent-300);
