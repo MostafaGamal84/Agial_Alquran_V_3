@@ -10,7 +10,14 @@ export class OpenSelectOnTypeDirective {
 
   @HostListener('keydown', ['$event'])
   handleKeydown(event: KeyboardEvent): void {
-    if (!this.matSelect.panelOpen && event.key.length === 1 && !event.ctrlKey && !event.altKey && !event.metaKey) {
+    if (
+      this.matSelect.focused &&
+      !this.matSelect.panelOpen &&
+      event.key.length === 1 &&
+      !event.ctrlKey &&
+      !event.altKey &&
+      !event.metaKey
+    ) {
       this.matSelect.open();
     }
   }
