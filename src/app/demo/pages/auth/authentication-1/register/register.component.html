@@ -72,6 +72,7 @@
                   [mask]="mobileMask"
                   [placeholder]="mobilePlaceholder"
                   [dropSpecialCharacters]="false"
+                  [validation]="!!mobileMask"
                   (click)="$event.stopPropagation()"
                 />
               </mat-form-field>
@@ -97,6 +98,7 @@
                   [mask]="secondMobileMask"
                   [placeholder]="secondMobilePlaceholder"
                   [dropSpecialCharacters]="false"
+                  [validation]="!!secondMobileMask"
                   (click)="$event.stopPropagation()"
                 />
               </mat-form-field>

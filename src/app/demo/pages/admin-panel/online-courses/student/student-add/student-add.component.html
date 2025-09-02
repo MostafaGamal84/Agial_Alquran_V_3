@@ -41,6 +41,7 @@
                 [mask]="mobileMask"
                 [placeholder]="mobilePlaceholder"
                 [dropSpecialCharacters]="false"
+                [validation]="!!mobileMask"
                 (click)="$event.stopPropagation()"
               />
               @if (basicInfoForm.get('mobile')?.touched && basicInfoForm.get('mobile')?.invalid) {
@@ -68,6 +69,7 @@
                 [mask]="secondMobileMask"
                 [placeholder]="secondMobilePlaceholder"
                 [dropSpecialCharacters]="false"
+                [validation]="!!secondMobileMask"
                 (click)="$event.stopPropagation()"
               />
             </mat-form-field>

@@ -85,11 +85,7 @@ export class StudentAddComponent implements OnInit {
     control: 'mobileCountryDialCode' | 'secondMobileCountryDialCode'
   ) {
     const code = this.basicInfoForm.get(control)?.value;
-    const format =
-      this.phoneFormats[code] || {
-        mask: '000000000000000',
-        placeholder: '123456789012345'
-      };
+    const format = this.phoneFormats[code] || { mask: '', placeholder: '' };
     if (control === 'mobileCountryDialCode') {
       this.mobileMask = format.mask;
       this.mobilePlaceholder = format.placeholder;
