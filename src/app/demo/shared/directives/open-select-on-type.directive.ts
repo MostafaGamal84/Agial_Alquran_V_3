@@ -18,6 +18,10 @@ export class OpenSelectOnTypeDirective {
 
     if (
       activeElement === hostElement &&
+
+    
+      this.matSelect.focused &&
+
       !this.matSelect.panelOpen &&
       event.key.length === 1 &&
       !event.ctrlKey &&
