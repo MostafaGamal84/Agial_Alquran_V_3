@@ -71,6 +71,7 @@
                   formControlName="mobile"
                   [mask]="mobileMask"
                   [placeholder]="mobilePlaceholder"
+                  (click)="$event.stopPropagation()"
                 />
               </mat-form-field>
             </div>
@@ -94,6 +95,7 @@
                   formControlName="secondMobile"
                   [mask]="secondMobileMask"
                   [placeholder]="secondMobilePlaceholder"
+                  (click)="$event.stopPropagation()"
                 />
               </mat-form-field>
             </div>
