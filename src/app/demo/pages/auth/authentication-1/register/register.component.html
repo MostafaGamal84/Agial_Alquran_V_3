@@ -71,6 +71,7 @@
                   formControlName="mobile"
                   [mask]="mobileMask"
                   [placeholder]="mobilePlaceholder"
+                  [dropSpecialCharacters]="false"
                   (click)="$event.stopPropagation()"
                 />
               </mat-form-field>
@@ -95,6 +96,7 @@
                   formControlName="secondMobile"
                   [mask]="secondMobileMask"
                   [placeholder]="secondMobilePlaceholder"
+                  [dropSpecialCharacters]="false"
                   (click)="$event.stopPropagation()"
                 />
               </mat-form-field>

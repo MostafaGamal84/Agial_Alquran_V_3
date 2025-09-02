@@ -2,6 +2,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -13,9 +14,10 @@ import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 
 @Component({
   selector: 'app-teacher-add',
-  imports: [CommonModule, SharedModule],
+  imports: [CommonModule, SharedModule, NgxMaskDirective],
   templateUrl: './teacher-add.component.html',
-  styleUrl: './teacher-add.component.scss'
+  styleUrl: './teacher-add.component.scss',
+  providers: [provideNgxMask()]
 })
 export class TeacherAddComponent implements OnInit {
   private fb = inject(FormBuilder);

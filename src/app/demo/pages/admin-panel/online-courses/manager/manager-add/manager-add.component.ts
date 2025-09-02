@@ -2,6 +2,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -13,9 +14,10 @@ import { CountryService, Country } from 'src/app/@theme/services/country.service
 
 @Component({
   selector: 'app-manager-add',
-  imports: [CommonModule, SharedModule],
+  imports: [CommonModule, SharedModule, NgxMaskDirective],
   templateUrl: './manager-add.component.html',
-  styleUrl: './manager-add.component.scss'
+  styleUrl: './manager-add.component.scss',
+  providers: [provideNgxMask()]
 })
 export class ManagerAddComponent implements OnInit {
   private fb = inject(FormBuilder);

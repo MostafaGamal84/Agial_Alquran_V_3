@@ -112,8 +112,8 @@ export class RegisterComponent implements OnInit {
     const code = this.registerForm.get(control)?.value;
     const format =
       this.phoneFormats[code] || {
-        mask: '0000000000',
-        placeholder: '##########'
+        mask: '000000000000000',
+        placeholder: '123456789012345'
       };
     if (control === 'mobileCountryDialCode') {
       this.mobileMask = format.mask;
