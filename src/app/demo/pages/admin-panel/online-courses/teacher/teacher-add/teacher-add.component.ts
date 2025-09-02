@@ -1,5 +1,6 @@
 // angular import
 import { Component, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 // project import
@@ -10,7 +11,7 @@ import { LookupService, NationalityDto, GovernorateDto } from 'src/app/@theme/se
 
 @Component({
   selector: 'app-teacher-add',
-  imports: [SharedModule],
+  imports: [CommonModule, SharedModule],
   templateUrl: './teacher-add.component.html',
   styleUrl: './teacher-add.component.scss'
 })

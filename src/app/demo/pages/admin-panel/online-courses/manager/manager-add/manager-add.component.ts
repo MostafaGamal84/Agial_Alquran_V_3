@@ -1,5 +1,6 @@
 // angular import
 import { Component, inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 // project import
@@ -11,7 +12,7 @@ import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 
 @Component({
   selector: 'app-manager-add',
-  imports: [SharedModule],
+  imports: [CommonModule, SharedModule],
   templateUrl: './manager-add.component.html',
   styleUrl: './manager-add.component.scss'
 })
