@@ -65,13 +65,27 @@
             <div class="col-12">
               <label class="f-w-500">Mobile</label>
               <mat-form-field appearance="outline" class="w-100 m-t-5">
+
+                <mat-select formControlName="mobileCountryDialCode" matPrefix>
+                  <mat-option *ngFor="let c of countries" [value]="c.dialCode">
+                    {{ c.name }} ({{ c.dialCode }})
+                  </mat-option>
+                </mat-select>
+
                 <span matPrefix>{{ registerForm.value.countryDialCode }}&nbsp;</span>
+
                 <input matInput formControlName="mobile" placeholder="Mobile" />
               </mat-form-field>
             </div>
             <div class="col-12">
               <label class="f-w-500">Second Mobile</label>
               <mat-form-field appearance="outline" class="w-100 m-t-5">
+                <mat-select formControlName="secondMobileCountryDialCode" matPrefix>
+                  <mat-option *ngFor="let c of countries" [value]="c.dialCode">
+                    {{ c.name }} ({{ c.dialCode }})
+                  </mat-option>
+                </mat-select>
+
                 <span matPrefix>{{ registerForm.value.countryDialCode }}&nbsp;</span>
                 <input matInput formControlName="secondMobile" placeholder="Second Mobile" />
               </mat-form-field>

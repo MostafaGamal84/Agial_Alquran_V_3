@@ -9,6 +9,7 @@ import { UserService, CreateUserDto } from 'src/app/@theme/services/user.service
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { LookupService, NationalityDto, GovernorateDto } from 'src/app/@theme/services/lookup.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
+import { CountryService, Country } from 'src/app/@theme/services/country.service';
 
 @Component({
   selector: 'app-manager-add',
@@ -21,17 +22,21 @@ export class ManagerAddComponent implements OnInit {
   private userService = inject(UserService);
   private toast = inject(ToastService);
   private lookupService = inject(LookupService);
+  private countryService = inject(CountryService);
 
   basicInfoForm!: FormGroup;
 
   nationalities: NationalityDto[] = [];
   governorates: GovernorateDto[] = [];
+  countries: Country[] = [];
 
   ngOnInit(): void {
     this.basicInfoForm = this.fb.group({
       fullName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
+      mobileCountryDialCode: [null, Validators.required],
       mobile: ['', Validators.required],
+      secondMobileCountryDialCode: [''],
       secondMobile: [''],
       passwordHash: ['', [Validators.required, Validators.minLength(6)]],
       nationalityId: [null, Validators.required],
@@ -50,12 +55,28 @@ export class ManagerAddComponent implements OnInit {
         this.governorates = res.data;
       }
     });
+
+    this.countryService.getCountries().subscribe((data) => {
+      this.countries = data;
+    });
   }
 
   onSubmit() {
     if (this.basicInfoForm.valid) {
-      const model: CreateUserDto = this.basicInfoForm.value;
-      model.userTypeId = Number(UserTypesEnum.Manager); // Manager
+      const formValue = this.basicInfoForm.value;
+      const model: CreateUserDto = {
+        fullName: formValue.fullName,
+        email: formValue.email,
+        mobile: `${formValue.mobileCountryDialCode}${formValue.mobile}`,
+        secondMobile: formValue.secondMobile
+          ? `${formValue.secondMobileCountryDialCode}${formValue.secondMobile}`
+          : undefined,
+        passwordHash: formValue.passwordHash,
+        nationalityId: formValue.nationalityId,
+        governorateId: formValue.governorateId,
+        branchId: formValue.branchId,
+        userTypeId: Number(UserTypesEnum.Manager),
+      };
       this.userService.createUser(model).subscribe({
         next: (res) => {
           if (res?.isSuccess) {

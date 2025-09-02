@@ -24,6 +24,11 @@
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100 m-b-10">
               <mat-label>Mobile</mat-label>
+              <mat-select formControlName="mobileCountryDialCode" matPrefix>
+                <mat-option *ngFor="let c of countries" [value]="c.dialCode">
+                  {{ c.name }} ({{ c.dialCode }})
+                </mat-option>
+              </mat-select>
               <input matInput type="text" placeholder="Enter Mobile" formControlName="mobile" />
               @if (basicInfoForm.get('mobile')?.touched && basicInfoForm.get('mobile')?.invalid) {
                 <mat-error>Mobile is required</mat-error>
@@ -33,6 +38,11 @@
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100 m-b-10">
               <mat-label>Second Mobile</mat-label>
+              <mat-select formControlName="secondMobileCountryDialCode" matPrefix>
+                <mat-option *ngFor="let c of countries" [value]="c.dialCode">
+                  {{ c.name }} ({{ c.dialCode }})
+                </mat-option>
+              </mat-select>
               <input matInput type="text" placeholder="Enter Second Mobile" formControlName="secondMobile" />
             </mat-form-field>
           </div>

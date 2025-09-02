@@ -26,7 +26,7 @@ export class RegisterComponent implements OnInit {
   private toast = inject(ToastService);
   private lookupService = inject(LookupService);
   private countryService = inject(CountryService);
-    private router = inject(Router);
+  private router = inject(Router);
   authenticationService = inject(AuthenticationService);
 
   // public props
@@ -52,8 +52,10 @@ export class RegisterComponent implements OnInit {
     this.registerForm = this.fb.group({
       fullName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
+      mobileCountryDialCode: [null, Validators.required],
       countryDialCode: [null, Validators.required],
       mobile: ['', Validators.required],
+      secondMobileCountryDialCode: [''],
       secondMobile: [''],
       passwordHash: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', Validators.required],
@@ -108,6 +110,9 @@ export class RegisterComponent implements OnInit {
     const model: CreateUserDto = {
       fullName: formValue.fullName,
       email: formValue.email,
+      mobile: `${formValue.mobileCountryDialCode}${formValue.mobile}`,
+      secondMobile: formValue.secondMobile
+        ? `${formValue.secondMobileCountryDialCode}${formValue.secondMobile}`
       mobile: `${formValue.countryDialCode}${formValue.mobile}`,
       secondMobile: formValue.secondMobile
         ? `${formValue.countryDialCode}${formValue.secondMobile}`
