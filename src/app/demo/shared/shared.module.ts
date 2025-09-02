@@ -47,6 +47,7 @@ import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 // project import
 import { CustomTranslateLoader } from './custom-translate-loader';
 import { CardComponent } from 'src/app/@theme/components/card/card.component';
+import { OpenSelectOnTypeDirective } from './directives/open-select-on-type.directive';
 
 const MaterialModules = [
   MatToolbarModule,
@@ -87,7 +88,6 @@ const MaterialModules = [
 ];
 
 @NgModule({
-  declarations: [],
   imports: [
     CommonModule,
     MaterialModules,
@@ -100,8 +100,9 @@ const MaterialModules = [
         useClass: CustomTranslateLoader
       }
     }),
-    CardComponent
+    CardComponent,
+    OpenSelectOnTypeDirective
   ],
-  exports: [MaterialModules, FormsModule, ReactiveFormsModule, NgScrollbarModule, TranslateModule, CardComponent]
+  exports: [MaterialModules, FormsModule, ReactiveFormsModule, NgScrollbarModule, TranslateModule, CardComponent, OpenSelectOnTypeDirective]
 })
 export class SharedModule {}
