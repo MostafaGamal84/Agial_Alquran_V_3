@@ -11,6 +11,9 @@ import {
 } from 'src/app/@theme/services/lookup.service';
 import {
   CircleDto,
+  CircleManagerDto,
+  CircleStudentDto,
+
   CircleService,
   UpdateCircleDto
 } from 'src/app/@theme/services/circle.service';
@@ -67,8 +70,15 @@ export class CoursesUpdateComponent implements OnInit {
       this.circleForm.patchValue({
         name: course.name,
         teacherId: course.teacherId,
-        managers: course.managers ?? [],
-        studentsIds: course.students?.map((s) => s.id) ?? course.studentsIds ?? []
+        managers:
+          course.managers?.map((m: CircleManagerDto | number) =>
+            typeof m === 'number' ? m : m.managerId
+          ) ?? [],
+        studentsIds:
+          course.students?.map(
+            (s: CircleStudentDto & { studentId?: number }) =>
+              s.id ?? s.studentId
+          ) ?? course.studentsIds ?? []
 
       });
     } else {
@@ -80,10 +90,16 @@ export class CoursesUpdateComponent implements OnInit {
               name: res.data.name,
               teacherId: res.data.teacherId,
               managers: res.data.managers
-                ? res.data.managers.map((m: number | { id: number }) => (typeof m === 'number' ? m : m.id))
+                ? res.data.managers.map((m: CircleManagerDto | number) =>
+                    typeof m === 'number' ? m : m.managerId
+                  )
                 : [],
               studentsIds: res.data.students
-                ? res.data.students.map((s) => s.id)
+                ? res.data.students.map(
+                    (s: CircleStudentDto & { studentId?: number }) =>
+                      s.id ?? s.studentId
+                  )
+
                 : []
             });
           }
