@@ -15,7 +15,7 @@ export interface CircleDto {
   teacherId?: number;
   teacher?: LookUpUserDto;
   managers?: CircleManagerDto[];
-  studentsIds?: number[];
+
   students?: CircleStudentDto[];
 }
 
@@ -31,7 +31,6 @@ export interface CircleStudentDto {
   studentId?: number;
   student?: LookUpUserDto;
   fullName?: string;
-
   [key: string]: unknown;
 }
 

@@ -13,7 +13,6 @@ import {
   CircleDto,
   CircleManagerDto,
   CircleStudentDto,
-
   CircleService,
   UpdateCircleDto
 } from 'src/app/@theme/services/circle.service';
@@ -88,13 +87,10 @@ export class CoursesUpdateComponent implements OnInit {
 
     if (course) {
       this.id = course.id;
-      const studentIds = course.students
-        ? course.students
-            .map((s: CircleStudentDto) =>
-              s.id ?? s.studentId ?? s.student?.id
-            )
-            .filter((id): id is number => id !== undefined)
-        : course.studentsIds ?? [];
+      const studentIds =
+        course.students
+          ?.map((s: CircleStudentDto) => s.id ?? s.studentId ?? s.student?.id)
+          .filter((id): id is number => id !== undefined) ?? [];
       this.circleForm.patchValue({
         name: course.name,
         teacherId: course.teacherId,
@@ -104,23 +100,23 @@ export class CoursesUpdateComponent implements OnInit {
           ) ?? [],
         studentsIds: studentIds
       });
-
       if (!studentIds.length) {
         this.circle.get(this.id).subscribe((res) => {
           if (res.isSuccess) {
-            const fetchedStudents = res.data.students
-              ? res.data.students
-                  .map((s: CircleStudentDto) =>
-                    s.id ?? s.studentId ?? s.student?.id
-                  )
-                  .filter((id): id is number => id !== undefined)
-              : res.data.studentsIds ?? [];
+            const fetchedStudents =
+              res.data.students
+                ?.map((s: CircleStudentDto) =>
+                  s.id ?? s.studentId ?? s.student?.id
+                )
+                .filter((id): id is number => id !== undefined) ?? [];
             this.circleForm.patchValue({ studentsIds: fetchedStudents });
             if (res.data.students?.length) {
-              const courseStudents = res.data.students.map((s: CircleStudentDto) =>
-                (s as CircleStudentDto).student
-                  ? ((s as CircleStudentDto).student as LookUpUserDto)
-                  : (s as unknown as LookUpUserDto)
+              const courseStudents = res.data.students.map(
+                (s: CircleStudentDto) =>
+                  (s as CircleStudentDto).student
+                    ? ((s as CircleStudentDto).student as LookUpUserDto)
+                    : (s as unknown as LookUpUserDto)
+
               );
               const existing = new Map(this.students.map((st) => [st.id, st]));
               courseStudents.forEach((st) => existing.set(st.id, st));
@@ -129,18 +125,17 @@ export class CoursesUpdateComponent implements OnInit {
           }
         });
       }
-
     } else {
       this.id = Number(this.route.snapshot.paramMap.get('id'));
       if (this.id) {
         this.circle.get(this.id).subscribe((res) => {
           if (res.isSuccess) {
-            const fetchedStudents = res.data.students
-              ? res.data.students.map((s: CircleStudentDto) =>
+            const fetchedStudents =
+              res.data.students
+                ?.map((s: CircleStudentDto) =>
                   s.id ?? s.studentId ?? s.student?.id
                 )
-              : res.data.studentsIds ?? [];
-
+                .filter((id): id is number => id !== undefined) ?? [];
             this.circleForm.patchValue({
               name: res.data.name,
               teacherId: res.data.teacherId,
@@ -150,7 +145,6 @@ export class CoursesUpdateComponent implements OnInit {
                   )
                 : [],
               studentsIds: fetchedStudents
-                .filter((id): id is number => id !== undefined)
             });
             if (res.data.students?.length) {
               const courseStudents = res.data.students.map((s: CircleStudentDto) =>
@@ -162,7 +156,6 @@ export class CoursesUpdateComponent implements OnInit {
               courseStudents.forEach((st) => existing.set(st.id, st));
               this.students = Array.from(existing.values());
             }
-
           }
         });
       }
