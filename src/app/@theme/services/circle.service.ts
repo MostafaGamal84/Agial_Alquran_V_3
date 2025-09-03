@@ -26,7 +26,10 @@ export interface CircleManagerDto {
 
 export interface CircleStudentDto {
   id?: number;
-  fullName: string;
+  studentId?: number;
+  student?: LookUpUserDto;
+  fullName?: string;
+
   [key: string]: unknown;
 }
 

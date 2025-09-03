@@ -67,6 +67,14 @@ export class CoursesUpdateComponent implements OnInit {
     const course = history.state.course as CircleDto | undefined;
     if (course) {
       this.id = course.id;
+      const studentIds = course.students
+        ? course.students
+            .map((s: CircleStudentDto) =>
+              s.id ?? s.studentId ?? s.student?.id
+            )
+            .filter((id): id is number => id !== undefined)
+        : course.studentsIds ?? [];
+
       this.circleForm.patchValue({
         name: course.name,
         teacherId: course.teacherId,
@@ -74,13 +82,23 @@ export class CoursesUpdateComponent implements OnInit {
           course.managers?.map((m: CircleManagerDto | number) =>
             typeof m === 'number' ? m : m.managerId
           ) ?? [],
-        studentsIds:
-          course.students?.map(
-            (s: CircleStudentDto & { studentId?: number }) =>
-              s.id ?? s.studentId
-          ) ?? course.studentsIds ?? []
-
+        studentsIds: studentIds
       });
+      if (!studentIds.length) {
+        this.circle.get(this.id).subscribe((res) => {
+          if (res.isSuccess) {
+            const fetchedStudents = res.data.students
+              ? res.data.students
+                  .map((s: CircleStudentDto) =>
+                    s.id ?? s.studentId ?? s.student?.id
+                  )
+                  .filter((id): id is number => id !== undefined)
+              : res.data.studentsIds ?? [];
+            this.circleForm.patchValue({ studentsIds: fetchedStudents });
+          }
+        });
+      }
+
     } else {
       this.id = Number(this.route.snapshot.paramMap.get('id'));
       if (this.id) {
@@ -95,12 +113,13 @@ export class CoursesUpdateComponent implements OnInit {
                   )
                 : [],
               studentsIds: res.data.students
-                ? res.data.students.map(
-                    (s: CircleStudentDto & { studentId?: number }) =>
-                      s.id ?? s.studentId
-                  )
+                ? res.data.students
+                    .map((s: CircleStudentDto) =>
+                      s.id ?? s.studentId ?? s.student?.id
+                    )
+                    .filter((id): id is number => id !== undefined)
+                : res.data.studentsIds ?? []
 
-                : []
             });
           }
         });
