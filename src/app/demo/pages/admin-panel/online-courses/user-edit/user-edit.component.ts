@@ -30,6 +30,7 @@ export class UserEditComponent implements OnInit {
   userId!: number;
   currentUser?: LookUpUserDto;
 
+
   nationalities: NationalityDto[] = [];
   governorates: GovernorateDto[] = [];
   countries: Country[] = [];
@@ -115,6 +116,7 @@ export class UserEditComponent implements OnInit {
       this.basicInfoForm.patchValue({
         fullName: this.currentUser.fullName,
         email: this.currentUser.email,
+
         mobileCountryDialCode: mobile.dialCode || null,
         mobile: mobile.number,
         secondMobileCountryDialCode: second.dialCode || null,
@@ -122,11 +124,13 @@ export class UserEditComponent implements OnInit {
         nationalityId: this.currentUser.nationalityId,
         governorateId: this.currentUser.governorateId,
         branchId: this.currentUser.branchId
+
       });
       if (mobile.dialCode) {
         this.onCountryCodeChange('mobileCountryDialCode');
       }
       if (this.currentUser.secondMobile && second.dialCode) {
+
         this.onCountryCodeChange('secondMobileCountryDialCode');
       }
     }
@@ -158,6 +162,7 @@ export class UserEditComponent implements OnInit {
     }
     return null;
   }
+
 
   onSubmit() {
     if (this.basicInfoForm.valid) {
