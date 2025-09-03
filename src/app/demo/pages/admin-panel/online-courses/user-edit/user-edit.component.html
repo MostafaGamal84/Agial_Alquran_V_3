@@ -1,0 +1,115 @@
+<div class="row">
+  <div class="col-12">
+    <app-card cardTitle="Update User">
+      <form [formGroup]="basicInfoForm" (ngSubmit)="onSubmit()">
+        <div class="row">
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="w-100 m-b-10">
+              <mat-label>Full Name</mat-label>
+              <input matInput type="text" placeholder="Enter Full Name" formControlName="fullName" />
+              @if (basicInfoForm.get('fullName')?.touched && basicInfoForm.get('fullName')?.invalid) {
+                <mat-error>Full name is required</mat-error>
+              }
+            </mat-form-field>
+          </div>
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="w-100 m-b-10">
+              <mat-label>Email</mat-label>
+              <input matInput type="email" placeholder="Enter Email" formControlName="email" />
+              @if (basicInfoForm.get('email')?.touched && basicInfoForm.get('email')?.invalid) {
+                <mat-error>Email is required</mat-error>
+              }
+            </mat-form-field>
+          </div>
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="w-100 m-b-10">
+              <mat-label>Mobile</mat-label>
+              <mat-select
+                formControlName="mobileCountryDialCode"
+                (selectionChange)="onCountryCodeChange('mobileCountryDialCode')"
+                matPrefix
+                appOpenSelectOnType
+                placeholder="+1"
+              >
+                <mat-option *ngFor="let c of countries" [value]="c.dialCode">{{ c.name }} ({{ c.dialCode }})</mat-option>
+              </mat-select>
+              <input
+                matInput
+                type="text"
+                formControlName="mobile"
+                [mask]="mobileMask"
+                [placeholder]="mobilePlaceholder"
+                [dropSpecialCharacters]="false"
+                [validation]="!!mobileMask"
+                (click)="$event.stopPropagation()"
+              />
+              @if (basicInfoForm.get('mobile')?.touched && basicInfoForm.get('mobile')?.invalid) {
+                <mat-error>Mobile is required</mat-error>
+              }
+            </mat-form-field>
+          </div>
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="w-100 m-b-10">
+              <mat-label>Second Mobile</mat-label>
+              <mat-select
+                formControlName="secondMobileCountryDialCode"
+                (selectionChange)="onCountryCodeChange('secondMobileCountryDialCode')"
+                matPrefix
+                appOpenSelectOnType
+                placeholder="+1"
+              >
+                <mat-option *ngFor="let c of countries" [value]="c.dialCode">{{ c.name }} ({{ c.dialCode }})</mat-option>
+              </mat-select>
+              <input
+                matInput
+                type="text"
+                formControlName="secondMobile"
+                [mask]="secondMobileMask"
+                [placeholder]="secondMobilePlaceholder"
+                [dropSpecialCharacters]="false"
+                [validation]="!!secondMobileMask"
+                (click)="$event.stopPropagation()"
+              />
+            </mat-form-field>
+          </div>
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="w-100 m-b-10">
+              <mat-label>Nationality</mat-label>
+              <mat-select formControlName="nationalityId" placeholder="Select Nationality" appOpenSelectOnType>
+                <mat-option *ngFor="let n of nationalities" [value]="n.id">{{ n.name }}</mat-option>
+              </mat-select>
+              @if (basicInfoForm.get('nationalityId')?.touched && basicInfoForm.get('nationalityId')?.invalid) {
+                <mat-error>Nationality id is required</mat-error>
+              }
+            </mat-form-field>
+          </div>
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="w-100 m-b-10">
+              <mat-label>Governorate</mat-label>
+              <mat-select formControlName="governorateId" placeholder="Select Governorate" appOpenSelectOnType>
+                <mat-option *ngFor="let g of governorates" [value]="g.id">{{ g.name }}</mat-option>
+              </mat-select>
+              @if (basicInfoForm.get('governorateId')?.touched && basicInfoForm.get('governorateId')?.invalid) {
+                <mat-error>Governorate id is required</mat-error>
+              }
+            </mat-form-field>
+          </div>
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="w-100 m-b-10">
+              <mat-label>Branch</mat-label>
+              <mat-select formControlName="branchId" placeholder="Select Branch" appOpenSelectOnType>
+                <mat-option *ngFor="let b of Branch" [value]="b.id">{{ b.label }}</mat-option>
+              </mat-select>
+              @if (basicInfoForm.get('branchId')?.touched && basicInfoForm.get('branchId')?.invalid) {
+                <mat-error>Branch id is required</mat-error>
+              }
+            </mat-form-field>
+          </div>
+          <div class="col-md-12 text-end">
+            <button mat-flat-button color="primary" [disabled]="basicInfoForm.invalid">Update</button>
+          </div>
+        </div>
+      </form>
+    </app-card>
+  </div>
+</div>

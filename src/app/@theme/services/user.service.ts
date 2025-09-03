@@ -15,6 +15,17 @@ export interface CreateUserDto {
   branchId?: number;
 }
 
+export interface UpdateUserDto {
+  id: number;
+  fullName?: string;
+  email?: string;
+  mobile?: string;
+  secondMobile?: string;
+  nationalityId?: number;
+  governorateId?: number;
+  branchId?: number;
+}
+
 // Generic API response interfaces
 export interface ApiError {
   fieldName: string;
@@ -36,5 +47,9 @@ export class UserService {
 
   createUser(model: CreateUserDto): Observable<ApiResponse<boolean>> {
     return this.http.post<ApiResponse<boolean>>(`${environment.apiUrl}/api/User/Create`, model);
+  }
+
+  updateUser(model: UpdateUserDto): Observable<ApiResponse<boolean>> {
+    return this.http.put<ApiResponse<boolean>>(`${environment.apiUrl}/api/User/Update`, model);
   }
 }
