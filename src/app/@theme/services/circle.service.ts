@@ -89,7 +89,7 @@ export class CircleService {
       params = params.set('SortBy', filter.sortBy);
     }
     return this.http.get<ApiResponse<PagedResultDto<CircleDto>>>(
-      `${environment.apiUrl}/api/Circle/GetAll`,
+      `${environment.apiUrl}/api/Circle/GetResultsByFilter`,
       { params }
     );
   }
