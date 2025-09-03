@@ -15,6 +15,13 @@ export interface CircleDto {
   teacherName?: string;
   managers?: number[];
   studentsIds?: number[];
+  students?: CircleStudentDto[];
+}
+
+export interface CircleStudentDto {
+  id: number;
+  fullName: string;
+  [key: string]: unknown;
 }
 
 export interface CreateCircleDto {

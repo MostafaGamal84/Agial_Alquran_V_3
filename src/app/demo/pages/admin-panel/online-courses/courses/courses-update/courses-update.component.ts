@@ -68,7 +68,9 @@ export class CoursesUpdateComponent implements OnInit {
             name: res.data.name,
             teacherId: res.data.teacherId,
             managers: res.data.managers || [],
-            studentsIds: res.data.studentsIds || []
+            studentsIds: res.data.students
+              ? res.data.students.map((s) => s.id)
+              : []
           });
         }
       });
