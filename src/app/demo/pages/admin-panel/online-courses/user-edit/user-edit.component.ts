@@ -29,7 +29,6 @@ export class UserEditComponent implements OnInit {
   basicInfoForm!: FormGroup;
   userId!: number;
   currentUser?: LookUpUserDto;
-
   nationalities: NationalityDto[] = [];
   governorates: GovernorateDto[] = [];
   countries: Country[] = [];
@@ -97,6 +96,7 @@ export class UserEditComponent implements OnInit {
           this.currentUser.mobile,
           this.countries
         );
+
         if (detected) {
           this.basicInfoForm.patchValue({
             mobileCountryDialCode: detected.dialCode,
@@ -109,6 +109,7 @@ export class UserEditComponent implements OnInit {
             this.currentUser.secondMobile,
             this.countries
           );
+
           if (secondDetected) {
             this.basicInfoForm.patchValue({
               secondMobileCountryDialCode: secondDetected.dialCode,
@@ -119,6 +120,7 @@ export class UserEditComponent implements OnInit {
         }
       }
     });
+
   }
 
   onCountryCodeChange(control: 'mobileCountryDialCode' | 'secondMobileCountryDialCode') {
