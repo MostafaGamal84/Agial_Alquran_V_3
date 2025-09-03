@@ -13,6 +13,7 @@ import {
   CircleDto,
   CircleManagerDto,
   CircleStudentDto,
+
   CircleService,
   UpdateCircleDto
 } from 'src/app/@theme/services/circle.service';
@@ -78,6 +79,7 @@ export class CoursesUpdateComponent implements OnInit {
             (s: CircleStudentDto & { studentId?: number }) =>
               s.id ?? s.studentId
           ) ?? course.studentsIds ?? []
+
       });
     } else {
       this.id = Number(this.route.snapshot.paramMap.get('id'));
@@ -97,6 +99,7 @@ export class CoursesUpdateComponent implements OnInit {
                     (s: CircleStudentDto & { studentId?: number }) =>
                       s.id ?? s.studentId
                   )
+
                 : []
             });
           }
