@@ -29,8 +29,6 @@ export class UserEditComponent implements OnInit {
   basicInfoForm!: FormGroup;
   userId!: number;
   currentUser?: LookUpUserDto;
-
-
   nationalities: NationalityDto[] = [];
   governorates: GovernorateDto[] = [];
   countries: Country[] = [];
@@ -74,11 +72,31 @@ export class UserEditComponent implements OnInit {
       }
     });
 
+    this.currentUser = history.state['user'] as LookUpUserDto | undefined;
+    if (this.currentUser) {
+      this.userId = this.currentUser.id;
+      const clean = (phone: string) => phone.replace(/\D/g, '');
+      this.basicInfoForm.patchValue({
+        fullName: this.currentUser.fullName,
+        email: this.currentUser.email,
+        mobile: clean(this.currentUser.mobile),
+        secondMobile: this.currentUser.secondMobile
+          ? clean(this.currentUser.secondMobile)
+          : '',
+        nationalityId: this.currentUser.nationalityId,
+        governorateId: this.currentUser.governorateId,
+        branchId: this.currentUser.branchId
+      });
+    }
+
     this.countryService.getCountries().subscribe((data) => {
       this.countries = data;
-      // if no dial code came with the stored number, try to detect it from API data
-      if (this.currentUser && !this.basicInfoForm.get('mobileCountryDialCode')?.value) {
-        const detected = this.detectDialCode(this.currentUser.mobile, this.countries);
+      if (this.currentUser) {
+        const detected = this.detectDialCode(
+          this.currentUser.mobile,
+          this.countries
+        );
+
         if (detected) {
           this.basicInfoForm.patchValue({
             mobileCountryDialCode: detected.dialCode,
@@ -86,8 +104,12 @@ export class UserEditComponent implements OnInit {
           });
           this.onCountryCodeChange('mobileCountryDialCode');
         }
-        if (this.currentUser.secondMobile && !this.basicInfoForm.get('secondMobileCountryDialCode')?.value) {
-          const secondDetected = this.detectDialCode(this.currentUser.secondMobile, this.countries);
+        if (this.currentUser.secondMobile) {
+          const secondDetected = this.detectDialCode(
+            this.currentUser.secondMobile,
+            this.countries
+          );
+
           if (secondDetected) {
             this.basicInfoForm.patchValue({
               secondMobileCountryDialCode: secondDetected.dialCode,
@@ -99,41 +121,6 @@ export class UserEditComponent implements OnInit {
       }
     });
 
-    this.currentUser = history.state['user'] as LookUpUserDto | undefined;
-    if (this.currentUser) {
-      this.userId = this.currentUser.id;
-      const parsePhone = (phone: string) => {
-        const cleaned = phone.replace(/[^+\d]/g, '');
-        const match = cleaned.match(/^(\+\d{1,3})(\d+)$/);
-        return match
-          ? { dialCode: match[1], number: match[2] }
-          : { dialCode: '', number: cleaned };
-      };
-      const mobile = parsePhone(this.currentUser.mobile);
-      const second = this.currentUser.secondMobile
-        ? parsePhone(this.currentUser.secondMobile)
-        : { dialCode: '', number: '' };
-      this.basicInfoForm.patchValue({
-        fullName: this.currentUser.fullName,
-        email: this.currentUser.email,
-
-        mobileCountryDialCode: mobile.dialCode || null,
-        mobile: mobile.number,
-        secondMobileCountryDialCode: second.dialCode || null,
-        secondMobile: second.number,
-        nationalityId: this.currentUser.nationalityId,
-        governorateId: this.currentUser.governorateId,
-        branchId: this.currentUser.branchId
-
-      });
-      if (mobile.dialCode) {
-        this.onCountryCodeChange('mobileCountryDialCode');
-      }
-      if (this.currentUser.secondMobile && second.dialCode) {
-
-        this.onCountryCodeChange('secondMobileCountryDialCode');
-      }
-    }
   }
 
   onCountryCodeChange(control: 'mobileCountryDialCode' | 'secondMobileCountryDialCode') {
@@ -162,7 +149,6 @@ export class UserEditComponent implements OnInit {
     }
     return null;
   }
-
 
   onSubmit() {
     if (this.basicInfoForm.valid) {
