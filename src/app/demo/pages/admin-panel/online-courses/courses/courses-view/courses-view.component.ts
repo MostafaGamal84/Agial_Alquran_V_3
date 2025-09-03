@@ -1,10 +1,12 @@
 // angular import
 import { AfterViewInit, Component, OnInit, inject, viewChild } from '@angular/core';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule } from '@angular/router';
 
 // angular material
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
+import { MatDialog, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
+import { MatButton } from '@angular/material/button';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -15,6 +17,7 @@ import {
 import {
   FilteredResultRequestDto
 } from 'src/app/@theme/services/lookup.service';
+import { ToastService } from 'src/app/@theme/services/toast.service';
 
 @Component({
   selector: 'app-courses-view',
@@ -24,7 +27,8 @@ import {
 })
 export class CoursesViewComponent implements OnInit, AfterViewInit {
   private circleService = inject(CircleService);
-  private router = inject(Router);
+  private dialog = inject(MatDialog);
+  private toast = inject(ToastService);
 
   displayedColumns: string[] = ['name', 'teacher', 'action'];
   dataSource = new MatTableDataSource<CircleDto>();
@@ -65,12 +69,33 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
     });
   }
 
-  editCircle(id: number) {
-    this.router.navigate(['/online-course/courses/edit', id]);
-  }
-
   deleteCircle(id: number) {
-    this.circleService.delete(id).subscribe(() => this.loadCircles());
+    const dialogRef = this.dialog.open(DeleteConfirmDialogComponent);
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.circleService.delete(id).subscribe({
+          next: () => {
+            this.toast.success('Course deleted successfully');
+            this.loadCircles();
+          },
+          error: () => this.toast.error('Error deleting course')
+        });
+      }
+    });
   }
 }
+
+@Component({
+  selector: 'app-delete-confirm-dialog',
+  template: `
+    <div class="m-b-0 p-10 f-16 f-w-600">Delete course</div>
+    <div class="p-10">Are you sure you want to delete this course?</div>
+    <div mat-dialog-actions>
+      <button mat-button mat-dialog-close>No</button>
+      <button mat-button color="warn" [mat-dialog-close]="true">Yes</button>
+    </div>
+  `,
+  imports: [MatDialogActions, MatButton, MatDialogClose]
+})
+export class DeleteConfirmDialogComponent {}
 
