@@ -18,10 +18,15 @@ const routes: Routes = [
         path: 'add',
         loadComponent: () => import('./courses-add/courses-add.component').then((c) => c.CoursesAddComponent),
         data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager,UserTypesEnum.BranchLeader,UserTypesEnum.Student,UserTypesEnum.Teacher] }
+      },
+      {
+        path: 'edit/:id',
+        loadComponent: () => import('./courses-update/courses-update.component').then((c) => c.CoursesUpdateComponent),
+        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager,UserTypesEnum.BranchLeader,UserTypesEnum.Student,UserTypesEnum.Teacher] }
       }
-    ]
-  }
-];
+      ]
+    }
+  ];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
