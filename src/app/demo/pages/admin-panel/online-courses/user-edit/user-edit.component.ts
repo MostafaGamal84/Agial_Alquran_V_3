@@ -28,6 +28,8 @@ export class UserEditComponent implements OnInit {
 
   basicInfoForm!: FormGroup;
   userId!: number;
+  currentUser?: LookUpUserDto;
+
 
   nationalities: NationalityDto[] = [];
   governorates: GovernorateDto[] = [];
@@ -74,32 +76,61 @@ export class UserEditComponent implements OnInit {
 
     this.countryService.getCountries().subscribe((data) => {
       this.countries = data;
+      // if no dial code came with the stored number, try to detect it from API data
+      if (this.currentUser && !this.basicInfoForm.get('mobileCountryDialCode')?.value) {
+        const detected = this.detectDialCode(this.currentUser.mobile, this.countries);
+        if (detected) {
+          this.basicInfoForm.patchValue({
+            mobileCountryDialCode: detected.dialCode,
+            mobile: detected.number
+          });
+          this.onCountryCodeChange('mobileCountryDialCode');
+        }
+        if (this.currentUser.secondMobile && !this.basicInfoForm.get('secondMobileCountryDialCode')?.value) {
+          const secondDetected = this.detectDialCode(this.currentUser.secondMobile, this.countries);
+          if (secondDetected) {
+            this.basicInfoForm.patchValue({
+              secondMobileCountryDialCode: secondDetected.dialCode,
+              secondMobile: secondDetected.number
+            });
+            this.onCountryCodeChange('secondMobileCountryDialCode');
+          }
+        }
+      }
     });
 
-    const user = history.state['user'] as LookUpUserDto | undefined;
-    if (user) {
-      this.userId = user.id;
+    this.currentUser = history.state['user'] as LookUpUserDto | undefined;
+    if (this.currentUser) {
+      this.userId = this.currentUser.id;
       const parsePhone = (phone: string) => {
-        const match = phone.match(/^(\+\d{1,3})(\d+)$/);
-        return match ? { dialCode: match[1], number: match[2] } : { dialCode: '', number: phone };
+        const cleaned = phone.replace(/[^+\d]/g, '');
+        const match = cleaned.match(/^(\+\d{1,3})(\d+)$/);
+        return match
+          ? { dialCode: match[1], number: match[2] }
+          : { dialCode: '', number: cleaned };
       };
-      const mobile = parsePhone(user.mobile);
-      const second = user.secondMobile ? parsePhone(user.secondMobile) : { dialCode: '', number: '' };
+      const mobile = parsePhone(this.currentUser.mobile);
+      const second = this.currentUser.secondMobile
+        ? parsePhone(this.currentUser.secondMobile)
+        : { dialCode: '', number: '' };
       this.basicInfoForm.patchValue({
-        fullName: user.fullName,
-        email: user.email,
+        fullName: this.currentUser.fullName,
+        email: this.currentUser.email,
+
         mobileCountryDialCode: mobile.dialCode || null,
         mobile: mobile.number,
         secondMobileCountryDialCode: second.dialCode || null,
         secondMobile: second.number,
-        nationalityId: user.nationalityId,
-        governorateId: user.governorateId,
-        branchId: user.branchId
+        nationalityId: this.currentUser.nationalityId,
+        governorateId: this.currentUser.governorateId,
+        branchId: this.currentUser.branchId
+
       });
       if (mobile.dialCode) {
         this.onCountryCodeChange('mobileCountryDialCode');
       }
-      if (user.secondMobile && second.dialCode) {
+      if (this.currentUser.secondMobile && second.dialCode) {
+
         this.onCountryCodeChange('secondMobileCountryDialCode');
       }
     }
@@ -116,6 +147,22 @@ export class UserEditComponent implements OnInit {
       this.secondMobilePlaceholder = format.placeholder;
     }
   }
+
+  private detectDialCode(phone: string, countries: Country[]):
+    | { dialCode: string; number: string }
+    | null {
+    const digits = phone.replace(/\D/g, '');
+    const codes = countries
+      .map((c) => c.dialCode.replace('+', ''))
+      .sort((a, b) => b.length - a.length);
+    for (const code of codes) {
+      if (digits.startsWith(code)) {
+        return { dialCode: `+${code}`, number: digits.slice(code.length) };
+      }
+    }
+    return null;
+  }
+
 
   onSubmit() {
     if (this.basicInfoForm.valid) {
