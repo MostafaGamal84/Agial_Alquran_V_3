@@ -5,6 +5,7 @@ import { environment } from 'src/environments/environment';
 import {
   ApiResponse,
   FilteredResultRequestDto,
+  LookUpUserDto,
   PagedResultDto
 } from './lookup.service';
 
@@ -12,15 +13,23 @@ export interface CircleDto {
   id: number;
   name: string;
   teacherId?: number;
-  teacherName?: string;
-  managers?: number[];
+  teacher?: LookUpUserDto;
+  managers?: CircleManagerDto[];
   studentsIds?: number[];
   students?: CircleStudentDto[];
 }
 
+export interface CircleManagerDto {
+  managerId: number;
+  manager?: LookUpUserDto;
+  circleId?: number;
+}
+
 export interface CircleStudentDto {
-  id: number;
-  fullName: string;
+  id?: number;
+  studentId?: number;
+  student?: LookUpUserDto;
+  fullName?: string;
   [key: string]: unknown;
 }
 
