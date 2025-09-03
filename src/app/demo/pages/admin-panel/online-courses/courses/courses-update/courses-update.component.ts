@@ -10,6 +10,9 @@ import {
   FilteredResultRequestDto
 } from 'src/app/@theme/services/lookup.service';
 import {
+  CircleDto,
+  CircleManagerDto,
+  CircleStudentDto,
   CircleService,
   UpdateCircleDto
 } from 'src/app/@theme/services/circle.service';
@@ -42,8 +45,17 @@ export class CoursesUpdateComponent implements OnInit {
       managers: [[]],
       studentsIds: [[]]
     });
-
     const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
+
+    const course = history.state.course as CircleDto | undefined;
+    if (course?.students?.length) {
+      this.students = course.students.map((s: CircleStudentDto) =>
+        (s as CircleStudentDto).student
+          ? ((s as CircleStudentDto).student as LookUpUserDto)
+          : (s as unknown as LookUpUserDto)
+      );
+    }
+
     this.lookup
       .getUsersByUserType(filter, Number(UserTypesEnum.Teacher))
       .subscribe((res) => {
@@ -57,23 +69,89 @@ export class CoursesUpdateComponent implements OnInit {
     this.lookup
       .getUsersByUserType(filter, Number(UserTypesEnum.Student))
       .subscribe((res) => {
-        if (res.isSuccess) this.students = res.data.items;
-      });
-
-    this.id = Number(this.route.snapshot.paramMap.get('id'));
-    if (this.id) {
-      this.circle.get(this.id).subscribe((res) => {
         if (res.isSuccess) {
-          this.circleForm.patchValue({
-            name: res.data.name,
-            teacherId: res.data.teacherId,
-            managers: res.data.managers || [],
-            studentsIds: res.data.students
-              ? res.data.students.map((s) => s.id)
-              : []
-          });
+          const existing = new Map(this.students.map((s) => [s.id, s]));
+          res.data.items.forEach((s) => existing.set(s.id, s));
+          this.students = Array.from(existing.values());
         }
       });
+
+    if (course) {
+      this.id = course.id;
+      const studentIds = course.students
+        ? course.students
+            .map((s: CircleStudentDto) =>
+              s.id ?? s.studentId ?? s.student?.id
+            )
+            .filter((id): id is number => id !== undefined)
+        : course.studentsIds ?? [];
+      this.circleForm.patchValue({
+        name: course.name,
+        teacherId: course.teacherId,
+        managers:
+          course.managers?.map((m: CircleManagerDto | number) =>
+            typeof m === 'number' ? m : m.managerId
+          ) ?? [],
+        studentsIds: studentIds
+      });
+      if (!studentIds.length) {
+        this.circle.get(this.id).subscribe((res) => {
+          if (res.isSuccess) {
+            const fetchedStudents = res.data.students
+              ? res.data.students
+                  .map((s: CircleStudentDto) =>
+                    s.id ?? s.studentId ?? s.student?.id
+                  )
+                  .filter((id): id is number => id !== undefined)
+              : res.data.studentsIds ?? [];
+            this.circleForm.patchValue({ studentsIds: fetchedStudents });
+            if (res.data.students?.length) {
+              const courseStudents = res.data.students.map((s: CircleStudentDto) =>
+                (s as CircleStudentDto).student
+                  ? ((s as CircleStudentDto).student as LookUpUserDto)
+                  : (s as unknown as LookUpUserDto)
+              );
+              const existing = new Map(this.students.map((st) => [st.id, st]));
+              courseStudents.forEach((st) => existing.set(st.id, st));
+              this.students = Array.from(existing.values());
+            }
+          }
+        });
+      }
+    } else {
+      this.id = Number(this.route.snapshot.paramMap.get('id'));
+      if (this.id) {
+        this.circle.get(this.id).subscribe((res) => {
+          if (res.isSuccess) {
+            const fetchedStudents = res.data.students
+              ? res.data.students.map((s: CircleStudentDto) =>
+                  s.id ?? s.studentId ?? s.student?.id
+                )
+              : res.data.studentsIds ?? [];
+            this.circleForm.patchValue({
+              name: res.data.name,
+              teacherId: res.data.teacherId,
+              managers: res.data.managers
+                ? res.data.managers.map((m: CircleManagerDto | number) =>
+                    typeof m === 'number' ? m : m.managerId
+                  )
+                : [],
+              studentsIds: fetchedStudents
+                .filter((id): id is number => id !== undefined)
+            });
+            if (res.data.students?.length) {
+              const courseStudents = res.data.students.map((s: CircleStudentDto) =>
+                (s as CircleStudentDto).student
+                  ? ((s as CircleStudentDto).student as LookUpUserDto)
+                  : (s as unknown as LookUpUserDto)
+              );
+              const existing = new Map(this.students.map((st) => [st.id, st]));
+              courseStudents.forEach((st) => existing.set(st.id, st));
+              this.students = Array.from(existing.values());
+            }
+          }
+        });
+      }
     }
   }
 
