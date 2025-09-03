@@ -1,6 +1,6 @@
 // angular import
 import { AfterViewInit, Component, OnInit, inject, viewChild } from '@angular/core';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule } from '@angular/router';
 
 // angular material
 import { MatTableDataSource } from '@angular/material/table';
@@ -24,7 +24,6 @@ import {
 })
 export class CoursesViewComponent implements OnInit, AfterViewInit {
   private circleService = inject(CircleService);
-  private router = inject(Router);
 
   displayedColumns: string[] = ['name', 'teacher', 'action'];
   dataSource = new MatTableDataSource<CircleDto>();
@@ -63,10 +62,6 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
       this.filter.maxResultCount = this.paginator().pageSize;
       this.loadCircles();
     });
-  }
-
-  editCircle(id: number) {
-    this.router.navigate(['/online-course/courses/edit', id]);
   }
 
   deleteCircle(id: number) {
