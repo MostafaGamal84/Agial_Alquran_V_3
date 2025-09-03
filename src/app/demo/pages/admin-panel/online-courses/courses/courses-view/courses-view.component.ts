@@ -31,6 +31,7 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
   private dialog = inject(MatDialog);
   private toast = inject(ToastService);
 
+
   displayedColumns: string[] = ['name', 'teacher', 'managers', 'action'];
   dataSource = new MatTableDataSource<CircleDto>();
   totalCount = 0;
@@ -91,6 +92,7 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
         ?.map((m) => m.manager?.fullName || String(m.managerId))
         .join(', ') || ''
     );
+
   }
 }
 

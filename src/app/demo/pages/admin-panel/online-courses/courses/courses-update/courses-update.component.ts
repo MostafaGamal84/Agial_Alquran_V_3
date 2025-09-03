@@ -116,6 +116,7 @@ export class CoursesUpdateComponent implements OnInit {
                   (s as CircleStudentDto).student
                     ? ((s as CircleStudentDto).student as LookUpUserDto)
                     : (s as unknown as LookUpUserDto)
+
               );
               const existing = new Map(this.students.map((st) => [st.id, st]));
               courseStudents.forEach((st) => existing.set(st.id, st));
