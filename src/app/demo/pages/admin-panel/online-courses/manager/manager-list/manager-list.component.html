@@ -59,7 +59,11 @@
                         </a>
                       </li>
                       <li class="list-inline-item m-r-10" matTooltip="Edit">
-                        <a href="javascript:" class="avatar avatar-xs text-muted">
+                        <a
+                          [routerLink]="['/online-course/manager/edit', element.id]"
+                          [state]="{ user: element }"
+                          class="avatar avatar-xs text-muted"
+                        >
                           <i class="ti ti-edit-circle f-18"></i>
                         </a>
                       </li>
