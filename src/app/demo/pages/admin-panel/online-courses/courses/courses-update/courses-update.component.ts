@@ -13,6 +13,7 @@ import {
   CircleDto,
   CircleManagerDto,
   CircleStudentDto,
+
   CircleService,
   UpdateCircleDto
 } from 'src/app/@theme/services/circle.service';
@@ -103,6 +104,7 @@ export class CoursesUpdateComponent implements OnInit {
           ) ?? [],
         studentsIds: studentIds
       });
+
       if (!studentIds.length) {
         this.circle.get(this.id).subscribe((res) => {
           if (res.isSuccess) {
@@ -127,6 +129,7 @@ export class CoursesUpdateComponent implements OnInit {
           }
         });
       }
+
     } else {
       this.id = Number(this.route.snapshot.paramMap.get('id'));
       if (this.id) {
@@ -137,6 +140,7 @@ export class CoursesUpdateComponent implements OnInit {
                   s.id ?? s.studentId ?? s.student?.id
                 )
               : res.data.studentsIds ?? [];
+
             this.circleForm.patchValue({
               name: res.data.name,
               teacherId: res.data.teacherId,
@@ -158,6 +162,7 @@ export class CoursesUpdateComponent implements OnInit {
               courseStudents.forEach((st) => existing.set(st.id, st));
               this.students = Array.from(existing.values());
             }
+
           }
         });
       }

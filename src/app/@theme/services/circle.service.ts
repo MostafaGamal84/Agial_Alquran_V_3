@@ -23,6 +23,7 @@ export interface CircleManagerDto {
   managerId: number;
   manager?: LookUpUserDto;
   circleId?: number;
+
 }
 
 export interface CircleStudentDto {
@@ -30,6 +31,7 @@ export interface CircleStudentDto {
   studentId?: number;
   student?: LookUpUserDto;
   fullName?: string;
+
   [key: string]: unknown;
 }
 
