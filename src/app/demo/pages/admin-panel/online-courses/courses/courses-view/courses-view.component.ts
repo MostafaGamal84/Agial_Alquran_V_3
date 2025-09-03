@@ -30,6 +30,7 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
   private dialog = inject(MatDialog);
   private toast = inject(ToastService);
 
+
   displayedColumns: string[] = ['name', 'teacher', 'action'];
   dataSource = new MatTableDataSource<CircleDto>();
   totalCount = 0;

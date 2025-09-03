@@ -69,6 +69,7 @@ export class CoursesUpdateComponent implements OnInit {
         teacherId: course.teacherId,
         managers: course.managers ?? [],
         studentsIds: course.students?.map((s) => s.id) ?? course.studentsIds ?? []
+
       });
     } else {
       this.id = Number(this.route.snapshot.paramMap.get('id'));
