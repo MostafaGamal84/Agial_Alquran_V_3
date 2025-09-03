@@ -13,6 +13,7 @@ import {
   CircleDto,
   CircleManagerDto,
   CircleStudentDto,
+
   CircleService,
   UpdateCircleDto
 } from 'src/app/@theme/services/circle.service';
@@ -73,6 +74,7 @@ export class CoursesUpdateComponent implements OnInit {
             )
             .filter((id): id is number => id !== undefined)
         : course.studentsIds ?? [];
+
       this.circleForm.patchValue({
         name: course.name,
         teacherId: course.teacherId,
@@ -96,6 +98,7 @@ export class CoursesUpdateComponent implements OnInit {
           }
         });
       }
+
     } else {
       this.id = Number(this.route.snapshot.paramMap.get('id'));
       if (this.id) {
@@ -116,6 +119,7 @@ export class CoursesUpdateComponent implements OnInit {
                     )
                     .filter((id): id is number => id !== undefined)
                 : res.data.studentsIds ?? []
+
             });
           }
         });
