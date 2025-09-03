@@ -12,7 +12,8 @@ import { MatButton } from '@angular/material/button';
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
   CircleService,
-  CircleDto
+  CircleDto,
+  CircleManagerDto
 } from 'src/app/@theme/services/circle.service';
 import {
   FilteredResultRequestDto
@@ -31,7 +32,7 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
   private toast = inject(ToastService);
 
 
-  displayedColumns: string[] = ['name', 'teacher', 'action'];
+  displayedColumns: string[] = ['name', 'teacher', 'managers', 'action'];
   dataSource = new MatTableDataSource<CircleDto>();
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
@@ -83,6 +84,15 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
         });
       }
     });
+  }
+
+  displayManagers(managers?: CircleManagerDto[]): string {
+    return (
+      managers
+        ?.map((m) => m.manager?.fullName || String(m.managerId))
+        .join(', ') || ''
+    );
+
   }
 }
 

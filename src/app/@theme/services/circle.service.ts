@@ -22,6 +22,8 @@ export interface CircleDto {
 export interface CircleManagerDto {
   managerId: number;
   manager?: LookUpUserDto;
+  circleId?: number;
+
 }
 
 export interface CircleStudentDto {
