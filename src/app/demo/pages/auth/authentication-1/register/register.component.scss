@@ -76,4 +76,11 @@
 :host ::ng-deep .mat-mdc-text-field-wrapper {
   padding: 0 !important;
 }
-
+:host ::ng-deep div#mat-select-value-0,:host ::ng-deep div#mat-select-value-1
+ {
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: center;
+}
