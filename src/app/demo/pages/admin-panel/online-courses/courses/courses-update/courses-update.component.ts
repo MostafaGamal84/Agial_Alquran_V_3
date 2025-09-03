@@ -67,7 +67,9 @@ export class CoursesUpdateComponent implements OnInit {
           this.circleForm.patchValue({
             name: res.data.name,
             teacherId: res.data.teacherId,
-            managers: res.data.managers || [],
+            managers: res.data.managers
+              ? res.data.managers.map((m: number | { id: number }) => (typeof m === 'number' ? m : m.id))
+              : [],
             studentsIds: res.data.students
               ? res.data.students.map((s) => s.id)
               : []
