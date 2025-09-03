@@ -64,16 +64,6 @@ export class UserEditComponent implements OnInit {
     this.lookupService.getAllNationalities().subscribe((res) => {
       if (res.isSuccess) {
         this.nationalities = res.data;
-        if (this.currentUser && !this.basicInfoForm.get('mobileCountryDialCode')?.value) {
-          const nat = this.nationalities.find(
-            (n) => n.id === this.currentUser!.nationalityId
-          );
-          if (nat) {
-            const dial = `+${nat.telCode}`;
-            this.basicInfoForm.patchValue({ mobileCountryDialCode: dial });
-            this.onCountryCodeChange('mobileCountryDialCode');
-          }
-        }
       }
     });
 
@@ -85,6 +75,27 @@ export class UserEditComponent implements OnInit {
 
     this.countryService.getCountries().subscribe((data) => {
       this.countries = data;
+      // if no dial code came with the stored number, try to detect it from API data
+      if (this.currentUser && !this.basicInfoForm.get('mobileCountryDialCode')?.value) {
+        const detected = this.detectDialCode(this.currentUser.mobile, this.countries);
+        if (detected) {
+          this.basicInfoForm.patchValue({
+            mobileCountryDialCode: detected.dialCode,
+            mobile: detected.number
+          });
+          this.onCountryCodeChange('mobileCountryDialCode');
+        }
+        if (this.currentUser.secondMobile && !this.basicInfoForm.get('secondMobileCountryDialCode')?.value) {
+          const secondDetected = this.detectDialCode(this.currentUser.secondMobile, this.countries);
+          if (secondDetected) {
+            this.basicInfoForm.patchValue({
+              secondMobileCountryDialCode: secondDetected.dialCode,
+              secondMobile: secondDetected.number
+            });
+            this.onCountryCodeChange('secondMobileCountryDialCode');
+          }
+        }
+      }
     });
 
     this.currentUser = history.state['user'] as LookUpUserDto | undefined;
@@ -131,6 +142,21 @@ export class UserEditComponent implements OnInit {
       this.secondMobileMask = format.mask;
       this.secondMobilePlaceholder = format.placeholder;
     }
+  }
+
+  private detectDialCode(phone: string, countries: Country[]):
+    | { dialCode: string; number: string }
+    | null {
+    const digits = phone.replace(/\D/g, '');
+    const codes = countries
+      .map((c) => c.dialCode.replace('+', ''))
+      .sort((a, b) => b.length - a.length);
+    for (const code of codes) {
+      if (digits.startsWith(code)) {
+        return { dialCode: `+${code}`, number: digits.slice(code.length) };
+      }
+    }
+    return null;
   }
 
   onSubmit() {
