@@ -34,7 +34,12 @@
                   <div class="text-center text-nowrap">
                     <ul class="list-inline p-l-0">
                       <li class="list-inline-item m-r-10" matTooltip="Edit">
-                        <a [routerLink]="['/online-course/courses/edit', element.id]" class="avatar avatar-xs text-muted">
+                        <a
+                          [routerLink]="['/online-course/courses/edit', element.id]"
+                          [state]="{ course: element }"
+                          class="avatar avatar-xs text-muted"
+                        >
+
                           <i class="ti ti-edit-circle f-18"></i>
                         </a>
                       </li>
