@@ -50,7 +50,7 @@ export class UserService {
   }
 
   updateUser(model: UpdateUserDto): Observable<ApiResponse<boolean>> {
-    return this.http.put<ApiResponse<boolean>>(`${environment.apiUrl}/api/User/Update`, model);
+    return this.http.post<ApiResponse<boolean>>(`${environment.apiUrl}/api/User/Update`, model);
 
   }
 }
