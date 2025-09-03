@@ -1,84 +1,51 @@
 // angular imports
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
-import {
-  LookupService,
-  LookUpUserDto,
-  FilteredResultRequestDto
-} from 'src/app/@theme/services/lookup.service';
-import {
-  CircleService,
-  CreateCircleDto
-} from 'src/app/@theme/services/circle.service';
-import { ToastService } from 'src/app/@theme/services/toast.service';
-import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
+
+// third party
+import { FileUploadControl, FileUploadModule, FileUploadValidators } from '@iplab/ngx-file-upload';
+
+// rxjs
+import { BehaviorSubject, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-courses-add',
-  imports: [SharedModule, CommonModule],
+  imports: [SharedModule, FileUploadModule, CommonModule],
   templateUrl: './courses-add.component.html',
   styleUrl: './courses-add.component.scss'
 })
-export class CoursesAddComponent implements OnInit {
-  private fb = inject(FormBuilder);
-  private lookup = inject(LookupService);
-  private circle = inject(CircleService);
-  private toast = inject(ToastService);
+export class CoursesAddComponent implements OnInit, OnDestroy {
+  // public props
+  fileSub = new Subscription();
 
-  circleForm!: FormGroup;
-  teachers: LookUpUserDto[] = [];
-  managers: LookUpUserDto[] = [];
-  students: LookUpUserDto[] = [];
+  // private props
+  // eslint-disable-next-line
+  readonly uploadedFile: BehaviorSubject<any> = new BehaviorSubject(null);
+  readonly control = new FileUploadControl({ listVisible: true, accept: ['image/*'], discardInvalid: true, multiple: false }, [
+    FileUploadValidators.accept(['image/*']),
+    FileUploadValidators.filesLimit(1)
+  ]);
 
+  // life cycle
   ngOnInit(): void {
-    this.circleForm = this.fb.group({
-      name: ['', Validators.required],
-      teacherId: [null, Validators.required],
-      managers: [[]],
-      studentsIds: [[]]
-    });
-
-    const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
-    this.lookup
-      .getUsersByUserType(filter, Number(UserTypesEnum.Teacher))
-      .subscribe((res) => {
-        if (res.isSuccess) this.teachers = res.data.items;
-      });
-    this.lookup
-      .getUsersByUserType(filter, Number(UserTypesEnum.Manager))
-      .subscribe((res) => {
-        if (res.isSuccess) this.managers = res.data.items;
-      });
-    this.lookup
-      .getUsersByUserType(filter, Number(UserTypesEnum.Student))
-      .subscribe((res) => {
-        if (res.isSuccess) this.students = res.data.items;
-      });
+    this.fileSub = this.control.valueChanges.subscribe((values: Array<File>) => this.getImage(values[0]));
   }
 
-  onSubmit() {
-    if (this.circleForm.invalid) {
-      this.circleForm.markAllAsTouched();
-      return;
+  ngOnDestroy(): void {
+    this.fileSub.unsubscribe();
+  }
+
+  // private method
+  private getImage(file: File): void {
+    if (FileReader && file) {
+      const fr = new FileReader();
+      fr.onload = (e) => this.uploadedFile.next(e.target!.result);
+      fr.readAsDataURL(file);
+    } else {
+      this.uploadedFile.next(null);
     }
-    const model: CreateCircleDto = this.circleForm.value;
-    this.circle.create(model).subscribe({
-      next: (res) => {
-        if (res.isSuccess) {
-          this.toast.success('Circle created successfully');
-          this.circleForm.reset();
-        } else if (res.errors?.length) {
-          res.errors.forEach((e) => this.toast.error(e.message));
-        } else {
-          this.toast.error('Error creating circle');
-        }
-      },
-      error: () => this.toast.error('Error creating circle')
-    });
   }
 }
-

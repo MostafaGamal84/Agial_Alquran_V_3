@@ -1,20 +1,9 @@
 // angular import
-import { AfterViewInit, Component, OnInit, inject, viewChild } from '@angular/core';
-import { RouterModule, Router } from '@angular/router';
-
-// angular material
-import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
+import { Component } from '@angular/core';
+import { RouterModule } from '@angular/router';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
-import {
-  CircleService,
-  CircleDto
-} from 'src/app/@theme/services/circle.service';
-import {
-  FilteredResultRequestDto
-} from 'src/app/@theme/services/lookup.service';
 
 @Component({
   selector: 'app-courses-view',
@@ -22,55 +11,79 @@ import {
   templateUrl: './courses-view.component.html',
   styleUrl: './courses-view.component.scss'
 })
-export class CoursesViewComponent implements OnInit, AfterViewInit {
-  private circleService = inject(CircleService);
-  private router = inject(Router);
-
-  displayedColumns: string[] = ['name', 'teacher', 'action'];
-  dataSource = new MatTableDataSource<CircleDto>();
-  totalCount = 0;
-  filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
-
-  readonly paginator = viewChild.required(MatPaginator);
-
-  ngOnInit() {
-    this.loadCircles();
-  }
-
-  private loadCircles() {
-    this.circleService.getAll(this.filter).subscribe((res) => {
-      if (res.isSuccess && res.data?.items) {
-        this.dataSource.data = res.data.items;
-        this.totalCount = res.data.totalCount;
-      } else {
-        this.dataSource.data = [];
-        this.totalCount = 0;
-      }
-    });
-  }
-
-  applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.filter.searchTerm = filterValue.trim().toLowerCase();
-    this.filter.skipCount = 0;
-    this.paginator()?.firstPage();
-    this.loadCircles();
-  }
-
-  ngAfterViewInit() {
-    this.paginator().page.subscribe(() => {
-      this.filter.skipCount = this.paginator().pageIndex * this.paginator().pageSize;
-      this.filter.maxResultCount = this.paginator().pageSize;
-      this.loadCircles();
-    });
-  }
-
-  editCircle(id: number) {
-    this.router.navigate(['/online-course/courses/edit', id]);
-  }
-
-  deleteCircle(id: number) {
-    this.circleService.delete(id).subscribe(() => this.loadCircles());
-  }
+export class CoursesViewComponent {
+  courseView = [
+    {
+      img: 'assets/images/admin/img-course-1.png',
+      type: 'free',
+      title: 'Bootstrap 5 Beginner Course',
+      duration: '10 Months',
+      teacher: 'Jimmy Morris',
+      students: '+120',
+      rating: '4.8'
+    },
+    {
+      img: 'assets/images/admin/img-course-2.png',
+      type: 'paid',
+      title: 'PHP Training Course',
+      duration: '10 Months',
+      teacher: 'Nashid Martines',
+      students: '+50',
+      rating: '4.5'
+    },
+    {
+      img: 'assets/images/admin/img-course-3.png',
+      type: 'free',
+      title: 'MERN Stack Training Course',
+      duration: '10 Months',
+      teacher: 'Jack Ronan',
+      students: '+100',
+      rating: '3.9'
+    },
+    {
+      img: 'assets/images/admin/img-course-4.png',
+      type: 'paid',
+      title: 'Python Training Course',
+      duration: '10 Months',
+      teacher: 'Garrett Winters',
+      students: '+110',
+      rating: '4.5'
+    },
+    {
+      img: 'assets/images/admin/img-course-5.png',
+      type: 'paid',
+      title: 'Web Designing Course',
+      duration: '10 Months',
+      teacher: 'Tiger Nixon',
+      students: '+110',
+      rating: '4.2'
+    },
+    {
+      img: 'assets/images/admin/img-course-6.png',
+      type: 'free',
+      title: 'C Training Course',
+      duration: '10 Months',
+      teacher: 'Airi Satou',
+      students: '+70',
+      rating: '4.6'
+    },
+    {
+      img: 'assets/images/admin/img-course-7.png',
+      type: 'free',
+      title: 'UI/UX Designing Course',
+      duration: '10 Months',
+      teacher: 'Sonya Frost',
+      students: '+150',
+      rating: '4.6'
+    },
+    {
+      img: 'assets/images/admin/img-course-8.png',
+      type: 'free',
+      title: 'SEO Training Course',
+      duration: '10 Months',
+      teacher: 'Cedric Kelly',
+      students: '+60',
+      rating: '4.3'
+    }
+  ];
 }
-
