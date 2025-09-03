@@ -10,6 +10,9 @@ import {
   FilteredResultRequestDto
 } from 'src/app/@theme/services/lookup.service';
 import {
+  CircleDto,
+  CircleManagerDto,
+  CircleStudentDto,
   CircleService,
   UpdateCircleDto
 } from 'src/app/@theme/services/circle.service';
@@ -60,20 +63,45 @@ export class CoursesUpdateComponent implements OnInit {
         if (res.isSuccess) this.students = res.data.items;
       });
 
-    this.id = Number(this.route.snapshot.paramMap.get('id'));
-    if (this.id) {
-      this.circle.get(this.id).subscribe((res) => {
-        if (res.isSuccess) {
-          this.circleForm.patchValue({
-            name: res.data.name,
-            teacherId: res.data.teacherId,
-            managers: res.data.managers || [],
-            studentsIds: res.data.students
-              ? res.data.students.map((s) => s.id)
-              : []
-          });
-        }
+    const course = history.state.course as CircleDto | undefined;
+    if (course) {
+      this.id = course.id;
+      this.circleForm.patchValue({
+        name: course.name,
+        teacherId: course.teacherId,
+        managers:
+          course.managers?.map((m: CircleManagerDto | number) =>
+            typeof m === 'number' ? m : m.managerId
+          ) ?? [],
+        studentsIds:
+          course.students?.map(
+            (s: CircleStudentDto & { studentId?: number }) =>
+              s.id ?? s.studentId
+          ) ?? course.studentsIds ?? []
       });
+    } else {
+      this.id = Number(this.route.snapshot.paramMap.get('id'));
+      if (this.id) {
+        this.circle.get(this.id).subscribe((res) => {
+          if (res.isSuccess) {
+            this.circleForm.patchValue({
+              name: res.data.name,
+              teacherId: res.data.teacherId,
+              managers: res.data.managers
+                ? res.data.managers.map((m: CircleManagerDto | number) =>
+                    typeof m === 'number' ? m : m.managerId
+                  )
+                : [],
+              studentsIds: res.data.students
+                ? res.data.students.map(
+                    (s: CircleStudentDto & { studentId?: number }) =>
+                      s.id ?? s.studentId
+                  )
+                : []
+            });
+          }
+        });
+      }
     }
   }
 
