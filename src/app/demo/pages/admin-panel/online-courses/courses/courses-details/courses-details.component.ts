@@ -5,6 +5,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { CircleDto, CircleStudentDto } from 'src/app/@theme/services/circle.service';
 
+
 @Component({
   selector: 'app-courses-details',
   imports: [SharedModule, RouterModule],
@@ -12,6 +13,7 @@ import { CircleDto, CircleStudentDto } from 'src/app/@theme/services/circle.serv
   styleUrl: './courses-details.component.scss'
 })
 export class CoursesDetailsComponent implements OnInit {
+
   course?: CircleDto;
   displayedColumns: string[] = ['fullName', 'action'];
   dataSource = new MatTableDataSource<CircleStudentDto>();
@@ -21,6 +23,7 @@ export class CoursesDetailsComponent implements OnInit {
     if (course) {
       this.course = course;
       this.dataSource.data = course.students || [];
+
     }
   }
 }
