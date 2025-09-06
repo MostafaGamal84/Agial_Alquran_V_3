@@ -44,7 +44,15 @@ export class BranchManagerListComponent implements OnInit, AfterViewInit {
   }
 
   private loadBranchManagers() {
-    this.lookupService.getUsersForSelects(this.filter, Number(UserTypesEnum.BranchLeader)).subscribe((res) => {
+    this.lookupService
+      .getUsersForSelects(
+        this.filter,
+        Number(UserTypesEnum.BranchLeader),
+        0,
+        0,
+        0
+      )
+      .subscribe((res) => {
       if (res.isSuccess && res.data?.items) {
         this.dataSource.data = res.data.items;
         this.totalCount = res.data.totalCount;
