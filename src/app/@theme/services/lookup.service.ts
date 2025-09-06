@@ -59,7 +59,7 @@ export interface GovernorateDto {
 export class LookupService {
   private http = inject(HttpClient);
 
-  getUsersByUserType(
+  getUsersForSelects(
     filter: FilteredResultRequestDto,
     userTypeId: number
   ): Observable<ApiResponse<PagedResultDto<LookUpUserDto>>> {
@@ -87,7 +87,7 @@ export class LookupService {
     }
 
     return this.http.get<ApiResponse<PagedResultDto<LookUpUserDto>>>(
-      `${environment.apiUrl}/api/LookUp/GetUsersByUserType`,
+      `${environment.apiUrl}/api/UsersForGroups/GetUsersForSelects`,
       { params }
     );
   }
