@@ -61,9 +61,16 @@ export class LookupService {
 
   getUsersForSelects(
     filter: FilteredResultRequestDto,
-    userTypeId: number
+    userTypeId: number,
+    managerId = 0,
+    teacherId = 0,
+    branchId = 0
   ): Observable<ApiResponse<PagedResultDto<LookUpUserDto>>> {
-    let params = new HttpParams().set('UserTypeId', userTypeId.toString());
+    let params = new HttpParams()
+      .set('UserTypeId', userTypeId.toString())
+      .set('managerId', managerId.toString())
+      .set('teacherId', teacherId.toString())
+      .set('branchId', branchId.toString());
     if (filter.skipCount !== undefined) {
       params = params.set('SkipCount', filter.skipCount.toString());
     }
