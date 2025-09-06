@@ -62,12 +62,12 @@ export class CoursesUpdateComponent implements OnInit {
     }
 
     this.lookup
-      .getUsersByUserType(filter, Number(UserTypesEnum.Teacher))
+      .getUsersForSelects(filter, Number(UserTypesEnum.Teacher))
       .subscribe((res) => {
         if (res.isSuccess) this.teachers = res.data.items;
       });
     this.lookup
-      .getUsersByUserType(filter, Number(UserTypesEnum.Manager))
+      .getUsersForSelects(filter, Number(UserTypesEnum.Manager))
       .subscribe((res) => {
         if (res.isSuccess) {
           const existing = new Map(this.managers.map((m) => [m.id, m]));
@@ -76,7 +76,7 @@ export class CoursesUpdateComponent implements OnInit {
         }
       });
     this.lookup
-      .getUsersByUserType(filter, Number(UserTypesEnum.Student))
+      .getUsersForSelects(filter, Number(UserTypesEnum.Student))
       .subscribe((res) => {
         if (res.isSuccess) {
           const existing = new Map(this.students.map((s) => [s.id, s]));

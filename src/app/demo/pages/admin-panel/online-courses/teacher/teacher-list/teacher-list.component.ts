@@ -50,7 +50,7 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
 
   private loadTeachers() {
     this.lookupService
-      .getUsersByUserType(this.filter, Number(UserTypesEnum.Teacher))
+      .getUsersForSelects(this.filter, Number(UserTypesEnum.Teacher))
       .subscribe((res) => {
         if (res.isSuccess && res.data?.items) {
           this.dataSource.data = res.data.items;
