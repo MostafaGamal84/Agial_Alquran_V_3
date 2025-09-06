@@ -37,7 +37,11 @@ export class UserEditComponent implements OnInit {
 
   basicInfoForm!: FormGroup;
   userId!: number;
-  currentUser?: LookUpUserDto;
+  currentUser?: LookUpUserDto & {
+    teachers?: LookUpUserDto[];
+    students?: LookUpUserDto[];
+    managers?: LookUpUserDto[];
+  };
   nationalities: NationalityDto[] = [];
   governorates: GovernorateDto[] = [];
   countries: Country[] = [];
@@ -87,7 +91,7 @@ export class UserEditComponent implements OnInit {
       }
     });
 
-    this.currentUser = history.state['user'] as LookUpUserDto | undefined;
+    this.currentUser = history.state['user'] as typeof this.currentUser;
     if (this.currentUser) {
       this.userId = this.currentUser.id;
       const clean = (phone: string) => phone.replace(/\D/g, '');
@@ -103,6 +107,20 @@ export class UserEditComponent implements OnInit {
         branchId: this.currentUser.branchId
       });
       if (this.isManager) {
+        const teacherList =
+          this.currentUser.teachers ?? this.currentUser.managers ?? [];
+        if (teacherList.length) {
+          this.teachers = teacherList;
+          this.basicInfoForm.patchValue({
+            teacherIds: teacherList.map((t) => t.id)
+          });
+        }
+        if (this.currentUser.students?.length) {
+          this.students = this.currentUser.students;
+          this.basicInfoForm.patchValue({
+            studentIds: this.currentUser.students.map((s) => s.id)
+          });
+        }
         this.loadRelatedUsers();
       }
     }
@@ -153,7 +171,9 @@ export class UserEditComponent implements OnInit {
       )
       .subscribe((res) => {
         if (res.isSuccess) {
-          this.teachers = res.data.items;
+          const existing = new Map(this.teachers.map((t) => [t.id, t]));
+          res.data.items.forEach((t) => existing.set(t.id, t));
+          this.teachers = Array.from(existing.values());
         }
       });
     this.lookupService
@@ -166,7 +186,9 @@ export class UserEditComponent implements OnInit {
       )
       .subscribe((res) => {
         if (res.isSuccess) {
-          this.students = res.data.items;
+          const existing = new Map(this.students.map((s) => [s.id, s]));
+          res.data.items.forEach((s) => existing.set(s.id, s));
+          this.students = Array.from(existing.values());
         }
       });
   }
