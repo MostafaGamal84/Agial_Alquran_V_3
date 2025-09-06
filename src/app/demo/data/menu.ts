@@ -8,14 +8,26 @@ export const menus: Navigation[] = [
     title: 'Navigation',
     type: 'group',
     icon: 'icon-navigation',
-    role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+    role: [
+      UserTypesEnum.Admin.toString(),
+      UserTypesEnum.Manager.toString(),
+      UserTypesEnum.BranchLeader.toString(),
+      UserTypesEnum.Student.toString(),
+      UserTypesEnum.Teacher.toString()
+    ],
     children: [
       {
         id: 'Dashboard',
         title: 'Dashboard',
         type: 'collapse',
         icon: '#custom-status-up',
-    role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+        role: [
+          UserTypesEnum.Admin.toString(),
+          UserTypesEnum.Manager.toString(),
+          UserTypesEnum.BranchLeader.toString(),
+          UserTypesEnum.Student.toString(),
+          UserTypesEnum.Teacher.toString()
+        ],
         children: [
           {
             id: 'default',
@@ -29,14 +41,26 @@ export const menus: Navigation[] = [
             title: 'Analytics',
             type: 'item',
             url: '/dashboard/analytics',
-    role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+            role: [
+              UserTypesEnum.Admin.toString(),
+              UserTypesEnum.Manager.toString(),
+              UserTypesEnum.BranchLeader.toString(),
+              UserTypesEnum.Student.toString(),
+              UserTypesEnum.Teacher.toString()
+            ]
           },
           {
             id: 'finance',
             title: 'Finance',
             type: 'item',
             url: '/dashboard/finance',
-    role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+            role: [
+              UserTypesEnum.Admin.toString(),
+              UserTypesEnum.Manager.toString(),
+              UserTypesEnum.BranchLeader.toString(),
+              UserTypesEnum.Student.toString(),
+              UserTypesEnum.Teacher.toString()
+            ]
           }
         ]
       },
@@ -49,7 +73,13 @@ export const menus: Navigation[] = [
         icon: '#custom-box-1',
         target: true,
         breadcrumbs: false,
-    role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+        role: [
+          UserTypesEnum.Admin.toString(),
+          UserTypesEnum.Manager.toString(),
+          UserTypesEnum.BranchLeader.toString(),
+          UserTypesEnum.Student.toString(),
+          UserTypesEnum.Teacher.toString()
+        ]
       }
     ]
   },
@@ -58,7 +88,13 @@ export const menus: Navigation[] = [
     title: 'Widget',
     type: 'group',
     icon: 'icon-navigation',
-    role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+    role: [
+      UserTypesEnum.Admin.toString(),
+      UserTypesEnum.Manager.toString(),
+      UserTypesEnum.BranchLeader.toString(),
+      UserTypesEnum.Student.toString(),
+      UserTypesEnum.Teacher.toString()
+    ],
     children: [
       {
         id: 'statistics',
@@ -91,27 +127,51 @@ export const menus: Navigation[] = [
     title: 'Admin Panel',
     type: 'group',
     icon: 'icon-navigation',
-    role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+    role: [
+      UserTypesEnum.Admin.toString(),
+      UserTypesEnum.Manager.toString(),
+      UserTypesEnum.BranchLeader.toString(),
+      UserTypesEnum.Student.toString(),
+      UserTypesEnum.Teacher.toString()
+    ],
     children: [
       {
         id: 'Online-Courses',
         title: 'Online Courses',
         type: 'collapse',
         icon: '#custom-layer',
-        role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+        role: [
+          UserTypesEnum.Admin.toString(),
+          UserTypesEnum.Manager.toString(),
+          UserTypesEnum.BranchLeader.toString(),
+          UserTypesEnum.Student.toString(),
+          UserTypesEnum.Teacher.toString()
+        ],
         children: [
           {
             id: 'dashboard',
             title: 'Dashboard',
             type: 'item',
             url: '/online-course/dashboard',
-    role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+            role: [
+              UserTypesEnum.Admin.toString(),
+              UserTypesEnum.Manager.toString(),
+              UserTypesEnum.BranchLeader.toString(),
+              UserTypesEnum.Student.toString(),
+              UserTypesEnum.Teacher.toString()
+            ]
           },
           {
             id: 'manager',
             title: 'Manager',
             type: 'collapse',
-            role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+            role: [
+              UserTypesEnum.Admin.toString(),
+              UserTypesEnum.Manager.toString(),
+              UserTypesEnum.BranchLeader.toString(),
+              UserTypesEnum.Student.toString(),
+              UserTypesEnum.Teacher.toString()
+            ],
             children: [
               {
                 id: 'list',
@@ -130,7 +190,46 @@ export const menus: Navigation[] = [
                 title: 'Add',
                 type: 'item',
                 url: '/online-course/manager/add',
-    role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+                role: [
+                  UserTypesEnum.Admin.toString(),
+                  UserTypesEnum.Manager.toString(),
+                  UserTypesEnum.BranchLeader.toString(),
+                  UserTypesEnum.Student.toString(),
+                  UserTypesEnum.Teacher.toString()
+                ]
+              }
+            ]
+          },
+          {
+            id: 'branch-manager',
+            title: 'Branch Manager',
+            type: 'collapse',
+            role: [
+              UserTypesEnum.Admin.toString(),
+              UserTypesEnum.Manager.toString(),
+              UserTypesEnum.BranchLeader.toString(),
+              UserTypesEnum.Student.toString(),
+              UserTypesEnum.Teacher.toString()
+            ],
+            children: [
+              {
+                id: 'list',
+                title: 'List',
+                type: 'item',
+                url: '/online-course/branch-manager/list'
+              },
+              {
+                id: 'add',
+                title: 'Add',
+                type: 'item',
+                url: '/online-course/branch-manager/add',
+                role: [
+                  UserTypesEnum.Admin.toString(),
+                  UserTypesEnum.Manager.toString(),
+                  UserTypesEnum.BranchLeader.toString(),
+                  UserTypesEnum.Student.toString(),
+                  UserTypesEnum.Teacher.toString()
+                ]
               }
             ]
           },
@@ -138,7 +237,13 @@ export const menus: Navigation[] = [
             id: 'teacher',
             title: 'Teacher',
             type: 'collapse',
-            role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+            role: [
+              UserTypesEnum.Admin.toString(),
+              UserTypesEnum.Manager.toString(),
+              UserTypesEnum.BranchLeader.toString(),
+              UserTypesEnum.Student.toString(),
+              UserTypesEnum.Teacher.toString()
+            ],
             children: [
               {
                 id: 'list',
@@ -157,7 +262,13 @@ export const menus: Navigation[] = [
                 title: 'Add',
                 type: 'item',
                 url: '/online-course/teacher/add',
-    role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+                role: [
+                  UserTypesEnum.Admin.toString(),
+                  UserTypesEnum.Manager.toString(),
+                  UserTypesEnum.BranchLeader.toString(),
+                  UserTypesEnum.Student.toString(),
+                  UserTypesEnum.Teacher.toString()
+                ]
               }
             ]
           },
@@ -165,7 +276,13 @@ export const menus: Navigation[] = [
             id: 'student',
             title: 'Student',
             type: 'collapse',
-            role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+            role: [
+              UserTypesEnum.Admin.toString(),
+              UserTypesEnum.Manager.toString(),
+              UserTypesEnum.BranchLeader.toString(),
+              UserTypesEnum.Student.toString(),
+              UserTypesEnum.Teacher.toString()
+            ],
             children: [
               {
                 id: 'list',
@@ -184,7 +301,13 @@ export const menus: Navigation[] = [
                 title: 'Add',
                 type: 'item',
                 url: '/online-course/student/add',
-    role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+                role: [
+                  UserTypesEnum.Admin.toString(),
+                  UserTypesEnum.Manager.toString(),
+                  UserTypesEnum.BranchLeader.toString(),
+                  UserTypesEnum.Student.toString(),
+                  UserTypesEnum.Teacher.toString()
+                ]
               }
             ]
           },
@@ -192,7 +315,13 @@ export const menus: Navigation[] = [
             id: 'courses',
             title: 'Courses',
             type: 'collapse',
-            role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+            role: [
+              UserTypesEnum.Admin.toString(),
+              UserTypesEnum.Manager.toString(),
+              UserTypesEnum.BranchLeader.toString(),
+              UserTypesEnum.Student.toString(),
+              UserTypesEnum.Teacher.toString()
+            ],
             children: [
               {
                 id: 'view',
@@ -205,7 +334,13 @@ export const menus: Navigation[] = [
                 title: 'Add',
                 type: 'item',
                 url: '/online-course/courses/add',
-    role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+                role: [
+                  UserTypesEnum.Admin.toString(),
+                  UserTypesEnum.Manager.toString(),
+                  UserTypesEnum.BranchLeader.toString(),
+                  UserTypesEnum.Student.toString(),
+                  UserTypesEnum.Teacher.toString()
+                ]
               }
             ]
           },
@@ -225,7 +360,13 @@ export const menus: Navigation[] = [
             id: 'setting',
             title: 'Setting',
             type: 'collapse',
-            role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+            role: [
+              UserTypesEnum.Admin.toString(),
+              UserTypesEnum.Manager.toString(),
+              UserTypesEnum.BranchLeader.toString(),
+              UserTypesEnum.Student.toString(),
+              UserTypesEnum.Teacher.toString()
+            ],
             children: [
               {
                 id: 'payment',
@@ -254,14 +395,26 @@ export const menus: Navigation[] = [
         title: 'Membership',
         type: 'collapse',
         icon: '#custom-user',
-        role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+        role: [
+          UserTypesEnum.Admin.toString(),
+          UserTypesEnum.Manager.toString(),
+          UserTypesEnum.BranchLeader.toString(),
+          UserTypesEnum.Student.toString(),
+          UserTypesEnum.Teacher.toString()
+        ],
         children: [
           {
             id: 'dashboard',
             title: 'Dashboard',
             type: 'item',
             url: '/membership/dashboard',
-    role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+            role: [
+              UserTypesEnum.Admin.toString(),
+              UserTypesEnum.Manager.toString(),
+              UserTypesEnum.BranchLeader.toString(),
+              UserTypesEnum.Student.toString(),
+              UserTypesEnum.Teacher.toString()
+            ]
           },
           {
             id: 'list',
@@ -288,27 +441,51 @@ export const menus: Navigation[] = [
         title: 'Helpdesk',
         type: 'collapse',
         icon: '#custom-24-support',
-        role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+        role: [
+          UserTypesEnum.Admin.toString(),
+          UserTypesEnum.Manager.toString(),
+          UserTypesEnum.BranchLeader.toString(),
+          UserTypesEnum.Student.toString(),
+          UserTypesEnum.Teacher.toString()
+        ],
         children: [
           {
             id: 'dashboard',
             title: 'Dashboard',
             type: 'item',
             url: '/helpdesk/dashboard',
-    role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+            role: [
+              UserTypesEnum.Admin.toString(),
+              UserTypesEnum.Manager.toString(),
+              UserTypesEnum.BranchLeader.toString(),
+              UserTypesEnum.Student.toString(),
+              UserTypesEnum.Teacher.toString()
+            ]
           },
           {
             id: 'ticket',
             title: 'Ticket',
             type: 'collapse',
-            role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+            role: [
+              UserTypesEnum.Admin.toString(),
+              UserTypesEnum.Manager.toString(),
+              UserTypesEnum.BranchLeader.toString(),
+              UserTypesEnum.Student.toString(),
+              UserTypesEnum.Teacher.toString()
+            ],
             children: [
               {
                 id: 'create',
                 title: 'Create',
                 type: 'item',
                 url: '/helpdesk/ticket/create',
-    role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+                role: [
+                  UserTypesEnum.Admin.toString(),
+                  UserTypesEnum.Manager.toString(),
+                  UserTypesEnum.BranchLeader.toString(),
+                  UserTypesEnum.Student.toString(),
+                  UserTypesEnum.Teacher.toString()
+                ]
               },
               {
                 id: 'list',
@@ -337,14 +514,26 @@ export const menus: Navigation[] = [
         title: 'Invoice',
         type: 'collapse',
         icon: '#custom-bill',
-        role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+        role: [
+          UserTypesEnum.Admin.toString(),
+          UserTypesEnum.Manager.toString(),
+          UserTypesEnum.BranchLeader.toString(),
+          UserTypesEnum.Student.toString(),
+          UserTypesEnum.Teacher.toString()
+        ],
         children: [
           {
             id: 'dashboard',
             title: 'Dashboard',
             type: 'item',
             url: '/invoice/dashboard',
-    role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+            role: [
+              UserTypesEnum.Admin.toString(),
+              UserTypesEnum.Manager.toString(),
+              UserTypesEnum.BranchLeader.toString(),
+              UserTypesEnum.Student.toString(),
+              UserTypesEnum.Teacher.toString()
+            ]
           },
           {
             id: 'create',
@@ -369,7 +558,13 @@ export const menus: Navigation[] = [
             title: 'Edit',
             type: 'item',
             url: '/invoice/edit',
-    role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+            role: [
+              UserTypesEnum.Admin.toString(),
+              UserTypesEnum.Manager.toString(),
+              UserTypesEnum.BranchLeader.toString(),
+              UserTypesEnum.Student.toString(),
+              UserTypesEnum.Teacher.toString()
+            ]
           }
         ]
       }
@@ -380,7 +575,13 @@ export const menus: Navigation[] = [
     title: 'Application',
     type: 'group',
     icon: 'icon-navigation',
-    role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+    role: [
+      UserTypesEnum.Admin.toString(),
+      UserTypesEnum.Manager.toString(),
+      UserTypesEnum.BranchLeader.toString(),
+      UserTypesEnum.Student.toString(),
+      UserTypesEnum.Teacher.toString()
+    ],
     children: [
       {
         id: 'calender',
@@ -436,7 +637,13 @@ export const menus: Navigation[] = [
         title: 'Profile',
         type: 'collapse',
         icon: '#custom-user-square',
-        role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+        role: [
+          UserTypesEnum.Admin.toString(),
+          UserTypesEnum.Manager.toString(),
+          UserTypesEnum.BranchLeader.toString(),
+          UserTypesEnum.Student.toString(),
+          UserTypesEnum.Teacher.toString()
+        ],
         children: [
           {
             id: 'account',
@@ -463,7 +670,13 @@ export const menus: Navigation[] = [
         title: 'E-commerce',
         type: 'collapse',
         icon: '#custom-shopping-bag',
-        role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+        role: [
+          UserTypesEnum.Admin.toString(),
+          UserTypesEnum.Manager.toString(),
+          UserTypesEnum.BranchLeader.toString(),
+          UserTypesEnum.Student.toString(),
+          UserTypesEnum.Teacher.toString()
+        ],
         children: [
           {
             id: 'product',
@@ -488,7 +701,13 @@ export const menus: Navigation[] = [
             title: 'Add New Product',
             type: 'item',
             url: '/application/e-commerce/new-product',
-    role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+            role: [
+              UserTypesEnum.Admin.toString(),
+              UserTypesEnum.Manager.toString(),
+              UserTypesEnum.BranchLeader.toString(),
+              UserTypesEnum.Student.toString(),
+              UserTypesEnum.Teacher.toString()
+            ]
           },
           {
             id: 'checkout',
@@ -505,7 +724,13 @@ export const menus: Navigation[] = [
     title: 'Forms',
     type: 'group',
     icon: 'icon-navigation',
-    role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+    role: [
+      UserTypesEnum.Admin.toString(),
+      UserTypesEnum.Manager.toString(),
+      UserTypesEnum.BranchLeader.toString(),
+      UserTypesEnum.Student.toString(),
+      UserTypesEnum.Teacher.toString()
+    ],
     children: [
       {
         id: 'wizard',
@@ -528,7 +753,13 @@ export const menus: Navigation[] = [
         title: 'Layouts',
         type: 'collapse',
         icon: '#custom-row-vertical',
-        role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+        role: [
+          UserTypesEnum.Admin.toString(),
+          UserTypesEnum.Manager.toString(),
+          UserTypesEnum.BranchLeader.toString(),
+          UserTypesEnum.Student.toString(),
+          UserTypesEnum.Teacher.toString()
+        ],
         children: [
           {
             id: 'basic',
@@ -561,7 +792,13 @@ export const menus: Navigation[] = [
         title: 'Plugins',
         type: 'collapse',
         icon: '#custom-cpu-charge',
-        role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+        role: [
+          UserTypesEnum.Admin.toString(),
+          UserTypesEnum.Manager.toString(),
+          UserTypesEnum.BranchLeader.toString(),
+          UserTypesEnum.Student.toString(),
+          UserTypesEnum.Teacher.toString()
+        ],
         children: [
           {
             id: 'mask',
@@ -602,7 +839,13 @@ export const menus: Navigation[] = [
     title: 'Table',
     type: 'group',
     icon: 'icon-navigation',
-    role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+    role: [
+      UserTypesEnum.Admin.toString(),
+      UserTypesEnum.Manager.toString(),
+      UserTypesEnum.BranchLeader.toString(),
+      UserTypesEnum.Student.toString(),
+      UserTypesEnum.Teacher.toString()
+    ],
     children: [
       {
         id: 'material table',
@@ -617,7 +860,13 @@ export const menus: Navigation[] = [
         title: 'Ag Grid Table',
         type: 'collapse',
         icon: '#custom-docs',
-        role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+        role: [
+          UserTypesEnum.Admin.toString(),
+          UserTypesEnum.Manager.toString(),
+          UserTypesEnum.BranchLeader.toString(),
+          UserTypesEnum.Student.toString(),
+          UserTypesEnum.Teacher.toString()
+        ],
         children: [
           {
             id: 'ag-grid-basic-table',
@@ -658,7 +907,13 @@ export const menus: Navigation[] = [
     title: 'Charts',
     type: 'group',
     icon: 'icon-navigation',
-    role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+    role: [
+      UserTypesEnum.Admin.toString(),
+      UserTypesEnum.Manager.toString(),
+      UserTypesEnum.BranchLeader.toString(),
+      UserTypesEnum.Student.toString(),
+      UserTypesEnum.Teacher.toString()
+    ],
     children: [
       {
         id: 'apex-charts',
@@ -675,20 +930,38 @@ export const menus: Navigation[] = [
     title: 'Pages',
     type: 'group',
     icon: 'icon-navigation',
-    role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+    role: [
+      UserTypesEnum.Admin.toString(),
+      UserTypesEnum.Manager.toString(),
+      UserTypesEnum.BranchLeader.toString(),
+      UserTypesEnum.Student.toString(),
+      UserTypesEnum.Teacher.toString()
+    ],
     children: [
       {
         id: 'authentication',
         title: 'Authentication',
         type: 'collapse',
         icon: '#custom-shield',
-        role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+        role: [
+          UserTypesEnum.Admin.toString(),
+          UserTypesEnum.Manager.toString(),
+          UserTypesEnum.BranchLeader.toString(),
+          UserTypesEnum.Student.toString(),
+          UserTypesEnum.Teacher.toString()
+        ],
         children: [
           {
             id: 'authentication-1',
             title: 'Authentication 1',
             type: 'collapse',
-            role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+            role: [
+              UserTypesEnum.Admin.toString(),
+              UserTypesEnum.Manager.toString(),
+              UserTypesEnum.BranchLeader.toString(),
+              UserTypesEnum.Student.toString(),
+              UserTypesEnum.Teacher.toString()
+            ],
             children: [
               {
                 id: 'login',
@@ -744,7 +1017,13 @@ export const menus: Navigation[] = [
             id: 'authentication-2',
             title: 'Authentication 2',
             type: 'collapse',
-            role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+            role: [
+              UserTypesEnum.Admin.toString(),
+              UserTypesEnum.Manager.toString(),
+              UserTypesEnum.BranchLeader.toString(),
+              UserTypesEnum.Student.toString(),
+              UserTypesEnum.Teacher.toString()
+            ],
             children: [
               {
                 id: 'login',
@@ -804,7 +1083,13 @@ export const menus: Navigation[] = [
             url: '/authentication-3',
             target: true,
             breadcrumbs: false,
-    role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+            role: [
+              UserTypesEnum.Admin.toString(),
+              UserTypesEnum.Manager.toString(),
+              UserTypesEnum.BranchLeader.toString(),
+              UserTypesEnum.Student.toString(),
+              UserTypesEnum.Teacher.toString()
+            ]
           }
         ]
       },
@@ -813,7 +1098,13 @@ export const menus: Navigation[] = [
         title: 'Maintenance',
         type: 'collapse',
         icon: '#custom-flag',
-        role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+        role: [
+          UserTypesEnum.Admin.toString(),
+          UserTypesEnum.Manager.toString(),
+          UserTypesEnum.BranchLeader.toString(),
+          UserTypesEnum.Student.toString(),
+          UserTypesEnum.Teacher.toString()
+        ],
         children: [
           {
             id: 'error',
@@ -856,7 +1147,13 @@ export const menus: Navigation[] = [
         classes: 'nav-item',
         url: '/contact-us',
         icon: '#custom-24-support',
-        role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+        role: [
+          UserTypesEnum.Admin.toString(),
+          UserTypesEnum.Manager.toString(),
+          UserTypesEnum.BranchLeader.toString(),
+          UserTypesEnum.Student.toString(),
+          UserTypesEnum.Teacher.toString()
+        ],
         target: true,
         breadcrumbs: false
       },
@@ -865,7 +1162,13 @@ export const menus: Navigation[] = [
         title: 'Price',
         type: 'collapse',
         icon: '#custom-dollar-square',
-        role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+        role: [
+          UserTypesEnum.Admin.toString(),
+          UserTypesEnum.Manager.toString(),
+          UserTypesEnum.BranchLeader.toString(),
+          UserTypesEnum.Student.toString(),
+          UserTypesEnum.Teacher.toString()
+        ],
         children: [
           {
             id: 'price-1',
@@ -888,7 +1191,13 @@ export const menus: Navigation[] = [
         classes: 'nav-item',
         url: '/landing',
         icon: '#custom-airplane',
-        role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+        role: [
+          UserTypesEnum.Admin.toString(),
+          UserTypesEnum.Manager.toString(),
+          UserTypesEnum.BranchLeader.toString(),
+          UserTypesEnum.Student.toString(),
+          UserTypesEnum.Teacher.toString()
+        ],
         target: true,
         breadcrumbs: false
       }
@@ -899,14 +1208,26 @@ export const menus: Navigation[] = [
     title: 'Other',
     type: 'group',
     icon: 'icon-navigation',
-    role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+    role: [
+      UserTypesEnum.Admin.toString(),
+      UserTypesEnum.Manager.toString(),
+      UserTypesEnum.BranchLeader.toString(),
+      UserTypesEnum.Student.toString(),
+      UserTypesEnum.Teacher.toString()
+    ],
     children: [
       {
         id: 'menu-levels',
         title: 'Menu levels',
         type: 'collapse',
         icon: '#custom-level',
-        role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+        role: [
+          UserTypesEnum.Admin.toString(),
+          UserTypesEnum.Manager.toString(),
+          UserTypesEnum.BranchLeader.toString(),
+          UserTypesEnum.Student.toString(),
+          UserTypesEnum.Teacher.toString()
+        ],
         children: [
           {
             id: 'level-2-1',
@@ -920,7 +1241,13 @@ export const menus: Navigation[] = [
             title: 'Menu Level 2.2',
             type: 'collapse',
             classes: 'edge',
-            role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+            role: [
+              UserTypesEnum.Admin.toString(),
+              UserTypesEnum.Manager.toString(),
+              UserTypesEnum.BranchLeader.toString(),
+              UserTypesEnum.Student.toString(),
+              UserTypesEnum.Teacher.toString()
+            ],
             children: [
               {
                 id: 'menu-level-3.1',
@@ -941,7 +1268,13 @@ export const menus: Navigation[] = [
                 title: 'Menu Level 3.3',
                 type: 'collapse',
                 classes: 'edge',
-                role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+                role: [
+                  UserTypesEnum.Admin.toString(),
+                  UserTypesEnum.Manager.toString(),
+                  UserTypesEnum.BranchLeader.toString(),
+                  UserTypesEnum.Student.toString(),
+                  UserTypesEnum.Teacher.toString()
+                ],
                 children: [
                   {
                     id: 'menu-level-4.1',
@@ -966,7 +1299,13 @@ export const menus: Navigation[] = [
             title: 'Menu Level 2.3',
             type: 'collapse',
             classes: 'edge',
-            role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+            role: [
+              UserTypesEnum.Admin.toString(),
+              UserTypesEnum.Manager.toString(),
+              UserTypesEnum.BranchLeader.toString(),
+              UserTypesEnum.Student.toString(),
+              UserTypesEnum.Teacher.toString()
+            ],
             children: [
               {
                 id: 'menu-level-3.1',
@@ -987,7 +1326,13 @@ export const menus: Navigation[] = [
                 title: 'Menu Level 3.3',
                 type: 'collapse',
                 classes: 'edge',
-                role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+                role: [
+                  UserTypesEnum.Admin.toString(),
+                  UserTypesEnum.Manager.toString(),
+                  UserTypesEnum.BranchLeader.toString(),
+                  UserTypesEnum.Student.toString(),
+                  UserTypesEnum.Teacher.toString()
+                ],
                 children: [
                   {
                     id: 'menu-level-4.1',
@@ -1016,7 +1361,13 @@ export const menus: Navigation[] = [
         classes: 'nav-item',
         url: '/sample-page',
         icon: '#custom-notification-status',
-    role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+        role: [
+          UserTypesEnum.Admin.toString(),
+          UserTypesEnum.Manager.toString(),
+          UserTypesEnum.BranchLeader.toString(),
+          UserTypesEnum.Student.toString(),
+          UserTypesEnum.Teacher.toString()
+        ]
       },
       {
         id: 'document',
@@ -1027,7 +1378,13 @@ export const menus: Navigation[] = [
         icon: '#custom-gitBook',
         target: true,
         external: true,
-    role: [UserTypesEnum.Admin.toString(), UserTypesEnum.Manager.toString(), UserTypesEnum.BranchLeader.toString(), UserTypesEnum.Student.toString(), UserTypesEnum.Teacher.toString()],
+        role: [
+          UserTypesEnum.Admin.toString(),
+          UserTypesEnum.Manager.toString(),
+          UserTypesEnum.BranchLeader.toString(),
+          UserTypesEnum.Student.toString(),
+          UserTypesEnum.Teacher.toString()
+        ]
       }
     ]
   }
