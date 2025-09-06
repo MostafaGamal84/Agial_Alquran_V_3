@@ -44,17 +44,17 @@ export class CoursesAddComponent implements OnInit {
 
     const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
     this.lookup
-      .getUsersByUserType(filter, Number(UserTypesEnum.Teacher))
+      .getUsersForSelects(filter, Number(UserTypesEnum.Teacher))
       .subscribe((res) => {
         if (res.isSuccess) this.teachers = res.data.items;
       });
     this.lookup
-      .getUsersByUserType(filter, Number(UserTypesEnum.Manager))
+      .getUsersForSelects(filter, Number(UserTypesEnum.Manager))
       .subscribe((res) => {
         if (res.isSuccess) this.managers = res.data.items;
       });
     this.lookup
-      .getUsersByUserType(filter, Number(UserTypesEnum.Student))
+      .getUsersForSelects(filter, Number(UserTypesEnum.Student))
       .subscribe((res) => {
         if (res.isSuccess) this.students = res.data.items;
       });
