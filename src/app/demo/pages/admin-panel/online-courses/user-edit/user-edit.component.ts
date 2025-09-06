@@ -165,7 +165,7 @@ export class UserEditComponent implements OnInit {
       .getUsersForSelects(
         filter,
         Number(UserTypesEnum.Teacher),
-        this.userId,
+        0,
         0,
         this.currentUser?.branchId || 0
       )
@@ -180,7 +180,7 @@ export class UserEditComponent implements OnInit {
       .getUsersForSelects(
         filter,
         Number(UserTypesEnum.Student),
-        this.userId,
+        0,
         0,
         this.currentUser?.branchId || 0
       )
