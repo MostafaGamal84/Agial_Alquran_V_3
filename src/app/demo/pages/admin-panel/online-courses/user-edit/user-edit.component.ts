@@ -3,14 +3,22 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
+import { Router } from '@angular/router';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { UserService, UpdateUserDto } from 'src/app/@theme/services/user.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
-import { LookupService, NationalityDto, GovernorateDto, LookUpUserDto } from 'src/app/@theme/services/lookup.service';
+import {
+  LookupService,
+  NationalityDto,
+  GovernorateDto,
+  LookUpUserDto,
+  FilteredResultRequestDto,
+} from 'src/app/@theme/services/lookup.service';
 import { CountryService, Country } from 'src/app/@theme/services/country.service';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
+import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 
 @Component({
   selector: 'app-user-edit',
@@ -25,6 +33,7 @@ export class UserEditComponent implements OnInit {
   private toast = inject(ToastService);
   private lookupService = inject(LookupService);
   private countryService = inject(CountryService);
+  private router = inject(Router);
 
   basicInfoForm!: FormGroup;
   userId!: number;
@@ -32,6 +41,9 @@ export class UserEditComponent implements OnInit {
   nationalities: NationalityDto[] = [];
   governorates: GovernorateDto[] = [];
   countries: Country[] = [];
+  teachers: LookUpUserDto[] = [];
+  students: LookUpUserDto[] = [];
+  isManager = false;
   Branch = [
     { id: BranchesEnum.Mens, label: 'الرجال' },
     { id: BranchesEnum.Women, label: 'النساء' }
@@ -48,6 +60,7 @@ export class UserEditComponent implements OnInit {
   secondMobilePlaceholder = '';
 
   ngOnInit(): void {
+    this.isManager = this.router.url.includes('/manager/');
     this.basicInfoForm = this.fb.group({
       fullName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
@@ -57,7 +70,9 @@ export class UserEditComponent implements OnInit {
       secondMobile: [''],
       nationalityId: [null, Validators.required],
       governorateId: [null, Validators.required],
-      branchId: [null, Validators.required]
+      branchId: [null, Validators.required],
+      teacherIds: [[]],
+      studentIds: [[]],
     });
 
     this.lookupService.getAllNationalities().subscribe((res) => {
@@ -87,6 +102,9 @@ export class UserEditComponent implements OnInit {
         governorateId: this.currentUser.governorateId,
         branchId: this.currentUser.branchId
       });
+      if (this.isManager) {
+        this.loadRelatedUsers();
+      }
     }
 
     this.countryService.getCountries().subscribe((data) => {
@@ -121,6 +139,36 @@ export class UserEditComponent implements OnInit {
       }
     });
 
+  }
+
+  private loadRelatedUsers() {
+    const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
+    this.lookupService
+      .getUsersForSelects(
+        filter,
+        Number(UserTypesEnum.Teacher),
+        this.userId,
+        0,
+        this.currentUser?.branchId || 0
+      )
+      .subscribe((res) => {
+        if (res.isSuccess) {
+          this.teachers = res.data.items;
+        }
+      });
+    this.lookupService
+      .getUsersForSelects(
+        filter,
+        Number(UserTypesEnum.Student),
+        this.userId,
+        0,
+        this.currentUser?.branchId || 0
+      )
+      .subscribe((res) => {
+        if (res.isSuccess) {
+          this.students = res.data.items;
+        }
+      });
   }
 
   onCountryCodeChange(control: 'mobileCountryDialCode' | 'secondMobileCountryDialCode') {
@@ -162,7 +210,9 @@ export class UserEditComponent implements OnInit {
         secondMobile: formValue.secondMobile ? `${formValue.secondMobileCountryDialCode}${clean(formValue.secondMobile)}` : undefined,
         nationalityId: formValue.nationalityId,
         governorateId: formValue.governorateId,
-        branchId: formValue.branchId
+        branchId: formValue.branchId,
+        teacherIds: this.isManager ? formValue.teacherIds : undefined,
+        studentIds: this.isManager ? formValue.studentIds : undefined,
       };
       this.userService.updateUser(model).subscribe({
         next: (res) => {

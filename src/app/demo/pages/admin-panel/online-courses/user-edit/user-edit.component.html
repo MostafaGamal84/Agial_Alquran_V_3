@@ -105,6 +105,24 @@
               }
             </mat-form-field>
           </div>
+          @if (isManager) {
+            <div class="col-md-6">
+              <mat-form-field appearance="outline" class="w-100 m-b-10">
+                <mat-label>Teachers</mat-label>
+                <mat-select formControlName="teacherIds" multiple appOpenSelectOnType>
+                  <mat-option *ngFor="let t of teachers" [value]="t.id">{{ t.fullName }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+            <div class="col-md-6">
+              <mat-form-field appearance="outline" class="w-100 m-b-10">
+                <mat-label>Students</mat-label>
+                <mat-select formControlName="studentIds" multiple appOpenSelectOnType>
+                  <mat-option *ngFor="let s of students" [value]="s.id">{{ s.fullName }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          }
           <div class="col-md-12 text-end">
             <button mat-flat-button color="primary" [disabled]="basicInfoForm.invalid">Update</button>
           </div>

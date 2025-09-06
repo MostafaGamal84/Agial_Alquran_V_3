@@ -24,6 +24,8 @@ export interface UpdateUserDto {
   nationalityId?: number;
   governorateId?: number;
   branchId?: number;
+  teacherIds?: number[];
+  studentIds?: number[];
 }
 
 // Generic API response interfaces
