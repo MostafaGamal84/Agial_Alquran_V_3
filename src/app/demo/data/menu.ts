@@ -162,6 +162,39 @@ export const menus: Navigation[] = [
             ]
           },
           {
+            id: 'branch-manager',
+            title: 'Branch Manager',
+            type: 'collapse',
+            role: [
+              UserTypesEnum.Admin.toString(),
+              UserTypesEnum.Manager.toString(),
+              UserTypesEnum.BranchLeader.toString(),
+              UserTypesEnum.Student.toString(),
+              UserTypesEnum.Teacher.toString()
+            ],
+            children: [
+              {
+                id: 'list',
+                title: 'List',
+                type: 'item',
+                url: '/online-course/branch-manager/list'
+              },
+              {
+                id: 'add',
+                title: 'Add',
+                type: 'item',
+                url: '/online-course/branch-manager/add',
+                role: [
+                  UserTypesEnum.Admin.toString(),
+                  UserTypesEnum.Manager.toString(),
+                  UserTypesEnum.BranchLeader.toString(),
+                  UserTypesEnum.Student.toString(),
+                  UserTypesEnum.Teacher.toString()
+                ]
+              }
+            ]
+          },
+           {
             id: 'manager',
             title: 'Manager',
             type: 'collapse',
@@ -190,39 +223,6 @@ export const menus: Navigation[] = [
                 title: 'Add',
                 type: 'item',
                 url: '/online-course/manager/add',
-                role: [
-                  UserTypesEnum.Admin.toString(),
-                  UserTypesEnum.Manager.toString(),
-                  UserTypesEnum.BranchLeader.toString(),
-                  UserTypesEnum.Student.toString(),
-                  UserTypesEnum.Teacher.toString()
-                ]
-              }
-            ]
-          },
-          {
-            id: 'branch-manager',
-            title: 'Branch Manager',
-            type: 'collapse',
-            role: [
-              UserTypesEnum.Admin.toString(),
-              UserTypesEnum.Manager.toString(),
-              UserTypesEnum.BranchLeader.toString(),
-              UserTypesEnum.Student.toString(),
-              UserTypesEnum.Teacher.toString()
-            ],
-            children: [
-              {
-                id: 'list',
-                title: 'List',
-                type: 'item',
-                url: '/online-course/branch-manager/list'
-              },
-              {
-                id: 'add',
-                title: 'Add',
-                type: 'item',
-                url: '/online-course/branch-manager/add',
                 role: [
                   UserTypesEnum.Admin.toString(),
                   UserTypesEnum.Manager.toString(),
