@@ -9,31 +9,20 @@ export class AuthGuardChild implements CanActivateChild {
   private authenticationService = inject(AuthenticationService);
 
   /**
-   * Determines whether a child route can be activated based on user authentication and authorization.
+   * Determines whether a child route can be activated based on user authentication.
    *
-   * @param route - The activated route snapshot that contains the route configuration and parameters.
+   * @param _route - The activated route snapshot (unused).
    * @param state - The router state snapshot that contains the current router state.
-   * @returns A boolean indicating whether the route can be activated. Redirects to an appropriate page if not.
-   *
-   * If the user is logged in and their role is authorized for the route, returns true.
-   * If the user is logged in but not authorized, redirects to the unauthorized page and returns false.
-   * If the user is not logged in, redirects to the login page with the return URL and returns false.
+   * @returns True if the user is logged in; otherwise, redirects to the login page.
    */
 
-  canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | UrlTree {
-    const userRole = this.authenticationService.getRole();
-
-    if (userRole && this.authenticationService.isLoggedIn()) {
-      const { roles } = route.data;
-      if (roles && !roles.includes(userRole)) {
-        // User not authorized, redirect to unauthorized page
-        return this.router.parseUrl('/unauthorized');
-      }
-      // User is logged in and authorized for child routes
+  canActivateChild(_route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | UrlTree {
+    if (this.authenticationService.isLoggedIn()) {
+      // User is logged in; allow access regardless of role
       return true;
     }
 
-    // User not logged in or role unavailable, redirect to login page
+    // User not logged in, redirect to login page
     return this.router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
   }
 }
