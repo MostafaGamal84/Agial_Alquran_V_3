@@ -155,10 +155,10 @@ export const menus: Navigation[] = [
             url: '/online-course/dashboard',
             role: [
               UserTypesEnum.Admin.toString(),
-              UserTypesEnum.Manager.toString(),
-              UserTypesEnum.BranchLeader.toString(),
-              UserTypesEnum.Student.toString(),
-              UserTypesEnum.Teacher.toString()
+              // UserTypesEnum.Manager.toString(),
+              // UserTypesEnum.BranchLeader.toString(),
+              // UserTypesEnum.Student.toString(),
+              // UserTypesEnum.Teacher.toString()
             ]
           },
           {
@@ -167,10 +167,10 @@ export const menus: Navigation[] = [
             type: 'collapse',
             role: [
               UserTypesEnum.Admin.toString(),
-              UserTypesEnum.Manager.toString(),
-              UserTypesEnum.BranchLeader.toString(),
-              UserTypesEnum.Student.toString(),
-              UserTypesEnum.Teacher.toString()
+              // UserTypesEnum.Manager.toString(),
+              // UserTypesEnum.BranchLeader.toString(),
+              // UserTypesEnum.Student.toString(),
+              // UserTypesEnum.Teacher.toString()
             ],
             children: [
               {
@@ -200,10 +200,10 @@ export const menus: Navigation[] = [
             type: 'collapse',
             role: [
               UserTypesEnum.Admin.toString(),
-              UserTypesEnum.Manager.toString(),
+              // UserTypesEnum.Manager.toString(),
               UserTypesEnum.BranchLeader.toString(),
-              UserTypesEnum.Student.toString(),
-              UserTypesEnum.Teacher.toString()
+              // UserTypesEnum.Student.toString(),
+              // UserTypesEnum.Teacher.toString()
             ],
             children: [
               {
@@ -241,8 +241,8 @@ export const menus: Navigation[] = [
               UserTypesEnum.Admin.toString(),
               UserTypesEnum.Manager.toString(),
               UserTypesEnum.BranchLeader.toString(),
-              UserTypesEnum.Student.toString(),
-              UserTypesEnum.Teacher.toString()
+              // UserTypesEnum.Student.toString(),
+              // UserTypesEnum.Teacher.toString()
             ],
             children: [
               {
@@ -280,7 +280,7 @@ export const menus: Navigation[] = [
               UserTypesEnum.Admin.toString(),
               UserTypesEnum.Manager.toString(),
               UserTypesEnum.BranchLeader.toString(),
-              UserTypesEnum.Student.toString(),
+              // UserTypesEnum.Student.toString(),
               UserTypesEnum.Teacher.toString()
             ],
             children: [
