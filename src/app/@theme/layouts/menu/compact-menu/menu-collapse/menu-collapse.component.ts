@@ -8,7 +8,6 @@ import { CommonModule, Location } from '@angular/common';
 import { NavigationItem } from 'src/app/@theme/types/navigation';
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { MenuItemCompactComponent } from '../menu-item/menu-item.component';
-import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 
 @Component({
   selector: 'app-menu-collapse-compact',
@@ -27,7 +26,6 @@ import { AuthenticationService } from 'src/app/@theme/services/authentication.se
 })
 export class MenuCollapseCompactComponent implements OnInit {
   private location = inject(Location);
-  private authenticationService = inject(AuthenticationService);
 
   // public props
   current_url: string = ''; // Add current URL property
@@ -65,31 +63,8 @@ export class MenuCollapseCompactComponent implements OnInit {
       });
     }, 0);
 
-    /**
-     * current login user role
-     */
-    const currentUserRole = this.authenticationService.currentUserValue?.user.role;
-
-    /**
-     * items parent role
-     */
-    const parentRoleValue = this.parentRole();
-
-    if (this.item()!.role && this.item()!.role!.length > 0) {
-      if (currentUserRole) {
-        const parentRole = this.parentRole();
-        const allowedFromParent =
-          this.item()!.isMainParent || (parentRole && parentRole.length > 0 && parentRole.includes(currentUserRole));
-        if (allowedFromParent) {
-          this.isEnabled = this.item()!.role!.includes(currentUserRole);
-        }
-      }
-    } else if (parentRoleValue && parentRoleValue.length > 0) {
-      // If item.role is empty, check parentRole
-      if (currentUserRole) {
-        this.isEnabled = parentRoleValue.includes(currentUserRole);
-      }
-    }
+    // Enable all menu items regardless of user role
+    this.isEnabled = true;
   }
 
   // Method to handle the collapse of the navigation menu

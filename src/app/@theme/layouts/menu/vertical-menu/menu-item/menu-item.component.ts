@@ -7,8 +7,6 @@ import { CommonModule } from '@angular/common';
 import { NavigationItem } from 'src/app/@theme/types/navigation';
 import { ThemeLayoutService } from 'src/app/@theme/services/theme-layout.service';
 import { SharedModule } from 'src/app/demo/shared/shared.module';
-import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
-import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 
 @Component({
   selector: 'app-menu-item',
@@ -18,7 +16,6 @@ import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 })
 export class MenuItemVerticalComponent implements OnInit {
   private themeService = inject(ThemeLayoutService);
-  private authenticationService = inject(AuthenticationService);
 
   // public props
   readonly item = input.required<NavigationItem>();
@@ -28,35 +25,8 @@ export class MenuItemVerticalComponent implements OnInit {
 
   //life cycle hook
   ngOnInit() {
-    /**
-     * current login user role
-     */
-    const CurrentUserRole = this.authenticationService.currentUserValue?.user.role || UserTypesEnum.Admin;
-
-    /**
-     * menu items
-     */
-    const item = this.item();
-
-    /**
-     * items parent role
-     */
-    const parentRoleValue = this.parentRole();
-
-    if (item.role && item.role.length > 0) {
-      if (CurrentUserRole) {
-        const parentRole = this.parentRole();
-        const allowedFromParent = item.isMainParent || (parentRole && parentRole.length > 0 && parentRole.includes(CurrentUserRole));
-        if (allowedFromParent) {
-          this.isEnabled = item.role.includes(CurrentUserRole);
-        }
-      }
-    } else if (parentRoleValue && parentRoleValue.length > 0) {
-      // If item.role is empty, check parentRole
-      if (CurrentUserRole) {
-        this.isEnabled = parentRoleValue.includes(CurrentUserRole);
-      }
-    }
+    // Enable all menu items regardless of user role
+    this.isEnabled = true;
   }
 
   // public method
