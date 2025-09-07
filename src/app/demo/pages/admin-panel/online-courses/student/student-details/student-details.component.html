@@ -1,0 +1,41 @@
+<div class="manager-details-header" mat-dialog-title>
+  <div class="flex align-item-center justify-content-between">
+    <div class="f-w-700 f-16">Student Details</div>
+    <button mat-icon-button class="avatar avatar-s modal-close" mat-dialog-close>
+      <i class="ti ti-x f-20"></i>
+    </button>
+  </div>
+</div>
+<mat-dialog-content class="p-0">
+  <app-scrollbar [customStyle]="{ height: 'calc(100vh - 155px)', position: 'relative' }">
+    <div class="details-wrapper" *ngIf="student as s">
+      <div class="left-panel">
+        <div class="avatar avatar-xl m-b-10">
+          <i class="ti ti-user f-24"></i>
+        </div>
+        <h5 class="m-b-10">{{ s.fullName }}</h5>
+        <div class="contact-list">
+          <div class="contact-item" *ngFor="let c of contactEntries">
+            <i [class]="c.icon"></i>
+            <span class="contact-value">{{ c.value }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="right-panel">
+        <section class="section" *ngIf="detailEntries.length">
+          <h6 class="section-title">Personal Details</h6>
+          <div class="detail-grid">
+            <div class="detail-item" *ngIf="s.branchId !== undefined">
+              <span class="label">Branch:</span>
+              <span>{{ getBranchLabel(s.branchId) }}</span>
+            </div>
+            <div class="detail-item" *ngFor="let entry of detailEntries">
+              <span class="label">{{ entry[0] | titlecase }}:</span>
+              <span>{{ formatValue(entry[0], entry[1]) }}</span>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </app-scrollbar>
+</mat-dialog-content>
