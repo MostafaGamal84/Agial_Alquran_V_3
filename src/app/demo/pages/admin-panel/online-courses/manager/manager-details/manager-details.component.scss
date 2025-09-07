@@ -46,6 +46,7 @@
 }
 
 .detail-item {
+
   display: flex;
   gap: 4px;
 }
@@ -54,11 +55,13 @@
   font-weight: 600;
 }
 
+
 .relation-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8px;
+
 }
 
 .relation-name {
@@ -80,3 +83,4 @@
     padding-bottom: 20px;
   }
 }
+
