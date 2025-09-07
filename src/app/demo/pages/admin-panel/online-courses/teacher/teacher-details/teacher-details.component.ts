@@ -54,6 +54,7 @@ export class TeacherDetailsComponent {
           !key.toLowerCase().includes('teacher') &&
           !/id$/i.test(key) &&
           key.toLowerCase() !== 'id' &&
+
           !Array.isArray(value) &&
           (typeof value !== 'object' || value === null)
       );
