@@ -39,10 +39,13 @@ export class StudentDetailsComponent {
         .filter((k) => raw[k] !== undefined && raw[k] !== null)
         .map((k) => ({ key: k, value: raw[k], icon: this.getContactIcon(k) }));
 
-      const exclude = ['fullName', ...contactKeys];
+      const exclude = ['fullName', 'students', 'teachers', 'managers', ...contactKeys];
       this.detailEntries = Object.entries(user).filter(
         ([key, value]) =>
           !exclude.includes(key) &&
+          !/id$/i.test(key) &&
+          key.toLowerCase() !== 'id' &&
+
           !Array.isArray(value) &&
           (typeof value !== 'object' || value === null)
       );

@@ -60,11 +60,12 @@ export class ManagerDetailsComponent {
         .filter((k) => raw[k] !== undefined && raw[k] !== null)
         .map((k) => ({ key: k, value: raw[k], icon: this.getContactIcon(k) }));
 
-      const exclude = ['fullName', 'teachers', 'students', 'managerCircles', ...contactKeys];
+      const exclude = ['fullName', 'teachers', 'students', 'managerCircles', 'managers', ...contactKeys];
       this.detailEntries = Object.entries(user).filter(
-
         ([key, value]) =>
           !exclude.includes(key) &&
+          !/id$/i.test(key) &&
+          key.toLowerCase() !== 'id' &&
           !Array.isArray(value) &&
           (typeof value !== 'object' || value === null)
       );
