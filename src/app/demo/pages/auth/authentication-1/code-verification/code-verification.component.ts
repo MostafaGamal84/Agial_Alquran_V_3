@@ -22,7 +22,7 @@ export class CodeVerificationComponent implements OnInit, AfterViewInit {
   private router = inject(Router);
   private toast = inject(ToastService);
 
-  codeDigits: string[] = Array(6).fill('');
+  codeDigits: string[] = Array(4).fill('');
   @ViewChildren('codeInput') codeInputs!: QueryList<ElementRef<HTMLInputElement>>;
 
   ngOnInit() {
