@@ -1,0 +1,48 @@
+<div class="manager-details-header" mat-dialog-title>
+  <div class="flex align-item-center justify-content-between">
+    <div class="f-w-600 f-16">Manager Details</div>
+    <button mat-icon-button class="avatar avatar-s modal-close" mat-dialog-close>
+      <i class="ti ti-x f-20"></i>
+    </button>
+  </div>
+</div>
+<mat-dialog-content class="p-0">
+  <app-scrollbar [customStyle]="{ height: 'calc(100vh - 155px)', position: 'relative' }">
+    <div class="manager-details-card p-20" *ngIf="manager as m">
+      <h5 class="m-b-10">{{ m.fullName }}</h5>
+      <div class="info-grid">
+        <div class="info-item" *ngIf="m.branchId !== undefined">
+          <span class="label">Branch:</span>
+          <span>{{ getBranchLabel(m.branchId) }}</span>
+        </div>
+        <div class="info-item" *ngFor="let entry of primitiveEntries">
+          <span class="label">{{ entry[0] | titlecase }}:</span>
+          <span>{{ formatValue(entry[0], entry[1]) }}</span>
+        </div>
+      </div>
+
+      <div *ngIf="teachers.length" class="relation-section">
+        <h6>Teachers</h6>
+        <div *ngFor="let t of teachers" class="relation-item">
+          <div class="relation-name">{{ t.fullName }}</div>
+          <div class="relation-phone">{{ t.mobile }}</div>
+        </div>
+      </div>
+
+      <div *ngIf="students.length" class="relation-section">
+        <h6>Students</h6>
+        <div *ngFor="let s of students" class="relation-item">
+          <div class="relation-name">{{ s.fullName }}</div>
+          <div class="relation-phone">{{ s.mobile }}</div>
+        </div>
+      </div>
+
+      <div *ngIf="managerCircles.length" class="relation-section">
+        <h6>Circles</h6>
+        <div *ngFor="let c of managerCircles" class="relation-item">
+          <div class="relation-name">{{ c.circle || c }}</div>
+        </div>
+      </div>
+    </div>
+  </app-scrollbar>
+</mat-dialog-content>
