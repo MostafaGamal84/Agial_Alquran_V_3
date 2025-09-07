@@ -1,21 +1,19 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
 import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scrollbar';
-
 
 @Component({
   selector: 'app-manager-details',
   standalone: true,
-  imports: [CommonModule, SharedModule, NgxScrollbar],
+  imports: [CommonModule, MatDialogModule, MatButtonModule, NgxScrollbar],
   templateUrl: './manager-details.component.html',
-  styleUrls: ['./manager-details.component.scss']
+  styleUrl: './manager-details.component.scss'
 })
 export class ManagerDetailsComponent {
-  dialogRef = inject<MatDialogRef<ManagerDetailsComponent>>(MatDialogRef);
   private data = inject<Record<string, unknown>>(MAT_DIALOG_DATA);
 
 
@@ -37,7 +35,9 @@ export class ManagerDetailsComponent {
       const raw = user as Record<string, unknown>;
       this.teachers = Array.isArray(raw['teachers']) ? (raw['teachers'] as unknown[]) : [];
       this.students = Array.isArray(raw['students']) ? (raw['students'] as unknown[]) : [];
-      this.managerCircles = Array.isArray(raw['managerCircles']) ? (raw['managerCircles'] as unknown[]) : [];
+      this.managerCircles = Array.isArray(raw['managerCircles'])
+        ? (raw['managerCircles'] as unknown[])
+        : [];
       const exclude = ['fullName', 'teachers', 'students', 'managerCircles', 'branchId'];
 
       this.primitiveEntries = Object.entries(user).filter(

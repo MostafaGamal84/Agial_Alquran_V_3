@@ -6,7 +6,8 @@ import { RouterModule } from '@angular/router';
 // angular material
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -20,7 +21,7 @@ import { ManagerDetailsComponent } from '../manager-details/manager-details.comp
 
 @Component({
   selector: 'app-manager-list',
-  imports: [CommonModule, SharedModule, RouterModule],
+  imports: [CommonModule, SharedModule, RouterModule, MatDialogModule],
   templateUrl: './manager-list.component.html',
   styleUrl: './manager-list.component.scss'
 })
