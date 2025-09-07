@@ -84,6 +84,7 @@ export class UserEditComponent implements OnInit {
       branchId: [null, Validators.required],
       teacherIds: [[]],
       managerId: [null],
+
       studentIds: [[]],
       circleIds: [[]],
       circleId: [null],
@@ -131,6 +132,7 @@ export class UserEditComponent implements OnInit {
             this.managers = this.currentUser.managers;
             this.basicInfoForm.patchValue({
               managerId: this.currentUser.managers[0].id
+
             });
           }
         }
@@ -304,6 +306,7 @@ export class UserEditComponent implements OnInit {
           this.isManager || this.isTeacher ? formValue.studentIds : undefined,
         circleIds: this.isManager ? formValue.circleIds : undefined,
         circleId: this.isTeacher ? formValue.circleId : undefined,
+
       };
       this.userService.updateUser(model).subscribe({
         next: (res) => {

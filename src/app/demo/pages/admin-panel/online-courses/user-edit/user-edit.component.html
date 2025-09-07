@@ -136,6 +136,7 @@
               <mat-form-field appearance="outline" class="w-100 m-b-10">
                 <mat-label>Manager</mat-label>
                 <mat-select formControlName="managerId" appOpenSelectOnType>
+
                   <mat-option *ngFor="let m of managers" [value]="m.id">{{ m.fullName }}</mat-option>
                 </mat-select>
               </mat-form-field>
@@ -152,6 +153,7 @@
               <mat-form-field appearance="outline" class="w-100 m-b-10">
                 <mat-label>Circle</mat-label>
                 <mat-select formControlName="circleId" appOpenSelectOnType>
+
                   <mat-option *ngFor="let c of circles" [value]="c.id">{{ c.name }}</mat-option>
                 </mat-select>
               </mat-form-field>
