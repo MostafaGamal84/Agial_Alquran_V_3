@@ -21,13 +21,7 @@ export const menus: Navigation[] = [
         title: 'Dashboard',
         type: 'collapse',
         icon: '#custom-status-up',
-        role: [
-          UserTypesEnum.Admin.toString(),
-          UserTypesEnum.Manager.toString(),
-          UserTypesEnum.BranchLeader.toString(),
-          UserTypesEnum.Student.toString(),
-          UserTypesEnum.Teacher.toString()
-        ],
+        role: [UserTypesEnum.Admin.toString()],
         children: [
           {
             id: 'default',
@@ -41,26 +35,14 @@ export const menus: Navigation[] = [
             title: 'Analytics',
             type: 'item',
             url: '/dashboard/analytics',
-            role: [
-              UserTypesEnum.Admin.toString(),
-              UserTypesEnum.Manager.toString(),
-              UserTypesEnum.BranchLeader.toString(),
-              UserTypesEnum.Student.toString(),
-              UserTypesEnum.Teacher.toString()
-            ]
+            role: [UserTypesEnum.Admin.toString()]
           },
           {
             id: 'finance',
             title: 'Finance',
             type: 'item',
             url: '/dashboard/finance',
-            role: [
-              UserTypesEnum.Admin.toString(),
-              UserTypesEnum.Manager.toString(),
-              UserTypesEnum.BranchLeader.toString(),
-              UserTypesEnum.Student.toString(),
-              UserTypesEnum.Teacher.toString()
-            ]
+            role: [UserTypesEnum.Admin.toString()]
           }
         ]
       },
