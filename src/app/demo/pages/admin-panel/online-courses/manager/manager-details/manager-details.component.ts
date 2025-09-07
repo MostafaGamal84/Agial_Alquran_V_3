@@ -23,6 +23,7 @@ export class ManagerDetailsComponent {
   manager?: Record<string, unknown>;
   teachers: Person[] = [];
   students: Person[] = [];
+
   managerCircles: unknown[] = [];
   primitiveEntries: [string, unknown][] = [];
 
@@ -38,10 +39,12 @@ export class ManagerDetailsComponent {
       const raw = user as Record<string, unknown>;
       this.teachers = Array.isArray(raw['teachers']) ? (raw['teachers'] as Person[]) : [];
       this.students = Array.isArray(raw['students']) ? (raw['students'] as Person[]) : [];
+
       this.managerCircles = Array.isArray(raw['managerCircles'])
         ? (raw['managerCircles'] as unknown[])
         : [];
       const exclude = ['fullName', 'teachers', 'students', 'managerCircles', 'branchId'];
+
       this.primitiveEntries = Object.entries(user).filter(
         ([key, value]) =>
           !exclude.includes(key) &&
@@ -51,9 +54,11 @@ export class ManagerDetailsComponent {
     }
   }
 
+
   getBranchLabel(id: number | undefined): string {
     return this.Branch.find((b) => b.id === id)?.label || String(id ?? '');
   }
+
 
   formatValue(key: string, value: unknown): unknown {
     if (key === 'branchId') {
@@ -61,5 +66,6 @@ export class ManagerDetailsComponent {
     }
     return value;
   }
+
 }
 
