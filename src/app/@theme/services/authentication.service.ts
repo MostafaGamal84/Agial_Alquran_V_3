@@ -56,6 +56,7 @@ export class AuthenticationService {
   private currentUserSignal = signal<User | null>(null);
   isLogin: boolean = false;
   pendingEmail: string | null = null;
+  pendingCode: string | null = null;
 
   // ------- Role mapping helpers -------
   // backend numeric id -> enum (string ids in your enum)
@@ -158,6 +159,7 @@ export class AuthenticationService {
             this.currentUserSignal.set(user);
             this.isLogin = true;
             this.pendingEmail = null;
+            this.pendingCode = null;
           }
         })
       );
@@ -168,6 +170,8 @@ export class AuthenticationService {
     localStorage.removeItem(this.storageKey);
     this.isLogin = false;
     this.pendingEmail = null;
+    this.pendingCode = null;
+    // Update the signal to null
     this.currentUserSignal.set(null);
     this.router.navigate(['/login']);
   }
