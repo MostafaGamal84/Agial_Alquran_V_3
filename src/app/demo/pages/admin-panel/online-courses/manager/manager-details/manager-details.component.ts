@@ -12,6 +12,12 @@ interface Person {
   [key: string]: unknown;
 }
 
+interface Circle {
+  circleId?: number;
+  circle?: string;
+  [key: string]: unknown;
+}
+
 @Component({
   selector: 'app-manager-details',
   standalone: true,
@@ -23,8 +29,10 @@ export class ManagerDetailsComponent {
   manager?: Record<string, unknown>;
   teachers: Person[] = [];
   students: Person[] = [];
+  managerCircles: Circle[] = [];
+=======
 
-  managerCircles: unknown[] = [];
+
   primitiveEntries: [string, unknown][] = [];
 
   Branch = [
@@ -39,9 +47,8 @@ export class ManagerDetailsComponent {
       const raw = user as Record<string, unknown>;
       this.teachers = Array.isArray(raw['teachers']) ? (raw['teachers'] as Person[]) : [];
       this.students = Array.isArray(raw['students']) ? (raw['students'] as Person[]) : [];
-
       this.managerCircles = Array.isArray(raw['managerCircles'])
-        ? (raw['managerCircles'] as unknown[])
+        ? (raw['managerCircles'] as Circle[])
         : [];
       const exclude = ['fullName', 'teachers', 'students', 'managerCircles', 'branchId'];
 
