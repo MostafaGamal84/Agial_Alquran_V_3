@@ -60,7 +60,17 @@ export class ManagerDetailsComponent {
         .filter((k) => raw[k] !== undefined && raw[k] !== null)
         .map((k) => ({ key: k, value: raw[k], icon: this.getContactIcon(k) }));
 
-      const exclude = ['fullName', 'teachers', 'students', 'managerCircles', 'managers', ...contactKeys];
+      const exclude = [
+        'fullName',
+        'teachers',
+        'students',
+        'managerCircles',
+        'managers',
+        'teacherName',
+        'managerName',
+        ...contactKeys
+      ];
+
       this.detailEntries = Object.entries(user).filter(
         ([key, value]) =>
           !exclude.includes(key) &&
