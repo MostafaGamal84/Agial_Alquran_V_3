@@ -19,12 +19,9 @@
     <ul class="coded-submenu" [routerLinkActive]="['active']" [ngClass]="item()!.classes!">
       @for (items of item()!.children; track $index) {
         @if (items.type === 'item') {
-          <app-menu-item-compact [item]="items" [parentRole]="item()!.role && item()!.role!.length > 0 ? item()!.role : parentRole.role" />
+          <app-menu-item-compact [item]="items" />
         } @else if (items.type === 'collapse') {
-          <app-menu-collapse-compact
-            [item]="items"
-            [parentRole]="item()!.role && item()!.role!.length > 0 ? item()!.role : parentRole.role"
-          />
+          <app-menu-collapse-compact [item]="items" />
         }
       }
     </ul>

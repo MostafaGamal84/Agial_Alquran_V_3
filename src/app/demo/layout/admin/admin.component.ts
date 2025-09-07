@@ -115,17 +115,27 @@ export class AdminComponent implements OnInit, AfterViewInit {
   /**
    * Role base menu filtering
    */
-  RoleBaseFilterMenu(menus: Navigation[], userRoles: string[], parentRoles: string[] = [UserTypesEnum.Admin.toString(),UserTypesEnum.Manager.toString()]): Navigation[] {
+  RoleBaseFilterMenu(
+    menus: Navigation[],
+    userRoles: string[],
+    parentRoles: string[] = [
+      UserTypesEnum.Admin.toString(),
+      UserTypesEnum.Manager.toString(),
+      UserTypesEnum.BranchLeader.toString(),
+      UserTypesEnum.Teacher.toString(),
+      UserTypesEnum.Student.toString()
+    ]
+  ): Navigation[] {
     return menus.map((item) => {
-      // If item doesn't have a specific role, inherit roles from parent
-      const itemRoles = item.role ? item.role : parentRoles;
+      const itemRoles = item.role && item.role.length ? item.role : parentRoles;
+      item.role = itemRoles;
+      item.disabled = !userRoles.some((role) => itemRoles.includes(role));
 
-      // If item has children, recursively filter them, passing current item's roles as parentRoles
       if (item.children) {
         item.children = this.RoleBaseFilterMenu(item.children, userRoles, itemRoles);
       }
 
-      return item; // Return the item whether it is visible or disabled
+      return item;
     });
   }
 
