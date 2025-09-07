@@ -31,6 +31,13 @@ const routes: Routes = [
         }
       },
       {
+        path: 'details/:id',
+        loadComponent: () => import('./student-details/student-details.component').then((c) => c.StudentDetailsComponent),
+        data: {
+          roles: [UserTypesEnum.Admin, UserTypesEnum.Manager, UserTypesEnum.BranchLeader, UserTypesEnum.Student, UserTypesEnum.Teacher]
+        }
+      },
+      {
         path: 'apply',
         loadComponent: () => import('./student-apply/student-apply.component').then((c) => c.StudentApplyComponent),
         data: {

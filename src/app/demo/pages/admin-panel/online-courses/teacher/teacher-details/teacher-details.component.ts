@@ -1,20 +1,13 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scrollbar';
+import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 
 interface Person {
   fullName?: string;
   mobile?: string;
-  [key: string]: unknown;
-}
-
-interface Circle {
-  circleId?: number;
-  circle?: string;
   [key: string]: unknown;
 }
 
@@ -25,17 +18,15 @@ interface ContactEntry {
 }
 
 @Component({
-  selector: 'app-manager-details',
+  selector: 'app-teacher-details',
   standalone: true,
   imports: [CommonModule, MatDialogModule, MatButtonModule, NgxScrollbar],
-  templateUrl: './manager-details.component.html',
-  styleUrl: './manager-details.component.scss'
+  templateUrl: './teacher-details.component.html',
+  styleUrl: './teacher-details.component.scss'
 })
-export class ManagerDetailsComponent {
-  manager?: Record<string, unknown>;
-  teachers: Person[] = [];
+export class TeacherDetailsComponent {
+  teacher?: Record<string, unknown>;
   students: Person[] = [];
-  managerCircles: Circle[] = [];
   contactEntries: ContactEntry[] = [];
   detailEntries: [string, unknown][] = [];
 
@@ -47,32 +38,20 @@ export class ManagerDetailsComponent {
   constructor() {
     const user = inject<Record<string, unknown>>(MAT_DIALOG_DATA);
     if (user) {
-      this.manager = user;
+      this.teacher = user;
       const raw = user as Record<string, unknown>;
-      this.teachers = Array.isArray(raw['teachers']) ? (raw['teachers'] as Person[]) : [];
       this.students = Array.isArray(raw['students']) ? (raw['students'] as Person[]) : [];
-      this.managerCircles = Array.isArray(raw['managerCircles'])
-        ? (raw['managerCircles'] as Circle[])
-        : [];
 
       const contactKeys = ['email', 'mobile', 'secondMobile'];
       this.contactEntries = contactKeys
         .filter((k) => raw[k] !== undefined && raw[k] !== null)
         .map((k) => ({ key: k, value: raw[k], icon: this.getContactIcon(k) }));
 
-      const exclude = [
-        'fullName',
-        'teachers',
-        'students',
-        'managerCircles',
-        'managers',
-        'teacherName',
-        'managerName',
-        ...contactKeys
-      ];
+      const exclude = ['fullName', 'students', 'managers', ...contactKeys];
       this.detailEntries = Object.entries(user).filter(
         ([key, value]) =>
           !exclude.includes(key) &&
+          !key.toLowerCase().includes('teacher') &&
           !/id$/i.test(key) &&
           key.toLowerCase() !== 'id' &&
           !Array.isArray(value) &&
@@ -81,11 +60,9 @@ export class ManagerDetailsComponent {
     }
   }
 
-
   getBranchLabel(id: number | undefined): string {
     return this.Branch.find((b) => b.id === id)?.label || String(id ?? '');
   }
-
 
   formatValue(key: string, value: unknown): unknown {
     if (key === 'branchId') {
@@ -103,5 +80,3 @@ export class ManagerDetailsComponent {
     return icons[key] || 'ti ti-circle';
   }
 }
-
-
