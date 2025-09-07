@@ -57,7 +57,7 @@ export class AdminComponent implements OnInit, AfterViewInit {
 
   // public props
   readonly sidebar = viewChild<MatDrawer>('sidebar');
-  menus: Navigation[] = menus;
+  menus: Navigation[] = [];
   modeValue: MatDrawerMode = 'side';
   direction: string = LTR;
   currentApplicationVersion = environment.appVersion;
@@ -103,8 +103,14 @@ export class AdminComponent implements OnInit, AfterViewInit {
 
     /**
      * Role base menu filtering
+     *
+     * Clone the static menu config before filtering so that role-based
+     * disabling does not mutate the shared `menus` array. Without cloning,
+     * items disabled for one role would remain disabled when another user
+     * with different permissions logs in.
      */
-    this.menus = this.RoleBaseFilterMenu(menus, userRoles);
+    const menuClone = JSON.parse(JSON.stringify(menus));
+    this.menus = this.RoleBaseFilterMenu(menuClone, userRoles);
   }
 
   ngAfterViewInit() {
@@ -131,14 +137,22 @@ export class AdminComponent implements OnInit, AfterViewInit {
   ): Navigation[] {
     return menus.map((item) => {
       const itemRoles = item.role && item.role.length ? item.role : parentRoles;
-      item.role = itemRoles;
-      item.disabled = !userRoles.some((role) => itemRoles.includes(role));
+      const filteredItem: Navigation = {
+        ...item,
+        role: itemRoles,
+        disabled: !userRoles.some((role) => itemRoles.includes(role))
+      };
 
-      if (item.children) {
-        item.children = this.RoleBaseFilterMenu(item.children, userRoles, itemRoles);
+      if (filteredItem.children) {
+        filteredItem.children = this.RoleBaseFilterMenu(
+          filteredItem.children,
+          userRoles,
+          itemRoles
+        );
       }
 
-      return item;
+      return filteredItem;
+
     });
   }
 
