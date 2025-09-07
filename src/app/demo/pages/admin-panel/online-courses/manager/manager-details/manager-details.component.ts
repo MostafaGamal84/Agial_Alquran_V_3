@@ -16,6 +16,7 @@ import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scroll
 export class ManagerDetailsComponent {
   private data = inject<Record<string, unknown>>(MAT_DIALOG_DATA);
 
+
   manager?: Record<string, unknown>;
   teachers: unknown[] = [];
   students: unknown[] = [];
@@ -38,6 +39,7 @@ export class ManagerDetailsComponent {
         ? (raw['managerCircles'] as unknown[])
         : [];
       const exclude = ['fullName', 'teachers', 'students', 'managerCircles', 'branchId'];
+
       this.primitiveEntries = Object.entries(user).filter(
         ([key, value]) =>
           !exclude.includes(key) &&
@@ -57,6 +59,7 @@ export class ManagerDetailsComponent {
       );
     }
     return [];
+
   }
 
   getBranchLabel(id: number | undefined): string {
@@ -80,5 +83,6 @@ export class ManagerDetailsComponent {
     }
     return value;
   }
+
 }
 
