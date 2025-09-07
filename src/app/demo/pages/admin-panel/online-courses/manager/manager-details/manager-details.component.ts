@@ -18,6 +18,12 @@ interface Circle {
   [key: string]: unknown;
 }
 
+interface ContactEntry {
+  key: string;
+  value: unknown;
+  icon: string;
+}
+
 @Component({
   selector: 'app-manager-details',
   standalone: true,
@@ -30,10 +36,9 @@ export class ManagerDetailsComponent {
   teachers: Person[] = [];
   students: Person[] = [];
   managerCircles: Circle[] = [];
+  contactEntries: ContactEntry[] = [];
+  detailEntries: [string, unknown][] = [];
 
-
-
-  primitiveEntries: [string, unknown][] = [];
 
   Branch = [
     { id: BranchesEnum.Mens, label: 'الرجال' },
@@ -50,9 +55,15 @@ export class ManagerDetailsComponent {
       this.managerCircles = Array.isArray(raw['managerCircles'])
         ? (raw['managerCircles'] as Circle[])
         : [];
-      const exclude = ['fullName', 'teachers', 'students', 'managerCircles', 'branchId'];
 
-      this.primitiveEntries = Object.entries(user).filter(
+      const contactKeys = ['email', 'mobile', 'secondMobile'];
+      this.contactEntries = contactKeys
+        .filter((k) => raw[k] !== undefined && raw[k] !== null)
+        .map((k) => ({ key: k, value: raw[k], icon: this.getContactIcon(k) }));
+
+      const exclude = ['fullName', 'teachers', 'students', 'managerCircles', ...contactKeys];
+      this.detailEntries = Object.entries(user).filter(
+
         ([key, value]) =>
           !exclude.includes(key) &&
           !Array.isArray(value) &&
@@ -74,4 +85,14 @@ export class ManagerDetailsComponent {
     return value;
   }
 
+  private getContactIcon(key: string): string {
+    const icons: Record<string, string> = {
+      email: 'ti ti-mail',
+      mobile: 'ti ti-phone',
+      secondMobile: 'ti ti-phone'
+    };
+    return icons[key] || 'ti ti-circle';
+  }
 }
+
+
