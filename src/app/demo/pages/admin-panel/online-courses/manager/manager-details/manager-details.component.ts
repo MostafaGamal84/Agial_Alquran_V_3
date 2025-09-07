@@ -30,6 +30,9 @@ export class ManagerDetailsComponent {
   teachers: Person[] = [];
   students: Person[] = [];
   managerCircles: Circle[] = [];
+=======
+
+
   primitiveEntries: [string, unknown][] = [];
 
   Branch = [
@@ -48,6 +51,7 @@ export class ManagerDetailsComponent {
         ? (raw['managerCircles'] as Circle[])
         : [];
       const exclude = ['fullName', 'teachers', 'students', 'managerCircles', 'branchId'];
+
       this.primitiveEntries = Object.entries(user).filter(
         ([key, value]) =>
           !exclude.includes(key) &&
@@ -57,9 +61,11 @@ export class ManagerDetailsComponent {
     }
   }
 
+
   getBranchLabel(id: number | undefined): string {
     return this.Branch.find((b) => b.id === id)?.label || String(id ?? '');
   }
+
 
   formatValue(key: string, value: unknown): unknown {
     if (key === 'branchId') {
@@ -67,5 +73,6 @@ export class ManagerDetailsComponent {
     }
     return value;
   }
+
 }
 
