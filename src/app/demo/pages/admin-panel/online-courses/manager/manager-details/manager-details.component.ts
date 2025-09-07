@@ -14,8 +14,6 @@ import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scroll
   styleUrl: './manager-details.component.scss'
 })
 export class ManagerDetailsComponent {
-  private data = inject<Record<string, unknown>>(MAT_DIALOG_DATA);
-
 
   manager?: Record<string, unknown>;
   teachers: unknown[] = [];
@@ -29,7 +27,8 @@ export class ManagerDetailsComponent {
   ];
 
   constructor() {
-    const user = this.data;
+    const user = inject<Record<string, unknown>>(MAT_DIALOG_DATA);
+
     if (user) {
       this.manager = user;
       const raw = user as Record<string, unknown>;
