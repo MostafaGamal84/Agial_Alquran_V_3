@@ -14,38 +14,29 @@
         <div class="info-item" *ngIf="m.branchId !== undefined">
           <span class="label">Branch:</span>
           <span>{{ getBranchLabel(m.branchId) }}</span>
-      </div>
-      <div class="info-item" *ngFor="let entry of primitiveEntries">
-        <span class="label">{{ entry[0] | titlecase }}:</span>
-        <span>{{ formatValue(entry[0], entry[1]) }}</span>
-      </div>
-    </div>
-
-    <div *ngIf="teachers.length" class="relation-section">
-      <h6>Teachers</h6>
-      <div *ngFor="let t of teachers" class="relation-item">
-        <div class="relation-name">{{ formatPerson(t) }}</div>
-        <div class="info-grid">
-          <div class="info-item" *ngFor="let e of getEntries(t)">
-            <span class="label">{{ e[0] | titlecase }}:</span>
-            <span>{{ formatValue(e[0], e[1]) }}</span>
-          </div>
+        </div>
+        <div class="info-item" *ngFor="let entry of primitiveEntries">
+          <span class="label">{{ entry[0] | titlecase }}:</span>
+          <span>{{ formatValue(entry[0], entry[1]) }}</span>
         </div>
       </div>
-    </div>
 
-    <div *ngIf="students.length" class="relation-section">
-      <h6>Students</h6>
-      <div *ngFor="let s of students" class="relation-item">
-        <div class="relation-name">{{ formatPerson(s) }}</div>
-        <div class="info-grid">
-          <div class="info-item" *ngFor="let e of getEntries(s)">
-            <span class="label">{{ e[0] | titlecase }}:</span>
-            <span>{{ formatValue(e[0], e[1]) }}</span>
-          </div>
+      <div *ngIf="teachers.length" class="relation-section">
+        <h6>Teachers</h6>
+        <div *ngFor="let t of teachers" class="relation-item">
+          <div class="relation-name">{{ t.fullName }}</div>
+          <div class="relation-phone">{{ t.mobile }}</div>
         </div>
       </div>
-    </div>
+
+      <div *ngIf="students.length" class="relation-section">
+        <h6>Students</h6>
+        <div *ngFor="let s of students" class="relation-item">
+          <div class="relation-name">{{ s.fullName }}</div>
+          <div class="relation-phone">{{ s.mobile }}</div>
+        </div>
+      </div>
+
 
       <div *ngIf="managerCircles.length" class="relation-section">
         <h6>Circles</h6>

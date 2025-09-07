@@ -6,6 +6,12 @@ import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scrollbar';
 
+interface Person {
+  fullName?: string;
+  mobile?: string;
+  [key: string]: unknown;
+}
+
 @Component({
   selector: 'app-manager-details',
   standalone: true,
@@ -14,10 +20,10 @@ import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scroll
   styleUrl: './manager-details.component.scss'
 })
 export class ManagerDetailsComponent {
-
   manager?: Record<string, unknown>;
-  teachers: unknown[] = [];
-  students: unknown[] = [];
+  teachers: Person[] = [];
+  students: Person[] = [];
+
   managerCircles: unknown[] = [];
   primitiveEntries: [string, unknown][] = [];
 
@@ -28,12 +34,12 @@ export class ManagerDetailsComponent {
 
   constructor() {
     const user = inject<Record<string, unknown>>(MAT_DIALOG_DATA);
-
     if (user) {
       this.manager = user;
       const raw = user as Record<string, unknown>;
-      this.teachers = Array.isArray(raw['teachers']) ? (raw['teachers'] as unknown[]) : [];
-      this.students = Array.isArray(raw['students']) ? (raw['students'] as unknown[]) : [];
+      this.teachers = Array.isArray(raw['teachers']) ? (raw['teachers'] as Person[]) : [];
+      this.students = Array.isArray(raw['students']) ? (raw['students'] as Person[]) : [];
+
       this.managerCircles = Array.isArray(raw['managerCircles'])
         ? (raw['managerCircles'] as unknown[])
         : [];
@@ -48,33 +54,11 @@ export class ManagerDetailsComponent {
     }
   }
 
-  getEntries(person: unknown): [string, unknown][] {
-    if (typeof person === 'object' && person !== null) {
-      const exclude = ['fullName', 'teachers', 'students', 'managers', 'managerCircles'];
-      return Object.entries(person).filter(
-        ([key, value]) =>
-          !exclude.includes(key) &&
-          (typeof value !== 'object' || value === null)
-      );
-    }
-    return [];
-
-  }
 
   getBranchLabel(id: number | undefined): string {
     return this.Branch.find((b) => b.id === id)?.label || String(id ?? '');
   }
 
-  formatPerson(person: unknown): string {
-    if (typeof person === 'object' && person !== null) {
-      const obj = person as Record<string, unknown>;
-      const name = obj['fullName'] ?? obj['name'];
-      if (name) {
-        return String(name);
-      }
-    }
-    return String(person);
-  }
 
   formatValue(key: string, value: unknown): unknown {
     if (key === 'branchId') {

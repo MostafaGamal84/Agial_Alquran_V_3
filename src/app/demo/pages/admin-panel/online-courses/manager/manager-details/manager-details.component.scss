@@ -19,11 +19,18 @@
 }
 
 .relation-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
   margin-bottom: 10px;
 }
 
 .relation-name {
   font-weight: 600;
-  margin-bottom: 5px;
+}
+
+.relation-phone {
+  direction: ltr;
 }
 
