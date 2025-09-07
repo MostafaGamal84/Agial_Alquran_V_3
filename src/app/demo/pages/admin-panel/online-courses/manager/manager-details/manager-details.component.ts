@@ -6,6 +6,7 @@ import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scrollbar';
 
+
 @Component({
   selector: 'app-manager-details',
   standalone: true,
@@ -16,6 +17,7 @@ import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scroll
 export class ManagerDetailsComponent {
   dialogRef = inject<MatDialogRef<ManagerDetailsComponent>>(MatDialogRef);
   private data = inject<Record<string, unknown>>(MAT_DIALOG_DATA);
+
 
   manager?: Record<string, unknown>;
   teachers: unknown[] = [];
@@ -37,6 +39,7 @@ export class ManagerDetailsComponent {
       this.students = Array.isArray(raw['students']) ? (raw['students'] as unknown[]) : [];
       this.managerCircles = Array.isArray(raw['managerCircles']) ? (raw['managerCircles'] as unknown[]) : [];
       const exclude = ['fullName', 'teachers', 'students', 'managerCircles', 'branchId'];
+
       this.primitiveEntries = Object.entries(user).filter(
         ([key, value]) =>
           !exclude.includes(key) &&
@@ -56,6 +59,7 @@ export class ManagerDetailsComponent {
       );
     }
     return [];
+
   }
 
   getBranchLabel(id: number | undefined): string {
@@ -79,5 +83,6 @@ export class ManagerDetailsComponent {
     }
     return value;
   }
+
 }
 
