@@ -25,6 +25,7 @@
       <div class="right-panel">
         <section class="section" *ngIf="detailEntries.length">
           <h6 class="section-title">Personal Details</h6>
+          <hr />
           <div class="detail-grid">
             <div class="detail-item" *ngIf="m.branchId !== undefined">
               <span class="label">Branch:</span>
@@ -39,6 +40,7 @@
 
         <section class="section" *ngIf="teachers.length">
           <h6 class="section-title">Teachers</h6>
+          <hr />
           <div class="relation-item" *ngFor="let t of teachers">
             <span class="relation-name">{{ t.fullName }}</span>
             <span class="relation-phone">{{ t.mobile }}</span>
@@ -47,6 +49,7 @@
 
         <section class="section" *ngIf="students.length">
           <h6 class="section-title">Students</h6>
+          <hr />
           <div class="relation-item" *ngFor="let s of students">
             <span class="relation-name">{{ s.fullName }}</span>
             <span class="relation-phone">{{ s.mobile }}</span>
@@ -55,6 +58,7 @@
 
         <section class="section" *ngIf="managerCircles.length">
           <h6 class="section-title">Circles</h6>
+          <hr />
           <div class="relation-item" *ngFor="let c of managerCircles">
             <span class="relation-name">{{ c.circle }}</span>
           </div>
