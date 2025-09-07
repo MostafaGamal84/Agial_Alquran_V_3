@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
+
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 
 @Component({
@@ -11,6 +12,7 @@ import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
   imports: [CommonModule, SharedModule, RouterModule],
   templateUrl: './manager-details.component.html',
   styleUrls: ['./manager-details.component.scss']
+
 })
 export class ManagerDetailsComponent implements OnInit {
   manager?: Record<string, unknown>;
@@ -39,6 +41,7 @@ export class ManagerDetailsComponent implements OnInit {
         ? (raw['managerCircles'] as unknown[])
         : [];
       const exclude = ['fullName', 'teachers', 'students', 'managerCircles', 'branchId'];
+
       this.primitiveEntries = Object.entries(user).filter(
         ([key, value]) =>
           !exclude.includes(key) &&
@@ -58,6 +61,7 @@ export class ManagerDetailsComponent implements OnInit {
       );
     }
     return [];
+
   }
 
   getBranchLabel(id: number | undefined): string {
@@ -81,5 +85,6 @@ export class ManagerDetailsComponent implements OnInit {
     }
     return value;
   }
+
 }
 
