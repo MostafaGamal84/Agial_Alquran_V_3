@@ -83,9 +83,11 @@ export class UserEditComponent implements OnInit {
       governorateId: [null, Validators.required],
       branchId: [null, Validators.required],
       teacherIds: [[]],
-      managerIds: [[]],
+      managerId: [null],
+
       studentIds: [[]],
       circleIds: [[]],
+      circleId: [null],
     });
 
     this.lookupService.getAllNationalities().subscribe((res) => {
@@ -129,7 +131,8 @@ export class UserEditComponent implements OnInit {
           if (this.currentUser.managers?.length) {
             this.managers = this.currentUser.managers;
             this.basicInfoForm.patchValue({
-              managerIds: this.currentUser.managers.map((m) => m.id)
+              managerId: this.currentUser.managers[0].id
+
             });
           }
         }
@@ -145,9 +148,15 @@ export class UserEditComponent implements OnInit {
             name: c.circle || ''
           }));
           this.circles = circleList;
-          this.basicInfoForm.patchValue({
-            circleIds: this.currentUser.managerCircles.map((c) => c.circleId)
-          });
+          if (this.isManager) {
+            this.basicInfoForm.patchValue({
+              circleIds: this.currentUser.managerCircles.map((c) => c.circleId)
+            });
+          } else if (this.isTeacher) {
+            this.basicInfoForm.patchValue({
+              circleId: this.currentUser.managerCircles[0].circleId
+            });
+          }
         }
         this.loadRelatedUsers();
         this.loadCircles();
@@ -291,12 +300,13 @@ export class UserEditComponent implements OnInit {
         nationalityId: formValue.nationalityId,
         governorateId: formValue.governorateId,
         branchId: formValue.branchId,
-        managerIds: this.isTeacher ? formValue.managerIds : undefined,
+        managerId: this.isTeacher ? formValue.managerId : undefined,
         teacherIds: this.isManager ? formValue.teacherIds : undefined,
         studentIds:
           this.isManager || this.isTeacher ? formValue.studentIds : undefined,
-        circleIds:
-          this.isManager || this.isTeacher ? formValue.circleIds : undefined,
+        circleIds: this.isManager ? formValue.circleIds : undefined,
+        circleId: this.isTeacher ? formValue.circleId : undefined,
+
       };
       this.userService.updateUser(model).subscribe({
         next: (res) => {
