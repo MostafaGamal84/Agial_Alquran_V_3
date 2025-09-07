@@ -1,0 +1,28 @@
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.info-item {
+  display: flex;
+  gap: 4px;
+}
+
+.info-item .label {
+  font-weight: 600;
+}
+
+.relation-section {
+  margin-top: 15px;
+}
+
+.relation-item {
+  margin-bottom: 10px;
+}
+
+.relation-name {
+  font-weight: 600;
+  margin-bottom: 5px;
+}
