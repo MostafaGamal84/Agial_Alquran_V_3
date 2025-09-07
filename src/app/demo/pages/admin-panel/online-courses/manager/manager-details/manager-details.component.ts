@@ -1,0 +1,61 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+
+import { SharedModule } from 'src/app/demo/shared/shared.module';
+import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
+
+@Component({
+  selector: 'app-manager-details',
+  imports: [CommonModule, SharedModule, RouterModule],
+  templateUrl: './manager-details.component.html',
+  styleUrl: './manager-details.component.scss'
+})
+export class ManagerDetailsComponent implements OnInit {
+  manager?: Record<string, unknown>;
+  teachers: unknown[] = [];
+  students: unknown[] = [];
+  primitiveEntries: [string, unknown][] = [];
+
+  Branch = [
+    { id: BranchesEnum.Mens, label: 'الرجال' },
+    { id: BranchesEnum.Women, label: 'النساء' }
+  ];
+
+  ngOnInit() {
+    const user = history.state['user'] as Record<string, unknown> | undefined;
+    if (user) {
+      this.manager = user;
+      const raw = user as Record<string, unknown>;
+      this.teachers = Array.isArray(raw['teachers'])
+        ? (raw['teachers'] as unknown[])
+        : [];
+      this.students = Array.isArray(raw['students'])
+        ? (raw['students'] as unknown[])
+        : [];
+      const exclude = ['fullName', 'teachers', 'students', 'branchId'];
+      this.primitiveEntries = Object.entries(user).filter(
+        ([key, value]) =>
+          !exclude.includes(key) &&
+          !Array.isArray(value) &&
+          (typeof value !== 'object' || value === null)
+      );
+    }
+  }
+
+  getBranchLabel(id: number | undefined): string {
+    return this.Branch.find((b) => b.id === id)?.label || String(id ?? '');
+  }
+
+  formatPerson(person: unknown): string {
+    if (typeof person === 'object' && person !== null) {
+      const obj = person as Record<string, unknown>;
+      const name = obj['fullName'] ?? obj['name'];
+      if (name) {
+        return String(name);
+      }
+    }
+    return String(person);
+  }
+}
+

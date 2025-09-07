@@ -1,0 +1,32 @@
+<div class="row p-t-25">
+  <div class="col-12">
+    <app-card cardTitle="Manager Details" padding="0" cardClass="sm-block">
+      <div class="p-15" *ngIf="manager as m">
+        <h5 class="m-b-10">{{ m.fullName }}</h5>
+        <p class="details-item" *ngIf="m.branchId !== undefined">
+          <strong>Branch:</strong> {{ getBranchLabel(m.branchId) }}
+        </p>
+        <p class="details-item" *ngFor="let entry of primitiveEntries">
+          <strong>{{ entry[0] | titlecase }}:</strong> {{ entry[1] }}
+        </p>
+        <div *ngIf="teachers.length" class="m-t-10">
+          <h6>Teachers</h6>
+          <ul class="details-list">
+            <li *ngFor="let t of teachers">{{ formatPerson(t) }}</li>
+          </ul>
+        </div>
+        <div *ngIf="students.length" class="m-t-10">
+          <h6>Students</h6>
+          <ul class="details-list">
+            <li *ngFor="let s of students">{{ formatPerson(s) }}</li>
+          </ul>
+        </div>
+      </div>
+      <div class="p-15">
+        <button mat-stroked-button color="primary" [routerLink]="['/online-course/manager/list']">
+          Back to list
+        </button>
+      </div>
+    </app-card>
+  </div>
+</div>
