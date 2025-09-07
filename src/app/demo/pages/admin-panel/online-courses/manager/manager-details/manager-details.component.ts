@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
+
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 
 @Component({
@@ -16,6 +17,7 @@ export class ManagerDetailsComponent implements OnInit {
   teachers: unknown[] = [];
   students: unknown[] = [];
   primitiveEntries: [string, unknown][] = [];
+
 
   Branch = [
     { id: BranchesEnum.Mens, label: 'الرجال' },
@@ -40,6 +42,7 @@ export class ManagerDetailsComponent implements OnInit {
           !Array.isArray(value) &&
           (typeof value !== 'object' || value === null)
       );
+
     }
   }
 
@@ -57,5 +60,6 @@ export class ManagerDetailsComponent implements OnInit {
     }
     return String(person);
   }
+
 }
 
