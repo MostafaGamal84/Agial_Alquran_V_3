@@ -36,6 +36,7 @@
 
 .section-title {
   font-weight: 700;
+
   margin-bottom: 10px;
 }
 
@@ -46,6 +47,7 @@
 }
 
 .detail-item {
+
   display: flex;
   gap: 4px;
 }
@@ -53,6 +55,7 @@
 .detail-item .label {
   font-weight: 700;
 }
+
 
 .relation-item {
   display: flex;
@@ -92,6 +95,7 @@
   .section-title {
     text-align: right;
   }
+
 }
 
 .relation-phone {
@@ -113,3 +117,4 @@
     padding-left: 0;
   }
 }
+

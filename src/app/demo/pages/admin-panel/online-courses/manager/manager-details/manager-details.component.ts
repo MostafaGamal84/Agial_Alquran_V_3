@@ -62,6 +62,7 @@ export class ManagerDetailsComponent {
 
       const exclude = ['fullName', 'teachers', 'students', 'managerCircles', ...contactKeys];
       this.detailEntries = Object.entries(user).filter(
+
         ([key, value]) =>
           !exclude.includes(key) &&
           !Array.isArray(value) &&
@@ -70,9 +71,11 @@ export class ManagerDetailsComponent {
     }
   }
 
+
   getBranchLabel(id: number | undefined): string {
     return this.Branch.find((b) => b.id === id)?.label || String(id ?? '');
   }
+
 
   formatValue(key: string, value: unknown): unknown {
     if (key === 'branchId') {
@@ -90,4 +93,5 @@ export class ManagerDetailsComponent {
     return icons[key] || 'ti ti-circle';
   }
 }
+
 
