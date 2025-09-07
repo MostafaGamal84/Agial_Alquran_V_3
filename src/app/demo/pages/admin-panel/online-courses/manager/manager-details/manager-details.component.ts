@@ -30,7 +30,7 @@ export class ManagerDetailsComponent {
   teachers: Person[] = [];
   students: Person[] = [];
   managerCircles: Circle[] = [];
-=======
+
 
 
   primitiveEntries: [string, unknown][] = [];
@@ -75,4 +75,3 @@ export class ManagerDetailsComponent {
   }
 
 }
-
