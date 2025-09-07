@@ -6,6 +6,7 @@ import { RouterModule } from '@angular/router';
 // angular material
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -15,15 +16,17 @@ import {
   FilteredResultRequestDto,
 } from 'src/app/@theme/services/lookup.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
+import { StudentDetailsComponent } from '../student-details/student-details.component';
 
 @Component({
   selector: 'app-student-list',
-  imports: [CommonModule, SharedModule, RouterModule],
+  imports: [CommonModule, SharedModule, RouterModule, MatDialogModule],
   templateUrl: './student-list.component.html',
   styleUrl: './student-list.component.scss'
 })
 export class StudentListComponent implements OnInit, AfterViewInit {
   private lookupService = inject(LookupService);
+  dialog = inject(MatDialog);
 
   // public props
   displayedColumns: string[] = ['fullName', 'email', 'mobile', 'nationality', 'action'];
@@ -66,6 +69,13 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
           this.totalCount = 0;
         }
       });
+  }
+
+  studentDetails(student: LookUpUserDto): void {
+    this.dialog.open(StudentDetailsComponent, {
+      width: '800px',
+      data: student
+    });
   }
 
   // life cycle event
