@@ -19,14 +19,12 @@ export class MenuItemCompactComponent implements OnInit {
 
   // public props
   readonly item = input.required<NavigationItem>();
-  readonly parentRole = input<string[]>();
 
   isEnabled: boolean = false;
 
   //life cycle hook
   ngOnInit() {
-    // Enable all menu items regardless of user role
-    this.isEnabled = true;
+    this.isEnabled = !(this.item().disabled);
   }
 
   // public method
