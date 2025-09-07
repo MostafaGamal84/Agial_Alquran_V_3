@@ -1,5 +1,5 @@
 // Angular import
-import { Component, inject, input } from '@angular/core';
+import { Component, OnInit, inject, input } from '@angular/core';
 import { CommonModule, Location, LocationStrategy } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -13,12 +13,17 @@ import { SharedModule } from 'src/app/demo/shared/shared.module';
   templateUrl: './menu-item.component.html',
   styleUrls: ['./menu-item.component.scss']
 })
-export class MenuItemHorizontalComponent {
+export class MenuItemHorizontalComponent implements OnInit {
   private location = inject(Location);
   private locationStrategy = inject(LocationStrategy);
 
   // public props
   readonly item = input<NavigationItem>();
+  isEnabled: boolean = false;
+
+  ngOnInit() {
+    this.isEnabled = !(this.item()?.disabled);
+  }
 
   // public method
   closeOtherMenu() {

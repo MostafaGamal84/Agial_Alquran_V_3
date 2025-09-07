@@ -57,7 +57,7 @@ export class AdminComponent implements OnInit, AfterViewInit {
 
   // public props
   readonly sidebar = viewChild<MatDrawer>('sidebar');
-  menus: Navigation[] = menus;
+  menus: Navigation[] = [];
   modeValue: MatDrawerMode = 'side';
   direction: string = LTR;
   currentApplicationVersion = environment.appVersion;
@@ -96,12 +96,21 @@ export class AdminComponent implements OnInit, AfterViewInit {
      * current login user role
      */
     const currentUser = this.authenticationService.currentUserValue;
-    const userRoles = currentUser?.user.role ? [currentUser.user.role] : [UserTypesEnum.Admin.toString()];
+    const userRoles =
+      currentUser?.user.role !== undefined && currentUser?.user.role !== null
+        ? [currentUser.user.role.toString()]
+        : [UserTypesEnum.Admin.toString()];
 
     /**
      * Role base menu filtering
+     *
+     * Clone the static menu config before filtering so that role-based
+     * disabling does not mutate the shared `menus` array. Without cloning,
+     * items disabled for one role would remain disabled when another user
+     * with different permissions logs in.
      */
-    this.menus = this.RoleBaseFilterMenu(menus, userRoles);
+    const menuClone = JSON.parse(JSON.stringify(menus));
+    this.menus = this.RoleBaseFilterMenu(menuClone, userRoles);
   }
 
   ngAfterViewInit() {
@@ -115,17 +124,34 @@ export class AdminComponent implements OnInit, AfterViewInit {
   /**
    * Role base menu filtering
    */
-  RoleBaseFilterMenu(menus: Navigation[], userRoles: string[], parentRoles: string[] = [UserTypesEnum.Admin.toString(),UserTypesEnum.Manager.toString()]): Navigation[] {
+  RoleBaseFilterMenu(
+    menus: Navigation[],
+    userRoles: string[],
+    parentRoles: string[] = [
+      UserTypesEnum.Admin.toString(),
+      UserTypesEnum.Manager.toString(),
+      UserTypesEnum.BranchLeader.toString(),
+      UserTypesEnum.Teacher.toString(),
+      UserTypesEnum.Student.toString()
+    ]
+  ): Navigation[] {
     return menus.map((item) => {
-      // If item doesn't have a specific role, inherit roles from parent
-      const itemRoles = item.role ? item.role : parentRoles;
+      const itemRoles = item.role && item.role.length ? item.role : parentRoles;
+      const filteredItem: Navigation = {
+        ...item,
+        role: itemRoles,
+        disabled: !userRoles.some((role) => itemRoles.includes(role))
+      };
 
-      // If item has children, recursively filter them, passing current item's roles as parentRoles
-      if (item.children) {
-        item.children = this.RoleBaseFilterMenu(item.children, userRoles, itemRoles);
+      if (filteredItem.children) {
+        filteredItem.children = this.RoleBaseFilterMenu(
+          filteredItem.children,
+          userRoles,
+          itemRoles
+        );
       }
 
-      return item; // Return the item whether it is visible or disabled
+      return filteredItem;
     });
   }
 

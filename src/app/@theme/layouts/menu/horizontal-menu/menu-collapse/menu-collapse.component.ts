@@ -33,6 +33,7 @@ export class MenuCollapseComponent implements OnInit {
   readonly item = input<NavigationItem>();
   current_url: string = ''; // Add current URL property
   visible;
+  isEnabled: boolean = false;
 
   // Constructor
   constructor() {
@@ -40,7 +41,8 @@ export class MenuCollapseComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.updateActiveMenu(); // Call updateActiveMenu on init
+    this.isEnabled = !(this.item()?.disabled);
+    this.updateActiveMenu();
   }
 
   // Method to update the active menu item based on URL

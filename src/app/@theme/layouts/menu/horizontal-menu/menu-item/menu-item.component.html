@@ -1,24 +1,53 @@
 @if (!item()!.hidden) {
   @if (item()!.url && !item()!.external) {
-    <li [ngClass]="item().classes!" [routerLinkActive]="['active']">
-      <a class="nav-link" [target]="item().target ? '_blank' : '_self'" [routerLink]="[item().url]" (click)="closeOtherMenu()">
-        @if (item().icon) {
+    <li
+      [ngClass]="item().classes!"
+      [routerLinkActive]="['active']"
+      matTooltip="{{ !isEnabled ? 'Logout and Login with Admin to view this page ' : '' }}"
+    >
+      <a
+        class="nav-link"
+        [target]="item().target ? '_blank' : '_self'"
+        [ngClass]="{ disabled: !isEnabled }"
+        [routerLink]="[item().url]"
+        (click)="closeOtherMenu()"
+      >
+        @if (!isEnabled) {
           <span class="coded-micon">
             <svg class="pc-icon">
-              <use attr.xlink:href="assets/fonts/custom-icon.svg{{ item().icon }}"></use>
+              <use xlink:href="assets/fonts/custom-icon.svg#custom-lock"></use>
             </svg>
           </span>
+        } @else {
+          @if (item().icon) {
+            <span class="coded-micon">
+              <svg class="pc-icon">
+                <use attr.xlink:href="assets/fonts/custom-icon.svg{{ item().icon }}"></use>
+              </svg>
+            </span>
+          }
         }
         @if (item().icon) {
           <span class="coded-mtext">{{ item()!.title }}</span>
         } @else {
+          @if (!isEnabled) {
+            <span class="coded-micon">
+              <svg class="pc-icon">
+                <use attr.xlink:href="assets/fonts/custom-icon.svg{{ item().icon }}"></use>
+              </svg>
+            </span>
+          }
           {{ item()!.title }}
         }
       </a>
     </li>
   } @else if (item()!.url && item()!.external) {
-    <li [ngClass]="item()!.classes!">
-      <a [target]="item()!.target ? '_blank' : '_self'" [href]="item()!.url">
+    <li [ngClass]="item()!.classes!" matTooltip="{{ !isEnabled ? 'Logout and Login with Admin to view this page ' : '' }}">
+      <a
+        [target]="item()!.target ? '_blank' : '_self'"
+        [href]="item()!.url"
+        [ngClass]="{ disabled: !isEnabled }"
+      >
         @if (item()!.icon) {
           <span class="coded-micon">
             <svg class="pc-icon">
