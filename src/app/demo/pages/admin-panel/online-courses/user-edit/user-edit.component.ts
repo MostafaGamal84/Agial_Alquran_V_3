@@ -16,6 +16,7 @@ import {
   LookUpUserDto,
   FilteredResultRequestDto,
 } from 'src/app/@theme/services/lookup.service';
+import { CircleService, CircleDto } from 'src/app/@theme/services/circle.service';
 import { CountryService, Country } from 'src/app/@theme/services/country.service';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
@@ -32,6 +33,7 @@ export class UserEditComponent implements OnInit {
   private userService = inject(UserService);
   private toast = inject(ToastService);
   private lookupService = inject(LookupService);
+  private circleService = inject(CircleService);
   private countryService = inject(CountryService);
   private router = inject(Router);
 
@@ -41,12 +43,14 @@ export class UserEditComponent implements OnInit {
     teachers?: LookUpUserDto[];
     students?: LookUpUserDto[];
     managers?: LookUpUserDto[];
+    managerCircles?: { circleId: number; circle?: string }[];
   };
   nationalities: NationalityDto[] = [];
   governorates: GovernorateDto[] = [];
   countries: Country[] = [];
   teachers: LookUpUserDto[] = [];
   students: LookUpUserDto[] = [];
+  circles: CircleDto[] = [];
   isManager = false;
   Branch = [
     { id: BranchesEnum.Mens, label: 'الرجال' },
@@ -77,6 +81,7 @@ export class UserEditComponent implements OnInit {
       branchId: [null, Validators.required],
       teacherIds: [[]],
       studentIds: [[]],
+      circleIds: [[]],
     });
 
     this.lookupService.getAllNationalities().subscribe((res) => {
@@ -121,7 +126,18 @@ export class UserEditComponent implements OnInit {
             studentIds: this.currentUser.students.map((s) => s.id)
           });
         }
+        if (this.currentUser.managerCircles?.length) {
+          const circleList: CircleDto[] = this.currentUser.managerCircles.map((c) => ({
+            id: c.circleId,
+            name: c.circle || ''
+          }));
+          this.circles = circleList;
+          this.basicInfoForm.patchValue({
+            circleIds: this.currentUser.managerCircles.map((c) => c.circleId)
+          });
+        }
         this.loadRelatedUsers();
+        this.loadCircles();
       }
     }
 
@@ -193,6 +209,17 @@ export class UserEditComponent implements OnInit {
       });
   }
 
+  private loadCircles() {
+    const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
+    this.circleService.getAll(filter).subscribe((res) => {
+      if (res.isSuccess) {
+        const existing = new Map(this.circles.map((c) => [c.id, c]));
+        res.data.items.forEach((c) => existing.set(c.id, c));
+        this.circles = Array.from(existing.values());
+      }
+    });
+  }
+
   onCountryCodeChange(control: 'mobileCountryDialCode' | 'secondMobileCountryDialCode') {
     const code = this.basicInfoForm.get(control)?.value;
     const format = this.phoneFormats[code] || { mask: '', placeholder: '' };
@@ -235,6 +262,7 @@ export class UserEditComponent implements OnInit {
         branchId: formValue.branchId,
         teacherIds: this.isManager ? formValue.teacherIds : undefined,
         studentIds: this.isManager ? formValue.studentIds : undefined,
+        circleIds: this.isManager ? formValue.circleIds : undefined,
       };
       this.userService.updateUser(model).subscribe({
         next: (res) => {
