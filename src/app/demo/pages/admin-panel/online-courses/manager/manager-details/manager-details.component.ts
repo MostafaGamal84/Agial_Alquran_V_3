@@ -8,16 +8,18 @@ import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 
 @Component({
   selector: 'app-manager-details',
+  standalone: true,
   imports: [CommonModule, SharedModule, RouterModule],
   templateUrl: './manager-details.component.html',
-  styleUrl: './manager-details.component.scss'
+  styleUrls: ['./manager-details.component.scss']
+
 })
 export class ManagerDetailsComponent implements OnInit {
   manager?: Record<string, unknown>;
   teachers: unknown[] = [];
   students: unknown[] = [];
+  managerCircles: unknown[] = [];
   primitiveEntries: [string, unknown][] = [];
-
 
   Branch = [
     { id: BranchesEnum.Mens, label: 'الرجال' },
@@ -35,15 +37,31 @@ export class ManagerDetailsComponent implements OnInit {
       this.students = Array.isArray(raw['students'])
         ? (raw['students'] as unknown[])
         : [];
-      const exclude = ['fullName', 'teachers', 'students', 'branchId'];
+      this.managerCircles = Array.isArray(raw['managerCircles'])
+        ? (raw['managerCircles'] as unknown[])
+        : [];
+      const exclude = ['fullName', 'teachers', 'students', 'managerCircles', 'branchId'];
+
       this.primitiveEntries = Object.entries(user).filter(
         ([key, value]) =>
           !exclude.includes(key) &&
           !Array.isArray(value) &&
           (typeof value !== 'object' || value === null)
       );
-
     }
+  }
+
+  getEntries(person: unknown): [string, unknown][] {
+    if (typeof person === 'object' && person !== null) {
+      const exclude = ['fullName', 'teachers', 'students', 'managers', 'managerCircles'];
+      return Object.entries(person).filter(
+        ([key, value]) =>
+          !exclude.includes(key) &&
+          (typeof value !== 'object' || value === null)
+      );
+    }
+    return [];
+
   }
 
   getBranchLabel(id: number | undefined): string {
@@ -59,6 +77,13 @@ export class ManagerDetailsComponent implements OnInit {
       }
     }
     return String(person);
+  }
+
+  formatValue(key: string, value: unknown): unknown {
+    if (key === 'branchId') {
+      return this.getBranchLabel(typeof value === 'number' ? value : undefined);
+    }
+    return value;
   }
 
 }
