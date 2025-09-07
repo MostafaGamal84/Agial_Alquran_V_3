@@ -1,0 +1,20 @@
+<div class="row p-t-25">
+  <div class="col-12">
+    <app-card cardTitle="Manager Details" padding="0" cardClass="sm-block">
+      <div class="p-15" *ngIf="manager as m">
+        <h5 class="m-b-10">{{ m.fullName }}</h5>
+        <p class="details-item"><strong>Email:</strong> {{ m.email }}</p>
+        <p class="details-item"><strong>Mobile:</strong> {{ m.mobile }}</p>
+        <p class="details-item" *ngIf="m.secondMobile"><strong>Second Mobile:</strong> {{ m.secondMobile }}</p>
+        <p class="details-item"><strong>Nationality:</strong> {{ m.nationality }}</p>
+        <p class="details-item"><strong>Governorate:</strong> {{ m.governorate }}</p>
+        <p class="details-item"><strong>Branch:</strong> {{ getBranchLabel(m.branchId) }}</p>
+      </div>
+      <div class="p-15">
+        <button mat-stroked-button color="primary" [routerLink]="['/online-course/manager/list']">
+          Back to list
+        </button>
+      </div>
+    </app-card>
+  </div>
+</div>

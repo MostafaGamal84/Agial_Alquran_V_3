@@ -54,7 +54,11 @@
                   <div class="text-center text-nowrap">
                     <ul class="list-inline p-l-0">
                       <li class="list-inline-item m-r-10" matTooltip="View">
-                        <a href="javascript:" class="avatar avatar-xs text-muted">
+                        <a
+                          [routerLink]="['/online-course/manager/details', element.id]"
+                          [state]="{ user: element }"
+                          class="avatar avatar-xs text-muted"
+                        >
                           <i class="ti ti-eye f-18"></i>
                         </a>
                       </li>
