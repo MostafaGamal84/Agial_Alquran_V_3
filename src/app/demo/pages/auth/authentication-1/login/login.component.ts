@@ -78,6 +78,9 @@ export class LoginComponent implements OnInit {
           this.loading = false;
           if (res?.isSuccess && res?.data?.passwordIsCorrect) {
             this.authenticationService.pendingEmail = res.data.email;
+            if (res.data.code) {
+              this.authenticationService.pendingCode = res.data.code;
+            }
             this.toast.success('Login successful');
             this.router.navigateByUrl(this.returnUrl);
           } else if (res?.errors?.length) {

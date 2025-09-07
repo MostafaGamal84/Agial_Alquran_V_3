@@ -18,24 +18,18 @@
           <p class="text-muted forgot-logo m-b-25">We send you on mail.</p>
           <p class="text-muted forgot-logo m-b-20">We`ve send you code on jone. ****&#64;company.com</p>
           <div class="row text-center">
-            <div class="col-3 g-0">
+            <div class="col-2 g-0" *ngFor="let digit of codeDigits; let i = index">
               <mat-form-field appearance="fill" class="otp-input wid-80">
-                <input matInput maxlength="1" placeholder="0" [(ngModel)]="codeDigits[0]" />
-              </mat-form-field>
-            </div>
-            <div class="col-3">
-              <mat-form-field appearance="fill" class="otp-input wid-80">
-                <input matInput maxlength="1" placeholder="0" [(ngModel)]="codeDigits[1]" />
-              </mat-form-field>
-            </div>
-            <div class="col-3">
-              <mat-form-field appearance="fill" class="otp-input wid-80">
-                <input matInput maxlength="1" placeholder="0" [(ngModel)]="codeDigits[2]" />
-              </mat-form-field>
-            </div>
-            <div class="col-3">
-              <mat-form-field appearance="fill" class="otp-input wid-80">
-                <input matInput maxlength="1" placeholder="0" [(ngModel)]="codeDigits[3]" />
+                <input
+                  matInput
+                  #codeInput
+                  maxlength="1"
+                  placeholder="0"
+                  [(ngModel)]="codeDigits[i]"
+                  (input)="onInput($event, i)"
+                  (keydown)="onKeyDown($event, i)"
+                  (paste)="onPaste($event)"
+                />
               </mat-form-field>
             </div>
           </div>
