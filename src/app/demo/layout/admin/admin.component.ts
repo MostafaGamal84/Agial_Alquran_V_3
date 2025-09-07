@@ -152,6 +152,7 @@ export class AdminComponent implements OnInit, AfterViewInit {
       }
 
       return filteredItem;
+
     });
   }
 
