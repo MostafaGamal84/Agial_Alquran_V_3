@@ -28,12 +28,11 @@ export class MenuCollapseCompactComponent implements OnInit {
   private location = inject(Location);
 
   // public props
-  current_url: string = ''; // Add current URL property
+  current_url: string = '';
   isEnabled: boolean = false;
 
   // all Version Get Item(Component Name Take)
   readonly item = input<NavigationItem>();
-  readonly parentRole = input<string[]>();
 
   visible = false;
   windowWidth = window.innerWidth;
@@ -63,8 +62,7 @@ export class MenuCollapseCompactComponent implements OnInit {
       });
     }, 0);
 
-    // Enable all menu items regardless of user role
-    this.isEnabled = true;
+    this.isEnabled = !(this.item()?.disabled);
   }
 
   // Method to handle the collapse of the navigation menu
