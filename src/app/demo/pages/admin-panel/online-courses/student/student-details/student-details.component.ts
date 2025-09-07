@@ -45,6 +45,7 @@ export class StudentDetailsComponent {
           !exclude.includes(key) &&
           !/id$/i.test(key) &&
           key.toLowerCase() !== 'id' &&
+
           !Array.isArray(value) &&
           (typeof value !== 'object' || value === null)
       );

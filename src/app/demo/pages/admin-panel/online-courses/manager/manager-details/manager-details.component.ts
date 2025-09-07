@@ -70,6 +70,7 @@ export class ManagerDetailsComponent {
         'managerName',
         ...contactKeys
       ];
+
       this.detailEntries = Object.entries(user).filter(
         ([key, value]) =>
           !exclude.includes(key) &&
