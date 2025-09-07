@@ -1,20 +1,24 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
-
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scrollbar';
+
 
 @Component({
   selector: 'app-manager-details',
   standalone: true,
-  imports: [CommonModule, SharedModule, RouterModule],
+  imports: [CommonModule, SharedModule, NgxScrollbar],
   templateUrl: './manager-details.component.html',
   styleUrls: ['./manager-details.component.scss']
-
 })
-export class ManagerDetailsComponent implements OnInit {
+export class ManagerDetailsComponent {
+  dialogRef = inject<MatDialogRef<ManagerDetailsComponent>>(MatDialogRef);
+  private data = inject<Record<string, unknown>>(MAT_DIALOG_DATA);
+
+
   manager?: Record<string, unknown>;
   teachers: unknown[] = [];
   students: unknown[] = [];
@@ -26,20 +30,14 @@ export class ManagerDetailsComponent implements OnInit {
     { id: BranchesEnum.Women, label: 'النساء' }
   ];
 
-  ngOnInit() {
-    const user = history.state['user'] as Record<string, unknown> | undefined;
+  constructor() {
+    const user = this.data;
     if (user) {
       this.manager = user;
       const raw = user as Record<string, unknown>;
-      this.teachers = Array.isArray(raw['teachers'])
-        ? (raw['teachers'] as unknown[])
-        : [];
-      this.students = Array.isArray(raw['students'])
-        ? (raw['students'] as unknown[])
-        : [];
-      this.managerCircles = Array.isArray(raw['managerCircles'])
-        ? (raw['managerCircles'] as unknown[])
-        : [];
+      this.teachers = Array.isArray(raw['teachers']) ? (raw['teachers'] as unknown[]) : [];
+      this.students = Array.isArray(raw['students']) ? (raw['students'] as unknown[]) : [];
+      this.managerCircles = Array.isArray(raw['managerCircles']) ? (raw['managerCircles'] as unknown[]) : [];
       const exclude = ['fullName', 'teachers', 'students', 'managerCircles', 'branchId'];
 
       this.primitiveEntries = Object.entries(user).filter(
