@@ -131,6 +131,32 @@
               </mat-form-field>
             </div>
           }
+          @if (isTeacher) {
+            <div class="col-md-6">
+              <mat-form-field appearance="outline" class="w-100 m-b-10">
+                <mat-label>Manager</mat-label>
+                <mat-select formControlName="managerId" appOpenSelectOnType>
+                  <mat-option *ngFor="let m of managers" [value]="m.id">{{ m.fullName }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+            <div class="col-md-6">
+              <mat-form-field appearance="outline" class="w-100 m-b-10">
+                <mat-label>Students</mat-label>
+                <mat-select formControlName="studentIds" multiple appOpenSelectOnType>
+                  <mat-option *ngFor="let s of students" [value]="s.id">{{ s.fullName }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+            <div class="col-md-6">
+              <mat-form-field appearance="outline" class="w-100 m-b-10">
+                <mat-label>Circle</mat-label>
+                <mat-select formControlName="circleId" appOpenSelectOnType>
+                  <mat-option *ngFor="let c of circles" [value]="c.id">{{ c.name }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          }
           <div class="col-md-12 text-end">
             <button mat-flat-button color="primary" [disabled]="basicInfoForm.invalid">Update</button>
           </div>
