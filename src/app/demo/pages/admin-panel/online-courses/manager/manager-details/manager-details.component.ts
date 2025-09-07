@@ -39,7 +39,6 @@ export class ManagerDetailsComponent {
   contactEntries: ContactEntry[] = [];
   detailEntries: [string, unknown][] = [];
 
-
   Branch = [
     { id: BranchesEnum.Mens, label: 'الرجال' },
     { id: BranchesEnum.Women, label: 'النساء' }
