@@ -2,24 +2,6 @@
   <div class="col-12">
     <app-card cardTitle="Add Circle Report">
       <form [formGroup]="reportForm" (ngSubmit)="onSubmit()" class="row">
-        <div class="col-md-6" *ngIf="role === UserTypesEnum.Manager">
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Teacher</mat-label>
-            <mat-select (selectionChange)="onTeacherChange($event.value)">
-              <mat-option *ngFor="let t of teachers" [value]="t.id">{{ t.fullName }}</mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-
-        <div class="col-md-6">
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Student</mat-label>
-            <mat-select formControlName="studentId">
-              <mat-option *ngFor="let s of students" [value]="s.id">{{ s.fullName }}</mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-
         <div class="col-md-6">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>Minutes</mat-label>

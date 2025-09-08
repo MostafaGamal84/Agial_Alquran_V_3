@@ -1,13 +1,8 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import {
-  ApiResponse,
-  FilteredResultRequestDto,
-  LookUpUserDto,
-  PagedResultDto,
-} from './lookup.service';
+import { ApiResponse } from './lookup.service';
 
 export interface CircleReportAddDto {
   id?: number;
@@ -40,43 +35,6 @@ export class CircleReportService {
     return this.http.post<ApiResponse<boolean>>(
       `${environment.apiUrl}/api/CircleReport/Create`,
       model
-    );
-  }
-
-  getUsersForGroup(
-    filter: FilteredResultRequestDto,
-    userTypeId: number,
-    teacherId: number
-  ): Observable<ApiResponse<PagedResultDto<LookUpUserDto>>> {
-    let params = new HttpParams()
-      .set('UserTypeId', userTypeId.toString())
-      .set('teacherId', teacherId.toString());
-
-    if (filter.skipCount !== undefined) {
-      params = params.set('SkipCount', filter.skipCount.toString());
-    }
-    if (filter.maxResultCount !== undefined) {
-      params = params.set('MaxResultCount', filter.maxResultCount.toString());
-    }
-    if (filter.searchTerm) {
-      params = params.set('SearchTerm', filter.searchTerm);
-    }
-    if (filter.filter) {
-      params = params.set('Filter', filter.filter);
-    }
-    if (filter.lang) {
-      params = params.set('Lang', filter.lang);
-    }
-    if (filter.sortingDirection) {
-      params = params.set('SortingDirection', filter.sortingDirection);
-    }
-    if (filter.sortBy) {
-      params = params.set('SortBy', filter.sortBy);
-    }
-
-    return this.http.get<ApiResponse<PagedResultDto<LookUpUserDto>>>(
-      `${environment.apiUrl}/api/UsersForGroups/ManagerRequestTeacherAndStudent`,
-      { params }
     );
   }
 }
