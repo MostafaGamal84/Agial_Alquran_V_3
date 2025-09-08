@@ -14,6 +14,10 @@ export interface LookUpUserDto {
   governorate: string;
   governorateId: number;
   branchId: number;
+  managerId?: number;
+  managerName?: string;
+  circleId?: number;
+  circleName?: string;
 }
 
 export interface ApiError {
