@@ -19,6 +19,8 @@ import {
   FilteredResultRequestDto
 } from 'src/app/@theme/services/lookup.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
+import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
+import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 
 @Component({
   selector: 'app-courses-view',
@@ -30,6 +32,7 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
   private circleService = inject(CircleService);
   private dialog = inject(MatDialog);
   private toast = inject(ToastService);
+  private auth = inject(AuthenticationService);
 
 
   displayedColumns: string[] = ['name', 'teacher', 'managers', 'action'];
@@ -38,6 +41,7 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
 
   readonly paginator = viewChild.required(MatPaginator);
+  isTeacherOrStudent = [UserTypesEnum.Teacher, UserTypesEnum.Student].includes(this.auth.getRole()!);
 
   ngOnInit() {
     this.loadCircles();
