@@ -59,6 +59,7 @@ export class ReportAddComponent implements OnInit {
     if (course) {
       this.reportForm.patchValue({
         teacherId: course.teacherId ?? course.teacher?.id,
+
         circleId: course.id,
       });
     } else if (this.role === UserTypesEnum.Teacher) {
