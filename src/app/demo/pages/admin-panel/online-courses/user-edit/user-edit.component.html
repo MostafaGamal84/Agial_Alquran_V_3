@@ -162,6 +162,7 @@
               <mat-form-field appearance="outline" class="w-100 m-b-10">
                 <mat-label>Teacher</mat-label>
                 <mat-select formControlName="teacherId" appOpenSelectOnType>
+
                   <mat-option *ngFor="let t of teachers" [value]="t.id">{{ t.fullName }}</mat-option>
                 </mat-select>
               </mat-form-field>

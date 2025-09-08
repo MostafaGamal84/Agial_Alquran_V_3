@@ -152,6 +152,7 @@ export class UserEditComponent implements OnInit {
               governorate: '',
               governorateId: 0,
               branchId: 0
+
             };
             this.managers = [manager];
             this.basicInfoForm.patchValue({
@@ -203,6 +204,7 @@ export class UserEditComponent implements OnInit {
             this.managers = [manager];
             this.basicInfoForm.patchValue({
               managerId: manager.id
+
             });
           }
         }
@@ -381,6 +383,7 @@ export class UserEditComponent implements OnInit {
         managerId: this.isTeacher || this.isStudent ? formValue.managerId : undefined,
         teacherIds: this.isManager ? formValue.teacherIds : undefined,
         teacherId: this.isStudent ? formValue.teacherId : undefined,
+
         studentIds: this.isManager || this.isTeacher ? formValue.studentIds : undefined,
         circleIds: this.isManager ? formValue.circleIds : undefined,
         circleId: this.isTeacher || this.isStudent ? formValue.circleId : undefined
