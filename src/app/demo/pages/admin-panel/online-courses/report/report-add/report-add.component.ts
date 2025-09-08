@@ -8,6 +8,7 @@ import {
   CircleReportService,
   CircleReportAddDto,
 } from 'src/app/@theme/services/circle-report.service';
+import { CircleService } from 'src/app/@theme/services/circle.service';
 import { LookUpUserDto } from 'src/app/@theme/services/lookup.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
@@ -22,6 +23,7 @@ import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 export class ReportAddComponent implements OnInit {
   private fb = inject(FormBuilder);
   private service = inject(CircleReportService);
+  private circleService = inject(CircleService);
   private toast = inject(ToastService);
   private auth = inject(AuthenticationService);
   private route = inject(ActivatedRoute);
@@ -62,6 +64,7 @@ export class ReportAddComponent implements OnInit {
       const teacherId = current ? Number(current.user.id) : 0;
       this.reportForm.get('teacherId')?.setValue(teacherId);
       this.loadStudents(teacherId);
+      this.loadCircle(teacherId);
     }
 
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -83,6 +86,7 @@ export class ReportAddComponent implements OnInit {
   onTeacherChange(id: number) {
     this.reportForm.get('teacherId')?.setValue(id);
     this.loadStudents(id);
+    this.loadCircle(id);
   }
 
   loadStudents(teacherId: number) {
@@ -91,6 +95,16 @@ export class ReportAddComponent implements OnInit {
       .subscribe((res) => {
         if (res.isSuccess) {
           this.students = res.data.items;
+        }
+      });
+  }
+
+  loadCircle(teacherId: number) {
+    this.circleService
+      .getAll({ skipCount: 0, maxResultCount: 1 }, undefined, teacherId)
+      .subscribe((res) => {
+        if (res.isSuccess && res.data.items.length) {
+          this.reportForm.get('circleId')?.setValue(res.data.items[0].id);
         }
       });
   }
