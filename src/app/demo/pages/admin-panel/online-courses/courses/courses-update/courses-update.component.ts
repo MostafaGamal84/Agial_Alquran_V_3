@@ -18,6 +18,7 @@ import {
 } from 'src/app/@theme/services/circle.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
+import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 
 @Component({
   selector: 'app-courses-update',
@@ -31,18 +32,21 @@ export class CoursesUpdateComponent implements OnInit {
   private circle = inject(CircleService);
   private toast = inject(ToastService);
   private route = inject(ActivatedRoute);
+  private auth = inject(AuthenticationService);
 
   circleForm!: FormGroup;
   teachers: LookUpUserDto[] = [];
   managers: LookUpUserDto[] = [];
   students: LookUpUserDto[] = [];
   id!: number;
+  isManager = false;
 
   ngOnInit(): void {
+    this.isManager = this.auth.getRole() === UserTypesEnum.Manager;
     this.circleForm = this.fb.group({
       name: ['', Validators.required],
       teacherId: [null, Validators.required],
-      managers: [[]],
+      managers: [{ value: [], disabled: this.isManager }],
       studentsIds: [[]]
     });
     const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
@@ -167,7 +171,7 @@ export class CoursesUpdateComponent implements OnInit {
       this.circleForm.markAllAsTouched();
       return;
     }
-    const model: UpdateCircleDto = { id: this.id, ...this.circleForm.value };
+    const model: UpdateCircleDto = { id: this.id, ...this.circleForm.getRawValue() };
     this.circle.update(model).subscribe({
       next: (res) => {
         if (res.isSuccess) {
