@@ -109,7 +109,12 @@
             <div class="col-md-6">
               <mat-form-field appearance="outline" class="w-100 m-b-10">
                 <mat-label>Teachers</mat-label>
-                <mat-select formControlName="teacherIds" multiple appOpenSelectOnType>
+                <mat-select
+                  formControlName="teacherIds"
+                  multiple
+                  appOpenSelectOnType
+                  (selectionChange)="onTeachersChange($event.value)"
+                >
                   <mat-option *ngFor="let t of teachers" [value]="t.id">{{ t.fullName }}</mat-option>
                 </mat-select>
               </mat-form-field>
@@ -125,7 +130,7 @@
             <div class="col-md-6">
               <mat-form-field appearance="outline" class="w-100 m-b-10">
                 <mat-label>Circles</mat-label>
-                <mat-select formControlName="circleIds" multiple appOpenSelectOnType>
+                <mat-select formControlName="circleIds" multiple appOpenSelectOnType disabled>
                   <mat-option *ngFor="let c of circles" [value]="c.id">{{ c.name }}</mat-option>
                 </mat-select>
               </mat-form-field>

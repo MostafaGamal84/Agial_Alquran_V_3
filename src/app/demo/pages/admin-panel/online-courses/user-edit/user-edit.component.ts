@@ -130,9 +130,11 @@ export class UserEditComponent implements OnInit {
           const teacherList = this.currentUser.teachers ?? this.currentUser.managers ?? [];
           if (teacherList.length) {
             this.teachers = teacherList;
+            const ids = teacherList.map((t) => t.id);
             this.basicInfoForm.patchValue({
-              teacherIds: teacherList.map((t) => t.id)
+              teacherIds: ids
             });
+            this.onTeachersChange(ids);
           }
         } else if (this.isTeacher) {
           if (this.currentUser.managers?.length) {
@@ -247,6 +249,9 @@ export class UserEditComponent implements OnInit {
           }
         }
         this.loadRelatedUsers();
+        if (this.isManager) {
+          this.basicInfoForm.get('circleIds')?.disable();
+        }
         if (this.isTeacher) {
           this.basicInfoForm.get('managerId')?.disable();
           const mId = this.basicInfoForm.get('managerId')?.value;
@@ -343,6 +348,19 @@ export class UserEditComponent implements OnInit {
             this.students = Array.from(existing.values());
           }
         });
+    }
+  }
+
+  onTeachersChange(teacherIds: number[]) {
+    if (this.isManager) {
+      const circleIds = Array.from(
+        new Set(
+          (teacherIds || [])
+            .map((id) => this.teachers.find((t) => t.id === id)?.circleId)
+            .filter((id): id is number => id !== undefined)
+        )
+      );
+      this.basicInfoForm.patchValue({ circleIds });
     }
   }
 
