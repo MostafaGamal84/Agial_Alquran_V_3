@@ -372,6 +372,7 @@ export class UserEditComponent implements OnInit {
         this.basicInfoForm.patchValue({ circleIds: Array.from(unique.keys()) });
       }
     );
+
   }
 
   onManagerChange(managerId: number, initial = false) {
