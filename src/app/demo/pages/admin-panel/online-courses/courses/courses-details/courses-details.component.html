@@ -22,6 +22,7 @@
                     <li class="list-inline-item" matTooltip="Add Report">
                       <a
                         [routerLink]="['/online-course/student/report/add', element.studentId || element.id]"
+                        [state]="{ circle: course }"
                         class="avatar avatar-xs text-muted"
                       >
                         <i class="ti ti-report f-18"></i>

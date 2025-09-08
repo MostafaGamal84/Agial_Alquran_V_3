@@ -8,8 +8,7 @@ import {
   CircleReportService,
   CircleReportAddDto,
 } from 'src/app/@theme/services/circle-report.service';
-import { CircleService } from 'src/app/@theme/services/circle.service';
-import { LookUpUserDto } from 'src/app/@theme/services/lookup.service';
+import { CircleService, CircleDto } from 'src/app/@theme/services/circle.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
@@ -29,8 +28,6 @@ export class ReportAddComponent implements OnInit {
   private route = inject(ActivatedRoute);
 
   reportForm!: FormGroup;
-  teachers: LookUpUserDto[] = [];
-  students: LookUpUserDto[] = [];
   role = this.auth.getRole();
   UserTypesEnum = UserTypesEnum;
 
@@ -57,13 +54,17 @@ export class ReportAddComponent implements OnInit {
       attendStatueId: []
     });
 
-    if (this.role === UserTypesEnum.Manager) {
-      this.loadTeachers();
+    const course = history.state.circle as CircleDto | undefined;
+
+    if (course) {
+      this.reportForm.patchValue({
+        teacherId: course.teacherId ?? course.teacher?.id,
+        circleId: course.id,
+      });
     } else if (this.role === UserTypesEnum.Teacher) {
       const current = this.auth.currentUserValue;
       const teacherId = current ? Number(current.user.id) : 0;
       this.reportForm.get('teacherId')?.setValue(teacherId);
-      this.loadStudents(teacherId);
       this.loadCircle(teacherId);
     }
 
@@ -71,32 +72,6 @@ export class ReportAddComponent implements OnInit {
     if (id) {
       this.reportForm.get('studentId')?.setValue(id);
     }
-  }
-
-  loadTeachers() {
-    this.service
-      .getUsersForGroup({ skipCount: 0, maxResultCount: 100 }, Number(UserTypesEnum.Teacher), 0)
-      .subscribe((res) => {
-        if (res.isSuccess) {
-          this.teachers = res.data.items;
-        }
-      });
-  }
-
-  onTeacherChange(id: number) {
-    this.reportForm.get('teacherId')?.setValue(id);
-    this.loadStudents(id);
-    this.loadCircle(id);
-  }
-
-  loadStudents(teacherId: number) {
-    this.service
-      .getUsersForGroup({ skipCount: 0, maxResultCount: 100 }, Number(UserTypesEnum.Student), teacherId)
-      .subscribe((res) => {
-        if (res.isSuccess) {
-          this.students = res.data.items;
-        }
-      });
   }
 
   loadCircle(teacherId: number) {
