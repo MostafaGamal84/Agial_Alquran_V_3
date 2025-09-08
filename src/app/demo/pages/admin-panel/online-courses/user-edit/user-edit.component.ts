@@ -355,10 +355,9 @@ export class UserEditComponent implements OnInit {
       });
     const circleFilter: FilteredResultRequestDto = {
       skipCount: 0,
-      maxResultCount: 100,
-      filter: `managerId=${managerId}`
+      maxResultCount: 100
     };
-    this.circleService.getAll(circleFilter).subscribe((res) => {
+    this.circleService.getAll(circleFilter, managerId).subscribe((res) => {
       if (res.isSuccess) {
         this.circles = res.data.items;
       }
