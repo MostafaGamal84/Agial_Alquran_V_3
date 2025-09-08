@@ -247,7 +247,18 @@ export class UserEditComponent implements OnInit {
           }
         }
         this.loadRelatedUsers();
-        this.loadCircles();
+        if (this.isTeacher) {
+          this.basicInfoForm.get('managerId')?.disable();
+          const mId = this.basicInfoForm.get('managerId')?.value;
+          if (mId) {
+            this.loadStudentsAndCircles(mId);
+          } else {
+            this.basicInfoForm.get('studentIds')?.disable();
+            this.basicInfoForm.get('circleId')?.disable();
+          }
+        } else {
+          this.loadCircles();
+        }
       }
     }
 
@@ -320,7 +331,7 @@ export class UserEditComponent implements OnInit {
           }
         });
     }
-    if (this.isManager || this.isTeacher) {
+    if (this.isManager) {
       this.lookupService
         .getUsersForSelects(filter, Number(UserTypesEnum.Student), 0, 0, this.currentUser?.branchId || 0)
         .subscribe((res) => {
@@ -331,6 +342,29 @@ export class UserEditComponent implements OnInit {
           }
         });
     }
+  }
+
+  private loadStudentsAndCircles(managerId: number) {
+    const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
+    this.lookupService
+      .getUsersForSelects(filter, Number(UserTypesEnum.Student), managerId, 0, this.currentUser?.branchId || 0)
+      .subscribe((res) => {
+        if (res.isSuccess) {
+          this.students = res.data.items;
+        }
+      });
+    const circleFilter: FilteredResultRequestDto = {
+      skipCount: 0,
+      maxResultCount: 100,
+      filter: `managerId=${managerId}`
+    };
+    this.circleService.getAll(circleFilter).subscribe((res) => {
+      if (res.isSuccess) {
+        this.circles = res.data.items;
+      }
+    });
+    this.basicInfoForm.get('studentIds')?.enable();
+    this.basicInfoForm.get('circleId')?.enable();
   }
 
   private loadCircles() {
