@@ -65,13 +65,6 @@ const routes: Routes = [
         }
       },
       {
-        path: 'report/add',
-        loadComponent: () => import('./report/report-add/report-add.component').then((c) => c.ReportAddComponent),
-        data: {
-          roles: [UserTypesEnum.Admin, UserTypesEnum.Manager, UserTypesEnum.BranchLeader, UserTypesEnum.Student, UserTypesEnum.Teacher]
-        }
-      },
-      {
         path: 'setting',
         loadChildren: () => import('./setting/setting.module').then((m) => m.SettingModule),
         data: {
