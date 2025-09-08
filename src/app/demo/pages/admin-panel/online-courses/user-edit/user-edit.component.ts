@@ -256,6 +256,17 @@ export class UserEditComponent implements OnInit {
             this.basicInfoForm.get('studentIds')?.disable();
             this.basicInfoForm.get('circleId')?.disable();
           }
+        } else if (this.isStudent) {
+          this.basicInfoForm.get('teacherId')?.disable();
+          this.basicInfoForm.get('circleId')?.disable();
+          const mId = this.basicInfoForm.get('managerId')?.value;
+          if (mId) {
+            this.onManagerChange(mId, true);
+            const tId = this.basicInfoForm.get('teacherId')?.value;
+            if (tId) {
+              this.onTeacherChange(tId);
+            }
+          }
         } else {
           this.loadCircles();
         }
@@ -313,15 +324,6 @@ export class UserEditComponent implements OnInit {
         });
     } else if (this.isStudent) {
       this.lookupService
-        .getUsersForSelects(filter, Number(UserTypesEnum.Teacher), 0, 0, this.currentUser?.branchId || 0)
-        .subscribe((res) => {
-          if (res.isSuccess) {
-            const existing = new Map(this.teachers.map((t) => [t.id, t]));
-            res.data.items.forEach((t) => existing.set(t.id, t));
-            this.teachers = Array.from(existing.values());
-          }
-        });
-      this.lookupService
         .getUsersForSelects(filter, Number(UserTypesEnum.Manager), 0, 0, this.currentUser?.branchId || 0)
         .subscribe((res) => {
           if (res.isSuccess) {
@@ -342,6 +344,54 @@ export class UserEditComponent implements OnInit {
           }
         });
     }
+  }
+
+  onManagerChange(managerId: number, initial = false) {
+    const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
+    if (managerId) {
+      this.lookupService
+        .getUsersForSelects(filter, Number(UserTypesEnum.Teacher), managerId, 0, this.currentUser?.branchId || 0)
+        .subscribe((res) => {
+          if (res.isSuccess) {
+            this.teachers = res.data.items;
+            const current = this.basicInfoForm.get('teacherId')?.value;
+            if (!initial) {
+              this.basicInfoForm.patchValue({ teacherId: null });
+            } else if (current && !this.teachers.some((t) => t.id === current)) {
+              this.basicInfoForm.patchValue({ teacherId: null });
+            }
+          }
+        });
+      this.basicInfoForm.get('teacherId')?.enable();
+      if (!initial) {
+        this.basicInfoForm.patchValue({ circleId: null });
+      }
+      this.circles = [];
+      this.basicInfoForm.get('circleId')?.disable();
+    } else {
+      this.teachers = [];
+      this.basicInfoForm.patchValue({ teacherId: null, circleId: null });
+      this.basicInfoForm.get('teacherId')?.disable();
+      this.circles = [];
+      this.basicInfoForm.get('circleId')?.disable();
+    }
+  }
+
+  onTeacherChange(teacherId: number) {
+    const circleFilter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
+    if (teacherId) {
+      this.circleService.getAll(circleFilter, undefined, teacherId).subscribe((res) => {
+        if (res.isSuccess) {
+          this.circles = res.data.items;
+          const first = this.circles[0];
+          this.basicInfoForm.patchValue({ circleId: first ? first.id : null });
+        }
+      });
+    } else {
+      this.circles = [];
+      this.basicInfoForm.patchValue({ circleId: null });
+    }
+    this.basicInfoForm.get('circleId')?.disable();
   }
 
   private loadStudentsAndCircles(managerId: number) {
