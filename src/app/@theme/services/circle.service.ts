@@ -81,7 +81,9 @@ export class CircleService {
   }
 
   getAll(
-    filter: FilteredResultRequestDto
+    filter: FilteredResultRequestDto,
+    managerId?: number,
+    teacherId?: number
   ): Observable<ApiResponse<PagedResultDto<CircleDto>>> {
     let params = new HttpParams();
     if (filter.skipCount !== undefined) {
@@ -104,6 +106,12 @@ export class CircleService {
     }
     if (filter.sortBy) {
       params = params.set('SortBy', filter.sortBy);
+    }
+    if (managerId !== undefined) {
+      params = params.set('managerId', managerId.toString());
+    }
+    if (teacherId !== undefined) {
+      params = params.set('teacherId', teacherId.toString());
     }
     return this.http.get<ApiResponse<PagedResultDto<CircleDto>>>(
       `${environment.apiUrl}/api/Circle/GetResultsByFilter`,
