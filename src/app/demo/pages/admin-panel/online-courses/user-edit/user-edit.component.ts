@@ -452,7 +452,8 @@ export class UserEditComponent implements OnInit {
 
   onSubmit() {
     if (this.basicInfoForm.valid) {
-      const formValue = this.basicInfoForm.value;
+      // Use getRawValue so disabled controls like circleId are included
+      const formValue = this.basicInfoForm.getRawValue();
       const clean = (v: string) => v.replace(/\D/g, '');
       const model: UpdateUserDto = {
         id: this.userId,
