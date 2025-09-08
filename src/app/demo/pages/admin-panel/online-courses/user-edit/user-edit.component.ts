@@ -44,6 +44,10 @@ export class UserEditComponent implements OnInit {
     students?: LookUpUserDto[];
     managers?: LookUpUserDto[];
     managerCircles?: { circleId: number; circle?: string }[];
+    managerId?: number;
+    managerName?: string;
+    circleId?: number;
+    circleName?: string;
   };
   nationalities: NationalityDto[] = [];
   governorates: GovernorateDto[] = [];
@@ -134,6 +138,23 @@ export class UserEditComponent implements OnInit {
               managerId: this.currentUser.managers[0].id
 
             });
+          } else if (this.currentUser.managerId && this.currentUser.managerName) {
+            const manager: LookUpUserDto = {
+              id: this.currentUser.managerId,
+              fullName: this.currentUser.managerName,
+              email: '',
+              mobile: '',
+              secondMobile: '',
+              nationality: '',
+              nationalityId: 0,
+              governorate: '',
+              governorateId: 0,
+              branchId: 0,
+            };
+            this.managers = [manager];
+            this.basicInfoForm.patchValue({
+              managerId: manager.id,
+            });
           }
         }
         if (this.currentUser.students?.length) {
@@ -155,6 +176,21 @@ export class UserEditComponent implements OnInit {
           } else if (this.isTeacher) {
             this.basicInfoForm.patchValue({
               circleId: this.currentUser.managerCircles[0].circleId
+            });
+          }
+        } else if (this.currentUser.circleId && this.currentUser.circleName) {
+          const circle: CircleDto = {
+            id: this.currentUser.circleId,
+            name: this.currentUser.circleName,
+          };
+          this.circles = [circle];
+          if (this.isManager) {
+            this.basicInfoForm.patchValue({
+              circleIds: [circle.id],
+            });
+          } else if (this.isTeacher) {
+            this.basicInfoForm.patchValue({
+              circleId: circle.id,
             });
           }
         }
