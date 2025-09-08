@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -352,16 +353,26 @@ export class UserEditComponent implements OnInit {
   }
 
   onTeachersChange(teacherIds: number[]) {
-    if (this.isManager) {
-      const circleIds = Array.from(
-        new Set(
-          (teacherIds || [])
-            .map((id) => this.teachers.find((t) => t.id === id)?.circleId)
-            .filter((id): id is number => id !== undefined)
-        )
-      );
-      this.basicInfoForm.patchValue({ circleIds });
+    if (!this.isManager) {
+      return;
     }
+    if (!(teacherIds && teacherIds.length)) {
+      this.circles = [];
+      this.basicInfoForm.patchValue({ circleIds: [] });
+      return;
+    }
+    const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
+    forkJoin(teacherIds.map((id) => this.circleService.getAll(filter, undefined, id))).subscribe(
+      (responses) => {
+        const allCircles = responses
+          .filter((res) => res.isSuccess)
+          .flatMap((res) => res.data.items);
+        const unique = new Map(allCircles.map((c) => [c.id, c]));
+        this.circles = Array.from(unique.values());
+        this.basicInfoForm.patchValue({ circleIds: Array.from(unique.keys()) });
+      }
+    );
+
   }
 
   onManagerChange(managerId: number, initial = false) {
