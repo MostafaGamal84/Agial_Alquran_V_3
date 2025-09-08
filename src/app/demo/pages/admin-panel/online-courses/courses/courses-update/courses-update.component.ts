@@ -42,10 +42,11 @@ export class CoursesUpdateComponent implements OnInit {
   isManager = false;
 
   ngOnInit(): void {
+    this.isManager = this.auth.getRole() === UserTypesEnum.Manager;
     this.circleForm = this.fb.group({
       name: ['', Validators.required],
       teacherId: [null, Validators.required],
-      managers: [[]],
+      managers: [{ value: [], disabled: this.isManager }],
       studentsIds: [[]]
     });
     this.isManager = this.auth.getRole() === UserTypesEnum.Manager;
@@ -171,7 +172,7 @@ export class CoursesUpdateComponent implements OnInit {
       this.circleForm.markAllAsTouched();
       return;
     }
-    const model: UpdateCircleDto = { id: this.id, ...this.circleForm.value };
+    const model: UpdateCircleDto = { id: this.id, ...this.circleForm.getRawValue() };
     this.circle.update(model).subscribe({
       next: (res) => {
         if (res.isSuccess) {
