@@ -89,7 +89,7 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
   displayManagers(managers?: CircleManagerDto[]): string {
     return (
       managers
-        ?.map((m) => m.manager?.fullName || String(m.managerId))
+        ?.map((m) => m.manager || String(m.managerId))
         .join(', ') || ''
     );
 

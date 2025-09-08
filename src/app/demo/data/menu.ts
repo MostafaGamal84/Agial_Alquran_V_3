@@ -263,7 +263,7 @@ export const menus: Navigation[] = [
               UserTypesEnum.Manager.toString(),
               UserTypesEnum.BranchLeader.toString(),
               // UserTypesEnum.Student.toString(),
-              UserTypesEnum.Teacher.toString()
+              // UserTypesEnum.Teacher.toString()
             ],
             children: [
               {
