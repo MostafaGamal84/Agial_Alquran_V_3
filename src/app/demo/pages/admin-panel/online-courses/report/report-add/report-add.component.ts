@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
@@ -23,6 +24,7 @@ export class ReportAddComponent implements OnInit {
   private service = inject(CircleReportService);
   private toast = inject(ToastService);
   private auth = inject(AuthenticationService);
+  private route = inject(ActivatedRoute);
 
   reportForm!: FormGroup;
   teachers: LookUpUserDto[] = [];
@@ -60,6 +62,11 @@ export class ReportAddComponent implements OnInit {
       const teacherId = current ? Number(current.user.id) : 0;
       this.reportForm.get('teacherId')?.setValue(teacherId);
       this.loadStudents(teacherId);
+    }
+
+    const id = Number(this.route.snapshot.paramMap.get('id'));
+    if (id) {
+      this.reportForm.get('studentId')?.setValue(id);
     }
   }
 
