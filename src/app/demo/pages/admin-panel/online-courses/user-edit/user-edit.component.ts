@@ -46,6 +46,8 @@ export class UserEditComponent implements OnInit {
     managerCircles?: { circleId: number; circle?: string }[];
     managerId?: number;
     managerName?: string;
+    teacherId?: number;
+    teacherName?: string;
     circleId?: number;
     circleName?: string;
   };
@@ -89,6 +91,7 @@ export class UserEditComponent implements OnInit {
       governorateId: [null, Validators.required],
       branchId: [null, Validators.required],
       teacherIds: [[]],
+      teacherId: [null],
       managerId: [null],
 
       studentIds: [[]],
@@ -149,6 +152,7 @@ export class UserEditComponent implements OnInit {
               governorate: '',
               governorateId: 0,
               branchId: 0
+
             };
             this.managers = [manager];
             this.basicInfoForm.patchValue({
@@ -159,7 +163,24 @@ export class UserEditComponent implements OnInit {
           if (this.currentUser.teachers?.length) {
             this.teachers = this.currentUser.teachers;
             this.basicInfoForm.patchValue({
-              teacherIds: this.currentUser.teachers.map((t) => t.id)
+              teacherId: this.currentUser.teachers[0].id
+            });
+          } else if (this.currentUser.teacherId && this.currentUser.teacherName) {
+            const teacher: LookUpUserDto = {
+              id: this.currentUser.teacherId,
+              fullName: this.currentUser.teacherName,
+              email: '',
+              mobile: '',
+              secondMobile: '',
+              nationality: '',
+              nationalityId: 0,
+              governorate: '',
+              governorateId: 0,
+              branchId: 0
+            };
+            this.teachers = [teacher];
+            this.basicInfoForm.patchValue({
+              teacherId: teacher.id
             });
           }
           if (this.currentUser.managers?.length) {
@@ -183,6 +204,7 @@ export class UserEditComponent implements OnInit {
             this.managers = [manager];
             this.basicInfoForm.patchValue({
               managerId: manager.id
+
             });
           }
         }
@@ -359,7 +381,9 @@ export class UserEditComponent implements OnInit {
         governorateId: formValue.governorateId,
         branchId: formValue.branchId,
         managerId: this.isTeacher || this.isStudent ? formValue.managerId : undefined,
-        teacherIds: this.isManager || this.isStudent ? formValue.teacherIds : undefined,
+        teacherIds: this.isManager ? formValue.teacherIds : undefined,
+        teacherId: this.isStudent ? formValue.teacherId : undefined,
+
         studentIds: this.isManager || this.isTeacher ? formValue.studentIds : undefined,
         circleIds: this.isManager ? formValue.circleIds : undefined,
         circleId: this.isTeacher || this.isStudent ? formValue.circleId : undefined

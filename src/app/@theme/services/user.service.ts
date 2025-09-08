@@ -25,7 +25,7 @@ export interface UpdateUserDto {
   governorateId?: number;
   branchId?: number;
   managerId?: number;
-
+  teacherId?: number;
   teacherIds?: number[];
   studentIds?: number[];
   circleIds?: number[];
