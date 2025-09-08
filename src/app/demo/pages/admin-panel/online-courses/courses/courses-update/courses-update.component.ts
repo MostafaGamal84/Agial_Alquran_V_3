@@ -18,6 +18,7 @@ import {
 } from 'src/app/@theme/services/circle.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
+import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 
 @Component({
   selector: 'app-courses-update',
@@ -31,12 +32,14 @@ export class CoursesUpdateComponent implements OnInit {
   private circle = inject(CircleService);
   private toast = inject(ToastService);
   private route = inject(ActivatedRoute);
+  private auth = inject(AuthenticationService);
 
   circleForm!: FormGroup;
   teachers: LookUpUserDto[] = [];
   managers: LookUpUserDto[] = [];
   students: LookUpUserDto[] = [];
   id!: number;
+  isManager = false;
 
   ngOnInit(): void {
     this.circleForm = this.fb.group({
@@ -45,6 +48,7 @@ export class CoursesUpdateComponent implements OnInit {
       managers: [[]],
       studentsIds: [[]]
     });
+    this.isManager = this.auth.getRole() === UserTypesEnum.Manager;
     const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
 
     const course = history.state.course as CircleDto | undefined;

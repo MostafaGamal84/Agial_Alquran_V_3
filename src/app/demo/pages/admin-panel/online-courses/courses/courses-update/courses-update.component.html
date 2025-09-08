@@ -19,7 +19,7 @@
         <div class="col-md-6">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>Managers</mat-label>
-            <mat-select formControlName="managers" multiple>
+            <mat-select formControlName="managers" multiple [disabled]="isManager">
               <mat-option *ngFor="let m of managers" [value]="m.id">{{ m.fullName }}</mat-option>
             </mat-select>
           </mat-form-field>
