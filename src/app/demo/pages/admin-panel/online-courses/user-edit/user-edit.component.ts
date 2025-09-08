@@ -14,7 +14,7 @@ import {
   NationalityDto,
   GovernorateDto,
   LookUpUserDto,
-  FilteredResultRequestDto,
+  FilteredResultRequestDto
 } from 'src/app/@theme/services/lookup.service';
 import { CircleService, CircleDto } from 'src/app/@theme/services/circle.service';
 import { CountryService, Country } from 'src/app/@theme/services/country.service';
@@ -46,6 +46,8 @@ export class UserEditComponent implements OnInit {
     managerCircles?: { circleId: number; circle?: string }[];
     managerId?: number;
     managerName?: string;
+    teacherId?: number;
+    teacherName?: string;
     circleId?: number;
     circleName?: string;
   };
@@ -58,6 +60,7 @@ export class UserEditComponent implements OnInit {
   circles: CircleDto[] = [];
   isManager = false;
   isTeacher = false;
+  isStudent = false;
   Branch = [
     { id: BranchesEnum.Mens, label: 'الرجال' },
     { id: BranchesEnum.Women, label: 'النساء' }
@@ -76,6 +79,7 @@ export class UserEditComponent implements OnInit {
   ngOnInit(): void {
     this.isManager = this.router.url.includes('/manager/');
     this.isTeacher = this.router.url.includes('/teacher/');
+    this.isStudent = this.router.url.includes('/student/');
     this.basicInfoForm = this.fb.group({
       fullName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
@@ -87,11 +91,12 @@ export class UserEditComponent implements OnInit {
       governorateId: [null, Validators.required],
       branchId: [null, Validators.required],
       teacherIds: [[]],
+      teacherId: [null],
       managerId: [null],
 
       studentIds: [[]],
       circleIds: [[]],
-      circleId: [null],
+      circleId: [null]
     });
 
     this.lookupService.getAllNationalities().subscribe((res) => {
@@ -114,17 +119,15 @@ export class UserEditComponent implements OnInit {
         fullName: this.currentUser.fullName,
         email: this.currentUser.email,
         mobile: clean(this.currentUser.mobile),
-        secondMobile: this.currentUser.secondMobile
-          ? clean(this.currentUser.secondMobile)
-          : '',
+        secondMobile: this.currentUser.secondMobile ? clean(this.currentUser.secondMobile) : '',
         nationalityId: this.currentUser.nationalityId,
         governorateId: this.currentUser.governorateId,
         branchId: this.currentUser.branchId
       });
-      if (this.isManager || this.isTeacher) {
+
+      if (this.isManager || this.isTeacher || this.isStudent) {
         if (this.isManager) {
-          const teacherList =
-            this.currentUser.teachers ?? this.currentUser.managers ?? [];
+          const teacherList = this.currentUser.teachers ?? this.currentUser.managers ?? [];
           if (teacherList.length) {
             this.teachers = teacherList;
             this.basicInfoForm.patchValue({
@@ -136,7 +139,6 @@ export class UserEditComponent implements OnInit {
             this.managers = this.currentUser.managers;
             this.basicInfoForm.patchValue({
               managerId: this.currentUser.managers[0].id
-
             });
           } else if (this.currentUser.managerId && this.currentUser.managerName) {
             const manager: LookUpUserDto = {
@@ -149,15 +151,63 @@ export class UserEditComponent implements OnInit {
               nationalityId: 0,
               governorate: '',
               governorateId: 0,
-              branchId: 0,
+              branchId: 0
             };
             this.managers = [manager];
             this.basicInfoForm.patchValue({
-              managerId: manager.id,
+              managerId: manager.id
+            });
+          }
+        } else if (this.isStudent) {
+          if (this.currentUser.teachers?.length) {
+            this.teachers = this.currentUser.teachers;
+            this.basicInfoForm.patchValue({
+              teacherId: this.currentUser.teachers[0].id
+            });
+          } else if (this.currentUser.teacherId && this.currentUser.teacherName) {
+            const teacher: LookUpUserDto = {
+              id: this.currentUser.teacherId,
+              fullName: this.currentUser.teacherName,
+              email: '',
+              mobile: '',
+              secondMobile: '',
+              nationality: '',
+              nationalityId: 0,
+              governorate: '',
+              governorateId: 0,
+              branchId: 0
+            };
+            this.teachers = [teacher];
+            this.basicInfoForm.patchValue({
+              teacherId: teacher.id
+            });
+          }
+          if (this.currentUser.managers?.length) {
+            this.managers = this.currentUser.managers;
+            this.basicInfoForm.patchValue({
+              managerId: this.currentUser.managers[0].id
+            });
+          } else if (this.currentUser.managerId && this.currentUser.managerName) {
+            const manager: LookUpUserDto = {
+              id: this.currentUser.managerId,
+              fullName: this.currentUser.managerName,
+              email: '',
+              mobile: '',
+              secondMobile: '',
+              nationality: '',
+              nationalityId: 0,
+              governorate: '',
+              governorateId: 0,
+              branchId: 0
+            };
+            this.managers = [manager];
+            this.basicInfoForm.patchValue({
+              managerId: manager.id
             });
           }
         }
-        if (this.currentUser.students?.length) {
+
+        if ((this.isManager || this.isTeacher) && this.currentUser.students?.length) {
           this.students = this.currentUser.students;
           this.basicInfoForm.patchValue({
             studentIds: this.currentUser.students.map((s) => s.id)
@@ -173,7 +223,7 @@ export class UserEditComponent implements OnInit {
             this.basicInfoForm.patchValue({
               circleIds: this.currentUser.managerCircles.map((c) => c.circleId)
             });
-          } else if (this.isTeacher) {
+          } else {
             this.basicInfoForm.patchValue({
               circleId: this.currentUser.managerCircles[0].circleId
             });
@@ -181,16 +231,16 @@ export class UserEditComponent implements OnInit {
         } else if (this.currentUser.circleId && this.currentUser.circleName) {
           const circle: CircleDto = {
             id: this.currentUser.circleId,
-            name: this.currentUser.circleName,
+            name: this.currentUser.circleName
           };
           this.circles = [circle];
           if (this.isManager) {
             this.basicInfoForm.patchValue({
-              circleIds: [circle.id],
+              circleIds: [circle.id]
             });
-          } else if (this.isTeacher) {
+          } else {
             this.basicInfoForm.patchValue({
-              circleId: circle.id,
+              circleId: circle.id
             });
           }
         }
@@ -202,10 +252,7 @@ export class UserEditComponent implements OnInit {
     this.countryService.getCountries().subscribe((data) => {
       this.countries = data;
       if (this.currentUser) {
-        const detected = this.detectDialCode(
-          this.currentUser.mobile,
-          this.countries
-        );
+        const detected = this.detectDialCode(this.currentUser.mobile, this.countries);
 
         if (detected) {
           this.basicInfoForm.patchValue({
@@ -215,10 +262,7 @@ export class UserEditComponent implements OnInit {
           this.onCountryCodeChange('mobileCountryDialCode');
         }
         if (this.currentUser.secondMobile) {
-          const secondDetected = this.detectDialCode(
-            this.currentUser.secondMobile,
-            this.countries
-          );
+          const secondDetected = this.detectDialCode(this.currentUser.secondMobile, this.countries);
 
           if (secondDetected) {
             this.basicInfoForm.patchValue({
@@ -230,20 +274,13 @@ export class UserEditComponent implements OnInit {
         }
       }
     });
-
   }
 
   private loadRelatedUsers() {
     const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
     if (this.isManager) {
       this.lookupService
-        .getUsersForSelects(
-          filter,
-          Number(UserTypesEnum.Teacher),
-          0,
-          0,
-          this.currentUser?.branchId || 0
-        )
+        .getUsersForSelects(filter, Number(UserTypesEnum.Teacher), 0, 0, this.currentUser?.branchId || 0)
         .subscribe((res) => {
           if (res.isSuccess) {
             const existing = new Map(this.teachers.map((t) => [t.id, t]));
@@ -253,13 +290,26 @@ export class UserEditComponent implements OnInit {
         });
     } else if (this.isTeacher) {
       this.lookupService
-        .getUsersForSelects(
-          filter,
-          Number(UserTypesEnum.Manager),
-          0,
-          0,
-          this.currentUser?.branchId || 0
-        )
+        .getUsersForSelects(filter, Number(UserTypesEnum.Manager), 0, 0, this.currentUser?.branchId || 0)
+        .subscribe((res) => {
+          if (res.isSuccess) {
+            const existing = new Map(this.managers.map((m) => [m.id, m]));
+            res.data.items.forEach((m) => existing.set(m.id, m));
+            this.managers = Array.from(existing.values());
+          }
+        });
+    } else if (this.isStudent) {
+      this.lookupService
+        .getUsersForSelects(filter, Number(UserTypesEnum.Teacher), 0, 0, this.currentUser?.branchId || 0)
+        .subscribe((res) => {
+          if (res.isSuccess) {
+            const existing = new Map(this.teachers.map((t) => [t.id, t]));
+            res.data.items.forEach((t) => existing.set(t.id, t));
+            this.teachers = Array.from(existing.values());
+          }
+        });
+      this.lookupService
+        .getUsersForSelects(filter, Number(UserTypesEnum.Manager), 0, 0, this.currentUser?.branchId || 0)
         .subscribe((res) => {
           if (res.isSuccess) {
             const existing = new Map(this.managers.map((m) => [m.id, m]));
@@ -268,21 +318,17 @@ export class UserEditComponent implements OnInit {
           }
         });
     }
-    this.lookupService
-      .getUsersForSelects(
-        filter,
-        Number(UserTypesEnum.Student),
-        0,
-        0,
-        this.currentUser?.branchId || 0
-      )
-      .subscribe((res) => {
-        if (res.isSuccess) {
-          const existing = new Map(this.students.map((s) => [s.id, s]));
-          res.data.items.forEach((s) => existing.set(s.id, s));
-          this.students = Array.from(existing.values());
-        }
-      });
+    if (this.isManager || this.isTeacher) {
+      this.lookupService
+        .getUsersForSelects(filter, Number(UserTypesEnum.Student), 0, 0, this.currentUser?.branchId || 0)
+        .subscribe((res) => {
+          if (res.isSuccess) {
+            const existing = new Map(this.students.map((s) => [s.id, s]));
+            res.data.items.forEach((s) => existing.set(s.id, s));
+            this.students = Array.from(existing.values());
+          }
+        });
+    }
   }
 
   private loadCircles() {
@@ -308,13 +354,9 @@ export class UserEditComponent implements OnInit {
     }
   }
 
-  private detectDialCode(phone: string, countries: Country[]):
-    | { dialCode: string; number: string }
-    | null {
+  private detectDialCode(phone: string, countries: Country[]): { dialCode: string; number: string } | null {
     const digits = phone.replace(/\D/g, '');
-    const codes = countries
-      .map((c) => c.dialCode.replace('+', ''))
-      .sort((a, b) => b.length - a.length);
+    const codes = countries.map((c) => c.dialCode.replace('+', '')).sort((a, b) => b.length - a.length);
     for (const code of codes) {
       if (digits.startsWith(code)) {
         return { dialCode: `+${code}`, number: digits.slice(code.length) };
@@ -336,13 +378,12 @@ export class UserEditComponent implements OnInit {
         nationalityId: formValue.nationalityId,
         governorateId: formValue.governorateId,
         branchId: formValue.branchId,
-        managerId: this.isTeacher ? formValue.managerId : undefined,
+        managerId: this.isTeacher || this.isStudent ? formValue.managerId : undefined,
         teacherIds: this.isManager ? formValue.teacherIds : undefined,
-        studentIds:
-          this.isManager || this.isTeacher ? formValue.studentIds : undefined,
+        teacherId: this.isStudent ? formValue.teacherId : undefined,
+        studentIds: this.isManager || this.isTeacher ? formValue.studentIds : undefined,
         circleIds: this.isManager ? formValue.circleIds : undefined,
-        circleId: this.isTeacher ? formValue.circleId : undefined,
-
+        circleId: this.isTeacher || this.isStudent ? formValue.circleId : undefined
       };
       this.userService.updateUser(model).subscribe({
         next: (res) => {
