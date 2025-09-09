@@ -40,8 +40,8 @@ export class SubscribeTypeFormComponent implements OnInit {
         id: data.id,
         name: data.name ?? '',
 
-        forignPricePerHour: data.forignPricePerHour ?? '',
-        arabPricePerHour: data.arabPricePerHour ?? '',
+        forignPricePerHour: data.forignPricePerHour ?? null,
+        arabPricePerHour: data.arabPricePerHour ?? null,
       });
 
     }
