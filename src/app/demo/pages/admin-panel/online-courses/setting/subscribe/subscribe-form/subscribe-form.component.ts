@@ -51,6 +51,7 @@ export class SubscribeFormComponent implements OnInit {
         minutes: data.minutes ?? null,
         subscribeTypeId: data.subscribeTypeId ?? null,
       });
+
     }
     const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
     this.service.getAllTypes(filter).subscribe((res) => {

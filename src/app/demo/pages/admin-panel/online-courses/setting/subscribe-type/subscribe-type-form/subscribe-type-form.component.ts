@@ -42,6 +42,7 @@ export class SubscribeTypeFormComponent implements OnInit {
         forignPricePerHour: data.forignPricePerHour ?? null,
         arabPricePerHour: data.arabPricePerHour ?? null,
       });
+
     }
   }
 
