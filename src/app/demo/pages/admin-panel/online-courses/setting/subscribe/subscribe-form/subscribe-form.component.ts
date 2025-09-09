@@ -54,10 +54,15 @@ export class SubscribeFormComponent implements OnInit {
 
     }
     const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
-    this.service.getAllTypes(filter).subscribe((res) => {
-      if (res.isSuccess && res.data?.items) {
-        this.types = res.data.items;
-      }
+    this.service.getAllTypes(filter).subscribe({
+      next: (res) => {
+        if (res.isSuccess && res.data?.items) {
+          this.types = res.data.items;
+        } else {
+          this.types = [];
+        }
+      },
+      error: () => this.toast.error('Error loading subscribe types')
     });
   }
 
