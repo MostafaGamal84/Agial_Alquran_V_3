@@ -1,0 +1,13 @@
+<h2 mat-dialog-title>Payment Details</h2>
+<div mat-dialog-content>
+  <p><strong>Name:</strong> {{ data.studentName }}</p>
+  <p><strong>Subscription:</strong> {{ data.studentSubscribeName }}</p>
+  <p><strong>Amount:</strong> {{ data.amount }}</p>
+  <p><strong>Currency:</strong> {{ data.currencyId }}</p>
+  <p><strong>Payment Date:</strong> {{ data.paymentDate ? (data.paymentDate | date: 'short') : 'N/A' }}</p>
+  <p><strong>Receipt:</strong> {{ data.receiptPath || 'N/A' }}</p>
+  <p><strong>Status:</strong> {{ data.payStatue ? 'Payed' : 'Not payed' }}</p>
+</div>
+<div mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Close</button>
+</div>

@@ -13,6 +13,7 @@ export interface ViewStudentSubscribeReDto {
   plan?: string | null;
   remainingMinutes?: number | null;
   startDate?: string | null;
+  studentPaymentId?: number | null;
 }
 
 @Injectable({ providedIn: 'root' })

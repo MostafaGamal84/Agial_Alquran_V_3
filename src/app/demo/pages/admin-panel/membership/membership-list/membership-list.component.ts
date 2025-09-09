@@ -6,11 +6,14 @@ import { RouterModule } from '@angular/router';
 // angular material
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
+import { MatDialog } from '@angular/material/dialog';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { StudentSubscribeService, ViewStudentSubscribeReDto } from 'src/app/@theme/services/student-subscribe.service';
 import { FilteredResultRequestDto } from 'src/app/@theme/services/lookup.service';
+import { StudentPaymentService } from 'src/app/@theme/services/student-payment.service';
+import { PaymentDetailsComponent } from '../payment-details/payment-details.component';
 
 @Component({
   selector: 'app-membership-list',
@@ -20,6 +23,8 @@ import { FilteredResultRequestDto } from 'src/app/@theme/services/lookup.service
 })
 export class MembershipListComponent implements AfterViewInit, OnInit {
   private service = inject(StudentSubscribeService);
+  private paymentService = inject(StudentPaymentService);
+  private dialog = inject(MatDialog);
 
   displayedColumns: string[] = ['name', 'mobile', 'date', 'status', 'plan', 'action'];
   dataSource = new MatTableDataSource<ViewStudentSubscribeReDto>();
@@ -60,6 +65,17 @@ export class MembershipListComponent implements AfterViewInit, OnInit {
       this.filter.skipCount = this.paginator().pageIndex * this.paginator().pageSize;
       this.filter.maxResultCount = this.paginator().pageSize;
       this.load();
+    });
+  }
+
+  openPaymentDetails(paymentId?: number) {
+    if (!paymentId) {
+      return;
+    }
+    this.paymentService.getPayment(paymentId).subscribe((res) => {
+      if (res.isSuccess && res.data) {
+        this.dialog.open(PaymentDetailsComponent, { data: res.data });
+      }
     });
   }
 }
