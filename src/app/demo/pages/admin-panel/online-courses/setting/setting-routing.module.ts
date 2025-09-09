@@ -23,6 +23,16 @@ const routes: Routes = [
         path: 'notification',
         loadComponent: () => import('./notification/notification.component').then((c) => c.NotificationComponent),
         data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager,UserTypesEnum.BranchLeader,UserTypesEnum.Student,UserTypesEnum.Teacher] }
+      },
+      {
+        path: 'subscribe',
+        loadChildren: () => import('./subscribe/subscribe.module').then((m) => m.SubscribeModule),
+        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager,UserTypesEnum.BranchLeader,UserTypesEnum.Student,UserTypesEnum.Teacher] }
+      },
+      {
+        path: 'subscribe-type',
+        loadChildren: () => import('./subscribe-type/subscribe-type.module').then((m) => m.SubscribeTypeModule),
+        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager,UserTypesEnum.BranchLeader,UserTypesEnum.Student,UserTypesEnum.Teacher] }
       }
     ]
   }

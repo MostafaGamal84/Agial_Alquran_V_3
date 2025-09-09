@@ -1,0 +1,80 @@
+<div class="row p-t-25">
+  <div class="col-12">
+    <app-card cardTitle="Subscribe List" padding="0" cardClass="sm-block">
+      <ng-template #headerOptionsTemplate>
+        <div class="table-options">
+          <button mat-flat-button color="primary" [routerLink]="['/online-course/setting/subscribe/add']">
+            <div class="flex align-item-center">
+              <i class="ti ti-plus f-18 m-r-5"></i>
+              Add Subscribe
+            </div>
+          </button>
+        </div>
+      </ng-template>
+      <div class="p-b-15">
+        <div class="table-containe table-reponsive">
+          <div class="table-search p-t-15 p-x-15">
+            <mat-form-field appearance="outline" class="w-100">
+              <input matInput (keyup)="applyFilter($event)" placeholder="Search...." #input />
+            </mat-form-field>
+          </div>
+          <div class="table-responsive">
+            <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+              <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef class="p-l-25">NAME</th>
+                <td mat-cell *matCellDef="let element" class="p-l-25 text-nowrap">
+                  {{ element.name }}
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="minutes">
+                <th mat-header-cell *matHeaderCellDef>MINUTES</th>
+                <td mat-cell *matCellDef="let element" class="text-nowrap">
+                  {{ element.minutes }}
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="type">
+                <th mat-header-cell *matHeaderCellDef>TYPE</th>
+                <td mat-cell *matCellDef="let element" class="text-nowrap">
+                  {{ element.subscribeType?.name }}
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="action">
+                <th mat-header-cell *matHeaderCellDef class="text-center">ACTIONS</th>
+                <td mat-cell *matCellDef="let element" class="text-nowrap">
+                  <div class="text-center text-nowrap">
+                    <ul class="list-inline p-l-0">
+                      <li class="list-inline-item m-r-10" matTooltip="Edit">
+                        <a
+                          [routerLink]="['/online-course/setting/subscribe/edit', element.id]"
+                          class="avatar avatar-xs text-muted"
+                        >
+                          <i class="ti ti-edit-circle f-18"></i>
+                        </a>
+                      </li>
+                      <li class="list-inline-item m-r-10" matTooltip="Delete" (click)="delete(element.id)">
+                        <a href="javascript:" class="avatar avatar-xs text-muted">
+                          <i class="ti ti-trash f-18"></i>
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+              <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell" colspan="4">No data matching the filter "{{ input.value }}"</td>
+              </tr>
+            </table>
+            <mat-paginator
+              [length]="totalCount"
+              [pageSize]="filter.maxResultCount"
+              [pageSizeOptions]="[5, 10, 25, 100]"
+              aria-label="Select page of subscribes"
+            ></mat-paginator>
+          </div>
+        </div>
+      </div>
+    </app-card>
+  </div>
+</div>
