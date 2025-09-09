@@ -72,7 +72,6 @@ export class SubscribeService {
     const params = new HttpParams().set('id', id.toString());
     return this.http.get<ApiResponse<boolean>>(
       `${environment.apiUrl}/api/Subscribe/Delete`,
-
       { params }
     );
   }
@@ -127,7 +126,6 @@ export class SubscribeService {
     const params = new HttpParams().set('id', id.toString());
     return this.http.get<ApiResponse<boolean>>(
       `${environment.apiUrl}/api/Subscribe/DeleteType`,
-
       { params }
     );
   }

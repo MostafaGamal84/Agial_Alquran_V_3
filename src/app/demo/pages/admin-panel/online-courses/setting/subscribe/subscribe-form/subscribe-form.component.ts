@@ -26,13 +26,13 @@ export class SubscribeFormComponent implements OnInit {
   private toast = inject(ToastService);
 
   form = this.fb.group({
-    id: [0],
+    id: [0 as number | null],
     name: ['', Validators.required],
-    leprice: [],
-    sarprice: [],
-    usdprice: [],
-    minutes: [],
-    subscribeTypeId: []
+    leprice: [null as number | null],
+    sarprice: [null as number | null],
+    usdprice: [null as number | null],
+    minutes: [null as number | null],
+    subscribeTypeId: [null as number | null]
   });
 
   isEdit = false;
@@ -44,11 +44,11 @@ export class SubscribeFormComponent implements OnInit {
       this.isEdit = true;
       this.form.patchValue({
         id: data.id,
-        name: data.name ?? null,
-        leprice: data.leprice ?? null,
-        sarprice: data.sarprice ?? null,
-        usdprice: data.usdprice ?? null,
-        minutes: data.minutes ?? null,
+        name: data.name ?? '',
+        leprice: data.leprice ?? '',
+        sarprice: data.sarprice ?? '',,
+        usdprice: data.usdprice ?? '',,
+        minutes: data.minutes ?? '',,
         subscribeTypeId: data.subscribeTypeId ?? null,
       });
 

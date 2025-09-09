@@ -24,10 +24,10 @@ export class SubscribeTypeFormComponent implements OnInit {
   private toast = inject(ToastService);
 
   form = this.fb.group({
-    id: [0],
+    id: [0 as number | null],
     name: ['', Validators.required],
-    forignPricePerHour: [],
-    arabPricePerHour: []
+    forignPricePerHour: [null as number | null],
+    arabPricePerHour: [null as number | null]
   });
 
   isEdit = false;
@@ -38,9 +38,10 @@ export class SubscribeTypeFormComponent implements OnInit {
       this.isEdit = true;
       this.form.patchValue({
         id: data.id,
-        name: data.name ?? null,
-        forignPricePerHour: data.forignPricePerHour ?? null,
-        arabPricePerHour: data.arabPricePerHour ?? null,
+        name: data.name ?? '',
+
+        forignPricePerHour: data.forignPricePerHour ?? '',
+        arabPricePerHour: data.arabPricePerHour ?? '',
       });
 
     }
