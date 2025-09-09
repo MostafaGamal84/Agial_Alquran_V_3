@@ -42,7 +42,16 @@ export class SubscribeFormComponent implements OnInit {
     const data = history.state?.item as SubscribeDto | undefined;
     if (data) {
       this.isEdit = true;
-      this.form.patchValue(data as Partial<SubscribeDto>);
+      this.form.patchValue({
+        id: data.id,
+        name: data.name ?? null,
+        leprice: data.leprice ?? null,
+        sarprice: data.sarprice ?? null,
+        usdprice: data.usdprice ?? null,
+        minutes: data.minutes ?? null,
+        subscribeTypeId: data.subscribeTypeId ?? null,
+      });
+
     }
     const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
     this.service.getAllTypes(filter).subscribe((res) => {

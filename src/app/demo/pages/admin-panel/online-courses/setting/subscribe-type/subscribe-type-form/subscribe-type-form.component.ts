@@ -36,7 +36,13 @@ export class SubscribeTypeFormComponent implements OnInit {
     const data = history.state?.item as SubscribeTypeDto | undefined;
     if (data) {
       this.isEdit = true;
-      this.form.patchValue(data as Partial<SubscribeTypeDto>);
+      this.form.patchValue({
+        id: data.id,
+        name: data.name ?? null,
+        forignPricePerHour: data.forignPricePerHour ?? null,
+        arabPricePerHour: data.arabPricePerHour ?? null,
+      });
+
     }
   }
 
