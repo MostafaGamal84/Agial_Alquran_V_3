@@ -2,7 +2,8 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
-import { ViewStudentSubscribeReDto } from 'src/app/@theme/services/student-subscribe.service';
+import { StudentPaymentDto } from 'src/app/@theme/services/student-payment.service';
+
 
 @Component({
   selector: 'app-payment-details',
@@ -12,5 +13,6 @@ import { ViewStudentSubscribeReDto } from 'src/app/@theme/services/student-subsc
   styleUrl: './payment-details.component.scss'
 })
 export class PaymentDetailsComponent {
-  data = inject<ViewStudentSubscribeReDto>(MAT_DIALOG_DATA);
+  data = inject<StudentPaymentDto>(MAT_DIALOG_DATA);
+
 }

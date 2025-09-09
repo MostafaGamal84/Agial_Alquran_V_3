@@ -60,9 +60,9 @@ export class MembershipViewComponent implements OnInit, AfterViewInit {
       return;
     }
     this.paymentService.getPayment(paymentId).subscribe((res) => {
-      const payment = res.data?.items?.[0];
-      if (payment) {
-        this.dialog.open(PaymentDetailsComponent, { data: payment });
+      if (res.isSuccess && res.data) {
+        this.dialog.open(PaymentDetailsComponent, { data: res.data });
+
       }
     });
   }
