@@ -40,6 +40,7 @@ interface StudentApiResponse {
     items: StudentApiItem[];
     totalCount: number;
   };
+
 }
 
 @Component({
@@ -66,6 +67,7 @@ export class MembershipListComponent implements AfterViewInit, OnInit {
       .subscribe((res) => {
         const items = res?.data?.items ?? [];
         const data = items.map((item) => this.mapStudent(item));
+
         this.dataSource.data = data;
       });
   }
@@ -79,6 +81,7 @@ export class MembershipListComponent implements AfterViewInit, OnInit {
       mobile: this.normalize(item?.studentMobile),
       date: start ? start.toLocaleDateString() : 'there is no',
       time: start ? start.toLocaleTimeString() : 'there is no',
+
       status:
         payStatus === true
           ? 'payed'
