@@ -367,6 +367,18 @@ export const menus: Navigation[] = [
                 title: 'Notification',
                 type: 'item',
                 url: '/online-course/setting/notification'
+              },
+              {
+                id: 'subscribe',
+                title: 'Subscribe',
+                type: 'item',
+                url: '/online-course/setting/subscribe'
+              },
+              {
+                id: 'subscribe-type',
+                title: 'Subscribe Type',
+                type: 'item',
+                url: '/online-course/setting/subscribe-type'
               }
             ]
           }
