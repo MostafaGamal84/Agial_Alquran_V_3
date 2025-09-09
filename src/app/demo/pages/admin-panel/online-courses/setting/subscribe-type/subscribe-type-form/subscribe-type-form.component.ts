@@ -39,9 +39,11 @@ export class SubscribeTypeFormComponent implements OnInit {
       this.form.patchValue({
         id: data.id,
         name: data.name ?? '',
-        forignPricePerHour: data.forignPricePerHour ?? null,
-        arabPricePerHour: data.arabPricePerHour ?? null,
+
+        forignPricePerHour: data.forignPricePerHour ?? '',
+        arabPricePerHour: data.arabPricePerHour ?? '',
       });
+
     }
   }
 
