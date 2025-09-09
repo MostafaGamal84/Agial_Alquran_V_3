@@ -22,14 +22,25 @@ export interface membershipList {
   plan: string;
 }
 
-interface StudentApi {
-  name?: string | null;
-  src?: string | null;
-  mobile?: string | null;
-  date?: string | null;
-  time?: string | null;
+interface StudentApiItem {
+  id: number;
+  studentId: number;
+  studentName?: string | null;
+  studentMobile?: string | null;
+  payStatus?: boolean | null;
   plan?: string | null;
-  payStatue?: boolean | null;
+  remainingMinutes?: number | null;
+  startDate?: string | null;
+}
+
+interface StudentApiResponse {
+  isSuccess: boolean;
+  errors: { fieldName: string; code: string; message: string; fieldLang: string }[];
+  data: {
+    items: StudentApiItem[];
+    totalCount: number;
+  };
+
 }
 
 @Component({
@@ -52,21 +63,25 @@ export class MembershipListComponent implements AfterViewInit, OnInit {
 
   ngOnInit() {
     this.http
-      .get<StudentApi[]>('https://localhost:7260/api/StudentSubscrib/GetStudents')
+      .get<StudentApiResponse>('https://localhost:7260/api/StudentSubscrib/GetStudents')
       .subscribe((res) => {
-        const data = res.map((item) => this.mapStudent(item));
+        const items = res?.data?.items ?? [];
+        const data = items.map((item) => this.mapStudent(item));
+
         this.dataSource.data = data;
       });
   }
 
-  private mapStudent(item: StudentApi): membershipList {
-    const payStatus = item?.payStatue;
+  private mapStudent(item: StudentApiItem): membershipList {
+    const payStatus = item?.payStatus;
+    const start = item?.startDate ? new Date(item.startDate) : null;
     return {
-      name: this.normalize(item?.name),
-      src: item?.src ?? 'assets/images/user/avatar-1.png',
-      mobile: this.normalize(item?.mobile),
-      date: this.normalize(item?.date),
-      time: this.normalize(item?.time),
+      name: this.normalize(item?.studentName),
+      src: 'assets/images/user/avatar-1.png',
+      mobile: this.normalize(item?.studentMobile),
+      date: start ? start.toLocaleDateString() : 'there is no',
+      time: start ? start.toLocaleTimeString() : 'there is no',
+
       status:
         payStatus === true
           ? 'payed'
