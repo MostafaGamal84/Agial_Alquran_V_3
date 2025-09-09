@@ -1,4 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormBuilder, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 
@@ -15,7 +16,7 @@ import { ToastService } from 'src/app/@theme/services/toast.service';
 
 @Component({
   selector: 'app-subscribe-form',
-  imports: [SharedModule, RouterModule],
+  imports: [CommonModule, SharedModule, RouterModule],
   templateUrl: './subscribe-form.component.html',
   styleUrl: './subscribe-form.component.scss'
 })
