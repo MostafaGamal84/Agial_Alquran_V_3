@@ -72,14 +72,7 @@ export class SubscribeService {
     const params = new HttpParams().set('id', id.toString());
     return this.http.get<ApiResponse<boolean>>(
       `${environment.apiUrl}/api/Subscribe/Delete`,
-      { params }
-    );
-  }
 
-  get(id: number): Observable<ApiResponse<SubscribeDto>> {
-    const params = new HttpParams().set('id', id.toString());
-    return this.http.get<ApiResponse<SubscribeDto>>(
-      `${environment.apiUrl}/api/Subscribe/GetSubscribeById`,
       { params }
     );
   }
@@ -134,14 +127,7 @@ export class SubscribeService {
     const params = new HttpParams().set('id', id.toString());
     return this.http.get<ApiResponse<boolean>>(
       `${environment.apiUrl}/api/Subscribe/DeleteType`,
-      { params }
-    );
-  }
 
-  getType(id: number): Observable<ApiResponse<SubscribeTypeDto>> {
-    const params = new HttpParams().set('id', id.toString());
-    return this.http.get<ApiResponse<SubscribeTypeDto>>(
-      `${environment.apiUrl}/api/Subscribe/GetSubscribeTypeById`,
       { params }
     );
   }

@@ -1,13 +1,14 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
   SubscribeService,
   CreateSubscribeDto,
   UpdateSubscribeDto,
-  SubscribeTypeDto
+  SubscribeTypeDto,
+  SubscribeDto
 } from 'src/app/@theme/services/subscribe.service';
 import { FilteredResultRequestDto } from 'src/app/@theme/services/lookup.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
@@ -22,7 +23,6 @@ export class SubscribeFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private service = inject(SubscribeService);
   private router = inject(Router);
-  private route = inject(ActivatedRoute);
   private toast = inject(ToastService);
 
   form = this.fb.group({
@@ -39,14 +39,10 @@ export class SubscribeFormComponent implements OnInit {
   types: SubscribeTypeDto[] = [];
 
   ngOnInit() {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
-    if (id) {
+    const data = history.state?.item as SubscribeDto | undefined;
+    if (data) {
       this.isEdit = true;
-      this.service.get(id).subscribe((res) => {
-        if (res.isSuccess && res.data) {
-          this.form.patchValue(res.data as any);
-        }
-      });
+      this.form.patchValue(data as Partial<SubscribeDto>);
     }
     const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
     this.service.getAllTypes(filter).subscribe((res) => {
