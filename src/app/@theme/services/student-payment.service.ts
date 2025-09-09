@@ -16,6 +16,7 @@ export interface StudentPaymentDto {
   payStatue?: boolean | null;
 }
 
+
 @Injectable({ providedIn: 'root' })
 export class StudentPaymentService {
   private http = inject(HttpClient);
@@ -23,6 +24,7 @@ export class StudentPaymentService {
   getPayment(paymentId: number): Observable<ApiResponse<StudentPaymentDto>> {
     const params = new HttpParams().set('paymentId', paymentId.toString());
     return this.http.get<ApiResponse<StudentPaymentDto>>(
+
       `${environment.apiUrl}/api/StudentPayment/GetPayment`,
       { params }
     );

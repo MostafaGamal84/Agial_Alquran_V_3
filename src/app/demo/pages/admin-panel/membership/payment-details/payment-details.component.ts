@@ -4,6 +4,7 @@ import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { StudentPaymentDto } from 'src/app/@theme/services/student-payment.service';
 
+
 @Component({
   selector: 'app-payment-details',
   standalone: true,
@@ -13,4 +14,5 @@ import { StudentPaymentDto } from 'src/app/@theme/services/student-payment.servi
 })
 export class PaymentDetailsComponent {
   data = inject<StudentPaymentDto>(MAT_DIALOG_DATA);
+
 }

@@ -7,6 +7,7 @@
   <p><strong>Payment Date:</strong> {{ data.paymentDate ? (data.paymentDate | date: 'short') : 'N/A' }}</p>
   <p><strong>Receipt:</strong> {{ data.receiptPath || 'N/A' }}</p>
   <p><strong>Status:</strong> {{ data.payStatue ? 'Payed' : 'Not payed' }}</p>
+
 </div>
 <div mat-dialog-actions align="end">
   <button mat-button mat-dialog-close>Close</button>

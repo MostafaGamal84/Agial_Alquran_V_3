@@ -62,6 +62,7 @@ export class MembershipViewComponent implements OnInit, AfterViewInit {
     this.paymentService.getPayment(paymentId).subscribe((res) => {
       if (res.isSuccess && res.data) {
         this.dialog.open(PaymentDetailsComponent, { data: res.data });
+
       }
     });
   }
