@@ -1,4 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormBuilder, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 
@@ -15,7 +16,7 @@ import { ToastService } from 'src/app/@theme/services/toast.service';
 
 @Component({
   selector: 'app-subscribe-form',
-  imports: [SharedModule, RouterModule],
+  imports: [CommonModule, SharedModule, RouterModule],
   templateUrl: './subscribe-form.component.html',
   styleUrl: './subscribe-form.component.scss'
 })
@@ -54,10 +55,15 @@ export class SubscribeFormComponent implements OnInit {
 
     }
     const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
-    this.service.getAllTypes(filter).subscribe((res) => {
-      if (res.isSuccess && res.data?.items) {
-        this.types = res.data.items;
-      }
+    this.service.getAllTypes(filter).subscribe({
+      next: (res) => {
+        if (res.isSuccess && res.data?.items) {
+          this.types = res.data.items;
+        } else {
+          this.types = [];
+        }
+      },
+      error: () => this.toast.error('Error loading subscribe types')
     });
   }
 
