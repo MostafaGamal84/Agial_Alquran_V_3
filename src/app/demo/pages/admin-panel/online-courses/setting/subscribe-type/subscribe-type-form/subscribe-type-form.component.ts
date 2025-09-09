@@ -1,12 +1,13 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
   SubscribeService,
   CreateSubscribeTypeDto,
-  UpdateSubscribeTypeDto
+  UpdateSubscribeTypeDto,
+  SubscribeTypeDto
 } from 'src/app/@theme/services/subscribe.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 
@@ -20,7 +21,6 @@ export class SubscribeTypeFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private service = inject(SubscribeService);
   private router = inject(Router);
-  private route = inject(ActivatedRoute);
   private toast = inject(ToastService);
 
   form = this.fb.group({
@@ -33,13 +33,14 @@ export class SubscribeTypeFormComponent implements OnInit {
   isEdit = false;
 
   ngOnInit() {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
-    if (id) {
+    const data = history.state?.item as SubscribeTypeDto | undefined;
+    if (data) {
       this.isEdit = true;
-      this.service.getType(id).subscribe((res) => {
-        if (res.isSuccess && res.data) {
-          this.form.patchValue(res.data as any);
-        }
+      this.form.patchValue({
+        id: data.id,
+        name: data.name ?? null,
+        forignPricePerHour: data.forignPricePerHour ?? null,
+        arabPricePerHour: data.arabPricePerHour ?? null,
       });
     }
   }
