@@ -10,6 +10,7 @@ import { ToastService } from 'src/app/@theme/services/toast.service';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { AttendStatusEnum } from 'src/app/@theme/types/AttendStatusEnum';
+import { QuranSurahEnum } from 'src/app/@theme/types/QuranSurahEnum';
 
 @Component({
   selector: 'app-report-add',
@@ -30,6 +31,12 @@ export class ReportAddComponent implements OnInit {
   UserTypesEnum = UserTypesEnum;
   AttendStatusEnum = AttendStatusEnum;
   selectedStatus?: AttendStatusEnum;
+  surahList = Object.keys(QuranSurahEnum)
+    .filter((key) => isNaN(Number(key)))
+    .map((key) => ({
+      id: QuranSurahEnum[key as keyof typeof QuranSurahEnum],
+      name: key
+    }));
 
   ngOnInit(): void {
     this.reportForm = this.fb.group({
