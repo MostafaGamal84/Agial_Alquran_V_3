@@ -45,11 +45,11 @@ export class SubscribeFormComponent implements OnInit {
       this.form.patchValue({
         id: data.id,
         name: data.name ?? '',
-        leprice: data.leprice ?? '',
-        sarprice: data.sarprice ?? '',,
-        usdprice: data.usdprice ?? '',,
-        minutes: data.minutes ?? '',,
-        subscribeTypeId: data.subscribeTypeId ?? null,
+        leprice: data.leprice ?? null,
+        sarprice: data.sarprice ?? null,
+        usdprice: data.usdprice ?? null,
+        minutes: data.minutes ?? null,
+        subscribeTypeId: data.subscribeTypeId ?? data.subscribeType?.id ?? null,
       });
 
     }
