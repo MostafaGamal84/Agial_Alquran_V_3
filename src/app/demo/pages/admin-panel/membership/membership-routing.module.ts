@@ -11,22 +11,32 @@ const routes: Routes = [
     children: [
       {
         path: 'dashboard',
-        loadComponent: () => import('./membership-dashboard/membership-dashboard.component').then((c) => c.MembershipDashboardComponent),
+        loadComponent: () =>
+          import('./membership-dashboard/membership-dashboard.component').then((c) => c.MembershipDashboardComponent),
         data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager,UserTypesEnum.BranchLeader,UserTypesEnum.Student,UserTypesEnum.Teacher] }
       },
       {
         path: 'list',
-        loadComponent: () => import('./membership-list/membership-list.component').then((c) => c.MembershipListComponent),
+        loadComponent: () =>
+          import('./membership-list/membership-list.component').then((c) => c.MembershipListComponent),
+        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager,UserTypesEnum.BranchLeader,UserTypesEnum.Student,UserTypesEnum.Teacher] }
+      },
+      {
+        path: 'view/:id',
+        loadComponent: () =>
+          import('./membership-view/membership-view.component').then((c) => c.MembershipViewComponent),
         data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager,UserTypesEnum.BranchLeader,UserTypesEnum.Student,UserTypesEnum.Teacher] }
       },
       {
         path: 'price',
-        loadComponent: () => import('./membership-price/membership-price.component').then((c) => c.MembershipPriceComponent),
+        loadComponent: () =>
+          import('./membership-price/membership-price.component').then((c) => c.MembershipPriceComponent),
         data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager,UserTypesEnum.BranchLeader,UserTypesEnum.Student,UserTypesEnum.Teacher] }
       },
       {
         path: 'setting',
-        loadComponent: () => import('./membership-setting/membership-setting.component').then((c) => c.MembershipSettingComponent),
+        loadComponent: () =>
+          import('./membership-setting/membership-setting.component').then((c) => c.MembershipSettingComponent),
         data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager,UserTypesEnum.BranchLeader,UserTypesEnum.Student,UserTypesEnum.Teacher] }
       }
     ]
