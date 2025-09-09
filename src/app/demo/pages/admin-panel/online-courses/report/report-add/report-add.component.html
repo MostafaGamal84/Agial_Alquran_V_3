@@ -23,6 +23,17 @@
         <ng-container *ngIf="selectedStatus === AttendStatusEnum.Attended">
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100">
+              <mat-label>New Surah</mat-label>
+              <mat-select formControlName="newId">
+                <mat-option *ngFor="let s of surahList" [value]="s.id">
+                  {{ s.name }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="w-100">
               <mat-label>New From</mat-label>
               <input matInput formControlName="newFrom" />
             </mat-form-field>
