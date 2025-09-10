@@ -3,11 +3,11 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatDialog } from '@angular/material/dialog';
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { StudentSubscribeService, ViewStudentSubscribeReDto } from 'src/app/@theme/services/student-subscribe.service';
 import { FilteredResultRequestDto } from 'src/app/@theme/services/lookup.service';
 import { StudentPaymentService } from 'src/app/@theme/services/student-payment.service';
+import { MatDialog } from '@angular/material/dialog';
 import { PaymentDetailsComponent } from '../payment-details/payment-details.component';
 
 @Component({
@@ -22,7 +22,7 @@ export class MembershipViewComponent implements OnInit, AfterViewInit {
   private paymentService = inject(StudentPaymentService);
   private dialog = inject(MatDialog);
 
-  displayedColumns: string[] = ['plan', 'remainingMinutes', 'startDate', 'status'];
+  displayedColumns: string[] = ['expand', 'plan', 'remainingMinutes', 'startDate', 'status'];
   dataSource = new MatTableDataSource<ViewStudentSubscribeReDto>();
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
@@ -60,9 +60,9 @@ export class MembershipViewComponent implements OnInit, AfterViewInit {
       return;
     }
     this.paymentService.getPayment(paymentId).subscribe((res) => {
-      if (res.isSuccess && res.data) {
-        this.dialog.open(PaymentDetailsComponent, { data: res.data });
-
+      const payment = res.data?.items[0];
+      if (res.isSuccess && payment) {
+        this.dialog.open(PaymentDetailsComponent, { data: payment });
       }
     });
   }
