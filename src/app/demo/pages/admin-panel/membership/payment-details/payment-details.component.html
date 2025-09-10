@@ -1,57 +1,57 @@
 <h2 mat-dialog-title>Payment Details</h2>
 <div mat-dialog-content>
-  <p>
+  <div class="payment-item">
     <strong>ID:</strong>
-    {{ data.id }}
-  </p>
-  <p>
+    <span>{{ data.id }}</span>
+  </div>
+  <div class="payment-item">
     <strong>Student ID:</strong>
-    {{ data.studentId }}
-  </p>
-  <p>
+    <span>{{ data.studentId }}</span>
+  </div>
+  <div class="payment-item">
     <strong>Name:</strong>
-    {{ data.studentName }}
-  </p>
-  <p>
+    <span>{{ data.studentName }}</span>
+  </div>
+  <div class="payment-item">
     <strong>Subscription:</strong>
-    {{ data.studentSubscribeName }}
-  </p>
-  <p>
+    <span>{{ data.studentSubscribeName }}</span>
+  </div>
+  <div class="payment-item">
     <strong>Amount:</strong>
-    {{ data.amount }}
-  </p>
-  <p>
+    <span>{{ data.amount }}</span>
+  </div>
+  <div class="payment-item">
     <strong>Currency:</strong>
-    {{ data.currencyId }}
-  </p>
-  <p>
+    <span>{{ data.currencyId }}</span>
+  </div>
+  <div class="payment-item">
     <strong>Payment Date:</strong>
-    {{ data.paymentDate ? (data.paymentDate | date: 'short') : 'N/A' }}
-  </p>
-  <p>
+    <span>{{ data.paymentDate ? (data.paymentDate | date: 'short') : 'N/A' }}</span>
+  </div>
+  <div class="payment-item">
     <strong>Receipt:</strong>
-    {{ data.receiptPath || 'N/A' }}
-  </p>
-  <p>
+    <span>{{ data.receiptPath || 'N/A' }}</span>
+  </div>
+  <div class="payment-item">
     <strong>Status:</strong>
-    {{ data.payStatue ? 'Payed' : 'Not payed' }}
-  </p>
-  <p>
+    <span>{{ data.payStatue ? 'Payed' : 'Not payed' }}</span>
+  </div>
+  <div class="payment-item">
     <strong>Created By:</strong>
-    {{ data.createdBy ?? 'N/A' }}
-  </p>
-  <p>
+    <span>{{ data.createdBy ?? 'N/A' }}</span>
+  </div>
+  <div class="payment-item">
     <strong>Created At:</strong>
-    {{ data.createdAt ? (data.createdAt | date: 'short') : 'N/A' }}
-  </p>
-  <p>
+    <span>{{ data.createdAt ? (data.createdAt | date: 'short') : 'N/A' }}</span>
+  </div>
+  <div class="payment-item">
     <strong>Modified By:</strong>
-    {{ data.modefiedBy ?? 'N/A' }}
-  </p>
-  <p>
+    <span>{{ data.modefiedBy ?? 'N/A' }}</span>
+  </div>
+  <div class="payment-item">
     <strong>Modified At:</strong>
-    {{ data.modefiedAt ? (data.modefiedAt | date: 'short') : 'N/A' }}
-  </p>
+    <span>{{ data.modefiedAt ? (data.modefiedAt | date: 'short') : 'N/A' }}</span>
+  </div>
 </div>
 <div mat-dialog-actions align="end">
   <button mat-button mat-dialog-close>Close</button>
