@@ -42,6 +42,12 @@ export class InvoiceListComponent implements OnInit {
     totalReceivables: 0,
     collectionRate: 0
   };
+  tabCounts = {
+    all: 0,
+    paid: 0,
+    unpaid: 0,
+    cancelled: 0
+  };
 
   ngOnInit(): void {
     this.loadDashboard();
@@ -54,7 +60,12 @@ export class InvoiceListComponent implements OnInit {
 
   onMonthChange(value: string): void {
     this.selectedMonth = value;
+    this.tabCounts = { all: 0, paid: 0, unpaid: 0, cancelled: 0 };
     this.loadDashboard();
+  }
+
+  onTableCount(tab: 'all' | 'paid' | 'unpaid' | 'cancelled', count: number): void {
+    this.tabCounts[tab] = count;
   }
 
   loadDashboard(): void {

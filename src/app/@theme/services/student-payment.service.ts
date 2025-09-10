@@ -38,12 +38,14 @@ export interface PaymentDashboardDto {
 }
 
 export interface StudentInvoiceDto {
-  id: number;
-  studentName?: string | null;
-  createdAt?: string | null;
+  invoiceId: number;
+  studentId: number;
+  userName?: string | null;
+  userEmail?: string | null;
+  createDate?: string | null;
   dueDate?: string | null;
-  amount?: number | null;
-  status?: string | null;
+  quantity?: number | null;
+  statusText?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })

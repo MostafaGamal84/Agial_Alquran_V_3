@@ -5,6 +5,9 @@ import {
   Input,
   OnChanges,
   OnInit,
+  Output,
+  EventEmitter,
+
   SimpleChanges,
   viewChild,
   inject
@@ -39,6 +42,8 @@ export interface InvoiceTableItem {
 export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChanges {
   @Input() tab?: string;
   @Input() month?: string;
+  @Output() countChange = new EventEmitter<number>();
+
 
   private studentPaymentService = inject(StudentPaymentService);
 
@@ -81,14 +86,16 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
       .getInvoices(filter, this.tab, undefined, undefined, undefined, undefined, undefined, monthDate)
       .subscribe((resp) => {
         const items: InvoiceTableItem[] = resp.data.items.map((item: StudentInvoiceDto) => ({
-          id: item.id,
-          name: item.studentName ?? '',
-          create_date: item.createdAt ?? '',
+          id: item.invoiceId,
+          name: item.userName ?? '',
+          create_date: item.createDate ?? '',
           due_date: item.dueDate ?? '',
-          qty: item.amount ?? 0,
-          status: (item.status ?? '').toLowerCase()
+          qty: item.quantity ?? 0,
+          status: (item.statusText ?? '').toLowerCase()
         }));
         this.dataSource.data = items;
+        this.countChange.emit(resp.data.totalCount);
+
       });
   }
 
