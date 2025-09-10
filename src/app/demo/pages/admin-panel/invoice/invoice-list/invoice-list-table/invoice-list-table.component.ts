@@ -7,6 +7,7 @@ import {
   OnInit,
   Output,
   EventEmitter,
+
   SimpleChanges,
   viewChild,
   inject
@@ -42,6 +43,7 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
   @Input() tab?: string;
   @Input() month?: string;
   @Output() countChange = new EventEmitter<number>();
+
 
   private studentPaymentService = inject(StudentPaymentService);
 
@@ -93,6 +95,7 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
         }));
         this.dataSource.data = items;
         this.countChange.emit(resp.data.totalCount);
+
       });
   }
 

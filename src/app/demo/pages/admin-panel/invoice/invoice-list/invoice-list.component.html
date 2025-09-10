@@ -108,6 +108,7 @@
           </ng-template>
           <div class="p-y-20">
             <app-invoice-list-table tab="paid" [month]="selectedMonth" (countChange)="onTableCount('paid', $event)" />
+
           </div>
         </mat-tab>
         <mat-tab>
@@ -121,6 +122,7 @@
           </ng-template>
           <div class="p-y-20">
             <app-invoice-list-table tab="unpaid" [month]="selectedMonth" (countChange)="onTableCount('unpaid', $event)" />
+
           </div>
         </mat-tab>
         <mat-tab>
@@ -132,6 +134,7 @@
           </ng-template>
           <div class="p-y-20">
             <app-invoice-list-table tab="cancelled" [month]="selectedMonth" (countChange)="onTableCount('cancelled', $event)" />
+
           </div>
         </mat-tab>
       </mat-tab-group>
