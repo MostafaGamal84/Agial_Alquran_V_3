@@ -94,7 +94,7 @@
             </div>
           </ng-template>
           <div class="p-y-20">
-            <app-invoice-list-table />
+            <app-invoice-list-table [month]="selectedMonth" />
           </div>
         </mat-tab>
         <mat-tab>
@@ -107,7 +107,7 @@
             </div>
           </ng-template>
           <div class="p-y-20">
-            <app-invoice-list-table />
+            <app-invoice-list-table tab="paid" [month]="selectedMonth" />
           </div>
         </mat-tab>
         <mat-tab>
@@ -120,7 +120,7 @@
             </div>
           </ng-template>
           <div class="p-y-20">
-            <app-invoice-list-table />
+            <app-invoice-list-table tab="unpaid" [month]="selectedMonth" />
           </div>
         </mat-tab>
         <mat-tab>
@@ -131,7 +131,7 @@
             </div>
           </ng-template>
           <div class="p-y-20">
-            <app-invoice-list-table />
+            <app-invoice-list-table tab="cancelled" [month]="selectedMonth" />
           </div>
         </mat-tab>
       </mat-tab-group>
