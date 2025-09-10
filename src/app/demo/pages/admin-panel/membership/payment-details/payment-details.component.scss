@@ -1,0 +1,17 @@
+.payment-item {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.payment-item:last-child {
+  margin-bottom: 0;
+}
+
+.payment-item strong {
+  font-weight: 600;
+}
