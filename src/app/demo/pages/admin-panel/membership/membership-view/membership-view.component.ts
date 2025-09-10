@@ -74,6 +74,7 @@ export class MembershipViewComponent implements OnInit, AfterViewInit {
     this.paymentService.getPayment(paymentId).subscribe((res) => {
       const payment = res.data?.items[0] ?? null;
       this.paymentDetails = res.isSuccess ? payment : null;
+
     });
   }
 }
