@@ -17,8 +17,8 @@
                 <td mat-cell *matCellDef="let element">
                   <button
                     mat-icon-button
-                    *ngIf="element.studentPaymentId"
-                    (click)="openPaymentDetails(element.studentPaymentId)"
+                    *ngIf="element.studentPaymentId !== null && element.studentPaymentId !== undefined"
+                    (click)="togglePaymentDetails(element)"
                     aria-label="View payment details"
                   >
                     <mat-icon>expand_more</mat-icon>

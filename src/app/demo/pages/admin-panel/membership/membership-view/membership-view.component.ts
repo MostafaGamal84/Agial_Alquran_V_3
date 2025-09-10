@@ -3,12 +3,11 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { StudentSubscribeService, ViewStudentSubscribeReDto } from 'src/app/@theme/services/student-subscribe.service';
 import { FilteredResultRequestDto } from 'src/app/@theme/services/lookup.service';
-import { StudentPaymentService } from 'src/app/@theme/services/student-payment.service';
-import { MatDialog } from '@angular/material/dialog';
-import { PaymentDetailsComponent } from '../payment-details/payment-details.component';
+import { StudentPaymentService, StudentPaymentDto } from 'src/app/@theme/services/student-payment.service';
 
 
 @Component({
@@ -69,16 +68,17 @@ export class MembershipViewComponent implements OnInit, AfterViewInit {
     this.expandedElement = element;
     this.panelOpen = true;
     const paymentId = element.studentPaymentId;
-    if (!paymentId) {
+    if (paymentId == null) {
       this.paymentDetails = null;
       return;
     }
     this.paymentService.getPayment(paymentId).subscribe((res) => {
       const payment = res.data?.items[0];
       if (res.isSuccess && payment) {
-        this.dialog.open(PaymentDetailsComponent, { data: payment });
+        this.paymentDetails = payment;
+      } else {
+        this.paymentDetails = null;
       }
-
     });
   }
 }
