@@ -3,16 +3,15 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatDialog } from '@angular/material/dialog';
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { StudentSubscribeService, ViewStudentSubscribeReDto } from 'src/app/@theme/services/student-subscribe.service';
 import { FilteredResultRequestDto } from 'src/app/@theme/services/lookup.service';
-import { StudentPaymentService } from 'src/app/@theme/services/student-payment.service';
-import { PaymentDetailsComponent } from '../payment-details/payment-details.component';
+import { StudentPaymentService, StudentPaymentDto } from 'src/app/@theme/services/student-payment.service';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 @Component({
   selector: 'app-membership-view',
-  imports: [CommonModule, SharedModule, RouterModule],
+  imports: [CommonModule, SharedModule, RouterModule, MatExpansionModule],
   templateUrl: './membership-view.component.html',
   styleUrl: './membership-view.component.scss'
 })
@@ -20,13 +19,16 @@ export class MembershipViewComponent implements OnInit, AfterViewInit {
   private service = inject(StudentSubscribeService);
   private route = inject(ActivatedRoute);
   private paymentService = inject(StudentPaymentService);
-  private dialog = inject(MatDialog);
 
-  displayedColumns: string[] = ['plan', 'remainingMinutes', 'startDate', 'status'];
+  displayedColumns: string[] = ['expand', 'plan', 'remainingMinutes', 'startDate', 'status'];
   dataSource = new MatTableDataSource<ViewStudentSubscribeReDto>();
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
   studentId = 0;
+
+  expandedElement: ViewStudentSubscribeReDto | null = null;
+  paymentDetails: StudentPaymentDto | null = null;
+  panelOpen = false;
 
   readonly paginator = viewChild.required(MatPaginator);
 
@@ -55,15 +57,24 @@ export class MembershipViewComponent implements OnInit, AfterViewInit {
     });
   }
 
-  openPaymentDetails(paymentId?: number) {
+  togglePaymentDetails(element: ViewStudentSubscribeReDto) {
+    if (this.expandedElement === element) {
+      this.expandedElement = null;
+      this.paymentDetails = null;
+      this.panelOpen = false;
+      return;
+    }
+    this.expandedElement = element;
+    this.panelOpen = true;
+    const paymentId = element.studentPaymentId;
     if (!paymentId) {
+      this.paymentDetails = null;
       return;
     }
     this.paymentService.getPayment(paymentId).subscribe((res) => {
-      const payment = res.data?.items[0];
-      if (res.isSuccess && payment) {
-        this.dialog.open(PaymentDetailsComponent, { data: payment });
-      }
+      const payment = res.data?.items[0] ?? null;
+      this.paymentDetails = res.isSuccess ? payment : null;
+
     });
   }
 }
