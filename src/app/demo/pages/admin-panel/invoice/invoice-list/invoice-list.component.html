@@ -89,12 +89,12 @@
             <div class="flex align-item-center justify-content-between">
               All
               <div class="wid-20 hei-20 border-50 flex align-item-center justify-content-center bg-primary-50 text-primary-500 m-l-10">
-                4
+                {{ tabCounts.all }}
               </div>
             </div>
           </ng-template>
           <div class="p-y-20">
-            <app-invoice-list-table />
+            <app-invoice-list-table [month]="selectedMonth" (countChange)="onTableCount('all', $event)" />
           </div>
         </mat-tab>
         <mat-tab>
@@ -102,12 +102,12 @@
             <div class="flex align-item-center justify-content-between">
               Paid
               <div class="wid-20 hei-20 border-50 flex align-item-center justify-content-center bg-success-50 text-success-500 m-l-10">
-                2
+                {{ tabCounts.paid }}
               </div>
             </div>
           </ng-template>
           <div class="p-y-20">
-            <app-invoice-list-table />
+            <app-invoice-list-table tab="paid" [month]="selectedMonth" (countChange)="onTableCount('paid', $event)" />
           </div>
         </mat-tab>
         <mat-tab>
@@ -115,23 +115,23 @@
             <div class="flex align-item-center justify-content-between">
               Unpaid
               <div class="wid-20 hei-20 border-50 flex align-item-center justify-content-center bg-warning-50 text-warning-500 m-l-10">
-                2
+                {{ tabCounts.unpaid }}
               </div>
             </div>
           </ng-template>
           <div class="p-y-20">
-            <app-invoice-list-table />
+            <app-invoice-list-table tab="unpaid" [month]="selectedMonth" (countChange)="onTableCount('unpaid', $event)" />
           </div>
         </mat-tab>
         <mat-tab>
           <ng-template mat-tab-label>
             <div class="flex align-item-center justify-content-between">
               Cancelled
-              <div class="wid-20 hei-20 border-50 flex align-item-center justify-content-center bg-warn-50 text-warn-500 m-l-10">1</div>
+              <div class="wid-20 hei-20 border-50 flex align-item-center justify-content-center bg-warn-50 text-warn-500 m-l-10">{{ tabCounts.cancelled }}</div>
             </div>
           </ng-template>
           <div class="p-y-20">
-            <app-invoice-list-table />
+            <app-invoice-list-table tab="cancelled" [month]="selectedMonth" (countChange)="onTableCount('cancelled', $event)" />
           </div>
         </mat-tab>
       </mat-tab-group>
