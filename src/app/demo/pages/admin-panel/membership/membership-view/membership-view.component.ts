@@ -39,15 +39,17 @@ export class MembershipViewComponent implements OnInit, AfterViewInit {
   }
 
   private load() {
-    this.service.getStudents(this.filter, this.studentId).subscribe((res) => {
-      if (res.isSuccess && res.data?.items) {
-        this.dataSource.data = res.data.items;
-        this.totalCount = res.data.totalCount;
-      } else {
-        this.dataSource.data = [];
-        this.totalCount = 0;
-      }
-    });
+    this.service
+      .getStudentSubscribesWithPayment(this.filter, this.studentId)
+      .subscribe((res) => {
+        if (res.isSuccess && res.data?.items) {
+          this.dataSource.data = res.data.items;
+          this.totalCount = res.data.totalCount;
+        } else {
+          this.dataSource.data = [];
+          this.totalCount = 0;
+        }
+      });
   }
 
   ngAfterViewInit() {

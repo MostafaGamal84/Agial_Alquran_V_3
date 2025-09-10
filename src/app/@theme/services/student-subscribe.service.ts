@@ -54,5 +54,38 @@ export class StudentSubscribeService {
       { params }
     );
   }
+
+  getStudentSubscribesWithPayment(
+    filter: FilteredResultRequestDto,
+    studentId: number
+  ): Observable<ApiResponse<PagedResultDto<ViewStudentSubscribeReDto>>> {
+    let params = new HttpParams();
+    if (filter.skipCount !== undefined) {
+      params = params.set('SkipCount', filter.skipCount.toString());
+    }
+    if (filter.maxResultCount !== undefined) {
+      params = params.set('MaxResultCount', filter.maxResultCount.toString());
+    }
+    if (filter.searchTerm) {
+      params = params.set('SearchTerm', filter.searchTerm);
+    }
+    if (filter.filter) {
+      params = params.set('Filter', filter.filter);
+    }
+    if (filter.lang) {
+      params = params.set('Lang', filter.lang);
+    }
+    if (filter.sortingDirection) {
+      params = params.set('SortingDirection', filter.sortingDirection);
+    }
+    if (filter.sortBy) {
+      params = params.set('SortBy', filter.sortBy);
+    }
+    params = params.set('studentId', studentId.toString());
+    return this.http.get<ApiResponse<PagedResultDto<ViewStudentSubscribeReDto>>>(
+      `${environment.apiUrl}/api/StudentSubscrib/GetStudentSubscribesWithPayment`,
+      { params }
+    );
+  }
 }
 
