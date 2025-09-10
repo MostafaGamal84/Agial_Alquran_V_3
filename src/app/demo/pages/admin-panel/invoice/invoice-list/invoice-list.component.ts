@@ -1,50 +1,105 @@
 // angular import
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { InvoiceListChartComponent } from './invoice-list-chart/invoice-list-chart.component';
 import { InvoiceListTableComponent } from './invoice-list-table/invoice-list-table.component';
+import {
+  StudentPaymentService,
+  PaymentDashboardDto
+} from 'src/app/@theme/services/student-payment.service';
+interface WidgetCard {
+  title: string;
+  isLoss: boolean;
+  value: string;
+  percentage: number;
+  color: string;
+  invoice: number;
+  data: number[];
+  colors: string[];
+}
 
 @Component({
   selector: 'app-invoice-list',
-  imports: [SharedModule, CommonModule, InvoiceListChartComponent, InvoiceListTableComponent],
+  imports: [
+    SharedModule,
+    CommonModule,
+    InvoiceListChartComponent,
+    InvoiceListTableComponent
+  ],
   templateUrl: './invoice-list.component.html',
   styleUrl: './invoice-list.component.scss'
 })
-export class InvoiceListComponent {
-  // public method
-  widgetCards = [
-    {
-      title: 'Paid',
-      isLoss: false,
-      value: '$7,825',
-      percentage: 70.5,
-      color: 'text-success-500',
-      invoice: '9',
-      data: [0, 20, 10, 45, 30, 55, 20, 30],
-      colors: ['#2ca87f']
-    },
-    {
-      title: 'Unpaid',
-      isLoss: true,
-      value: '$1,880',
-      percentage: 27.4,
-      color: 'text-warning-500',
-      invoice: '6',
-      data: [30, 20, 55, 30, 45, 10, 20, 0],
-      colors: ['#e58a00']
-    },
-    {
-      title: 'Overdue',
-      isLoss: true,
-      value: '$3,507',
-      percentage: 27.4,
-      color: 'text-warn-500',
-      invoice: '4',
-      data: [0, 20, 10, 45, 30, 55, 20, 30],
-      colors: ['#dc2626']
-    }
-  ];
+export class InvoiceListComponent implements OnInit {
+  private studentPaymentService = inject(StudentPaymentService);
+  selectedMonth = this.getCurrentMonth();
+  widgetCards: WidgetCard[] = [];
+  bigCard = {
+    currentReceivables: 0,
+    overdueReceivables: 0,
+    totalReceivables: 0,
+    collectionRate: 0
+  };
+
+  ngOnInit(): void {
+    this.loadDashboard();
+  }
+
+  getCurrentMonth(): string {
+    const now = new Date();
+    return now.toISOString().slice(0, 7);
+  }
+
+  onMonthChange(value: string): void {
+    this.selectedMonth = value;
+    this.loadDashboard();
+  }
+
+  loadDashboard(): void {
+    const monthDate = new Date(this.selectedMonth + '-01');
+    this.studentPaymentService
+      .getDashboard(undefined, undefined, monthDate)
+      .subscribe((data: PaymentDashboardDto) => {
+        this.widgetCards = [
+          {
+            title: 'Paid',
+            isLoss: false,
+            value: `$${data.totalPaid}`,
+            percentage: data.totalPaidMoMPercentage,
+            color: 'text-success-500',
+            invoice: data.totalPaidCount,
+            data: [0, 20, 10, 45, 30, 55, 20, 30],
+            colors: ['#2ca87f']
+          },
+          {
+            title: 'Unpaid',
+            isLoss: true,
+            value: `$${data.totalUnPaid}`,
+            percentage: data.totalUnPaidMoMPercentage,
+            color: 'text-warning-500',
+            invoice: data.totalUnPaidCount,
+            data: [30, 20, 55, 30, 45, 10, 20, 0],
+            colors: ['#e58a00']
+          },
+          {
+            title: 'Overdue',
+            isLoss: true,
+            value: `$${data.totalOverdue}`,
+            percentage: data.totalOverdueMoMPercentage,
+            color: 'text-warn-500',
+            invoice: data.totalOverdueCount,
+            data: [0, 20, 10, 45, 30, 55, 20, 30],
+            colors: ['#dc2626']
+          }
+        ];
+        this.bigCard = {
+          currentReceivables: data.currentReceivables,
+          overdueReceivables: data.overdueReceivables,
+          totalReceivables: data.totalReceivables,
+          collectionRate: data.collectionRate
+        };
+      });
+  }
 }

@@ -20,6 +20,23 @@ export interface StudentPaymentDto {
   modefiedAt?: string | null;
 }
 
+export interface PaymentDashboardDto {
+  month: string;
+  totalPaid: number;
+  totalPaidCount: number;
+  totalPaidMoMPercentage: number;
+  totalUnPaid: number;
+  totalUnPaidCount: number;
+  totalUnPaidMoMPercentage: number;
+  totalOverdue: number;
+  totalOverdueCount: number;
+  totalOverdueMoMPercentage: number;
+  currentReceivables: number;
+  overdueReceivables: number;
+  totalReceivables: number;
+  collectionRate: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class StudentPaymentService {
   private http = inject(HttpClient);
@@ -30,6 +47,27 @@ export class StudentPaymentService {
     const params = new HttpParams().set('paymentId', paymentId.toString());
     return this.http.get<ApiResponse<PagedResultDto<StudentPaymentDto>>>(
       `${environment.apiUrl}/api/StudentPayment/GetPayment`,
+      { params }
+    );
+  }
+
+  getDashboard(
+    studentId?: number,
+    currencyId?: number,
+    month?: Date
+  ): Observable<PaymentDashboardDto> {
+    let params = new HttpParams();
+    if (studentId !== undefined) {
+      params = params.set('studentId', studentId.toString());
+    }
+    if (currencyId !== undefined) {
+      params = params.set('currencyId', currencyId.toString());
+    }
+    if (month) {
+      params = params.set('month', month.toISOString());
+    }
+    return this.http.get<PaymentDashboardDto>(
+      `${environment.apiUrl}/api/StudentPayment/Dashboard`,
       { params }
     );
   }
