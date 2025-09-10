@@ -14,8 +14,11 @@ export interface StudentPaymentDto {
   paymentDate?: string | null;
   receiptPath?: string | null;
   payStatue?: boolean | null;
+  createdBy?: number | null;
+  createdAt?: string | null;
+  modefiedBy?: number | null;
+  modefiedAt?: string | null;
 }
-
 
 @Injectable({ providedIn: 'root' })
 export class StudentPaymentService {
@@ -23,10 +26,6 @@ export class StudentPaymentService {
 
   getPayment(paymentId: number): Observable<ApiResponse<StudentPaymentDto>> {
     const params = new HttpParams().set('paymentId', paymentId.toString());
-    return this.http.get<ApiResponse<StudentPaymentDto>>(
-
-      `${environment.apiUrl}/api/StudentPayment/GetPayment`,
-      { params }
-    );
+    return this.http.get<ApiResponse<StudentPaymentDto>>(`${environment.apiUrl}/api/StudentPayment/GetPayment`, { params });
   }
 }
