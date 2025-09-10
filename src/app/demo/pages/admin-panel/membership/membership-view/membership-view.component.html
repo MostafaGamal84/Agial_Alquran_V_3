@@ -18,10 +18,10 @@
                   <button
                     mat-icon-button
                     *ngIf="element.studentPaymentId"
-                    (click)="togglePaymentDetails(element)"
-                    aria-label="Toggle payment details"
+                    (click)="openPaymentDetails(element.studentPaymentId)"
+                    aria-label="View payment details"
                   >
-                    <mat-icon>{{ expandedElement === element ? 'expand_less' : 'expand_more' }}</mat-icon>
+                    <mat-icon>expand_more</mat-icon>
                   </button>
                 </td>
               </ng-container>

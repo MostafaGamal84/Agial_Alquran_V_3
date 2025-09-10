@@ -6,8 +6,10 @@ import { MatPaginator } from '@angular/material/paginator';
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { StudentSubscribeService, ViewStudentSubscribeReDto } from 'src/app/@theme/services/student-subscribe.service';
 import { FilteredResultRequestDto } from 'src/app/@theme/services/lookup.service';
-import { StudentPaymentService, StudentPaymentDto } from 'src/app/@theme/services/student-payment.service';
-import { MatExpansionModule } from '@angular/material/expansion';
+import { StudentPaymentService } from 'src/app/@theme/services/student-payment.service';
+import { MatDialog } from '@angular/material/dialog';
+import { PaymentDetailsComponent } from '../payment-details/payment-details.component';
+
 
 @Component({
   selector: 'app-membership-view',
@@ -72,8 +74,10 @@ export class MembershipViewComponent implements OnInit, AfterViewInit {
       return;
     }
     this.paymentService.getPayment(paymentId).subscribe((res) => {
-      const payment = res.data?.items[0] ?? null;
-      this.paymentDetails = res.isSuccess ? payment : null;
+      const payment = res.data?.items[0];
+      if (res.isSuccess && payment) {
+        this.dialog.open(PaymentDetailsComponent, { data: payment });
+      }
 
     });
   }
