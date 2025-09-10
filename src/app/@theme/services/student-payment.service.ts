@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { ApiResponse } from './lookup.service';
+import { ApiResponse, PagedResultDto } from './lookup.service';
 
 export interface StudentPaymentDto {
   id: number;
@@ -24,8 +24,13 @@ export interface StudentPaymentDto {
 export class StudentPaymentService {
   private http = inject(HttpClient);
 
-  getPayment(paymentId: number): Observable<ApiResponse<StudentPaymentDto>> {
+  getPayment(
+    paymentId: number
+  ): Observable<ApiResponse<PagedResultDto<StudentPaymentDto>>> {
     const params = new HttpParams().set('paymentId', paymentId.toString());
-    return this.http.get<ApiResponse<StudentPaymentDto>>(`${environment.apiUrl}/api/StudentPayment/GetPayment`, { params });
+    return this.http.get<ApiResponse<PagedResultDto<StudentPaymentDto>>>(
+      `${environment.apiUrl}/api/StudentPayment/GetPayment`,
+      { params }
+    );
   }
 }
