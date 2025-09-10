@@ -14,27 +14,9 @@
 
     <!-- Name Column -->
     <ng-container matColumnDef="name">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>USER NAME</th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>STUDENT</th>
       <td mat-cell *matCellDef="let element" class="text-nowrap">
-        <div class="row align-item-center">
-          <div class="col-auto p-r-0">
-            <img src="{{ element.image }}" alt="user-image" class="wid-40 hei-40 border-50" />
-          </div>
-          <div class="col">
-            <div class="f-w-600 m-b-5">
-              <span class="text-truncate w-100">
-                {{ element.name }}
-              </span>
-            </div>
-            <p class="f-12 mb-0">
-              <a href="javascript:" class="text-muted">
-                <span class="text-truncate w-100">
-                  {{ element.email }}
-                </span>
-              </a>
-            </p>
-          </div>
-        </div>
+        {{ element.name }}
       </td>
     </ng-container>
 
