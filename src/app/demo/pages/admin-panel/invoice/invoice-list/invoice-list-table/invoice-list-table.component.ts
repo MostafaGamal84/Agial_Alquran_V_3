@@ -54,6 +54,17 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
   readonly sort = viewChild(MatSort);
 
   ngOnInit(): void {
+    this.dataSource.filterPredicate = (data: InvoiceTableItem, filter: string): boolean => {
+      const term = filter.trim().toLowerCase();
+      return (
+        data.id.toString().includes(term) ||
+        data.name.toLowerCase().includes(term) ||
+        data.create_date.toLowerCase().includes(term) ||
+        data.due_date.toLowerCase().includes(term) ||
+        data.qty.toString().includes(term) ||
+        data.status.toLowerCase().includes(term)
+      );
+    };
     this.loadData();
   }
 
@@ -66,14 +77,14 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
   // table search filter
   applyFilter(event: Event) {
     this.searchTerm = (event.target as HTMLInputElement).value;
-    this.loadData();
+    this.dataSource.filter = this.searchTerm.trim().toLowerCase();
+    this.countChange.emit(this.dataSource.filteredData.length);
   }
 
   loadData(): void {
     const filter: FilteredResultRequestDto = {
       skipCount: 0,
-      maxResultCount: 100,
-      searchTerm: this.searchTerm.trim()
+      maxResultCount: 100
     };
     let monthDate: Date | undefined;
     if (this.month) {
@@ -91,7 +102,8 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
           status: (item.statusText ?? '').toLowerCase()
         }));
         this.dataSource.data = items;
-        this.countChange.emit(resp.data.totalCount);
+        this.dataSource.filter = this.searchTerm.trim().toLowerCase();
+        this.countChange.emit(this.dataSource.filteredData.length);
       });
   }
 
