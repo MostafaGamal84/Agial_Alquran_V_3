@@ -51,6 +51,17 @@ export interface StudentInvoiceDto {
   statusText?: string | null;
 }
 
+export interface StudentInvoiceDto {
+  invoiceId: number;
+  studentId: number;
+  userName?: string | null;
+  userEmail?: string | null;
+  createDate?: string | null;
+  dueDate?: string | null;
+  quantity?: number | null;
+  statusText?: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class StudentPaymentService {
   private http = inject(HttpClient);
