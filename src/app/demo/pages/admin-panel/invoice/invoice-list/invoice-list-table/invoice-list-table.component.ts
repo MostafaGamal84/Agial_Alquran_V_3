@@ -133,6 +133,7 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
         )
       ]).subscribe(([allResp, overdueResp]) => {
         const items = [...mapItems(allResp), ...mapItems(overdueResp)];
+
         this.dataSource.data = items;
         this.dataSource.filter = this.searchTerm.trim().toLowerCase();
         this.countChange.emit(this.dataSource.filteredData.length);
