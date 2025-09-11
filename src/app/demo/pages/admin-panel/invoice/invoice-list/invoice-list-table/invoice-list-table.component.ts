@@ -90,8 +90,9 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
     if (this.month) {
       monthDate = new Date(this.month + '-01');
     }
+    const tab = this.tab ?? 'all';
     this.studentPaymentService
-      .getInvoices(filter, this.tab, undefined, undefined, undefined, undefined, undefined, monthDate)
+      .getInvoices(filter, tab, undefined, undefined, undefined, undefined, undefined, monthDate)
       .subscribe((resp) => {
         const items: InvoiceTableItem[] = resp.data.items.map((item: StudentInvoiceDto) => ({
           id: item.invoiceId,
