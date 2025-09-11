@@ -67,6 +67,13 @@ export class InvoiceListComponent implements OnInit {
 
   onTableCount(tab: 'all' | 'paid' | 'unpaid' | 'overdue' | 'cancelled', count: number): void {
     this.tabCounts[tab] = count;
+    if (tab !== 'all') {
+      this.tabCounts.all =
+        this.tabCounts.paid +
+        this.tabCounts.unpaid +
+        this.tabCounts.overdue +
+        this.tabCounts.cancelled;
+    }
   }
 
   loadDashboard(): void {
