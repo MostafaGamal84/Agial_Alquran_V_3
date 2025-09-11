@@ -46,6 +46,8 @@
           <span class="user-status bg-success-500 text-white">Paid</span>
         } @else if (element.status === 'unpaid') {
           <span class="user-status bg-cyan-500 text-white">Unpaid</span>
+        } @else if (element.status === 'overdue') {
+          <span class="user-status bg-warn-500 text-white">Overdue</span>
         } @else if (element.status === 'cancelled') {
           <span class="user-status bg-warn-500 text-white">Cancelled</span>
         }

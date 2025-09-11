@@ -46,6 +46,7 @@ export class InvoiceListComponent implements OnInit {
     all: 0,
     paid: 0,
     unpaid: 0,
+    overdue: 0,
     cancelled: 0
   };
 
@@ -60,11 +61,11 @@ export class InvoiceListComponent implements OnInit {
 
   onMonthChange(value: string): void {
     this.selectedMonth = value;
-    this.tabCounts = { all: 0, paid: 0, unpaid: 0, cancelled: 0 };
+    this.tabCounts = { all: 0, paid: 0, unpaid: 0, overdue: 0, cancelled: 0 };
     this.loadDashboard();
   }
 
-  onTableCount(tab: 'all' | 'paid' | 'unpaid' | 'cancelled', count: number): void {
+  onTableCount(tab: 'all' | 'paid' | 'unpaid' | 'overdue' | 'cancelled', count: number): void {
     this.tabCounts[tab] = count;
   }
 

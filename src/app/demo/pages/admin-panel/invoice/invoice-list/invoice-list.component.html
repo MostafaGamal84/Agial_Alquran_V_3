@@ -113,6 +113,19 @@
         <mat-tab>
           <ng-template mat-tab-label>
             <div class="flex align-item-center justify-content-between">
+              Overdue
+              <div class="wid-20 hei-20 border-50 flex align-item-center justify-content-center bg-warn-50 text-warn-500 m-l-10">
+                {{ tabCounts.overdue }}
+              </div>
+            </div>
+          </ng-template>
+          <div class="p-y-20">
+            <app-invoice-list-table tab="overdue" [month]="selectedMonth" (countChange)="onTableCount('overdue', $event)" />
+          </div>
+        </mat-tab>
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <div class="flex align-item-center justify-content-between">
               Cancelled
               <div class="wid-20 hei-20 border-50 flex align-item-center justify-content-center bg-warn-50 text-warn-500 m-l-10">
                 {{ tabCounts.cancelled }}
