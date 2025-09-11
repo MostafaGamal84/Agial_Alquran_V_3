@@ -1,6 +1,12 @@
 // angular import
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
+import { FormControl } from '@angular/forms';
+import { MatDatepicker } from '@angular/material/datepicker';
+import { MomentDateAdapter, MAT_MOMENT_DATE_ADAPTER_OPTIONS } from '@angular/material-moment-adapter';
+import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
+import * as _moment from 'moment';
+import { default as _rollupMoment, Moment } from 'moment';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -10,6 +16,19 @@ import {
   StudentPaymentService,
   PaymentDashboardDto
 } from 'src/app/@theme/services/student-payment.service';
+
+const moment = _rollupMoment || _moment;
+
+export const MONTH_FORMATS = {
+  parse: { dateInput: 'MMMM YYYY' },
+  display: {
+    dateInput: 'MMMM YYYY',
+    monthYearLabel: 'MMM YYYY',
+    dateA11yLabel: 'LL',
+    monthYearA11yLabel: 'MMMM YYYY'
+  }
+};
+
 interface WidgetCard {
   title: string;
   isLoss: boolean;
@@ -30,11 +49,20 @@ interface WidgetCard {
     InvoiceListTableComponent
   ],
   templateUrl: './invoice-list.component.html',
-  styleUrl: './invoice-list.component.scss'
+  styleUrl: './invoice-list.component.scss',
+  providers: [
+    {
+      provide: DateAdapter,
+      useClass: MomentDateAdapter,
+      deps: [MAT_DATE_LOCALE, MAT_MOMENT_DATE_ADAPTER_OPTIONS]
+    },
+    { provide: MAT_DATE_FORMATS, useValue: MONTH_FORMATS }
+  ]
 })
 export class InvoiceListComponent implements OnInit {
   private studentPaymentService = inject(StudentPaymentService);
-  selectedMonth = this.getCurrentMonth();
+  dataMonth = new FormControl<Moment>(moment());
+  compareMonth = new FormControl<Moment | null>(null);
   widgetCards: WidgetCard[] = [];
   bigCard = {
     currentReceivables: 0,
@@ -54,14 +82,16 @@ export class InvoiceListComponent implements OnInit {
     this.loadDashboard();
   }
 
-  getCurrentMonth(): string {
-    const now = new Date();
-    return now.toISOString().slice(0, 7);
+  setDataMonthAndYear(normalizedMonthAndYear: Moment, datepicker: MatDatepicker<Moment>) {
+    this.dataMonth.setValue(normalizedMonthAndYear);
+    datepicker.close();
+    this.tabCounts = { all: 0, paid: 0, unpaid: 0, overdue: 0, cancelled: 0 };
+    this.loadDashboard();
   }
 
-  onMonthChange(value: string): void {
-    this.selectedMonth = value;
-    this.tabCounts = { all: 0, paid: 0, unpaid: 0, overdue: 0, cancelled: 0 };
+  setCompareMonthAndYear(normalizedMonthAndYear: Moment, datepicker: MatDatepicker<Moment>) {
+    this.compareMonth.setValue(normalizedMonthAndYear);
+    datepicker.close();
     this.loadDashboard();
   }
 
@@ -77,9 +107,10 @@ export class InvoiceListComponent implements OnInit {
   }
 
   loadDashboard(): void {
-    const monthDate = new Date(this.selectedMonth + '-01');
+    const dataMonthDate = this.dataMonth.value?.toDate();
+    const compareMonthDate = this.compareMonth.value?.toDate();
     this.studentPaymentService
-      .getDashboard(undefined, undefined, monthDate)
+      .getDashboard(undefined, undefined, dataMonthDate, compareMonthDate)
       .subscribe((data: PaymentDashboardDto) => {
         this.widgetCards = [
           {
