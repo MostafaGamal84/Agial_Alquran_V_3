@@ -85,6 +85,7 @@ export class InvoiceListComponent implements OnInit {
     this.dataMonth.setValue(normalizedMonthAndYear);
     datepicker.close();
     this.tabCounts = { all: 0, paid: 0, unpaid: 0, overdue: 0, cancelled: 0 };
+
     this.loadDashboard();
   }
 
@@ -103,6 +104,7 @@ export class InvoiceListComponent implements OnInit {
     const dataMonthDate = this.dataMonth.value?.toDate();
     this.studentPaymentService
       .getDashboard(undefined, undefined, dataMonthDate)
+
       .subscribe((data: PaymentDashboardDto) => {
         this.widgetCards = [
           {
