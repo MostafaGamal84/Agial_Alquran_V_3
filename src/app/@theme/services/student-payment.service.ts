@@ -79,8 +79,7 @@ export class StudentPaymentService {
   getDashboard(
     studentId?: number,
     currencyId?: number,
-    dataMonth?: Date,
-    compareMonth?: Date
+    dataMonth?: Date
   ): Observable<PaymentDashboardDto> {
     let params = new HttpParams();
     if (studentId !== undefined) {
@@ -91,9 +90,6 @@ export class StudentPaymentService {
     }
     if (dataMonth) {
       params = params.set('dataMonth', dataMonth.toISOString());
-    }
-    if (compareMonth) {
-      params = params.set('compareMonth', compareMonth.toISOString());
     }
     return this.http.get<PaymentDashboardDto>(
       `${environment.apiUrl}/api/StudentPayment/Dashboard`,
