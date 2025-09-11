@@ -62,7 +62,6 @@ interface WidgetCard {
 export class InvoiceListComponent implements OnInit {
   private studentPaymentService = inject(StudentPaymentService);
   dataMonth = new FormControl<Moment>(moment());
-  compareMonth = new FormControl<Moment | null>(null);
   widgetCards: WidgetCard[] = [];
   bigCard = {
     currentReceivables: 0,
@@ -86,13 +85,6 @@ export class InvoiceListComponent implements OnInit {
     this.dataMonth.setValue(normalizedMonthAndYear);
     datepicker.close();
     this.tabCounts = { all: 0, paid: 0, unpaid: 0, overdue: 0, cancelled: 0 };
-    this.loadDashboard();
-  }
-
-  setCompareMonthAndYear(normalizedMonthAndYear: Moment, datepicker: MatDatepicker<Moment>) {
-    this.compareMonth.setValue(normalizedMonthAndYear);
-    datepicker.close();
-    this.tabCounts = { all: 0, paid: 0, unpaid: 0, overdue: 0, cancelled: 0 };
 
     this.loadDashboard();
   }
@@ -110,9 +102,9 @@ export class InvoiceListComponent implements OnInit {
 
   loadDashboard(): void {
     const dataMonthDate = this.dataMonth.value?.toDate();
-    const compareMonthDate = this.compareMonth.value?.toDate();
     this.studentPaymentService
-      .getDashboard(undefined, undefined, dataMonthDate, compareMonthDate)
+      .getDashboard(undefined, undefined, dataMonthDate)
+
       .subscribe((data: PaymentDashboardDto) => {
         this.widgetCards = [
           {
