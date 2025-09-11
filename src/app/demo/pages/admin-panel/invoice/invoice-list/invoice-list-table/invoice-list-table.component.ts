@@ -14,7 +14,7 @@ import {
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Observable } from 'rxjs';
 
 
 // project import
@@ -47,6 +47,7 @@ export interface InvoiceTableItem {
 export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChanges {
   @Input() tab?: string;
   @Input() month?: string;
+  @Input() compareMonth?: string;
   @Output() countChange = new EventEmitter<number>();
   private studentPaymentService = inject(StudentPaymentService);
 
@@ -75,7 +76,7 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['tab'] || changes['month']) {
+    if (changes['tab'] || changes['month'] || changes['compareMonth']) {
       this.loadData();
     }
   }
@@ -93,8 +94,12 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
       maxResultCount: 100
     };
     let monthDate: Date | undefined;
+    let compareMonthDate: Date | undefined;
     if (this.month) {
       monthDate = new Date(this.month + '-01');
+    }
+    if (this.compareMonth) {
+      compareMonthDate = new Date(this.compareMonth + '-01');
     }
     const mapItems = (
       resp: ApiResponse<PagedResultDto<StudentInvoiceDto>>
@@ -109,50 +114,113 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
       }));
 
     if (!this.tab || this.tab === 'all') {
-      const all$ = this.studentPaymentService.getInvoices(
-        filter,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        monthDate
-      );
-      const overdue$ = this.studentPaymentService.getInvoices(
-        filter,
-        'overdue',
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        monthDate
-      );
-      forkJoin([all$, overdue$]).subscribe(([allResp, overdueResp]) => {
-        const items = [...mapItems(allResp), ...mapItems(overdueResp)];
+      const requests: Observable<ApiResponse<PagedResultDto<StudentInvoiceDto>>>[] = [];
+      if (monthDate) {
+        requests.push(
+          this.studentPaymentService.getInvoices(
+            filter,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            monthDate
+          )
+        );
+        requests.push(
+          this.studentPaymentService.getInvoices(
+            filter,
+            'overdue',
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            monthDate
+          )
+        );
+      }
+      if (compareMonthDate) {
+        requests.push(
+          this.studentPaymentService.getInvoices(
+            filter,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            compareMonthDate
+          )
+        );
+        requests.push(
+          this.studentPaymentService.getInvoices(
+            filter,
+            'overdue',
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            compareMonthDate
+          )
+        );
+      }
+      forkJoin(requests).subscribe((responses) => {
+        const items = responses.reduce(
+          (acc: InvoiceTableItem[], resp: ApiResponse<PagedResultDto<StudentInvoiceDto>>) => [
+            ...acc,
+            ...mapItems(resp)
+          ],
+          []
+        );
         this.dataSource.data = items;
         this.dataSource.filter = this.searchTerm.trim().toLowerCase();
         this.countChange.emit(this.dataSource.filteredData.length);
       });
     } else {
-      this.studentPaymentService
-        .getInvoices(
-          filter,
-          this.tab,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          monthDate
-        )
-        .subscribe((resp) => {
-          const items = mapItems(resp);
-          this.dataSource.data = items;
-          this.dataSource.filter = this.searchTerm.trim().toLowerCase();
-          this.countChange.emit(this.dataSource.filteredData.length);
-        });
+      const requests: Observable<ApiResponse<PagedResultDto<StudentInvoiceDto>>>[] = [];
+      if (monthDate) {
+        requests.push(
+          this.studentPaymentService.getInvoices(
+            filter,
+            this.tab,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            monthDate
+          )
+        );
+      }
+      if (compareMonthDate) {
+        requests.push(
+          this.studentPaymentService.getInvoices(
+            filter,
+            this.tab,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            compareMonthDate
+          )
+        );
+      }
+      forkJoin(requests).subscribe((responses) => {
+        const items = responses.reduce(
+          (acc: InvoiceTableItem[], resp: ApiResponse<PagedResultDto<StudentInvoiceDto>>) => [
+            ...acc,
+            ...mapItems(resp)
+          ],
+          []
+        );
+        this.dataSource.data = items;
+        this.dataSource.filter = this.searchTerm.trim().toLowerCase();
+        this.countChange.emit(this.dataSource.filteredData.length);
+      });
     }
   }
 
