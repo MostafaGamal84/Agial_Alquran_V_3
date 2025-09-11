@@ -15,9 +15,6 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 
-// rxjs import
-import { forkJoin } from 'rxjs';
-
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
@@ -110,20 +107,9 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
       }));
 
     if (!this.tab || this.tab === 'all') {
-      forkJoin([
-        this.studentPaymentService.getInvoices(
+      this.studentPaymentService
+        .getInvoices(
           filter,
-          'all',
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          monthDate
-        ),
-        this.studentPaymentService.getInvoices(
-          filter,
-          'overdue',
           undefined,
           undefined,
           undefined,
@@ -131,13 +117,12 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
           undefined,
           monthDate
         )
-      ]).subscribe(([allResp, overdueResp]) => {
-        const items = [...mapItems(allResp), ...mapItems(overdueResp)];
-
-        this.dataSource.data = items;
-        this.dataSource.filter = this.searchTerm.trim().toLowerCase();
-        this.countChange.emit(this.dataSource.filteredData.length);
-      });
+        .subscribe((resp) => {
+          const items = mapItems(resp);
+          this.dataSource.data = items;
+          this.dataSource.filter = this.searchTerm.trim().toLowerCase();
+          this.countChange.emit(this.dataSource.filteredData.length);
+        });
     } else {
       this.studentPaymentService
         .getInvoices(
