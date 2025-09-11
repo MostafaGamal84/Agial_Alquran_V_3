@@ -2,12 +2,7 @@
   <div class="col-12 mb-3 text-end">
     <mat-form-field appearance="outline">
       <mat-label>Month</mat-label>
-      <input
-        matInput
-        type="month"
-        [(ngModel)]="selectedMonth"
-        (ngModelChange)="onMonthChange($event)"
-      />
+      <input matInput type="month" [(ngModel)]="selectedMonth" (ngModelChange)="onMonthChange($event)" />
     </mat-form-field>
   </div>
   <div class="col-xxl-8">
@@ -48,14 +43,12 @@
           </div>
           <div class="m-l-10">
             <div class="flex align-item-center">
-              <p class="m-b-0 text-white">Total Recievables</p>
+              <p class="m-b-0 text-white">Total Receivables</p>
               <i class="ti ti-info-circle text-white m-l-10"></i>
             </div>
             <div class="flex align-item-center">
               <p class="m-b-0 text-white text-sm">Current</p>
-              <p class="m-b-0 text-white m-l-10">{{
-                bigCard.currentReceivables
-              }}</p>
+              <p class="m-b-0 text-white m-l-10">{{ bigCard.currentReceivables }}</p>
             </div>
           </div>
         </div>
@@ -64,16 +57,10 @@
           <p class="m-b-0 text-white m-l-10">{{ bigCard.overdueReceivables }}</p>
         </div>
       </div>
-      <div class="m-t-15 text-white f-16 f-w-600 m-b-5">
-        ${{ bigCard.totalReceivables }}
-      </div>
+      <div class="m-t-15 text-white f-16 f-w-600 m-b-5">${{ bigCard.totalReceivables }}</div>
       <div class="flex align-item-center">
         <div class="flex-grow-1 m-r-15">
-          <mat-progress-bar
-            color="warn"
-            mode="determinate"
-            [value]="bigCard.collectionRate"
-          ></mat-progress-bar>
+          <mat-progress-bar color="warn" mode="determinate" [value]="bigCard.collectionRate"></mat-progress-bar>
         </div>
         <div class="flex-shrink-0 text-end wid-30">
           <p class="text-white m-b-0">{{ bigCard.collectionRate }}%</p>
@@ -127,7 +114,9 @@
           <ng-template mat-tab-label>
             <div class="flex align-item-center justify-content-between">
               Cancelled
-              <div class="wid-20 hei-20 border-50 flex align-item-center justify-content-center bg-warn-50 text-warn-500 m-l-10">{{ tabCounts.cancelled }}</div>
+              <div class="wid-20 hei-20 border-50 flex align-item-center justify-content-center bg-warn-50 text-warn-500 m-l-10">
+                {{ tabCounts.cancelled }}
+              </div>
             </div>
           </ng-template>
           <div class="p-y-20">
