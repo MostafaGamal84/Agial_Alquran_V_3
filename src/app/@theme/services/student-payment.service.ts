@@ -35,6 +35,20 @@ export interface PaymentDashboardDto {
   overdueReceivables: number;
   totalReceivables: number;
   collectionRate: number;
+  paidChart?: number[];
+  unpaidChart?: number[];
+  overdueChart?: number[];
+}
+
+export interface StudentInvoiceDto {
+  invoiceId: number;
+  studentId: number;
+  userName?: string | null;
+  userEmail?: string | null;
+  createDate?: string | null;
+  dueDate?: string | null;
+  quantity?: number | null;
+  statusText?: string | null;
 }
 
 export interface StudentInvoiceDto {

@@ -7,7 +7,6 @@ import {
   OnInit,
   Output,
   EventEmitter,
-
   SimpleChanges,
   viewChild,
   inject
@@ -43,14 +42,12 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
   @Input() tab?: string;
   @Input() month?: string;
   @Output() countChange = new EventEmitter<number>();
-
-
   private studentPaymentService = inject(StudentPaymentService);
 
   // public props
   displayedColumns: string[] = ['id', 'name', 'create_date', 'due_date', 'qty', 'status', 'action'];
   dataSource = new MatTableDataSource<InvoiceTableItem>([]);
-
+  private searchTerm = '';
   // paginator
   readonly paginator = viewChild.required(MatPaginator); // if Angular ≥17
 
@@ -68,12 +65,34 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
 
   // table search filter
   applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+    this.searchTerm = (event.target as HTMLInputElement).value;
+    this.loadData();
+  }
 
-    if (this.dataSource.paginator) {
-      this.dataSource.paginator.firstPage();
+  loadData(): void {
+    const filter: FilteredResultRequestDto = {
+      skipCount: 0,
+      maxResultCount: 100,
+      searchTerm: this.searchTerm.trim()
+    };
+    let monthDate: Date | undefined;
+    if (this.month) {
+      monthDate = new Date(this.month + '-01');
     }
+    this.studentPaymentService
+      .getInvoices(filter, this.tab, undefined, undefined, undefined, undefined, undefined, monthDate)
+      .subscribe((resp) => {
+        const items: InvoiceTableItem[] = resp.data.items.map((item: StudentInvoiceDto) => ({
+          id: item.invoiceId,
+          name: item.userName ?? '',
+          create_date: item.createDate ?? '',
+          due_date: item.dueDate ?? '',
+          qty: item.quantity ?? 0,
+          status: (item.statusText ?? '').toLowerCase()
+        }));
+        this.dataSource.data = items;
+        this.countChange.emit(resp.data.totalCount);
+      });
   }
 
   loadData(): void {
