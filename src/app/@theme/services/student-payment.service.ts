@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { ApiResponse, PagedResultDto } from './lookup.service';
+import { ApiResponse, FilteredResultRequestDto, PagedResultDto } from './lookup.service';
 
 export interface StudentPaymentDto {
   id: number;
@@ -35,6 +35,20 @@ export interface PaymentDashboardDto {
   overdueReceivables: number;
   totalReceivables: number;
   collectionRate: number;
+  paidChart?: number[];
+  unpaidChart?: number[];
+  overdueChart?: number[];
+}
+
+export interface StudentInvoiceDto {
+  invoiceId: number;
+  studentId: number;
+  userName?: string | null;
+  userEmail?: string | null;
+  createDate?: string | null;
+  dueDate?: string | null;
+  quantity?: number | null;
+  statusText?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -54,7 +68,8 @@ export class StudentPaymentService {
   getDashboard(
     studentId?: number,
     currencyId?: number,
-    month?: Date
+    dataMonth?: Date,
+    compareMonth?: Date
   ): Observable<PaymentDashboardDto> {
     let params = new HttpParams();
     if (studentId !== undefined) {
@@ -63,11 +78,61 @@ export class StudentPaymentService {
     if (currencyId !== undefined) {
       params = params.set('currencyId', currencyId.toString());
     }
-    if (month) {
-      params = params.set('month', month.toISOString());
+    if (dataMonth) {
+      params = params.set('dataMonth', dataMonth.toISOString());
+    }
+    if (compareMonth) {
+      params = params.set('compareMonth', compareMonth.toISOString());
     }
     return this.http.get<PaymentDashboardDto>(
       `${environment.apiUrl}/api/StudentPayment/Dashboard`,
+      { params }
+    );
+  }
+
+  getInvoices(
+    filter: FilteredResultRequestDto,
+    tab?: string,
+    studentId?: number,
+    createdFrom?: Date,
+    createdTo?: Date,
+    dueFrom?: Date,
+    dueTo?: Date,
+    month?: Date
+  ): Observable<ApiResponse<PagedResultDto<StudentInvoiceDto>>> {
+    let params = new HttpParams();
+    if (filter.skipCount !== undefined) {
+      params = params.set('SkipCount', filter.skipCount.toString());
+    }
+    if (filter.maxResultCount !== undefined) {
+      params = params.set('MaxResultCount', filter.maxResultCount.toString());
+    }
+    if (filter.searchTerm) {
+      params = params.set('SearchTerm', filter.searchTerm);
+    }
+    if (tab) {
+      params = params.set('tab', tab);
+    }
+    if (studentId) {
+      params = params.set('studentId', studentId.toString());
+    }
+    if (createdFrom) {
+      params = params.set('createdFrom', createdFrom.toISOString());
+    }
+    if (createdTo) {
+      params = params.set('createdTo', createdTo.toISOString());
+    }
+    if (dueFrom) {
+      params = params.set('dueFrom', dueFrom.toISOString());
+    }
+    if (dueTo) {
+      params = params.set('dueTo', dueTo.toISOString());
+    }
+    if (month) {
+      params = params.set('month', month.toISOString());
+    }
+    return this.http.get<ApiResponse<PagedResultDto<StudentInvoiceDto>>>(
+      `${environment.apiUrl}/api/StudentPayment/Invoices`,
       { params }
     );
   }

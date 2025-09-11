@@ -42,6 +42,12 @@ export class InvoiceListComponent implements OnInit {
     totalReceivables: 0,
     collectionRate: 0
   };
+  tabCounts = {
+    all: 0,
+    paid: 0,
+    unpaid: 0,
+    cancelled: 0
+  };
 
   ngOnInit(): void {
     this.loadDashboard();
@@ -54,7 +60,12 @@ export class InvoiceListComponent implements OnInit {
 
   onMonthChange(value: string): void {
     this.selectedMonth = value;
+    this.tabCounts = { all: 0, paid: 0, unpaid: 0, cancelled: 0 };
     this.loadDashboard();
+  }
+
+  onTableCount(tab: 'all' | 'paid' | 'unpaid' | 'cancelled', count: number): void {
+    this.tabCounts[tab] = count;
   }
 
   loadDashboard(): void {
@@ -70,7 +81,7 @@ export class InvoiceListComponent implements OnInit {
             percentage: data.totalPaidMoMPercentage,
             color: 'text-success-500',
             invoice: data.totalPaidCount,
-            data: [0, 20, 10, 45, 30, 55, 20, 30],
+            data: data.paidChart ?? [],
             colors: ['#2ca87f']
           },
           {
@@ -80,7 +91,7 @@ export class InvoiceListComponent implements OnInit {
             percentage: data.totalUnPaidMoMPercentage,
             color: 'text-warning-500',
             invoice: data.totalUnPaidCount,
-            data: [30, 20, 55, 30, 45, 10, 20, 0],
+            data: data.unpaidChart ?? [],
             colors: ['#e58a00']
           },
           {
@@ -90,7 +101,7 @@ export class InvoiceListComponent implements OnInit {
             percentage: data.totalOverdueMoMPercentage,
             color: 'text-warn-500',
             invoice: data.totalOverdueCount,
-            data: [0, 20, 10, 45, 30, 55, 20, 30],
+            data: data.overdueChart ?? [],
             colors: ['#dc2626']
           }
         ];
