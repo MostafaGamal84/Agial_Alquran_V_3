@@ -1,9 +1,29 @@
 <div class="row">
   <div class="col-12 mb-3 text-end">
-    <mat-form-field appearance="outline">
-      <mat-label>Month</mat-label>
-      <input matInput type="month" [(ngModel)]="selectedMonth" (ngModelChange)="onMonthChange($event)" />
-    </mat-form-field>
+    <div class="flex gap-2 justify-content-end">
+      <mat-form-field appearance="outline">
+        <mat-label>Month</mat-label>
+        <input matInput [matDatepicker]="dataPicker" [formControl]="dataMonth" />
+        <mat-datepicker-toggle matIconSuffix [for]="dataPicker"></mat-datepicker-toggle>
+        <mat-datepicker
+          #dataPicker
+          startView="multi-year"
+          (monthSelected)="setDataMonthAndYear($event, dataPicker)"
+          panelClass="example-month-picker"
+        ></mat-datepicker>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Compare Month</mat-label>
+        <input matInput [matDatepicker]="comparePicker" [formControl]="compareMonth" />
+        <mat-datepicker-toggle matIconSuffix [for]="comparePicker"></mat-datepicker-toggle>
+        <mat-datepicker
+          #comparePicker
+          startView="multi-year"
+          (monthSelected)="setCompareMonthAndYear($event, comparePicker)"
+          panelClass="example-month-picker"
+        ></mat-datepicker>
+      </mat-form-field>
+    </div>
   </div>
   <div class="col-xxl-8">
     <div class="row g-3 mb-3">
@@ -81,7 +101,7 @@
             </div>
           </ng-template>
           <div class="p-y-20">
-            <app-invoice-list-table [month]="selectedMonth" (countChange)="onTableCount('all', $event)" />
+            <app-invoice-list-table [month]="dataMonth.value?.format('YYYY-MM')" [compareMonth]="compareMonth.value?.format('YYYY-MM')" (countChange)="onTableCount('all', $event)" />
           </div>
         </mat-tab>
         <mat-tab>
@@ -94,7 +114,7 @@
             </div>
           </ng-template>
           <div class="p-y-20">
-            <app-invoice-list-table tab="paid" [month]="selectedMonth" (countChange)="onTableCount('paid', $event)" />
+            <app-invoice-list-table tab="paid" [month]="dataMonth.value?.format('YYYY-MM')" [compareMonth]="compareMonth.value?.format('YYYY-MM')" (countChange)="onTableCount('paid', $event)" />
           </div>
         </mat-tab>
         <mat-tab>
@@ -107,7 +127,7 @@
             </div>
           </ng-template>
           <div class="p-y-20">
-            <app-invoice-list-table tab="unpaid" [month]="selectedMonth" (countChange)="onTableCount('unpaid', $event)" />
+            <app-invoice-list-table tab="unpaid" [month]="dataMonth.value?.format('YYYY-MM')" [compareMonth]="compareMonth.value?.format('YYYY-MM')" (countChange)="onTableCount('unpaid', $event)" />
           </div>
         </mat-tab>
         <mat-tab>
@@ -120,7 +140,7 @@
             </div>
           </ng-template>
           <div class="p-y-20">
-            <app-invoice-list-table tab="overdue" [month]="selectedMonth" (countChange)="onTableCount('overdue', $event)" />
+            <app-invoice-list-table tab="overdue" [month]="dataMonth.value?.format('YYYY-MM')" [compareMonth]="compareMonth.value?.format('YYYY-MM')" (countChange)="onTableCount('overdue', $event)" />
           </div>
         </mat-tab>
         <mat-tab>
@@ -133,7 +153,7 @@
             </div>
           </ng-template>
           <div class="p-y-20">
-            <app-invoice-list-table tab="cancelled" [month]="selectedMonth" (countChange)="onTableCount('cancelled', $event)" />
+            <app-invoice-list-table tab="cancelled" [month]="dataMonth.value?.format('YYYY-MM')" [compareMonth]="compareMonth.value?.format('YYYY-MM')" (countChange)="onTableCount('cancelled', $event)" />
           </div>
         </mat-tab>
       </mat-tab-group>
