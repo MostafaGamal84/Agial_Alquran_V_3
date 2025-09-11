@@ -15,13 +15,20 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 
+// rxjs import
+import { forkJoin } from 'rxjs';
+
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
   StudentInvoiceDto,
   StudentPaymentService
 } from 'src/app/@theme/services/student-payment.service';
-import { FilteredResultRequestDto } from 'src/app/@theme/services/lookup.service';
+import {
+  ApiResponse,
+  FilteredResultRequestDto,
+  PagedResultDto
+} from 'src/app/@theme/services/lookup.service';
 
 export interface InvoiceTableItem {
   id: number;
@@ -90,21 +97,65 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
     if (this.month) {
       monthDate = new Date(this.month + '-01');
     }
-    this.studentPaymentService
-      .getInvoices(filter, this.tab, undefined, undefined, undefined, undefined, undefined, monthDate)
-      .subscribe((resp) => {
-        const items: InvoiceTableItem[] = resp.data.items.map((item: StudentInvoiceDto) => ({
-          id: item.invoiceId,
-          name: item.userName ?? '',
-          create_date: item.createDate ?? '',
-          due_date: item.dueDate ?? '',
-          qty: item.quantity ?? 0,
-          status: (item.statusText ?? '').toLowerCase()
-        }));
+    const mapItems = (
+      resp: ApiResponse<PagedResultDto<StudentInvoiceDto>>
+    ): InvoiceTableItem[] =>
+      resp.data.items.map((item: StudentInvoiceDto) => ({
+        id: item.invoiceId,
+        name: item.userName ?? '',
+        create_date: item.createDate ?? '',
+        due_date: item.dueDate ?? '',
+        qty: item.quantity ?? 0,
+        status: (item.statusText ?? '').toLowerCase()
+      }));
+
+    if (!this.tab || this.tab === 'all') {
+      forkJoin([
+        this.studentPaymentService.getInvoices(
+          filter,
+          'all',
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          monthDate
+        ),
+        this.studentPaymentService.getInvoices(
+          filter,
+          'overdue',
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          monthDate
+        )
+      ]).subscribe(([allResp, overdueResp]) => {
+        const items = [...mapItems(allResp), ...mapItems(overdueResp)];
         this.dataSource.data = items;
         this.dataSource.filter = this.searchTerm.trim().toLowerCase();
         this.countChange.emit(this.dataSource.filteredData.length);
       });
+    } else {
+      this.studentPaymentService
+        .getInvoices(
+          filter,
+          this.tab,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          monthDate
+        )
+        .subscribe((resp) => {
+          const items = mapItems(resp);
+          this.dataSource.data = items;
+          this.dataSource.filter = this.searchTerm.trim().toLowerCase();
+          this.countChange.emit(this.dataSource.filteredData.length);
+        });
+    }
   }
 
 
