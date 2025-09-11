@@ -93,6 +93,7 @@ export class InvoiceListComponent implements OnInit {
     this.compareMonth.setValue(normalizedMonthAndYear);
     datepicker.close();
     this.tabCounts = { all: 0, paid: 0, unpaid: 0, overdue: 0, cancelled: 0 };
+
     this.loadDashboard();
   }
 
