@@ -5,19 +5,15 @@ import { environment } from 'src/environments/environment';
 import { ApiResponse, FilteredResultRequestDto, PagedResultDto } from './lookup.service';
 
 export interface StudentPaymentDto {
-  id: number;
+  invoiceId: number;
   studentId: number;
-  studentName?: string | null;
-  studentSubscribeName?: string | null;
-  amount?: number | null;
-  currencyId?: number | null;
+  userName?: string | null;
+  userEmail?: string | null;
+  createDate?: string | null;
+  dueDate?: string | null;
   paymentDate?: string | null;
-  receiptPath?: string | null;
-  payStatue?: boolean | null;
-  createdBy?: number | null;
-  createdAt?: string | null;
-  modefiedBy?: number | null;
-  modefiedAt?: string | null;
+  quantity?: number | null;
+  statusText?: string | null;
 }
 
 export interface PaymentDashboardDto {
@@ -51,26 +47,13 @@ export interface StudentInvoiceDto {
   statusText?: string | null;
 }
 
-export interface StudentInvoiceDto {
-  invoiceId: number;
-  studentId: number;
-  userName?: string | null;
-  userEmail?: string | null;
-  createDate?: string | null;
-  dueDate?: string | null;
-  quantity?: number | null;
-  statusText?: string | null;
-}
-
 @Injectable({ providedIn: 'root' })
 export class StudentPaymentService {
   private http = inject(HttpClient);
 
-  getPayment(
-    paymentId: number
-  ): Observable<ApiResponse<PagedResultDto<StudentPaymentDto>>> {
+  getPayment(paymentId: number): Observable<ApiResponse<StudentPaymentDto>> {
     const params = new HttpParams().set('paymentId', paymentId.toString());
-    return this.http.get<ApiResponse<PagedResultDto<StudentPaymentDto>>>(
+    return this.http.get<ApiResponse<StudentPaymentDto>>(
       `${environment.apiUrl}/api/StudentPayment/GetPayment`,
       { params }
     );
