@@ -69,16 +69,18 @@
               <i class="f-20 ti ti-eye text-accent-500"></i>
             </a>
           </li>
-          <li class="list-inline-item">
-            <a
-              href="javascript:"
-              class="avatar avatar-xs bg-primary-50 hover m-r-10"
-              matTooltip="Edit"
-              (click)="openPaymentEdit(element.id)"
-            >
-              <i class="f-20 ti ti-edit text-primary-500"></i>
-            </a>
-          </li>
+          @if (!element.payStatue && !element.isCancelled) {
+            <li class="list-inline-item">
+              <a
+                href="javascript:"
+                class="avatar avatar-xs bg-primary-50 hover m-r-10"
+                matTooltip="Edit"
+                (click)="openPaymentEdit(element.id)"
+              >
+                <i class="f-20 ti ti-edit text-primary-500"></i>
+              </a>
+            </li>
+          }
           <li class="list-inline-item">
             <a href="javascript:" matTooltip="Delete" class="avatar avatar-xs bg-warn-50 hover">
               <i class="f-20 ti ti-trash text-warn-500"></i>

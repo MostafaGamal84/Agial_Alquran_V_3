@@ -61,6 +61,8 @@ export interface StudentInvoiceDto {
   dueDate?: string | null;
   amount?: number | null;
   statusText?: string | null;
+  payStatue?: boolean | null;
+  isCancelled?: boolean | null;
 }
 
 @Injectable({ providedIn: 'root' })
