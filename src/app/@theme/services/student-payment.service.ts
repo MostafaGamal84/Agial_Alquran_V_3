@@ -59,7 +59,7 @@ export interface StudentInvoiceDto {
   userEmail?: string | null;
   createDate?: string | null;
   dueDate?: string | null;
-  quantity?: number | null;
+  amount?: number | null;
   statusText?: string | null;
   payStatue?: boolean | null;
   isCancelled?: boolean | null;
