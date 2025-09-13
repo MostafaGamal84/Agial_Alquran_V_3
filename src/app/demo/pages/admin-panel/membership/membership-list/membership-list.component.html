@@ -90,16 +90,23 @@
                         <a [routerLink]="['/membership/view', element.studentId]" class="avatar avatar-xs text-muted">
                           <i class="ti ti-eye f-20"></i>
                         </a>
-                      </li>
-                      <li
-                        class="list-inline-item m-r-10"
-                        matTooltip="Edit"
-                        *ngIf="element.payStatus === false && element.isCancelled === false"
-                      >
-                        <a href="javascript:" class="avatar avatar-xs text-muted">
-                          <i class="ti ti-edit-circle f-20"></i>
-                        </a>
-                      </li>
+                        </li>
+                        <li
+                          class="list-inline-item m-r-10"
+                          matTooltip="Edit"
+                          [matTooltipDisabled]="element.payStatus === true || element.isCancelled === true"
+                        >
+                          <a
+                            href="javascript:"
+                            class="avatar avatar-xs text-muted"
+                            [ngClass]="{
+                              disabled: element.payStatus === true || element.isCancelled === true
+                            }"
+                          >
+                            <i class="ti ti-edit-circle f-20"></i>
+                          </a>
+                        </li>
+
                       <li class="list-inline-item m-r-10" matTooltip="Delete">
                         <a href="javascript:" class="avatar avatar-xs text-muted">
                           <i class="ti ti-trash f-20"></i>
