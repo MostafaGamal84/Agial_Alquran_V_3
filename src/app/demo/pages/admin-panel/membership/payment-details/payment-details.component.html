@@ -9,6 +9,10 @@
     <span>{{ data.studentId }}</span>
   </div>
   <div class="payment-item">
+    <strong>Subscribe:</strong>
+    <span>{{ data.subscribeName }}</span>
+  </div>
+  <div class="payment-item">
     <strong>Name:</strong>
     <span>{{ data.userName }}</span>
   </div>
@@ -27,6 +31,14 @@
   <div class="payment-item">
     <strong>Payment Date:</strong>
     <span>{{ data.paymentDate ? (data.paymentDate | date: 'short') : 'N/A' }}</span>
+  </div>
+  <div class="payment-item">
+    <strong>Amount:</strong>
+    <span>{{ data.amount }}</span>
+  </div>
+  <div class="payment-item">
+    <strong>Currency:</strong>
+    <span>{{ currencyEnum[data.currency ?? 1] }}</span>
   </div>
   <div class="payment-item">
     <strong>Quantity:</strong>
