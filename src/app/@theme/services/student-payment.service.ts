@@ -4,6 +4,12 @@ import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { ApiResponse, FilteredResultRequestDto, PagedResultDto } from './lookup.service';
 
+export enum CurrencyEnum {
+  LE = 1,
+  SAR = 2,
+  USD = 3
+}
+
 export interface StudentPaymentDto {
   invoiceId: number;
   studentId: number;
@@ -14,6 +20,17 @@ export interface StudentPaymentDto {
   paymentDate?: string | null;
   quantity?: number | null;
   statusText?: string | null;
+  subscribeName?: string | null;
+  amount?: number | null;
+  currency?: CurrencyEnum | null;
+}
+
+export interface UpdatePaymentDto {
+  id: number;
+  amount?: number | null;
+  receiptPath?: string | null;
+  payStatue?: boolean | null;
+  isCancelled?: boolean | null;
 }
 
 export interface PaymentDashboardDto {
@@ -56,6 +73,25 @@ export class StudentPaymentService {
     return this.http.get<ApiResponse<StudentPaymentDto>>(
       `${environment.apiUrl}/api/StudentPayment/GetPayment`,
       { params }
+    );
+  }
+
+  updatePayment(
+    model: UpdatePaymentDto,
+    receipt?: File
+  ): Observable<ApiResponse<boolean>> {
+    const formData = new FormData();
+    Object.entries(model).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        formData.append(key, value.toString());
+      }
+    });
+    if (receipt) {
+      formData.append('ReceiptPath', receipt);
+    }
+    return this.http.post<ApiResponse<boolean>>(
+      `${environment.apiUrl}/api/StudentPayment/UpdatePayment`,
+      formData
     );
   }
 
