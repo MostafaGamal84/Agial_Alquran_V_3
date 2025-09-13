@@ -15,12 +15,11 @@ export interface StudentPaymentDto {
   studentId: number;
   userName?: string | null;
   userEmail?: string | null;
+  subscribe?: string | null;
   createDate?: string | null;
   dueDate?: string | null;
   paymentDate?: string | null;
-  quantity?: number | null;
   statusText?: string | null;
-  subscribeName?: string | null;
   amount?: number | null;
   currency?: CurrencyEnum | null;
 }

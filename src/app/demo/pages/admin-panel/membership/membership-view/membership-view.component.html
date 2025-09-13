@@ -89,7 +89,11 @@
                   <strong>Payment Date:</strong>
                   {{ paymentDetails.paymentDate ? (paymentDetails.paymentDate | date: 'short') : 'N/A' }}
                 </p>
-                <p><strong>Quantity:</strong> {{ paymentDetails.quantity }}</p>
+                <p><strong>Amount:</strong> {{ paymentDetails.amount }}</p>
+                <p>
+                  <strong>Currency:</strong>
+                  {{ paymentDetails.currency !== undefined ? (currencyEnum[paymentDetails.currency] || '') : '' }}
+                </p>
                 <p><strong>Status:</strong> {{ paymentDetails.statusText }}</p>
               </div>
             </mat-expansion-panel>

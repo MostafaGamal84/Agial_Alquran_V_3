@@ -7,7 +7,11 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { StudentSubscribeService, ViewStudentSubscribeReDto } from 'src/app/@theme/services/student-subscribe.service';
 import { FilteredResultRequestDto } from 'src/app/@theme/services/lookup.service';
-import { StudentPaymentService, StudentPaymentDto } from 'src/app/@theme/services/student-payment.service';
+import {
+  StudentPaymentService,
+  StudentPaymentDto,
+  CurrencyEnum
+} from 'src/app/@theme/services/student-payment.service';
 
 
 @Component({
@@ -30,6 +34,7 @@ export class MembershipViewComponent implements OnInit, AfterViewInit {
   expandedElement: ViewStudentSubscribeReDto | null = null;
   paymentDetails: StudentPaymentDto | null = null;
   panelOpen = false;
+  currencyEnum = CurrencyEnum;
 
   readonly paginator = viewChild.required(MatPaginator);
 

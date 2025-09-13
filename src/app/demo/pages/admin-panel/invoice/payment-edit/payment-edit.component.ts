@@ -23,7 +23,7 @@ export class PaymentEditComponent {
   receiptFile?: File;
 
   form = this.fb.group({
-    subscribeName: [{ value: this.data.subscribeName, disabled: true }],
+    subscribe: [{ value: this.data.subscribe, disabled: true }],
     amount: [this.data.amount, Validators.required],
     currency: [{ value: this.currencyEnum[this.data.currency ?? 1], disabled: true }]
   });
