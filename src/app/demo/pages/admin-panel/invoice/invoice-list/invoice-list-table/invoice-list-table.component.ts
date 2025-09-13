@@ -39,6 +39,8 @@ export interface InvoiceTableItem {
   due_date: string;
   qty: number;
   status: string;
+  payStatue: boolean;
+  isCancelled: boolean;
 }
 
 @Component({
@@ -130,7 +132,9 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
         create_date: item.createDate ?? '',
         due_date: item.dueDate ?? '',
         qty: item.quantity ?? 0,
-        status: (item.statusText ?? '').toLowerCase()
+        status: (item.statusText ?? '').toLowerCase(),
+        payStatue: item.payStatue ?? false,
+        isCancelled: item.isCancelled ?? false
       }));
 
     if (!this.tab || this.tab === 'all') {
