@@ -1,8 +1,8 @@
 <h2 mat-dialog-title>Payment Details</h2>
 <div mat-dialog-content>
   <div class="payment-item">
-    <strong>ID:</strong>
-    <span>{{ data.id }}</span>
+    <strong>Invoice ID:</strong>
+    <span>{{ data.invoiceId }}</span>
   </div>
   <div class="payment-item">
     <strong>Student ID:</strong>
@@ -10,47 +10,31 @@
   </div>
   <div class="payment-item">
     <strong>Name:</strong>
-    <span>{{ data.studentName }}</span>
+    <span>{{ data.userName }}</span>
   </div>
   <div class="payment-item">
-    <strong>Subscription:</strong>
-    <span>{{ data.studentSubscribeName }}</span>
+    <strong>Email:</strong>
+    <span>{{ data.userEmail }}</span>
   </div>
   <div class="payment-item">
-    <strong>Amount:</strong>
-    <span>{{ data.amount }}</span>
+    <strong>Create Date:</strong>
+    <span>{{ data.createDate ? (data.createDate | date: 'short') : 'N/A' }}</span>
   </div>
   <div class="payment-item">
-    <strong>Currency:</strong>
-    <span>{{ data.currencyId }}</span>
+    <strong>Due Date:</strong>
+    <span>{{ data.dueDate ? (data.dueDate | date: 'short') : 'N/A' }}</span>
   </div>
   <div class="payment-item">
     <strong>Payment Date:</strong>
     <span>{{ data.paymentDate ? (data.paymentDate | date: 'short') : 'N/A' }}</span>
   </div>
   <div class="payment-item">
-    <strong>Receipt:</strong>
-    <span>{{ data.receiptPath || 'N/A' }}</span>
+    <strong>Quantity:</strong>
+    <span>{{ data.quantity }}</span>
   </div>
   <div class="payment-item">
     <strong>Status:</strong>
-    <span>{{ data.payStatue ? 'Payed' : 'Not payed' }}</span>
-  </div>
-  <div class="payment-item">
-    <strong>Created By:</strong>
-    <span>{{ data.createdBy ?? 'N/A' }}</span>
-  </div>
-  <div class="payment-item">
-    <strong>Created At:</strong>
-    <span>{{ data.createdAt ? (data.createdAt | date: 'short') : 'N/A' }}</span>
-  </div>
-  <div class="payment-item">
-    <strong>Modified By:</strong>
-    <span>{{ data.modefiedBy ?? 'N/A' }}</span>
-  </div>
-  <div class="payment-item">
-    <strong>Modified At:</strong>
-    <span>{{ data.modefiedAt ? (data.modefiedAt | date: 'short') : 'N/A' }}</span>
+    <span>{{ data.statusText }}</span>
   </div>
 </div>
 <div mat-dialog-actions align="end">

@@ -73,28 +73,24 @@
                 <mat-panel-title>Payment Details</mat-panel-title>
               </mat-expansion-panel-header>
               <div class="p-16">
-                <p><strong>ID:</strong> {{ paymentDetails.id }}</p>
+                <p><strong>Invoice ID:</strong> {{ paymentDetails.invoiceId }}</p>
                 <p><strong>Student ID:</strong> {{ paymentDetails.studentId }}</p>
-                <p><strong>Name:</strong> {{ paymentDetails.studentName }}</p>
-                <p><strong>Subscription:</strong> {{ paymentDetails.studentSubscribeName }}</p>
-                <p><strong>Amount:</strong> {{ paymentDetails.amount }}</p>
-                <p><strong>Currency:</strong> {{ paymentDetails.currencyId }}</p>
+                <p><strong>Name:</strong> {{ paymentDetails.userName }}</p>
+                <p><strong>Email:</strong> {{ paymentDetails.userEmail }}</p>
+                <p>
+                  <strong>Create Date:</strong>
+                  {{ paymentDetails.createDate ? (paymentDetails.createDate | date: 'short') : 'N/A' }}
+                </p>
+                <p>
+                  <strong>Due Date:</strong>
+                  {{ paymentDetails.dueDate ? (paymentDetails.dueDate | date: 'short') : 'N/A' }}
+                </p>
                 <p>
                   <strong>Payment Date:</strong>
                   {{ paymentDetails.paymentDate ? (paymentDetails.paymentDate | date: 'short') : 'N/A' }}
                 </p>
-                <p><strong>Receipt:</strong> {{ paymentDetails.receiptPath || 'N/A' }}</p>
-                <p><strong>Status:</strong> {{ paymentDetails.payStatue ? 'Payed' : 'Not payed' }}</p>
-                <p><strong>Created By:</strong> {{ paymentDetails.createdBy ?? 'N/A' }}</p>
-                <p>
-                  <strong>Created At:</strong>
-                  {{ paymentDetails.createdAt ? (paymentDetails.createdAt | date: 'short') : 'N/A' }}
-                </p>
-                <p><strong>Modified By:</strong> {{ paymentDetails.modefiedBy ?? 'N/A' }}</p>
-                <p>
-                  <strong>Modified At:</strong>
-                  {{ paymentDetails.modefiedAt ? (paymentDetails.modefiedAt | date: 'short') : 'N/A' }}
-                </p>
+                <p><strong>Quantity:</strong> {{ paymentDetails.quantity }}</p>
+                <p><strong>Status:</strong> {{ paymentDetails.statusText }}</p>
               </div>
             </mat-expansion-panel>
             <mat-paginator
