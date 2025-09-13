@@ -2,7 +2,10 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
-import { StudentPaymentDto } from 'src/app/@theme/services/student-payment.service';
+import {
+  StudentPaymentDto,
+  CurrencyEnum
+} from 'src/app/@theme/services/student-payment.service';
 
 
 @Component({
@@ -14,5 +17,6 @@ import { StudentPaymentDto } from 'src/app/@theme/services/student-payment.servi
 })
 export class PaymentDetailsComponent {
   data = inject<StudentPaymentDto>(MAT_DIALOG_DATA);
+  currencyEnum = CurrencyEnum;
 
 }

@@ -60,12 +60,22 @@
       <td mat-cell *matCellDef="let element" class="text-nowrap">
         <ul class="list-inline m-b-0">
           <li class="list-inline-item">
-            <a href="javascript:" class="avatar avatar-xs bg-accent-100 hover m-r-10" matTooltip="View">
+            <a
+              href="javascript:"
+              class="avatar avatar-xs bg-accent-100 hover m-r-10"
+              matTooltip="View"
+              (click)="openPaymentDetails(element.id)"
+            >
               <i class="f-20 ti ti-eye text-accent-500"></i>
             </a>
           </li>
           <li class="list-inline-item">
-            <a href="javascript:" class="avatar avatar-xs bg-primary-50 hover m-r-10" matTooltip="Edit">
+            <a
+              href="javascript:"
+              class="avatar avatar-xs bg-primary-50 hover m-r-10"
+              matTooltip="Edit"
+              (click)="openPaymentEdit(element.id)"
+            >
               <i class="f-20 ti ti-edit text-primary-500"></i>
             </a>
           </li>

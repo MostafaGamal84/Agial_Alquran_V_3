@@ -23,6 +23,9 @@ import {
   StudentInvoiceDto,
   StudentPaymentService
 } from 'src/app/@theme/services/student-payment.service';
+import { MatDialog } from '@angular/material/dialog';
+import { PaymentDetailsComponent } from '../../../membership/payment-details/payment-details.component';
+import { PaymentEditComponent } from '../../payment-edit/payment-edit.component';
 import {
   ApiResponse,
   FilteredResultRequestDto,
@@ -50,6 +53,7 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
   @Input() compareMonth?: string;
   @Output() countChange = new EventEmitter<number>();
   private studentPaymentService = inject(StudentPaymentService);
+  private dialog = inject(MatDialog);
 
   // public props
   displayedColumns: string[] = ['id', 'name', 'create_date', 'due_date', 'qty', 'status', 'action'];
@@ -86,6 +90,22 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
     this.searchTerm = (event.target as HTMLInputElement).value;
     this.dataSource.filter = this.searchTerm.trim().toLowerCase();
     this.countChange.emit(this.dataSource.filteredData.length);
+  }
+
+  openPaymentDetails(id: number) {
+    this.studentPaymentService.getPayment(id).subscribe((res) => {
+      if (res.isSuccess && res.data) {
+        this.dialog.open(PaymentDetailsComponent, { data: res.data });
+      }
+    });
+  }
+
+  openPaymentEdit(id: number) {
+    this.studentPaymentService.getPayment(id).subscribe((res) => {
+      if (res.isSuccess && res.data) {
+        this.dialog.open(PaymentEditComponent, { data: res.data });
+      }
+    });
   }
 
   loadData(): void {
