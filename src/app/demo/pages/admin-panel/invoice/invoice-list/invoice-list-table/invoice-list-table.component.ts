@@ -129,7 +129,7 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
         name: item.userName ?? '',
         create_date: item.createDate ?? '',
         due_date: item.dueDate ?? '',
-        qty: item.quantity ?? 0,
+        qty: item.amount ?? 0,
         status: (item.statusText ?? '').toLowerCase()
       }));
 
