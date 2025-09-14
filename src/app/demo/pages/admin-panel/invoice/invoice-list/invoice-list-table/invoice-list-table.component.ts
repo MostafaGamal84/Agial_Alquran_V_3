@@ -53,6 +53,7 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
   @Input() tab?: string;
   @Input() month?: string;
   @Input() compareMonth?: string;
+  @Input() search = '';
   @Output() countChange = new EventEmitter<number>();
   private studentPaymentService = inject(StudentPaymentService);
   private dialog = inject(MatDialog);
@@ -60,7 +61,7 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
   // public props
   displayedColumns: string[] = ['id', 'name', 'create_date', 'due_date', 'qty', 'status', 'action'];
   dataSource = new MatTableDataSource<InvoiceTableItem>([]);
-  private searchTerm = '';
+  searchTerm = '';
   // paginator
   readonly paginator = viewChild.required(MatPaginator); // if Angular ≥17
 
@@ -78,12 +79,18 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
         data.status.toLowerCase().includes(term)
       );
     };
+    this.searchTerm = this.search;
     this.loadData();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['tab'] || changes['month'] || changes['compareMonth']) {
       this.loadData();
+    }
+    if (changes['search'] && !changes['search'].firstChange) {
+      this.searchTerm = this.search;
+      this.dataSource.filter = this.searchTerm.trim().toLowerCase();
+      this.countChange.emit(this.dataSource.filteredData.length);
     }
   }
 

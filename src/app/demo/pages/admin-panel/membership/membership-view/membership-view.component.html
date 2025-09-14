@@ -95,6 +95,7 @@
                   {{ paymentDetails.currency !== undefined ? (currencyEnum[paymentDetails.currency] || '') : '' }}
                 </p>
                 <p><strong>Status:</strong> {{ paymentDetails.statusText }}</p>
+                <button mat-button color="primary" (click)="goToInvoice(paymentDetails?.invoiceId)">View Invoice</button>
               </div>
             </mat-expansion-panel>
             <mat-paginator

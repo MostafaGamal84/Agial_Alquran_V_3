@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, OnInit, inject, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, ActivatedRoute } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -24,6 +24,7 @@ export class MembershipViewComponent implements OnInit, AfterViewInit {
   private service = inject(StudentSubscribeService);
   private route = inject(ActivatedRoute);
   private paymentService = inject(StudentPaymentService);
+  private router = inject(Router);
 
   displayedColumns: string[] = ['expand', 'plan', 'remainingMinutes', 'startDate', 'status'];
   dataSource = new MatTableDataSource<ViewStudentSubscribeReDto>();
@@ -86,6 +87,13 @@ export class MembershipViewComponent implements OnInit, AfterViewInit {
         this.paymentDetails = null;
       }
     });
+  }
+
+  goToInvoice(invoiceId?: number | null) {
+    if (invoiceId == null) {
+      return;
+    }
+    this.router.navigate(['/invoice/list'], { queryParams: { search: invoiceId } });
   }
 }
 
