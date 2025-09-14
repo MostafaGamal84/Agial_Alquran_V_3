@@ -64,6 +64,7 @@ export class InvoiceListComponent implements OnInit {
   private studentPaymentService = inject(StudentPaymentService);
   private route = inject(ActivatedRoute);
   dataMonth = new FormControl<Moment>(moment());
+  compareMonth = new FormControl<Moment | null>(null);
   widgetCards: WidgetCard[] = [];
   bigCard = {
     currentReceivables: 0,
@@ -96,6 +97,12 @@ export class InvoiceListComponent implements OnInit {
     this.loadDashboard();
   }
 
+  setCompareMonthAndYear(normalizedMonthAndYear: Moment, datepicker: MatDatepicker<Moment>) {
+    this.compareMonth.setValue(normalizedMonthAndYear);
+    datepicker.close();
+    this.loadDashboard();
+  }
+
   onTableCount(tab: 'all' | 'paid' | 'unpaid' | 'overdue' | 'cancelled', count: number): void {
     this.tabCounts[tab] = count;
     if (tab !== 'all') {
@@ -109,8 +116,9 @@ export class InvoiceListComponent implements OnInit {
 
   loadDashboard(): void {
     const dataMonthDate = this.dataMonth.value?.toDate();
+    const compareMonthDate = this.compareMonth.value?.toDate();
     this.studentPaymentService
-      .getDashboard(undefined, undefined, dataMonthDate)
+      .getDashboard(undefined, undefined, dataMonthDate, compareMonthDate)
 
       .subscribe((data: PaymentDashboardDto) => {
         const paidTrend = this.getTrend(data.totalPaidMoMPercentage);

@@ -12,6 +12,17 @@
           panelClass="example-month-picker"
         ></mat-datepicker>
       </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Compare Month</mat-label>
+        <input matInput [matDatepicker]="comparePicker" [formControl]="compareMonth" />
+        <mat-datepicker-toggle matIconSuffix [for]="comparePicker"></mat-datepicker-toggle>
+        <mat-datepicker
+          #comparePicker
+          startView="multi-year"
+          (monthSelected)="setCompareMonthAndYear($event, comparePicker)"
+          panelClass="example-month-picker"
+        ></mat-datepicker>
+      </mat-form-field>
     </div>
   </div>
   <div class="col-xxl-8">
