@@ -34,8 +34,8 @@
       </div>
       <div class="col-5 text-end">
         <div class="m-b-5 f-w-600">{{ earningValue() }}</div>
-        <div class="{{ textColor() }} mat-caption f-w-500">
-          <i class="ti ti-arrow-up-right"></i>
+        <div class="mat-caption f-w-500" [ngClass]="isNegative() ? 'text-warn-500' : textColor()">
+          <i class="ti" [ngClass]="isNegative() ? 'ti-arrow-down-right' : 'ti-arrow-up-right'"></i>
           {{ percentageValue() }}
         </div>
       </div>
