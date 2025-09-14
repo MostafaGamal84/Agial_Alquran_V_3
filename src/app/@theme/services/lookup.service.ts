@@ -61,6 +61,11 @@ export interface GovernorateDto {
   name: string;
 }
 
+export interface LookupDto {
+  id: number;
+  name: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class LookupService {
   private http = inject(HttpClient);
@@ -113,5 +118,16 @@ export class LookupService {
 
   getAllGovernorates(): Observable<ApiResponse<GovernorateDto[]>> {
     return this.http.get<ApiResponse<GovernorateDto[]>>(`${environment.apiUrl}/api/LookUp/GetAllGovernorate`);
+  }
+
+  getSubscribesByTypeId(id?: number | null): Observable<ApiResponse<LookupDto[]>> {
+    let params = new HttpParams();
+    if (id !== undefined && id !== null) {
+      params = params.set('id', id.toString());
+    }
+    return this.http.get<ApiResponse<LookupDto[]>>(
+      `${environment.apiUrl}/api/LookUp/GetAllSubscribesByTypeId`,
+      { params }
+    );
   }
 }

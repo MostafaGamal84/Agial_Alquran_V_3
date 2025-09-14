@@ -102,6 +102,7 @@
                             [ngClass]="{
                               disabled: element.payStatus === true || element.isCancelled === true
                             }"
+                            (click)="openSubscribeDialog(element)"
                           >
                             <i class="ti ti-edit-circle f-20"></i>
                           </a>
