@@ -3,8 +3,8 @@
     <app-card cardTitle="Student List" padding="0" cardClass="sm-block">
       <ng-template #headerOptionsTemplate>
         <div class="table-options">
-          <button mat-stroked-button color="accent" class="m-r-10" [routerLink]="['/online-course/student/apply']">
-            Apply Student List
+          <button mat-stroked-button color="accent" class="m-r-10" (click)="toggleInactiveFilter()">
+            {{ showInactive ? 'All Student List' : 'Apply Student List' }}
           </button>
           <button mat-flat-button color="primary" [routerLink]="['/online-course/student/add']">
             <div class="flex align-item-center">

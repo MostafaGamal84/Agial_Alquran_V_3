@@ -35,6 +35,7 @@ export class StudentListComponent implements OnInit, AfterViewInit {
   dataSource = new MatTableDataSource<LookUpUserDto>();
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
+  showInactive = false;
 
   // paginator
 readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
@@ -44,6 +45,18 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     this.filter.searchTerm = filterValue.trim().toLowerCase();
+    this.filter.skipCount = 0;
+    this.paginator().firstPage();
+    this.loadStudents();
+  }
+
+  toggleInactiveFilter(): void {
+    this.showInactive = !this.showInactive;
+    if (this.showInactive) {
+      this.filter.filter = 'inactive=true';
+    } else {
+      delete this.filter.filter;
+    }
     this.filter.skipCount = 0;
     this.paginator().firstPage();
     this.loadStudents();
