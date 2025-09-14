@@ -327,6 +327,32 @@ export const menus: Navigation[] = [
             ]
           },
           {
+            id: 'subscribes',
+            title: 'Subscribes',
+            type: 'collapse',
+            role: [
+              UserTypesEnum.Admin.toString(),
+              UserTypesEnum.Manager.toString(),
+              UserTypesEnum.BranchLeader.toString(),
+              UserTypesEnum.Student.toString(),
+              UserTypesEnum.Teacher.toString()
+            ],
+            children: [
+              {
+                id: 'subscribe',
+                title: 'Subscribe',
+                type: 'item',
+                url: '/online-course/setting/subscribe'
+              },
+              {
+                id: 'subscribe-type',
+                title: 'Subscribe Type',
+                type: 'item',
+                url: '/online-course/setting/subscribe-type'
+              }
+            ]
+          },
+          {
             id: 'pricing',
             title: 'Pricing',
             type: 'item',
