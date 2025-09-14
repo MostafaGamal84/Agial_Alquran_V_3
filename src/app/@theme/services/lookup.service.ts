@@ -16,6 +16,7 @@ export interface LookUpUserDto {
   governorate: string;
   governorateId: number;
   branchId: number;
+  inactive?: boolean;
   managerId?: number;
   managerName?: string;
   circleId?: number;

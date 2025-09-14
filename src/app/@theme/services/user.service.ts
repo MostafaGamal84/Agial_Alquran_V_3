@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
@@ -58,5 +58,15 @@ export class UserService {
   updateUser(model: UpdateUserDto): Observable<ApiResponse<boolean>> {
     return this.http.post<ApiResponse<boolean>>(`${environment.apiUrl}/api/User/Update`, model);
 
+  }
+
+  disableUser(id: number, statue: boolean): Observable<ApiResponse<boolean>> {
+    const params = new HttpParams()
+      .set('id', id.toString())
+      .set('statue', statue.toString());
+    return this.http.get<ApiResponse<boolean>>(
+      `${environment.apiUrl}/api/User/DisableUser`,
+      { params }
+    );
   }
 }

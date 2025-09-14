@@ -15,6 +15,7 @@ import {
   LookUpUserDto,
   FilteredResultRequestDto,
 } from 'src/app/@theme/services/lookup.service';
+import { UserService } from 'src/app/@theme/services/user.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { StudentDetailsComponent } from '../student-details/student-details.component';
 
@@ -26,6 +27,7 @@ import { StudentDetailsComponent } from '../student-details/student-details.comp
 })
 export class StudentListComponent implements OnInit, AfterViewInit {
   private lookupService = inject(LookupService);
+  private userService = inject(UserService);
   dialog = inject(MatDialog);
 
   // public props
@@ -75,6 +77,19 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
     this.dialog.open(StudentDetailsComponent, {
       width: '800px',
       data: student
+    });
+  }
+
+  changeStatus(student: LookUpUserDto, statue: boolean): void {
+    this.userService.disableUser(student.id, statue).subscribe((res) => {
+      if (res.isSuccess) {
+        if (statue) {
+          student.inactive = false;
+        } else {
+          this.dataSource.data = this.dataSource.data.filter((s) => s.id !== student.id);
+          this.totalCount--;
+        }
+      }
     });
   }
 
