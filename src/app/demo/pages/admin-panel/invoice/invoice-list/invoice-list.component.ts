@@ -90,7 +90,8 @@ export class InvoiceListComponent implements OnInit {
   }
 
   setDataMonthAndYear(normalizedMonthAndYear: Moment, datepicker: MatDatepicker<Moment>) {
-    this.dataMonth.setValue(normalizedMonthAndYear);
+    // clone the selected month to avoid further mutation by the datepicker
+    this.dataMonth.setValue(normalizedMonthAndYear.clone());
     datepicker.close();
     this.tabCounts = { all: 0, paid: 0, unpaid: 0, overdue: 0, cancelled: 0 };
 
@@ -98,7 +99,8 @@ export class InvoiceListComponent implements OnInit {
   }
 
   setCompareMonthAndYear(normalizedMonthAndYear: Moment, datepicker: MatDatepicker<Moment>) {
-    this.compareMonth.setValue(normalizedMonthAndYear);
+    // clone the selected month to avoid the value being mutated when navigating
+    this.compareMonth.setValue(normalizedMonthAndYear.clone());
     datepicker.close();
     this.loadDashboard();
   }
