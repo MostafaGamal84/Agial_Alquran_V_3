@@ -17,6 +17,11 @@ export interface ViewStudentSubscribeReDto {
   studentPaymentId?: number | null;
 }
 
+export interface AddStudentSubscribeDto {
+  studentId?: number;
+  studentSubscribeId?: number;
+}
+
 @Injectable({ providedIn: 'root' })
 export class StudentSubscribeService {
   private http = inject(HttpClient);
@@ -86,6 +91,13 @@ export class StudentSubscribeService {
     return this.http.get<ApiResponse<PagedResultDto<ViewStudentSubscribeReDto>>>(
       `${environment.apiUrl}/api/StudentSubscrib/GetStudentSubscribesWithPayment`,
       { params }
+    );
+  }
+
+  create(model: AddStudentSubscribeDto): Observable<ApiResponse<boolean>> {
+    return this.http.post<ApiResponse<boolean>>(
+      `${environment.apiUrl}/api/StudentSubscrib/Create`,
+      model
     );
   }
 }
