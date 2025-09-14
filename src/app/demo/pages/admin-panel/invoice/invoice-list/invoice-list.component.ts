@@ -7,6 +7,7 @@ import { MomentDateAdapter, MAT_MOMENT_DATE_ADAPTER_OPTIONS } from '@angular/mat
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 import * as _moment from 'moment';
 import { default as _rollupMoment, Moment } from 'moment';
+import { ActivatedRoute } from '@angular/router';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -61,6 +62,7 @@ interface WidgetCard {
 })
 export class InvoiceListComponent implements OnInit {
   private studentPaymentService = inject(StudentPaymentService);
+  private route = inject(ActivatedRoute);
   dataMonth = new FormControl<Moment>(moment());
   widgetCards: WidgetCard[] = [];
   bigCard = {
@@ -76,8 +78,13 @@ export class InvoiceListComponent implements OnInit {
     overdue: 0,
     cancelled: 0
   };
+  searchTerm = '';
 
   ngOnInit(): void {
+    this.searchTerm = this.route.snapshot.queryParamMap.get('search') ?? '';
+    this.route.queryParamMap.subscribe((params) => {
+      this.searchTerm = params.get('search') ?? '';
+    });
     this.loadDashboard();
   }
 

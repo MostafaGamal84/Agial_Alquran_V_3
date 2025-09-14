@@ -1,7 +1,13 @@
 <div class="table-responsive">
   <div class="table-search p-t-20 p-x-20">
     <mat-form-field appearance="outline" class="w-100">
-      <input matInput (keyup)="applyFilter($event)" placeholder="Search...." #input />
+      <input
+        matInput
+        (keyup)="applyFilter($event)"
+        placeholder="Search...."
+        [value]="searchTerm"
+        #input
+      />
     </mat-form-field>
   </div>
 
@@ -69,7 +75,7 @@
               <i class="f-20 ti ti-eye text-accent-500"></i>
             </a>
           </li>
-          @if (element.status == 'unpaid') {
+          @if (element.status === 'unpaid') {
             <li class="list-inline-item">
               <a
                 href="javascript:"
