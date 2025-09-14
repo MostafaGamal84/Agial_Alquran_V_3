@@ -63,7 +63,9 @@ interface WidgetCard {
 export class InvoiceListComponent implements OnInit {
   private studentPaymentService = inject(StudentPaymentService);
   private route = inject(ActivatedRoute);
-  dataMonth = new FormControl<Moment>(moment());
+  dataMonth = new FormControl<Moment>(
+    moment().startOf('month').utc(true)
+  );
   compareMonth = new FormControl<Moment | null>(null);
   widgetCards: WidgetCard[] = [];
   bigCard = {
@@ -89,16 +91,28 @@ export class InvoiceListComponent implements OnInit {
     this.loadDashboard();
   }
 
-  setDataMonthAndYear(normalizedMonthAndYear: Moment, datepicker: MatDatepicker<Moment>) {
-    this.dataMonth.setValue(normalizedMonthAndYear);
+  setDataMonthAndYear(
+    normalizedMonthAndYear: Moment,
+    datepicker: MatDatepicker<Moment>
+  ) {
+    // clone and normalize to the first day of the selected month in UTC
+    this.dataMonth.setValue(
+      normalizedMonthAndYear.clone().startOf('month').utc(true)
+    );
     datepicker.close();
     this.tabCounts = { all: 0, paid: 0, unpaid: 0, overdue: 0, cancelled: 0 };
 
     this.loadDashboard();
   }
 
-  setCompareMonthAndYear(normalizedMonthAndYear: Moment, datepicker: MatDatepicker<Moment>) {
-    this.compareMonth.setValue(normalizedMonthAndYear);
+  setCompareMonthAndYear(
+    normalizedMonthAndYear: Moment,
+    datepicker: MatDatepicker<Moment>
+  ) {
+    // clone and normalize to the first day of the selected month in UTC
+    this.compareMonth.setValue(
+      normalizedMonthAndYear.clone().startOf('month').utc(true)
+    );
     datepicker.close();
     this.loadDashboard();
   }
