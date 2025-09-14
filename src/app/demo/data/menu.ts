@@ -516,50 +516,50 @@ export const menus: Navigation[] = [
           UserTypesEnum.Teacher.toString()
         ],
         children: [
-          {
-            id: 'dashboard',
-            title: 'Dashboard',
-            type: 'item',
-            url: '/invoice/dashboard',
-            role: [
-              UserTypesEnum.Admin.toString(),
-              UserTypesEnum.Manager.toString(),
-              UserTypesEnum.BranchLeader.toString(),
-              UserTypesEnum.Student.toString(),
-              UserTypesEnum.Teacher.toString()
-            ]
-          },
-          {
-            id: 'create',
-            title: 'Create',
-            type: 'item',
-            url: '/invoice/create'
-          },
-          {
-            id: 'details',
-            title: 'Details',
-            type: 'item',
-            url: '/invoice/details'
-          },
+          // {
+          //   id: 'dashboard',
+          //   title: 'Dashboard',
+          //   type: 'item',
+          //   url: '/invoice/dashboard',
+          //   role: [
+          //     UserTypesEnum.Admin.toString(),
+          //     UserTypesEnum.Manager.toString(),
+          //     UserTypesEnum.BranchLeader.toString(),
+          //     UserTypesEnum.Student.toString(),
+          //     UserTypesEnum.Teacher.toString()
+          //   ]
+          // },
+          // {
+          //   id: 'create',
+          //   title: 'Create',
+          //   type: 'item',
+          //   url: '/invoice/create'
+          // },
+          // {
+          //   id: 'details',
+          //   title: 'Details',
+          //   type: 'item',
+          //   url: '/invoice/details'
+          // },
           {
             id: 'list',
             title: 'List',
             type: 'item',
             url: '/invoice/list'
-          },
-          {
-            id: 'edit',
-            title: 'Edit',
-            type: 'item',
-            url: '/invoice/edit',
-            role: [
-              UserTypesEnum.Admin.toString(),
-              UserTypesEnum.Manager.toString(),
-              UserTypesEnum.BranchLeader.toString(),
-              UserTypesEnum.Student.toString(),
-              UserTypesEnum.Teacher.toString()
-            ]
           }
+          // {
+          //   id: 'edit',
+          //   title: 'Edit',
+          //   type: 'item',
+          //   url: '/invoice/edit',
+          //   role: [
+          //     UserTypesEnum.Admin.toString(),
+          //     UserTypesEnum.Manager.toString(),
+          //     UserTypesEnum.BranchLeader.toString(),
+          //     UserTypesEnum.Student.toString(),
+          //     UserTypesEnum.Teacher.toString()
+          //   ]
+          // }
         ]
       }
     ]
