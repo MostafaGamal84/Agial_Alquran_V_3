@@ -113,36 +113,37 @@ export class InvoiceListComponent implements OnInit {
       .getDashboard(undefined, undefined, dataMonthDate)
 
       .subscribe((data: PaymentDashboardDto) => {
+        const paidTrend = this.getTrend(data.totalPaidMoMPercentage);
+        const unpaidTrend = this.getTrend(data.totalUnPaidMoMPercentage);
+        const overdueTrend = this.getTrend(data.totalOverdueMoMPercentage);
+
         this.widgetCards = [
           {
             title: 'Paid',
-            isLoss: false,
             value: `$${data.totalPaid}`,
             percentage: data.totalPaidMoMPercentage,
-            color: 'text-success-500',
             invoice: data.totalPaidCount,
             data: data.paidChart ?? [],
-            colors: ['#2ca87f']
+            colors: ['#2ca87f'],
+            ...paidTrend
           },
           {
             title: 'Unpaid',
-            isLoss: true,
             value: `$${data.totalUnPaid}`,
             percentage: data.totalUnPaidMoMPercentage,
-            color: 'text-warning-500',
             invoice: data.totalUnPaidCount,
             data: data.unpaidChart ?? [],
-            colors: ['#e58a00']
+            colors: ['#e58a00'],
+            ...unpaidTrend
           },
           {
             title: 'Overdue',
-            isLoss: true,
             value: `$${data.totalOverdue}`,
             percentage: data.totalOverdueMoMPercentage,
-            color: 'text-warn-500',
             invoice: data.totalOverdueCount,
             data: data.overdueChart ?? [],
-            colors: ['#dc2626']
+            colors: ['#dc2626'],
+            ...overdueTrend
           }
         ];
         this.bigCard = {
@@ -152,5 +153,13 @@ export class InvoiceListComponent implements OnInit {
           collectionRate: data.collectionRate
         };
       });
+  }
+
+  private getTrend(value: number): { isLoss: boolean; color: string } {
+    const isLoss = value < 0;
+    return {
+      isLoss,
+      color: isLoss ? 'text-warn-500' : 'text-success-500'
+    };
   }
 }
