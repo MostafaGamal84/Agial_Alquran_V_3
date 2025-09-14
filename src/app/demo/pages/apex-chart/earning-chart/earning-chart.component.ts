@@ -77,7 +77,5 @@ export class EarningChartComponent implements OnInit {
     this.chartOptions = { ...this.chartOptions, tooltip };
   }
 
-  isNegative(): boolean {
-    return parseFloat(this.percentageValue()) < 0;
-  }
+ 
 }
