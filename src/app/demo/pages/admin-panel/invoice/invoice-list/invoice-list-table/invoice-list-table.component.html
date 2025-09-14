@@ -69,7 +69,7 @@
               <i class="f-20 ti ti-eye text-accent-500"></i>
             </a>
           </li>
-          @if (!element.payStatue && !element.isCancelled) {
+          @if (element.status == 'unpaid') {
             <li class="list-inline-item">
               <a
                 href="javascript:"
@@ -81,11 +81,11 @@
               </a>
             </li>
           }
-          <li class="list-inline-item">
+          <!-- <li class="list-inline-item">
             <a href="javascript:" matTooltip="Delete" class="avatar avatar-xs bg-warn-50 hover">
               <i class="f-20 ti ti-trash text-warn-500"></i>
             </a>
-          </li>
+          </li> -->
         </ul>
       </td>
     </ng-container>
