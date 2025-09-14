@@ -99,6 +99,7 @@ export class InvoiceListComponent implements OnInit {
     this.dataMonth.setValue(
       normalizedMonthAndYear.clone().startOf('month').utc(true)
     );
+
     datepicker.close();
     this.tabCounts = { all: 0, paid: 0, unpaid: 0, overdue: 0, cancelled: 0 };
 
@@ -113,6 +114,7 @@ export class InvoiceListComponent implements OnInit {
     this.compareMonth.setValue(
       normalizedMonthAndYear.clone().startOf('month').utc(true)
     );
+
     datepicker.close();
     this.loadDashboard();
   }
