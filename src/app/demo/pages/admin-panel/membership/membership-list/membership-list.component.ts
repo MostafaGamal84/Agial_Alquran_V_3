@@ -14,6 +14,7 @@ import { StudentSubscribeService, ViewStudentSubscribeReDto } from 'src/app/@the
 import { FilteredResultRequestDto } from 'src/app/@theme/services/lookup.service';
 import { StudentPaymentService } from 'src/app/@theme/services/student-payment.service';
 import { PaymentDetailsComponent } from '../payment-details/payment-details.component';
+import { StudentSubscribeDialogComponent } from './student-subscribe-dialog/student-subscribe-dialog.component';
 
 @Component({
   selector: 'app-membership-list',
@@ -75,6 +76,20 @@ export class MembershipListComponent implements AfterViewInit, OnInit {
     this.paymentService.getPayment(paymentId).subscribe((res) => {
       if (res.isSuccess && res.data) {
         this.dialog.open(PaymentDetailsComponent, { data: res.data });
+      }
+    });
+  }
+
+  openSubscribeDialog(student: ViewStudentSubscribeReDto) {
+    if (student.payStatus === true || student.isCancelled === true) {
+      return;
+    }
+    const dialogRef = this.dialog.open(StudentSubscribeDialogComponent, {
+      data: { studentId: student.studentId }
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.load();
       }
     });
   }
