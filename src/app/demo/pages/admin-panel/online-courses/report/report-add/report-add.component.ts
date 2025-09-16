@@ -197,7 +197,10 @@ export class ReportAddComponent implements OnInit {
       return dataMode;
     }
     const path = this.route.snapshot.routeConfig?.path ?? '';
-    return path.includes('update') ? 'update' : 'add';
+    if (path.includes('update') || path.includes('edit')) {
+      return 'update';
+    }
+    return 'add';
   }
 
   onSubmit() {
