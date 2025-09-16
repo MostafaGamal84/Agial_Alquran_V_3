@@ -18,7 +18,6 @@ type ReportDetails = Omit<CircleReportAddDto, 'creationTime'> &
     creationTime?: Date | string | null;
   };
 
-
 @Component({
   selector: 'app-report-details',
   imports: [CommonModule, SharedModule, RouterModule],
