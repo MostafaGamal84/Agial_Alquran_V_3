@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
@@ -35,6 +35,21 @@ export class CircleReportService {
     return this.http.post<ApiResponse<boolean>>(
       `${environment.apiUrl}/api/CircleReport/Create`,
       model
+    );
+  }
+
+  update(model: CircleReportAddDto): Observable<ApiResponse<boolean>> {
+    return this.http.post<ApiResponse<boolean>>(
+      `${environment.apiUrl}/api/CircleReport/Update`,
+      model
+    );
+  }
+
+  get(id: number): Observable<ApiResponse<CircleReportAddDto>> {
+    const params = new HttpParams().set('id', id.toString());
+    return this.http.get<ApiResponse<CircleReportAddDto>>(
+      `${environment.apiUrl}/api/CircleReport/Get`,
+      { params }
     );
   }
 }

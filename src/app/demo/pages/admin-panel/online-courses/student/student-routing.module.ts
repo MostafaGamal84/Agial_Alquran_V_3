@@ -48,14 +48,24 @@ const routes: Routes = [
         path: 'report/add/:id',
         loadComponent: () => import('../report/report-add/report-add.component').then((c) => c.ReportAddComponent),
         data: {
-          roles: [UserTypesEnum.Admin, UserTypesEnum.Manager, UserTypesEnum.BranchLeader, UserTypesEnum.Student, UserTypesEnum.Teacher]
+          roles: [UserTypesEnum.Admin, UserTypesEnum.Manager, UserTypesEnum.BranchLeader, UserTypesEnum.Student, UserTypesEnum.Teacher],
+          mode: 'add'
+        }
+      },
+      {
+        path: 'report/update/:id',
+        loadComponent: () => import('../report/report-add/report-add.component').then((c) => c.ReportAddComponent),
+        data: {
+          roles: [UserTypesEnum.Admin, UserTypesEnum.Manager, UserTypesEnum.BranchLeader, UserTypesEnum.Student, UserTypesEnum.Teacher],
+          mode: 'update'
         }
       },
       {
         path: 'report/add',
         loadComponent: () => import('../report/report-add/report-add.component').then((c) => c.ReportAddComponent),
         data: {
-          roles: [UserTypesEnum.Admin, UserTypesEnum.Manager, UserTypesEnum.BranchLeader, UserTypesEnum.Student, UserTypesEnum.Teacher]
+          roles: [UserTypesEnum.Admin, UserTypesEnum.Manager, UserTypesEnum.BranchLeader, UserTypesEnum.Student, UserTypesEnum.Teacher],
+          mode: 'add'
         }
       }
     ]

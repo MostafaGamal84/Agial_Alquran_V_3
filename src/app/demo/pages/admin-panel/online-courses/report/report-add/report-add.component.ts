@@ -25,12 +25,16 @@ export class ReportAddComponent implements OnInit {
   private toast = inject(ToastService);
   private auth = inject(AuthenticationService);
   private route = inject(ActivatedRoute);
+  private reportId?: number;
 
   reportForm!: FormGroup;
   role = this.auth.getRole();
   UserTypesEnum = UserTypesEnum;
   AttendStatusEnum = AttendStatusEnum;
   selectedStatus?: AttendStatusEnum;
+  mode: 'add' | 'update' = 'add';
+  cardTitle = 'Add Circle Report';
+  submitLabel = 'Create';
   surahList = Object.keys(QuranSurahEnum)
     .filter((key) => isNaN(Number(key)))
     .map((key) => ({
@@ -39,6 +43,12 @@ export class ReportAddComponent implements OnInit {
     }));
 
   ngOnInit(): void {
+    this.mode = this.determineMode();
+    if (this.mode === 'update') {
+      this.cardTitle = 'Update Circle Report';
+      this.submitLabel = 'Update';
+    }
+
     this.reportForm = this.fb.group({
       minutes: [],
       newId: [],
@@ -63,24 +73,34 @@ export class ReportAddComponent implements OnInit {
 
     this.toggleFields();
 
-    const course = history.state.circle as CircleDto | undefined;
+    if (this.mode === 'add') {
+      const course = history.state.circle as CircleDto | undefined;
 
-    if (course) {
-      this.reportForm.patchValue({
-        teacherId: course.teacherId ?? course.teacher?.id,
+      if (course) {
+        this.reportForm.patchValue({
+          teacherId: course.teacherId ?? course.teacher?.id,
 
-        circleId: course.id
-      });
-    } else if (this.role === UserTypesEnum.Teacher) {
-      const current = this.auth.currentUserValue;
-      const teacherId = current ? Number(current.user.id) : 0;
-      this.reportForm.get('teacherId')?.setValue(teacherId);
-      this.loadCircle(teacherId);
-    }
+          circleId: course.id
+        });
+      } else if (this.role === UserTypesEnum.Teacher) {
+        const current = this.auth.currentUserValue;
+        const teacherId = current ? Number(current.user.id) : 0;
+        this.reportForm.get('teacherId')?.setValue(teacherId);
+        this.loadCircle(teacherId);
+      }
 
-    const id = Number(this.route.snapshot.paramMap.get('id'));
-    if (id) {
-      this.reportForm.get('studentId')?.setValue(id);
+      const id = Number(this.route.snapshot.paramMap.get('id'));
+      if (id) {
+        this.reportForm.get('studentId')?.setValue(id);
+      }
+    } else {
+      const reportId = Number(this.route.snapshot.paramMap.get('id'));
+      if (reportId) {
+        this.reportId = reportId;
+        this.loadReport(reportId);
+      } else {
+        this.toast.error('Invalid report identifier');
+      }
     }
   }
 
@@ -138,22 +158,92 @@ export class ReportAddComponent implements OnInit {
     });
   }
 
+  private loadReport(reportId: number) {
+    this.service.get(reportId).subscribe({
+      next: (res) => {
+        if (res.isSuccess && res.data) {
+          const data = res.data;
+          this.reportId = data.id ?? reportId;
+          const parsedCreation =
+            data.creationTime instanceof Date
+              ? data.creationTime
+              : data.creationTime
+                ? new Date(data.creationTime)
+                : undefined;
+          const creationTime =
+            parsedCreation && !Number.isNaN(parsedCreation.getTime()) ? parsedCreation : new Date();
+          this.reportForm.patchValue({
+            ...data,
+            creationTime
+          });
+          if (data.attendStatueId !== undefined && data.attendStatueId !== null) {
+            const status = data.attendStatueId as AttendStatusEnum;
+            this.onStatusChange(status);
+            this.reportForm.get('attendStatueId')?.setValue(status);
+          }
+        } else if (res.errors?.length) {
+          res.errors.forEach((e) => this.toast.error(e.message));
+        } else {
+          this.toast.error('Unable to load report details');
+        }
+      },
+      error: () => this.toast.error('Error loading report')
+    });
+  }
+
+  private determineMode(): 'add' | 'update' {
+    const dataMode = this.route.snapshot.data['mode'] as 'add' | 'update' | undefined;
+    if (dataMode) {
+      return dataMode;
+    }
+    const path = this.route.snapshot.routeConfig?.path ?? '';
+    return path.includes('update') ? 'update' : 'add';
+  }
+
   onSubmit() {
     if (this.reportForm.invalid) {
       this.reportForm.markAllAsTouched();
       return;
     }
-    const model: CircleReportAddDto = this.reportForm.value;
-    this.service.create(model).subscribe({
-      next: (res) => {
-        if (res.isSuccess) {
-          this.toast.success('Report created successfully');
-          this.reportForm.reset();
-        } else {
-          res.errors.forEach((e) => this.toast.error(e.message));
-        }
-      },
-      error: () => this.toast.error('Error creating report')
-    });
+    const model = (this.mode === 'update'
+      ? this.reportForm.getRawValue()
+      : this.reportForm.value) as CircleReportAddDto;
+
+    if (this.mode === 'update') {
+      if (!this.reportId) {
+        this.toast.error('Missing report identifier');
+        return;
+      }
+      model.id = this.reportId;
+      this.service.update(model).subscribe({
+        next: (res) => {
+          if (res.isSuccess) {
+            this.toast.success('Report updated successfully');
+          } else if (res.errors?.length) {
+            res.errors.forEach((e) => this.toast.error(e.message));
+          } else {
+            this.toast.error('Unable to update report');
+          }
+        },
+        error: () => this.toast.error('Error updating report')
+      });
+    } else {
+      this.service.create(model).subscribe({
+        next: (res) => {
+          if (res.isSuccess) {
+            this.toast.success('Report created successfully');
+            this.reportForm.reset();
+            this.reportForm.get('creationTime')?.setValue(new Date());
+            this.toggleFields();
+            this.selectedStatus = undefined;
+          } else if (res.errors?.length) {
+            res.errors.forEach((e) => this.toast.error(e.message));
+          } else {
+            this.toast.error('Unable to create report');
+          }
+        },
+        error: () => this.toast.error('Error creating report')
+      });
+    }
   }
 }
