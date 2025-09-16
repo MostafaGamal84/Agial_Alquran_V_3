@@ -284,7 +284,7 @@ export class ReportAddComponent implements OnInit {
 
     const entity = record[key];
     if (entity && typeof entity === 'object') {
-      const nestedId = this.toNumber((entity as Record<string, unknown>).id);
+      const nestedId = this.toNumber((entity as Record<string, unknown>)['id']);
       if (nestedId !== undefined) {
         return nestedId;
       }
