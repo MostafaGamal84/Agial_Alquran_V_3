@@ -47,11 +47,22 @@ export class ReportDetailsComponent implements OnInit {
       return;
     }
 
-    if (stateReport?.id === id) {
-      this.report = stateReport;
+    const stateId = this.toNumber(stateReport?.id);
+    if (stateReport && stateId === id) {
+      this.report = { ...stateReport, id: stateId };
+      this.isLoading = false;
+      return;
     }
 
     this.loadReport(id, stateReport);
+  }
+
+  private toNumber(value: unknown): number | undefined {
+    if (value === null || value === undefined || value === '') {
+      return undefined;
+    }
+    const parsed = typeof value === 'number' ? value : Number(value);
+    return Number.isFinite(parsed) ? parsed : undefined;
   }
 
   private loadReport(id: number, stateReport?: ReportDetails): void {
