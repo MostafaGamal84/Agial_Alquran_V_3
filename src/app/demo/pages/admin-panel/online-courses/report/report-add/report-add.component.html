@@ -1,6 +1,6 @@
 <div class="row">
   <div class="col-12">
-    <app-card cardTitle="Add Circle Report">
+    <app-card [cardTitle]="cardTitle">
       <form [formGroup]="reportForm" (ngSubmit)="onSubmit()" class="row">
         <div class="col-md-6">
           <mat-form-field appearance="outline" class="w-100">
@@ -118,7 +118,7 @@
         </ng-container>
 
         <div class="col-12">
-          <button mat-flat-button color="primary" type="submit">Create</button>
+          <button mat-flat-button color="primary" type="submit">{{ submitLabel }}</button>
         </div>
       </form>
     </app-card>
