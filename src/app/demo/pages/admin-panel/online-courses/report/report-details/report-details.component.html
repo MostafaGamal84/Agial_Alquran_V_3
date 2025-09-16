@@ -1,0 +1,127 @@
+<div class="row p-t-25">
+  <div class="col-12">
+    <app-card cardTitle="Circle Report Details" cardClass="sm-block">
+      <ng-template #headerOptionsTemplate>
+        <div class="header-actions" *ngIf="canEdit && report?.id">
+          <button mat-stroked-button color="primary" (click)="editReport()">
+            <div class="flex align-item-center">
+              <i class="ti ti-edit-circle f-18 m-r-5"></i>
+              Edit Report
+            </div>
+          </button>
+        </div>
+      </ng-template>
+
+      <ng-container *ngIf="!isLoading; else loadingTemplate">
+        <ng-container *ngIf="report; else emptyState">
+          <div class="details-grid">
+            <section class="details-section">
+              <h6>Overview</h6>
+              <div class="detail-item">
+                <span class="label">Circle</span>
+                <span class="value">{{ getCircleName() }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Student</span>
+                <span class="value">{{ getStudentName() }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Teacher</span>
+                <span class="value">{{ getTeacherName() }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Attendance</span>
+                <span class="value">{{ getStatusLabel(report?.attendStatueId) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Minutes</span>
+                <span class="value">{{ displayValue(report?.minutes) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Created On</span>
+                <span class="value">{{ formatDate(report?.creationTime) }}</span>
+              </div>
+            </section>
+
+            <section class="details-section">
+              <h6>New Lesson</h6>
+              <div class="detail-item">
+                <span class="label">Surah</span>
+                <span class="value">{{ displayValue(report?.newId) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">From</span>
+                <span class="value">{{ displayValue(report?.newFrom) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">To</span>
+                <span class="value">{{ displayValue(report?.newTo) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Rate</span>
+                <span class="value">{{ displayValue(report?.newRate) }}</span>
+              </div>
+            </section>
+
+            <section class="details-section">
+              <h6>Recent Reviews</h6>
+              <div class="detail-item">
+                <span class="label">Recent Past</span>
+                <span class="value">{{ displayValue(report?.recentPast) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Recent Past Rate</span>
+                <span class="value">{{ displayValue(report?.recentPastRate) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Distant Past</span>
+                <span class="value">{{ displayValue(report?.distantPast) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Distant Past Rate</span>
+                <span class="value">{{ displayValue(report?.distantPastRate) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Farthest Past</span>
+                <span class="value">{{ displayValue(report?.farthestPast) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Farthest Past Rate</span>
+                <span class="value">{{ displayValue(report?.farthestPastRate) }}</span>
+              </div>
+            </section>
+
+            <section class="details-section">
+              <h6>Additional Notes</h6>
+              <div class="detail-item">
+                <span class="label">The Words of the Quran Stranger</span>
+                <span class="value">{{ displayValue(report?.theWordsQuranStranger) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Intonation</span>
+                <span class="value">{{ displayValue(report?.intonation) }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Other Notes</span>
+                <span class="value">{{ displayValue(report?.other) }}</span>
+              </div>
+            </section>
+          </div>
+        </ng-container>
+      </ng-container>
+
+      <ng-template #loadingTemplate>
+        <div class="loading-container">
+          <mat-progress-spinner diameter="48" mode="indeterminate"></mat-progress-spinner>
+        </div>
+      </ng-template>
+
+      <ng-template #emptyState>
+        <div class="empty-state">
+          <i class="ti ti-notebook f-32 m-b-10"></i>
+          <p>No report details available.</p>
+        </div>
+      </ng-template>
+    </app-card>
+  </div>
+</div>
