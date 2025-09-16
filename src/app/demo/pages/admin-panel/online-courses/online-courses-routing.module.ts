@@ -70,6 +70,19 @@ const routes: Routes = [
         data: {
           roles: [UserTypesEnum.Admin, UserTypesEnum.Manager, UserTypesEnum.BranchLeader, UserTypesEnum.Student, UserTypesEnum.Teacher]
         }
+      },
+      {
+        path: 'report',
+        loadChildren: () => import('./report/report-routing.module').then((m) => m.ReportRoutingModule),
+        data: {
+          roles: [
+            UserTypesEnum.Admin,
+            UserTypesEnum.Manager,
+            UserTypesEnum.BranchLeader,
+            UserTypesEnum.Student,
+            UserTypesEnum.Teacher
+          ]
+        }
       }
     ]
   }
