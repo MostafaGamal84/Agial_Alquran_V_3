@@ -44,6 +44,7 @@ const routes: Routes = [
         loadComponent: () => import('./report-details/report-details.component').then((c) => c.ReportDetailsComponent),
         data: {
           roles: sharedReportRoles
+
         }
       },
       {
@@ -51,6 +52,7 @@ const routes: Routes = [
         loadComponent: () => import('./report-add/report-add.component').then((c) => c.ReportAddComponent),
         data: {
           roles: manageReportRoles,
+
           mode: 'add'
         }
       },
@@ -59,6 +61,7 @@ const routes: Routes = [
         loadComponent: () => import('./report-add/report-add.component').then((c) => c.ReportAddComponent),
         data: {
           roles: manageReportRoles,
+
           mode: 'update'
         }
       }
