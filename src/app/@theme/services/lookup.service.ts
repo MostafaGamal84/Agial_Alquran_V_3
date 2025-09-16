@@ -39,6 +39,7 @@ export interface ApiResponse<T> {
 export interface FilteredResultRequestDto {
   skipCount?: number;
   searchTerm?: string;
+  searchWord?: string;
   filter?: string;
   lang?: string;
   sortingDirection?: string;
@@ -92,8 +93,13 @@ export class LookupService {
     if (filter.maxResultCount !== undefined) {
       params = params.set('MaxResultCount', filter.maxResultCount.toString());
     }
+    const searchWord = filter.searchWord ?? filter.searchTerm;
+
     if (filter.searchTerm) {
       params = params.set('SearchTerm', filter.searchTerm);
+    }
+    if (searchWord) {
+      params = params.set('SearchWord', searchWord);
     }
     if (filter.filter) {
       params = params.set('Filter', filter.filter);
