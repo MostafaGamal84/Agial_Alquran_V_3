@@ -13,7 +13,11 @@ import { AttendStatusEnum } from 'src/app/@theme/types/AttendStatusEnum';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 
-interface ReportDetails extends CircleReportAddDto, Partial<CircleReportListDto> {}
+type ReportDetails = Omit<CircleReportAddDto, 'creationTime'> &
+  Partial<CircleReportListDto> & {
+    creationTime?: Date | string | null;
+  };
+
 
 @Component({
   selector: 'app-report-details',
