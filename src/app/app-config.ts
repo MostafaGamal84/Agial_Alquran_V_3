@@ -7,7 +7,7 @@ export class AbleProConfig {
   static theme_contrast = false; //true false
   static menu_caption = false; // true false
   static isLanding = true;
-  static i18n = 'en'; // en, fr, ro, cn
+  static i18n = 'en'; // en, fr, ro, cn, ar
 }
 
 export const DASHBOARD_PATH = '/dashboard/default';
