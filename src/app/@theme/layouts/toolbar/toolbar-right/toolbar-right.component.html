@@ -45,6 +45,9 @@
     <button mat-menu-item>
       <div class="mat-body" (click)="useLanguage('cn')">中国人</div>
     </button>
+    <button mat-menu-item>
+      <div class="mat-body" (click)="useLanguage('ar')">العربية</div>
+    </button>
   </mat-menu>
   <mat-menu #setting="matMenu" xPosition="before">
     <button mat-menu-item [routerLink]="['/application/profile/account/account']">
