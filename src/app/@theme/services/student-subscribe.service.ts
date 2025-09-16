@@ -37,8 +37,13 @@ export class StudentSubscribeService {
     if (filter.maxResultCount !== undefined) {
       params = params.set('MaxResultCount', filter.maxResultCount.toString());
     }
+    const searchWord = filter.searchWord ?? filter.searchTerm;
+
     if (filter.searchTerm) {
       params = params.set('SearchTerm', filter.searchTerm);
+    }
+    if (searchWord) {
+      params = params.set('SearchWord', searchWord);
     }
     if (filter.filter) {
       params = params.set('Filter', filter.filter);
@@ -72,8 +77,13 @@ export class StudentSubscribeService {
     if (filter.maxResultCount !== undefined) {
       params = params.set('MaxResultCount', filter.maxResultCount.toString());
     }
+    const searchWord = filter.searchWord ?? filter.searchTerm;
+
     if (filter.searchTerm) {
       params = params.set('SearchTerm', filter.searchTerm);
+    }
+    if (searchWord) {
+      params = params.set('SearchWord', searchWord);
     }
     if (filter.filter) {
       params = params.set('Filter', filter.filter);
