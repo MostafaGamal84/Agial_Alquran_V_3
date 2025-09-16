@@ -34,7 +34,7 @@ export class RevenueChartComponent implements OnInit {
   ngOnInit() {
     this.chartOptions = {
       chart: {
-        fontFamily: 'Inter var, sans-serif',
+        fontFamily: 'Cairo, sans-serif',
         type: 'area',
         height: 300,
         background: 'transparent',
