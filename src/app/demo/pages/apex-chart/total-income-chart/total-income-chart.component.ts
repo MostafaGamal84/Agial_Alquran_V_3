@@ -1,8 +1,11 @@
 // angular import
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
+import { DashboardService, RevenueByCurrencyDto, RevenueByCurrencySliceDto } from 'src/app/@theme/services/dashboard.service';
+import { ToastService } from 'src/app/@theme/services/toast.service';
+import { ApiError } from 'src/app/@theme/services/lookup.service';
 
 // third party
 import { NgApexchartsModule, ApexOptions } from 'ng-apexcharts';
@@ -13,20 +16,62 @@ import { NgApexchartsModule, ApexOptions } from 'ng-apexcharts';
   templateUrl: './total-income-chart.component.html',
   styleUrl: './total-income-chart.component.scss'
 })
-export class TotalIncomeChartComponent {
-  // public props
-  chartOptions: Partial<ApexOptions>;
-  incomeColors = ['var(--primary-500)', '#E58A00', '#2CA87F', 'var(--primary-200)'];
+export class TotalIncomeChartComponent implements OnInit {
+  private dashboardService = inject(DashboardService);
+  private toast = inject(ToastService);
 
-  // constructor
-  constructor() {
+  chartOptions: Partial<ApexOptions>;
+  slices: RevenueByCurrencySliceDto[] = [];
+  readonly incomeColors = ['var(--primary-500)', '#F97316', '#059669', '#6366F1'];
+
+  ngOnInit(): void {
+    this.chartOptions = this.createBaseOptions();
+    const { start, end } = this.getDefaultRange();
+    this.loadRevenueByCurrency(start, end);
+  }
+
+  formatValue(slice: RevenueByCurrencySliceDto): string {
+    return this.formatCurrency(slice.value, slice.currencyCode ?? slice.label);
+  }
+
+  formatPercentage(value: number): string {
+    return `${new Intl.NumberFormat(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(value)}%`;
+  }
+
+  private loadRevenueByCurrency(startDate: string, endDate: string): void {
+    this.dashboardService.getRevenueByCurrency(startDate, endDate).subscribe({
+      next: (response) => {
+        if (response.isSuccess && response.data) {
+          this.applySlices(response.data);
+        } else {
+          this.handleError(response.errors, 'Failed to load revenue by currency.');
+        }
+      },
+      error: () => this.handleError(undefined, 'Failed to load revenue by currency.')
+    });
+  }
+
+  private applySlices(data: RevenueByCurrencyDto): void {
+    this.slices = data.slices ?? [];
+    const series = this.slices.map((slice) => slice.value);
+    const labels = this.slices.map((slice) => slice.label);
     this.chartOptions = {
+      ...this.chartOptions,
+      series,
+      labels,
+      colors: this.resolveColors(labels.length)
+    };
+  }
+
+  private createBaseOptions(): Partial<ApexOptions> {
+    return {
       chart: {
         height: 320,
         type: 'donut'
       },
-      series: [27, 23, 20, 17],
-      labels: ['Total income', 'Total rent', 'Download', 'Views'],
+      series: [],
+      labels: [],
+      colors: this.incomeColors,
       fill: {
         opacity: [1, 1, 1, 0.3]
       },
@@ -43,7 +88,16 @@ export class TotalIncomeChartComponent {
                 show: true
               },
               value: {
-                show: true
+                show: true,
+                formatter: (value: string) => {
+                  const numericValue = Number(value);
+                  if (Number.isNaN(numericValue)) {
+                    return value;
+                  }
+                  return new Intl.NumberFormat(undefined, {
+                    maximumFractionDigits: 0
+                  }).format(numericValue);
+                }
               }
             }
           }
@@ -75,31 +129,55 @@ export class TotalIncomeChartComponent {
     };
   }
 
-  // public methods
-  income_card = [
-    {
-      background: 'bg-primary-500',
-      item: 'Income',
-      value: '$23,876',
-      number: '+$763,43'
-    },
-    {
-      background: 'bg-warning-500',
-      item: 'Rent',
-      value: '$23,876',
-      number: '+$763,43'
-    },
-    {
-      background: 'bg-success-500',
-      item: 'Download',
-      value: '$23,876',
-      number: '+$763,43'
-    },
-    {
-      background: 'bg-primary-200',
-      item: 'Views',
-      value: '$23,876',
-      number: '+$763,43'
+  private resolveColors(length: number): string[] {
+    if (length <= this.incomeColors.length) {
+      return this.incomeColors.slice(0, length);
     }
-  ];
+    const colors: string[] = [];
+    for (let i = 0; i < length; i += 1) {
+      colors.push(this.incomeColors[i % this.incomeColors.length]);
+    }
+    return colors;
+  }
+
+  private getDefaultRange(): { start: string; end: string } {
+    const end = new Date();
+    const start = new Date(end.getFullYear(), end.getMonth(), 1);
+    return {
+      start: this.formatDate(start),
+      end: this.formatDate(end)
+    };
+  }
+
+  private formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    const day = `${date.getDate()}`.padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  private formatCurrency(value: number, currencyCode: string): string {
+    try {
+      return new Intl.NumberFormat(undefined, {
+        style: 'currency',
+        currency: currencyCode,
+        maximumFractionDigits: 0
+      }).format(value);
+    } catch {
+      return `${currencyCode} ${new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(value)}`;
+    }
+  }
+
+  getSliceColor(index: number): string {
+    const colors = (this.chartOptions.colors as string[] | undefined) ?? this.incomeColors;
+    if (!colors || colors.length === 0) {
+      return this.incomeColors[index % this.incomeColors.length];
+    }
+    return colors[index % colors.length];
+  }
+
+  private handleError(errors: ApiError[] | undefined, fallback: string): void {
+    const message = errors && errors.length > 0 ? errors.map((err) => err.message).join('\n') : fallback;
+    this.toast.error(message);
+  }
 }

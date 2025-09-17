@@ -1,7 +1,7 @@
 <div id="chart">
   <apx-chart
     [chart]="chartOptions.chart"
-    [colors]="monthlyColor"
+    [colors]="chartOptions.colors"
     [fill]="chartOptions.fill"
     [dataLabels]="chartOptions.dataLabels"
     [stroke]="chartOptions.stroke"
@@ -11,4 +11,24 @@
     [xaxis]="chartOptions.xaxis"
     [theme]="chartOptions.theme"
   ></apx-chart>
+</div>
+<div class="row g-3 m-t-20 revenue-summary">
+  <div class="col-md-4 col-sm-6">
+    <div class="summary-item">
+      <p class="text-muted m-b-5 f-w-500">Revenue</p>
+      <div class="f-16 f-w-600">{{ formatTotal(totals.revenue) }}</div>
+    </div>
+  </div>
+  <div class="col-md-4 col-sm-6">
+    <div class="summary-item">
+      <p class="text-muted m-b-5 f-w-500">Teacher &amp; Manager Payouts</p>
+      <div class="f-16 f-w-600">{{ formatTotal(totals.payouts) }}</div>
+    </div>
+  </div>
+  <div class="col-md-4 col-sm-6">
+    <div class="summary-item">
+      <p class="text-muted m-b-5 f-w-500">Net Income</p>
+      <div class="f-16 f-w-600">{{ formatTotal(totals.netIncome) }}</div>
+    </div>
+  </div>
 </div>
