@@ -10,7 +10,7 @@ import { NgApexchartsModule, ApexAxisChartSeries, ApexOptions } from 'ng-apexcha
 
 // const
 import { DARK, LIGHT } from 'src/app/@theme/const';
-import { DashboardService, RepeatCustomersDto } from 'src/app/@theme/services/dashboard.service';
+import { ChartSeriesDto, DashboardService, RepeatCustomersDto } from 'src/app/@theme/services/dashboard.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { ApiError } from 'src/app/@theme/services/lookup.service';
 
@@ -75,10 +75,10 @@ export class ProjectOverviewChartComponent implements OnInit {
 
   private applyRepeatCustomerData(data: RepeatCustomersDto): void {
     const categories = data.chart?.categories ?? [];
-    const series = data.chart?.series ?? [];
+    const series = this.toApexSeries(data.chart?.series);
     this.chartOptions = {
       ...this.chartOptions,
-      series: series as ApexAxisChartSeries[],
+      series,
       xaxis: {
         ...(this.chartOptions.xaxis ?? {}),
         categories,
@@ -90,6 +90,18 @@ export class ProjectOverviewChartComponent implements OnInit {
     this.previousRate = data.previousRate ?? 0;
     this.percentChange = data.percentChange ?? 0;
   }
+
+  private toApexSeries(series: ChartSeriesDto[] | undefined): ApexAxisChartSeries {
+    if (!series) {
+      return [];
+    }
+    return series.map((item) => ({
+      name: item.name,
+      type: item.type,
+      data: item.data ?? []
+    }));
+  }
+
 
   private createBaseOptions(): Partial<ApexOptions> {
     return {

@@ -10,7 +10,8 @@ import { NgApexchartsModule, ApexAxisChartSeries, ApexOptions } from 'ng-apexcha
 
 // const
 import { DARK, LIGHT } from 'src/app/@theme/const';
-import { DashboardService, MonthlyRevenueDto, MonthlyRevenueTotalsDto } from 'src/app/@theme/services/dashboard.service';
+import { ChartSeriesDto, DashboardService, MonthlyRevenueDto, MonthlyRevenueTotalsDto } from 'src/app/@theme/services/dashboard.service';
+
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { ApiError } from 'src/app/@theme/services/lookup.service';
 
@@ -60,11 +61,12 @@ export class RevenueChartComponent implements OnInit {
 
   private updateChart(data: MonthlyRevenueDto): void {
     const categories = data.chart?.categories ?? [];
-    const series = data.chart?.series ?? [];
+    const series = this.toApexSeries(data.chart?.series);
     const colors = this.resolveColors(series);
     this.chartOptions = {
       ...this.chartOptions,
-      series: series as ApexAxisChartSeries[],
+      series,
+
       colors,
       xaxis: {
         ...(this.chartOptions.xaxis ?? {}),
@@ -132,12 +134,25 @@ export class RevenueChartComponent implements OnInit {
     this.chartOptions = { ...this.chartOptions, theme };
   }
 
-  private resolveColors(series: unknown[]): string[] {
+  private resolveColors(series: ApexAxisChartSeries): string[] {
+
     if (!series || series.length === 0) {
       return this.defaultColors;
     }
     return series.map((_, index) => this.defaultColors[index] ?? this.defaultColors[0]);
   }
+
+  private toApexSeries(series: ChartSeriesDto[] | undefined): ApexAxisChartSeries {
+    if (!series) {
+      return [];
+    }
+    return series.map((item) => ({
+      name: item.name,
+      type: item.type,
+      data: item.data ?? []
+    }));
+  }
+
 
   private formatCurrency(value?: number, currencyCode?: string): string {
     if (value === undefined || value === null) {
