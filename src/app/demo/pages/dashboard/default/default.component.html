@@ -19,54 +19,22 @@
       </div>
     </div>
   </app-card>
-  <div class="col-md-6 col-xxl-3">
-    <app-earning-chart
-      iconImage="#wallet-2"
-      headerTitle="All Earnings"
-      earningValue="$30200"
-      background="bg-primary-50"
-      textColor="text-primary-500"
-      color="var(--primary-500)"
-      percentageValue="30.6%"
-      [data]="[10, 30, 40, 20, 60, 50, 20, 15, 20, 25, 30, 25]"
-    />
-  </div>
-  <div class="col-md-6 col-xxl-3">
-    <app-earning-chart
-      iconImage="#book"
-      headerTitle="Page Views"
-      earningValue="290+"
-      background="bg-warning-50"
-      textColor="text-warning-500"
-      color="var(--warning-500)"
-      percentageValue="30.6%"
-      [data]="[10, 30, 40, 20, 60, 50, 20, 15, 20, 25, 30, 25]"
-    />
-  </div>
-  <div class="col-md-6 col-xxl-3">
-    <app-earning-chart
-      iconImage="#calendar"
-      headerTitle="Total Task"
-      earningValue="14568"
-      background="bg-success-50"
-      textColor="text-success-500"
-      color="var(--success-500)"
-      percentageValue="30.6%"
-      [data]="[10, 30, 40, 20, 60, 50, 20, 15, 20, 25, 30, 25]"
-    />
-  </div>
-  <div class="col-md-6 col-xxl-3">
-    <app-earning-chart
-      iconImage="#coludChange"
-      headerTitle="Download"
-      earningValue="$30200"
-      background="bg-warn-50"
-      textColor="text-warn-500"
-      color="var(--warn-500)"
-      percentageValue="30.6%"
-      [data]="[10, 30, 40, 20, 60, 50, 20, 15, 20, 25, 30, 25]"
-    />
-  </div>
+  @for (card of summaryCards; track card.key) {
+    <div class="col-md-6 col-xxl-3">
+      <app-earning-chart
+        [iconImage]="card.iconImage"
+        [headerTitle]="card.headerTitle"
+        [earningValue]="card.earningValue"
+        [background]="card.background"
+        [textColor]="card.textColor"
+        [color]="card.color"
+        [percentageValue]="card.percentageValue"
+        [data]="card.data"
+        [trendColor]="card.trendColor ?? card.textColor"
+        [trendIcon]="card.trendIcon ?? 'ti ti-arrow-up-right'"
+      />
+    </div>
+  }
   <div class="col-lg-9">
     <app-card cardTitle="Monthly Revenue">
       <app-revenue-chart />
