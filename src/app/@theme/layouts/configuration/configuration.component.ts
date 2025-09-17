@@ -4,10 +4,10 @@ import { CommonModule } from '@angular/common';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
-import { AbleProConfig } from 'src/app/app-config';
 import { ThemeLayoutService } from 'src/app/@theme/services/theme-layout.service';
 import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scrollbar';
 import { HORIZONTAL, VERTICAL, COMPACT, RTL, LTR, LIGHT, DARK } from '../../const';
+import { UserPreferenceService, UserPreferences } from '../../services/user-preference.service';
 
 @Component({
   selector: 'app-configuration',
@@ -18,6 +18,7 @@ import { HORIZONTAL, VERTICAL, COMPACT, RTL, LTR, LIGHT, DARK } from '../../cons
 export class ConfigurationComponent implements OnInit {
   private renderer = inject(Renderer2);
   private themeService = inject(ThemeLayoutService);
+  private userPreferenceService = inject(UserPreferenceService);
 
   // public props
   styleSelectorToggle!: boolean; // open configuration menu
@@ -29,23 +30,30 @@ export class ConfigurationComponent implements OnInit {
   rtlLayout!: boolean; // rtl theme
   boxLayouts!: boolean; // content is box-container
   resetLayoutType!: string; // reset layouts
+  private isInitializing = false;
 
   // life cycle event
   ngOnInit() {
-    this.layout = AbleProConfig.layout;
-    this.setMenuOrientation(this.layout);
-    this.layoutType = AbleProConfig.isDarkMode;
-    this.SetLayouts(this.layoutType);
-    this.bodyColor = AbleProConfig.theme_color;
-    this.SetBodyColor(this.bodyColor);
-    this.contrast = AbleProConfig.theme_contrast;
-    this.setThemeContrast(this.contrast);
-    this.caption = AbleProConfig.menu_caption;
-    this.setMenuCaption(this.caption);
-    this.rtlLayout = AbleProConfig.isRtlLayout;
-    this.setRtlLayout(this.rtlLayout);
-    this.boxLayouts = AbleProConfig.isBox_container;
-    this.setBoxLayouts(this.boxLayouts);
+    const preferences: UserPreferences = this.userPreferenceService.loadPreferences();
+    this.isInitializing = true;
+    try {
+      this.layout = preferences.layout;
+      this.setMenuOrientation(this.layout);
+      this.layoutType = preferences.themeMode;
+      this.SetLayouts(this.layoutType);
+      this.bodyColor = preferences.themeColor;
+      this.SetBodyColor(this.bodyColor);
+      this.contrast = preferences.contrast;
+      this.setThemeContrast(this.contrast);
+      this.caption = preferences.caption;
+      this.setMenuCaption(this.caption);
+      this.rtlLayout = preferences.rtlLayout;
+      this.setRtlLayout(this.rtlLayout);
+      this.boxLayouts = preferences.boxLayout;
+      this.setBoxLayouts(this.boxLayouts);
+    } finally {
+      this.isInitializing = false;
+    }
   }
 
   // public method
@@ -53,6 +61,7 @@ export class ConfigurationComponent implements OnInit {
   // Reset Layouts
   setResetLayout(layout: string) {
     if (layout === 'reset') {
+      this.userPreferenceService.clearPreferences();
       this.ngOnInit();
     }
   }
@@ -71,6 +80,11 @@ export class ConfigurationComponent implements OnInit {
     this.removeAllLayouts();
     this.renderer.addClass(document.body, layout);
     this.themeService.isDarkMode.set(layout);
+    if (!this.isInitializing) {
+      this.userPreferenceService.updatePreferences({
+        themeMode: layout
+      });
+    }
   }
 
   layout_change_default(layout: string) {
@@ -108,6 +122,11 @@ export class ConfigurationComponent implements OnInit {
     this.removeAllThemes();
     this.renderer.addClass(document.body, theme);
     this.themeService.color.set(theme);
+    if (!this.isInitializing) {
+      this.userPreferenceService.updatePreferences({
+        themeColor: theme
+      });
+    }
   }
 
   // theme body menu and header background color change
@@ -118,6 +137,11 @@ export class ConfigurationComponent implements OnInit {
     } else {
       this.renderer.removeClass(document.body, 'theme-contrast');
       this.contrast = false;
+    }
+    if (!this.isInitializing) {
+      this.userPreferenceService.updatePreferences({
+        contrast
+      });
     }
   }
 
@@ -130,6 +154,11 @@ export class ConfigurationComponent implements OnInit {
       document.querySelector('.pc-sidebar')?.classList.remove('caption-hide');
       this.caption = false;
     }
+    if (!this.isInitializing) {
+      this.userPreferenceService.updatePreferences({
+        caption
+      });
+    }
   }
 
   // box container layouts
@@ -140,6 +169,11 @@ export class ConfigurationComponent implements OnInit {
     } else {
       document.querySelector('.app-container')?.classList.remove('container');
       this.boxLayouts = false;
+    }
+    if (!this.isInitializing) {
+      this.userPreferenceService.updatePreferences({
+        boxLayout: boxLayouts
+      });
     }
   }
 
@@ -154,6 +188,11 @@ export class ConfigurationComponent implements OnInit {
       this.rtlLayout = false;
       this.themeService.directionChange.set(LTR);
     }
+    if (!this.isInitializing) {
+      this.userPreferenceService.updatePreferences({
+        rtlLayout: rtl
+      });
+    }
   }
 
   setMenuOrientation(layout: string) {
@@ -163,5 +202,10 @@ export class ConfigurationComponent implements OnInit {
     document.querySelector('.pc-sidebar')?.classList.remove(VERTICAL);
     document.querySelector('.pc-sidebar')?.classList.add(layout);
     this.themeService.layout.set(layout);
+    if (!this.isInitializing) {
+      this.userPreferenceService.updatePreferences({
+        layout
+      });
+    }
   }
 }
