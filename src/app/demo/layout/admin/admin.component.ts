@@ -21,6 +21,7 @@ import { FooterComponent } from 'src/app/@theme/layouts/footer/footer.component'
 // service
 import { BuyNowLinkService } from 'src/app/@theme/services/buy-now-link.service';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
+import { UserPreferenceService } from 'src/app/@theme/services/user-preference.service';
 
 // const import
 import { MIN_WIDTH_1025PX, MAX_WIDTH_1024PX, VERTICAL, HORIZONTAL, COMPACT, RTL, LTR } from 'src/app/@theme/const';
@@ -54,6 +55,7 @@ export class AdminComponent implements OnInit, AfterViewInit {
   private themeService = inject(ThemeLayoutService);
   buyNowLinkService = inject(BuyNowLinkService);
   authenticationService = inject(AuthenticationService);
+  private userPreferenceService = inject(UserPreferenceService);
 
   // public props
   readonly sidebar = viewChild<MatDrawer>('sidebar');
@@ -77,6 +79,7 @@ export class AdminComponent implements OnInit, AfterViewInit {
 
   // life cycle event
   ngOnInit() {
+    this.userPreferenceService.loadPreferences();
     this.breakpointObserver.observe([MIN_WIDTH_1025PX, MAX_WIDTH_1024PX]).subscribe((result) => {
       if (result.breakpoints[MAX_WIDTH_1024PX]) {
         this.modeValue = 'over';
