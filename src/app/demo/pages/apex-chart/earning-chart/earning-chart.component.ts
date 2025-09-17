@@ -29,24 +29,59 @@ export class EarningChartComponent implements OnInit {
   readonly background = input<string>();
   readonly textColor = input<string>();
   readonly percentageValue = input<string>();
-  readonly data = input.required<[]>();
-  readonly color = input.required<[]>();
+  readonly data = input<number[] | undefined>();
+  readonly color = input<string | string[] | undefined>();
+  readonly trendColor = input<string>();
+  readonly trendIcon = input<string>();
 
   // constructor
   constructor() {
     effect(() => {
       this.isDarkTheme(this.themeService.isDarkMode());
     });
+    effect(() => {
+      const chartData = this.normalizeData(this.data());
+      const colors = this.normalizeColors(this.color());
+      if (!this.chartOptions) {
+        this.chartOptions = this.createChartOptions(chartData, colors);
+        return;
+      }
+      this.chartOptions = {
+        ...this.chartOptions,
+        series: [
+          {
+            data: chartData
+          }
+        ],
+        colors
+      };
+    });
   }
 
   // life cycle
   ngOnInit() {
-    this.chartOptions = {
+    const chartData = this.normalizeData(this.data());
+    const colors = this.normalizeColors(this.color());
+    this.chartOptions = this.createChartOptions(chartData, colors);
+  }
+
+  // private methods
+  private isDarkTheme(isDark: string) {
+    if (!this.chartOptions?.tooltip) {
+      return;
+    }
+    const tooltip = { ...this.chartOptions.tooltip };
+    tooltip.theme = isDark === DARK ? DARK : LIGHT;
+    this.chartOptions = { ...this.chartOptions, tooltip };
+  }
+
+  private createChartOptions(data: number[], colors: string[]): Partial<ApexOptions> {
+    return {
       chart: { type: 'bar', background: 'transparent', height: 50, sparkline: { enabled: true } },
       plotOptions: { bar: { columnWidth: '80%' } },
       series: [
         {
-          data: this.data()
+          data
         }
       ],
       xaxis: { crosshairs: { width: 1 } },
@@ -63,19 +98,24 @@ export class EarningChartComponent implements OnInit {
         marker: { show: false },
         theme: LIGHT
       },
-      colors: this.color(),
+      colors,
       theme: {
         mode: LIGHT
       }
     };
   }
 
-  // private methods
-  private isDarkTheme(isDark: string) {
-    const tooltip = { ...this.chartOptions.tooltip };
-    tooltip.theme = isDark === DARK ? DARK : LIGHT;
-    this.chartOptions = { ...this.chartOptions, tooltip };
+  private normalizeData(value: number[] | undefined): number[] {
+    if (!value || value.length === 0) {
+      return [0];
+    }
+    return value;
   }
 
- 
+  private normalizeColors(color: string | string[] | undefined): string[] {
+    if (!color) {
+      return ['var(--primary-500)'];
+    }
+    return Array.isArray(color) ? color : [color];
+  }
 }

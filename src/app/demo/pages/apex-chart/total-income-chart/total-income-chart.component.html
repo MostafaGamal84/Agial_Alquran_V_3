@@ -11,7 +11,7 @@
   <apx-chart
     [series]="chartOptions.series!"
     [chart]="chartOptions.chart!"
-    [colors]="incomeColors"
+    [colors]="chartOptions.colors!"
     [labels]="chartOptions.labels!"
     [plotOptions]="chartOptions.plotOptions!"
     [fill]="chartOptions.fill!"
@@ -20,26 +20,27 @@
     [dataLabels]="chartOptions.dataLabels!"
   ></apx-chart>
   <div class="row g-3 m-t-15">
-    @for (task of income_card; track task) {
-      <div class="col-sm-6 m-t-15">
-        <div class="income-value">
-          <div class="flex align-item-center m-b-10">
-            <div class="flex-shrink-0">
-              <span class="p-5 block {{ task.background }} border-50"></span>
+    @if (slices.length === 0) {
+      <div class="col-12 text-center text-muted mat-caption">No revenue data available.</div>
+    } @else {
+      @for (slice of slices; track slice.label; let i = $index) {
+        <div class="col-sm-6 m-t-15">
+          <div class="income-value">
+            <div class="flex align-item-center m-b-10">
+              <div class="flex-shrink-0">
+                <span class="p-5 block border-50" [ngStyle]="{ 'background-color': getSliceColor(i) }"></span>
+              </div>
+              <div class="flex-grow-1 m-l-10">
+                <p class="m-b-0 f-w-500">{{ slice.label }}</p>
+              </div>
             </div>
-            <div class="flex-grow-1 m-l-10">
-              <p class="m-b-0">{{ task.item }}</p>
+            <div class="f-16 f-w-600">
+              {{ formatValue(slice) }}
+              <span class="text-muted f-w-500">{{ formatPercentage(slice.percentage) }}</span>
             </div>
-          </div>
-          <div class="f-16 f-w-600">
-            {{ task.value }}
-            <span class="text-muted f-w-500">
-              <i class="ti ti-chevrons-up"></i>
-              {{ task.number }}
-            </span>
           </div>
         </div>
-      </div>
+      }
     }
   </div>
 </app-card>
