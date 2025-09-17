@@ -64,6 +64,36 @@ export interface RevenueByCurrencyDto {
   slices: RevenueByCurrencySliceDto[];
 }
 
+export interface SubscribeTypeDistributionSliceDto {
+  label?: string;
+  value?: number;
+  percentage?: number;
+  color?: string;
+}
+
+export interface SubscribeTypeDistributionDto {
+  slices?: SubscribeTypeDistributionSliceDto[];
+  totalValue?: number;
+}
+
+export interface SubscribeTypeBreakdownDto {
+  subscribeTypeId?: number;
+  typeName?: string;
+  subscriberCount?: number;
+  percentage?: number;
+}
+
+export interface SubscribeTypeStatisticsDto {
+  subscribersByType?: ChartDto;
+  distribution?: SubscribeTypeDistributionDto;
+  breakdown?: SubscribeTypeBreakdownDto[];
+  totalSubscribers?: number;
+  uniqueSubscribers?: number;
+  totalSubscriptionTypes?: number;
+  startDate?: string | null;
+  endDate?: string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
   private http = inject(HttpClient);
@@ -93,6 +123,12 @@ export class DashboardService {
     return this.http.get<ApiResponse<RevenueByCurrencyDto>>(
       `${environment.apiUrl}/api/dashboard/revenue-by-currency`,
       { params }
+    );
+  }
+
+  getSubscribeTypeStatistics(): Observable<ApiResponse<SubscribeTypeStatisticsDto>> {
+    return this.http.get<ApiResponse<SubscribeTypeStatisticsDto>>(
+      `${environment.apiUrl}/api/Subscribe/TypeStatistics`
     );
   }
 }
