@@ -11,6 +11,7 @@ import { NgApexchartsModule, ApexAxisChartSeries, ApexOptions } from 'ng-apexcha
 // const
 import { DARK, LIGHT } from 'src/app/@theme/const';
 import { ChartSeriesDto, DashboardService, MonthlyRevenueDto, MonthlyRevenueTotalsDto } from 'src/app/@theme/services/dashboard.service';
+
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { ApiError } from 'src/app/@theme/services/lookup.service';
 
@@ -65,6 +66,7 @@ export class RevenueChartComponent implements OnInit {
     this.chartOptions = {
       ...this.chartOptions,
       series,
+
       colors,
       xaxis: {
         ...(this.chartOptions.xaxis ?? {}),
@@ -133,6 +135,7 @@ export class RevenueChartComponent implements OnInit {
   }
 
   private resolveColors(series: ApexAxisChartSeries): string[] {
+
     if (!series || series.length === 0) {
       return this.defaultColors;
     }
@@ -149,6 +152,7 @@ export class RevenueChartComponent implements OnInit {
       data: item.data ?? []
     }));
   }
+
 
   private formatCurrency(value?: number, currencyCode?: string): string {
     if (value === undefined || value === null) {
