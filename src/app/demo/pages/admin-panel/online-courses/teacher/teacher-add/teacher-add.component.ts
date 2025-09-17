@@ -12,6 +12,7 @@ import { LookupService, NationalityDto, GovernorateDto } from 'src/app/@theme/se
 import { CountryService, Country } from 'src/app/@theme/services/country.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-teacher-add',
@@ -26,6 +27,7 @@ export class TeacherAddComponent implements OnInit {
   private toast = inject(ToastService);
   private lookupService = inject(LookupService);
   private countryService = inject(CountryService);
+  private translate = inject(TranslateService);
 
   basicInfoForm!: FormGroup;
 
@@ -112,15 +114,15 @@ export class TeacherAddComponent implements OnInit {
       this.userService.createUser(model).subscribe({
         next: (res) => {
           if (res?.isSuccess) {
-            this.toast.success(res.message || 'User created successfully');
+            this.toast.success(res.message || this.translate.instant('User created successfully'));
             this.basicInfoForm.reset();
           } else if (res?.errors?.length) {
             res.errors.forEach((e) => this.toast.error(e.message));
           } else {
-            this.toast.error('Error creating user');
+            this.toast.error(this.translate.instant('Error creating user'));
           }
         },
-        error: () => this.toast.error('Error creating user')
+        error: () => this.toast.error(this.translate.instant('Error creating user'))
       });
     } else {
       this.basicInfoForm.markAllAsTouched();

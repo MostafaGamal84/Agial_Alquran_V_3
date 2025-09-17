@@ -4,6 +4,7 @@ import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scrollbar';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 interface Person {
   fullName?: string;
@@ -20,7 +21,7 @@ interface ContactEntry {
 @Component({
   selector: 'app-teacher-details',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule, NgxScrollbar],
+  imports: [CommonModule, MatDialogModule, MatButtonModule, NgxScrollbar, TranslateModule],
   templateUrl: './teacher-details.component.html',
   styleUrl: './teacher-details.component.scss'
 })
@@ -29,6 +30,7 @@ export class TeacherDetailsComponent {
   students: Person[] = [];
   contactEntries: ContactEntry[] = [];
   detailEntries: [string, unknown][] = [];
+  private translate = inject(TranslateService);
 
   Branch = [
     { id: BranchesEnum.Mens, label: 'الرجال' },
@@ -54,7 +56,6 @@ export class TeacherDetailsComponent {
           !key.toLowerCase().includes('teacher') &&
           !/id$/i.test(key) &&
           key.toLowerCase() !== 'id' &&
-
           !Array.isArray(value) &&
           (typeof value !== 'object' || value === null)
       );
@@ -72,6 +73,11 @@ export class TeacherDetailsComponent {
     return value;
   }
 
+  formatLabel(key: string): string {
+    const base = this.getLabelForKey(key);
+    return this.translate.instant(base);
+  }
+
   private getContactIcon(key: string): string {
     const icons: Record<string, string> = {
       email: 'ti ti-mail',
@@ -79,5 +85,23 @@ export class TeacherDetailsComponent {
       secondMobile: 'ti ti-phone'
     };
     return icons[key] || 'ti ti-circle';
+  }
+
+  private getLabelForKey(key: string): string {
+    const predefined: Record<string, string> = {
+      branchId: 'Branch',
+      gender: 'Gender',
+      createdAt: 'Created At',
+      updatedAt: 'Updated At',
+      userName: 'User Name'
+    };
+    if (predefined[key]) {
+      return predefined[key];
+    }
+    const spaced = key
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/[_-]+/g, ' ')
+      .trim();
+    return spaced.charAt(0).toUpperCase() + spaced.slice(1);
   }
 }

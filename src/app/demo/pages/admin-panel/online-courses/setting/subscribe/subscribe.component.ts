@@ -4,6 +4,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatDialog, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
 import { MatButton } from '@angular/material/button';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { SubscribeService, SubscribeDto } from 'src/app/@theme/services/subscribe.service';
@@ -20,6 +21,7 @@ export class SubscribeComponent implements OnInit, AfterViewInit {
   private service = inject(SubscribeService);
   private dialog = inject(MatDialog);
   private toast = inject(ToastService);
+  private translate = inject(TranslateService);
 
   displayedColumns: string[] = ['name', 'minutes', 'type', 'action'];
   dataSource = new MatTableDataSource<SubscribeDto>();
@@ -66,10 +68,10 @@ export class SubscribeComponent implements OnInit, AfterViewInit {
       if (result) {
         this.service.delete(id).subscribe({
           next: () => {
-            this.toast.success('Subscribe deleted successfully');
+            this.toast.success(this.translate.instant('Subscribe deleted successfully'));
             this.load();
           },
-          error: () => this.toast.error('Error deleting subscribe')
+          error: () => this.toast.error(this.translate.instant('Error deleting subscribe'))
         });
       }
     });
@@ -79,13 +81,13 @@ export class SubscribeComponent implements OnInit, AfterViewInit {
 @Component({
   selector: 'app-delete-confirm-dialog',
   template: `
-    <div class="m-b-0 p-10 f-16 f-w-600">Delete subscribe</div>
-    <div class="p-10">Are you sure you want to delete this subscribe?</div>
+    <div class="m-b-0 p-10 f-16 f-w-600">{{ 'Delete subscribe' | translate }}</div>
+    <div class="p-10">{{ 'Are you sure you want to delete this subscribe?' | translate }}</div>
     <div mat-dialog-actions>
-      <button mat-button mat-dialog-close>No</button>
-      <button mat-button color="warn" [mat-dialog-close]="true">Yes</button>
+      <button mat-button mat-dialog-close>{{ 'No' | translate }}</button>
+      <button mat-button color="warn" [mat-dialog-close]="true">{{ 'Yes' | translate }}</button>
     </div>
   `,
-  imports: [MatDialogActions, MatButton, MatDialogClose]
+  imports: [MatDialogActions, MatButton, MatDialogClose, TranslateModule]
 })
 export class DeleteConfirmDialogComponent {}

@@ -1,27 +1,29 @@
-<app-card cardTitle="Payment">
+<app-card [cardTitle]="'Payment' | translate">
   <app-payment-details #cdkStepper>
     <cdk-step>
       <div class="row justify-content-center">
         <div class="col-md-10 col-lg-8 col-xxl-6">
           <app-card [showHeader]="false" cardClass="border text-center overflow-x-auto">
             <img src="assets/images/admin/img-payment-1.png" alt="images" class="img-fluid m-b-25" />
-            <div class="f-16 f-w-600">Establish your payment gateway</div>
+            <div class="f-16 f-w-600">{{ 'Establish your payment gateway' | translate }}</div>
             <p class="text-muted m-t-15 m-b-20">
-              Able Pro: pay streamlines your payout process, facilitating faster payments while managing author and affiliate payouts on
-              your behalf.
+              {{
+                'Able Pro: pay streamlines your payout process, facilitating faster payments while managing author and affiliate payouts on your behalf.'
+                  | translate
+              }}
             </p>
             <div class="m-b-15 text-start">
               <div class="flex align-item-center">
                 <div class="flex-grow-1 m-r-15">
                   <div class="input-group">
                     <mat-form-field appearance="outline" class="w-100" floatLabel="always">
-                      <mat-label>Mobile Phone</mat-label>
+                      <mat-label>{{ 'Mobile Phone' | translate }}</mat-label>
                       <input matInput type="text" placeholder="https://admin123-20" />
                     </mat-form-field>
                   </div>
                 </div>
                 <div class="flex-shrink-0">
-                  <button mat-flat-button color="primary" class="m-r-10" cdkStepperNext>Confirm</button>
+                  <button mat-flat-button color="primary" class="m-r-10" cdkStepperNext>{{ 'Confirm' | translate }}</button>
                 </div>
               </div>
             </div>
@@ -33,21 +35,21 @@
       <button mat-button cdkStepperPrevious class="m-b-10">
         <div class="flex align-item-center">
           <i class="ti ti-chevron-left f-20"></i>
-          Back Step
+          {{ 'Back Step' | translate }}
         </div>
       </button>
       <div class="row justify-content-center">
         <div class="col-md-10 col-lg-8 col-xxl-6">
           <app-card [showHeader]="false" cardClass="border text-center">
             <img src="assets/images/admin/img-payment-1.png" alt="images" class="img-fluid m-b-25" />
-            <div class="f-16 f-w-600">Let's begin from the start</div>
-            <p class="text-muted">What is your current tax filing situation?</p>
+            <div class="f-16 f-w-600">{{ "Let's begin from the start" | translate }}</div>
+            <p class="text-muted">{{ 'What is your current tax filing situation?' | translate }}</p>
             <div class="row justify-content-center">
               <div class="col-auto">
-                <button mat-stroked-button color="accent" cdkStepperPrevious>Back</button>
+                <button mat-stroked-button color="accent" cdkStepperPrevious>{{ 'Back' | translate }}</button>
               </div>
               <div class="col-auto">
-                <button mat-flat-button color="primary" cdkStepperNext>Confirm</button>
+                <button mat-flat-button color="primary" cdkStepperNext>{{ 'Confirm' | translate }}</button>
               </div>
             </div>
           </app-card>
@@ -58,18 +60,18 @@
       <button mat-button cdkStepperPrevious class="m-b-10">
         <div class="flex align-item-center">
           <i class="ti ti-chevron-left f-20"></i>
-          Back Step
+          {{ 'Back Step' | translate }}
         </div>
       </button>
       <div class="row justify-content-center">
         <div class="col-md-10 col-lg-8 col-xxl-6">
           <app-card [showHeader]="false" cardClass="border text-center">
             <img src="assets/images/admin/img-payment-2.png" alt="images" class="img-fluid mb-4" />
-            <div class="f-16 f-w-600 m-b-25">Inform us about your enterprise</div>
+            <div class="f-16 f-w-600 m-b-25">{{ 'Inform us about your enterprise' | translate }}</div>
             <div class="row justify-content-center text-start">
               <div class="col-sm-10 col-md-8 col-xxl-6">
                 <mat-form-field appearance="outline" class="w-100">
-                  <mat-label>What were your total sales for the previous year?</mat-label>
+                  <mat-label>{{ 'What were your total sales for the previous year?' | translate }}</mat-label>
                   <mat-select value="1">
                     <mat-option value="1">$100-$1000</mat-option>
                     <mat-option value="2">$101-$2000</mat-option>
@@ -78,7 +80,7 @@
                   </mat-select>
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="w-100">
-                  <mat-label>What is your current tax filing situation?</mat-label>
+                  <mat-label>{{ 'What is your current tax filing situation?' | translate }}</mat-label>
                   <mat-select value="1">
                     <mat-option value="1">LLC</mat-option>
                     <mat-option value="2">LLC 1</mat-option>
@@ -87,12 +89,12 @@
                   </mat-select>
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="w-100">
-                  <mat-label>What is your business name?</mat-label>
-                  <input matInput type="text" placeholder="Business name" />
+                  <mat-label>{{ 'What is your business name?' | translate }}</mat-label>
+                  <input matInput type="text" [placeholder]="'Business name' | translate" />
                 </mat-form-field>
               </div>
             </div>
-            <button mat-flat-button color="primary" cdkStepperNext>Confirm</button>
+            <button mat-flat-button color="primary" cdkStepperNext>{{ 'Confirm' | translate }}</button>
           </app-card>
         </div>
       </div>
@@ -101,16 +103,16 @@
       <button mat-button cdkStepperPrevious class="m-b-10">
         <div class="flex align-item-center">
           <i class="ti ti-chevron-left f-20"></i>
-          Back Step
+          {{ 'Back Step' | translate }}
         </div>
       </button>
       <div class="row justify-content-center">
         <div class="col-md-10 col-lg-8 col-xxl-6">
           <app-card [showHeader]="false" cardClass="border text-center">
             <img src="assets/images/admin/img-payment-2.png" alt="images" class="img-fluid m-b-25" />
-            <div class="m-b-10 f-w-600 f-16">Inform us about your enterprise</div>
-            <p class="text-muted m-b-25">What is your current tax filing situation?</p>
-            <button mat-flat-button color="primary" (click)="cdkStepper.reset()">Confirm</button>
+            <div class="m-b-10 f-w-600 f-16">{{ 'Inform us about your enterprise' | translate }}</div>
+            <p class="text-muted m-b-25">{{ 'What is your current tax filing situation?' | translate }}</p>
+            <button mat-flat-button color="primary" (click)="cdkStepper.reset()">{{ 'Confirm' | translate }}</button>
           </app-card>
         </div>
       </div>
