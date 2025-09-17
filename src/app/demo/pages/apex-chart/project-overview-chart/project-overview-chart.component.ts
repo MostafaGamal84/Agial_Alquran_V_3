@@ -101,8 +101,6 @@ export class ProjectOverviewChartComponent implements OnInit {
       data: item.data ?? []
     }));
   }
-
-
   private createBaseOptions(): Partial<ApexOptions> {
     return {
       chart: {
