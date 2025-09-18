@@ -2,6 +2,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 
+
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
