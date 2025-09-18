@@ -1,11 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, effect, inject } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, OnDestroy, OnInit, effect, inject } from '@angular/core';
 import { NgApexchartsModule, ApexOptions } from 'ng-apexcharts';
+import { Subject, takeUntil } from 'rxjs';
 
 import { DARK, LIGHT } from 'src/app/@theme/const';
 import { ThemeLayoutService } from 'src/app/@theme/services/theme-layout.service';
-import { DashboardService, SubscriberDistributionSliceDto, SubscriberTypeAnalyticsDto, SubscriberTypeBreakdownDto } from 'src/app/core/services/dashboard.service';
+import {
+  DashboardService,
+  SubscriberDistributionSliceDto,
+  SubscriberTypeAnalyticsDto,
+  SubscriberTypeBreakdownDto
+} from 'src/app/core/services/dashboard.service';
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 
 @Component({
@@ -14,11 +19,12 @@ import { SharedModule } from 'src/app/demo/shared/shared.module';
   templateUrl: './apex-charts.component.html',
   styleUrls: ['./apex-charts.component.scss']
 })
-export class ApexChartsComponent implements OnInit {
-  private readonly themeService = inject(ThemeLayoutService);
-  private readonly dashboardService = inject(DashboardService);
+export class ApexChartsComponent implements OnInit, OnDestroy {
+  private readonly themeService: ThemeLayoutService = inject(ThemeLayoutService);
+  private readonly dashboardService: DashboardService = inject(DashboardService);
+  private readonly destroy$ = new Subject<void>();
 
-  barChart: Partial<ApexOptions> = {
+  public barChart: Partial<ApexOptions> = {
     chart: {
       type: 'bar',
       height: 360,
@@ -44,7 +50,7 @@ export class ApexChartsComponent implements OnInit {
     series: []
   };
 
-  pieChart: Partial<ApexOptions> = {
+  public pieChart: Partial<ApexOptions> = {
     chart: {
       type: 'pie',
       height: 320
@@ -59,7 +65,7 @@ export class ApexChartsComponent implements OnInit {
     series: []
   };
 
-  donutChart: Partial<ApexOptions> = {
+  public donutChart: Partial<ApexOptions> = {
     chart: {
       type: 'donut',
       height: 320
@@ -74,21 +80,21 @@ export class ApexChartsComponent implements OnInit {
     series: []
   };
 
-  preset: string[] = [];
-  pie_color: string[] = [];
+  public preset: string[] = [];
+  public pie_color: string[] = [];
 
-  distributionSlices: SubscriberDistributionSliceDto[] = [];
-  breakdown: SubscriberTypeBreakdownDto[] = [];
-  breakdownColumns: string[] = [];
-  totalsList: { key: string; label: string; value: number }[] = [];
+  public distributionSlices: SubscriberDistributionSliceDto[] = [];
+  public breakdown: SubscriberTypeBreakdownDto[] = [];
+  public breakdownColumns: string[] = [];
+  public totalsList: { key: string; label: string; value: number }[] = [];
 
-  totalSubscribers = 0;
-  uniqueSubscribers = 0;
-  newSubscribers = 0;
-  returningSubscribers = 0;
+  public totalSubscribers = 0;
+  public uniqueSubscribers = 0;
+  public newSubscribers = 0;
+  public returningSubscribers = 0;
 
-  startDate?: string;
-  endDate?: string;
+  public startDate?: string;
+  public endDate?: string;
 
   constructor() {
     effect(() => {
@@ -101,7 +107,7 @@ export class ApexChartsComponent implements OnInit {
     this.loadAnalytics();
   }
 
-  getDisplayValue(item: SubscriberTypeBreakdownDto, key: string): string {
+  public getDisplayValue(item: SubscriberTypeBreakdownDto, key: string): string {
     const value = item[key];
 
     if (typeof value === 'number') {
@@ -119,27 +125,31 @@ export class ApexChartsComponent implements OnInit {
     return String(value);
   }
 
-  trackByKey(_: number, item: { key: string }): string {
+  public trackByKey(_: number, item: { key: string }): string {
     return item.key;
   }
 
-  trackBySlice(_: number, item: SubscriberDistributionSliceDto): string {
+  public trackBySlice(_: number, item: SubscriberDistributionSliceDto): string {
     return item.label;
   }
 
-  trackByBreakdown(_: number, item: SubscriberTypeBreakdownDto): string {
+  public trackByBreakdown(_: number, item: SubscriberTypeBreakdownDto): string {
     return `${item.label ?? item.type ?? item.name ?? ''}`;
   }
 
   private loadAnalytics(): void {
     this.dashboardService
       .getSubscribersByType(this.startDate, this.endDate)
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntil(this.destroy$))
       .subscribe((response) => {
         this.applyAnalytics(response);
       });
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
   private applyAnalytics(data: SubscriberTypeAnalyticsDto): void {
     const subscribersByType = data?.subscribersByType ?? {};
     const distributionSlices = data?.distribution?.slices ?? [];
@@ -228,10 +238,10 @@ export class ApexChartsComponent implements OnInit {
       value
     }));
 
-    this.totalSubscribers = totals.totalSubscribers ?? 0;
-    this.uniqueSubscribers = totals.uniqueSubscribers ?? 0;
-    this.newSubscribers = totals.newSubscribers ?? 0;
-    this.returningSubscribers = totals.returningSubscribers ?? 0;
+    this.totalSubscribers = totals['totalSubscribers'] ?? 0;
+    this.uniqueSubscribers = totals['uniqueSubscribers'] ?? 0;
+    this.newSubscribers = totals['newSubscribers'] ?? 0;
+    this.returningSubscribers = totals['returningSubscribers'] ?? 0;
   }
 
   private resetColorPalette(): void {
