@@ -36,6 +36,7 @@ export class ApexChartsComponent implements OnInit, OnDestroy {
   private readonly themeService: ThemeLayoutService = inject(ThemeLayoutService);
   private readonly dashboardService: DashboardService = inject(DashboardService);
   private readonly destroy$ = new Subject<void>();
+  private readonly defaultPiePalette = ['#0050B3', 'var(--primary-500)', '#52C41A', '#FF4D4F', '#FAAD14'];
 
   public barChart: Partial<ApexOptions> = {
     chart: {
@@ -288,8 +289,13 @@ export class ApexChartsComponent implements OnInit, OnDestroy {
     this.updateBreakdownColumns(breakdown);
     this.updateTotals(data);
   }
-  getDefaultPieColor(index: number): any {
-    throw new Error('Method not implemented.');
+  private getDefaultPieColor(index: number): string {
+    if (this.defaultPiePalette.length === 0) {
+      return '#CCCCCC';
+    }
+
+    const paletteIndex = index % this.defaultPiePalette.length;
+    return this.defaultPiePalette[paletteIndex];
   }
 
   private updateBreakdownColumns(breakdown: SubscriberTypeBreakdownDto[]): void {
@@ -351,14 +357,14 @@ export class ApexChartsComponent implements OnInit, OnDestroy {
   }
 
   private resetColorPalette(): void {
-    const defaultPalette = ['#0050B3', 'var(--primary-500)', '#52C41A', '#FF4D4F', '#FAAD14'];
+    const defaultPalette = this.defaultPiePalette;
 
-    this.preset = ['#0050B3', 'var(--primary-500)', '#52C41A'];
+    this.preset = defaultPalette.slice(0, 3);
     this.barChartColor = ['var(--primary-500)', '#52c41a', '#faad14', '#13c2c2'];
     this.bHorizontalColor = ['var(--primary-500)', '#52c41a'];
-    this.pie_color = ['#0050B3', 'var(--primary-500)', '#52C41A', '#FF4D4F', '#FAAD14'];
+    this.pie_color = [...defaultPalette];
     this.radialColor = ['var(--primary-500)'];
-    this.customs_color = ['#0050B3', 'var(--primary-500)', '#52C41A', '#FF4D4F'];
+    this.customs_color = defaultPalette.slice(0, 4);
   }
 
   // private methods
