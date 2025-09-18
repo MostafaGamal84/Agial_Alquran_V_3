@@ -62,12 +62,13 @@ export class OverviewProductChartComponent implements OnInit {
     const slices = data.distribution?.slices ?? [];
     const series = slices.map((slice) => slice.value ?? 0);
     const labels = slices.map((slice, index) => this.resolveLabel(slice, index));
+    const colors = this.resolveColors(slices, labels.length);
 
     this.chartOptions = {
       ...this.chartOptions,
       series,
       labels,
-      colors: this.resolveColors(labels.length)
+      colors
     };
 
     this.breakdown = this.combineBreakdown(data.breakdown, slices, data.totalSubscribers ?? data.distribution?.totalValue);
@@ -138,15 +139,41 @@ export class OverviewProductChartComponent implements OnInit {
     return (value / total) * 100;
   }
 
-  private resolveColors(length: number): string[] {
-    if (length <= this.chartColors.length) {
-      return this.chartColors.slice(0, length);
+  private resolveColors(
+    slices: SubscribeTypeDistributionSliceDto[],
+    length: number
+  ): string[] {
+    if (length === 0) {
+      return [];
     }
-    const colors: string[] = [];
-    for (let index = 0; index < length; index += 1) {
-      colors.push(this.chartColors[index % this.chartColors.length]);
+
+    if (slices.length > 0) {
+      const colors = slices.map((slice, index) => {
+        const color = slice.color?.trim();
+        if (color && color.length > 0) {
+          return color;
+        }
+        return this.chartColors[index % this.chartColors.length];
+      });
+
+      return this.normalizeColors(colors, length);
     }
-    return colors;
+
+    return this.normalizeColors([], length);
+  }
+
+  private normalizeColors(colors: string[], length: number): string[] {
+    const palette = colors.slice(0, length);
+    if (palette.length === length) {
+      return palette;
+    }
+
+    const extended = [...palette];
+    for (let index = extended.length; index < length; index += 1) {
+      extended.push(this.chartColors[index % this.chartColors.length]);
+    }
+
+    return extended;
   }
 
   private createBaseOptions(): Partial<ApexOptions> {
