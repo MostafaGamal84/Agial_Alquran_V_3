@@ -1,5 +1,7 @@
 // angular import
 import { Component, OnInit, inject } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
+
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -17,7 +19,7 @@ import { NgApexchartsModule, ApexOptions } from 'ng-apexcharts';
 
 @Component({
   selector: 'app-overview-product-chart',
-  imports: [SharedModule, NgApexchartsModule],
+  imports: [SharedModule, NgApexchartsModule, DecimalPipe],
   templateUrl: './overview-product-chart.component.html',
   styleUrl: './overview-product-chart.component.scss'
 })
