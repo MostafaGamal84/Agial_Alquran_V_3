@@ -14,13 +14,10 @@ import {
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { ChartDB } from 'src/app/fake-data/chartDB';
-import { ThemeLayoutService } from 'src/app/@theme/services/theme-layout.service';
 
 // const
-import { DARK, LIGHT } from 'src/app/@theme/const';
 
 // third party
-import { NgApexchartsModule, ApexOptions } from 'ng-apexcharts';
 
 @Component({
   selector: 'app-apex-charts',
@@ -104,6 +101,29 @@ export class ApexChartsComponent implements OnInit, OnDestroy {
 
   public startDate?: string;
   public endDate?: string;
+  chartDB: typeof ChartDB;
+  barStackedChart: any;
+  barHorizontalChart: any;
+  barHStackChart: any;
+  radialChart: any;
+  customsAngleChart: any;
+  lineChart: any;
+  realTimeChart: any;
+  areaChart: any;
+  dateTimeChart: any;
+  mixedChart: any;
+  lineAreaChart: any;
+  candlestickChart: any;
+  bubbleChart: any;
+  bubble3DChart: any;
+  scatterChart: any;
+  scatterDateTimeChart: any;
+  heatmapChart: any;
+  heatmapRoundedChart: any;
+  barChartColor: string[];
+  bHorizontalColor: string[];
+  radialColor: string[];
+  customs_color: string[];
 
   constructor() {
     effect(() => {
@@ -245,6 +265,9 @@ export class ApexChartsComponent implements OnInit, OnDestroy {
     this.updateBreakdownColumns(breakdown);
     this.updateTotals(data);
   }
+  getDefaultPieColor(index: number): any {
+    throw new Error('Method not implemented.');
+  }
 
   private updateBreakdownColumns(breakdown: SubscriberTypeBreakdownDto[]): void {
     if (!breakdown?.length) {
@@ -299,6 +322,9 @@ export class ApexChartsComponent implements OnInit, OnDestroy {
     this.uniqueSubscribers = totals['uniqueSubscribers'] ?? 0;
     this.newSubscribers = totals['newSubscribers'] ?? 0;
     this.returningSubscribers = totals['returningSubscribers'] ?? 0;
+  }
+  toDisplayLabel(key: string): any {
+    throw new Error('Method not implemented.');
   }
 
   private resetColorPalette(): void {
