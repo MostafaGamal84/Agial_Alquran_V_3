@@ -1,17 +1,24 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, effect, inject } from '@angular/core';
-import { NgApexchartsModule, ApexOptions } from 'ng-apexcharts';
+import {
+  NgApexchartsModule,
+  ApexOptions,
+  ApexAxisChartSeries,
+  ApexNonAxisChartSeries,
+  ChartType
+} from 'ng-apexcharts';
+
 import { Subject, takeUntil } from 'rxjs';
 
 import { DARK, LIGHT } from 'src/app/@theme/const';
 import { ThemeLayoutService } from 'src/app/@theme/services/theme-layout.service';
 import {
   DashboardService,
+  SubscriberByTypeChartDto,
   SubscriberDistributionSliceDto,
   SubscriberTypeAnalyticsDto,
   SubscriberTypeBreakdownDto
 } from 'src/app/core/services/dashboard.service';
-
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { ChartDB } from 'src/app/fake-data/chartDB';
 
@@ -32,7 +39,7 @@ export class ApexChartsComponent implements OnInit, OnDestroy {
 
   public barChart: Partial<ApexOptions> = {
     chart: {
-      type: 'bar',
+      type: 'bar' as ChartType,
       height: 360,
       toolbar: {
         show: false
@@ -53,12 +60,12 @@ export class ApexChartsComponent implements OnInit, OnDestroy {
     grid: {
       strokeDashArray: 4
     },
-    series: []
+    series: [] as ApexAxisChartSeries
   };
 
   public pieChart: Partial<ApexOptions> = {
     chart: {
-      type: 'pie',
+      type: 'pie' as ChartType,
       height: 320
     },
     dataLabels: {
@@ -68,12 +75,12 @@ export class ApexChartsComponent implements OnInit, OnDestroy {
     legend: {
       position: 'bottom'
     },
-    series: []
+    series: [] as ApexNonAxisChartSeries
   };
 
   public donutChart: Partial<ApexOptions> = {
     chart: {
-      type: 'donut',
+      type: 'donut' as ChartType,
       height: 320
     },
     dataLabels: {
@@ -83,7 +90,7 @@ export class ApexChartsComponent implements OnInit, OnDestroy {
     legend: {
       position: 'bottom'
     },
-    series: []
+    series: [] as ApexNonAxisChartSeries
   };
 
   public preset: string[] = [];
@@ -101,29 +108,6 @@ export class ApexChartsComponent implements OnInit, OnDestroy {
 
   public startDate?: string;
   public endDate?: string;
-  chartDB: typeof ChartDB;
-  barStackedChart: any;
-  barHorizontalChart: any;
-  barHStackChart: any;
-  radialChart: any;
-  customsAngleChart: any;
-  lineChart: any;
-  realTimeChart: any;
-  areaChart: any;
-  dateTimeChart: any;
-  mixedChart: any;
-  lineAreaChart: any;
-  candlestickChart: any;
-  bubbleChart: any;
-  bubble3DChart: any;
-  scatterChart: any;
-  scatterDateTimeChart: any;
-  heatmapChart: any;
-  heatmapRoundedChart: any;
-  barChartColor: string[];
-  bHorizontalColor: string[];
-  radialColor: string[];
-  customs_color: string[];
 
   constructor() {
     effect(() => {
@@ -228,16 +212,25 @@ export class ApexChartsComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
   private applyAnalytics(data: SubscriberTypeAnalyticsDto): void {
-    const subscribersByType = data?.subscribersByType ?? {};
+    const subscribersByType = (data?.subscribersByType ?? {}) as SubscriberByTypeChartDto;
     const distributionSlices = data?.distribution?.slices ?? [];
     const breakdown = data?.breakdown ?? [];
 
+    const series = (subscribersByType.series ?? []) as
+      | ApexAxisChartSeries
+      | ApexNonAxisChartSeries;
+    const categories =
+      subscribersByType.categories ?? subscribersByType.xaxis?.categories ?? [];
+
     this.barChart = {
       ...this.barChart,
-      chart: subscribersByType.chart ?? this.barChart.chart,
-      xaxis: subscribersByType.xaxis ?? this.barChart.xaxis,
-      series: subscribersByType.series ?? []
-    };
+      xaxis: {
+        ...(this.barChart.xaxis ?? {}),
+        ...(subscribersByType.xaxis ?? {}),
+        categories
+      },
+      series
+    } as Partial<ApexOptions>;
 
     this.distributionSlices = distributionSlices;
 
@@ -250,14 +243,14 @@ export class ApexChartsComponent implements OnInit, OnDestroy {
     this.pieChart = {
       ...this.pieChart,
       labels: pieLabels,
-      series: pieSeries
-    };
+      series: pieSeries as ApexNonAxisChartSeries
+    } as Partial<ApexOptions>;
 
     this.donutChart = {
       ...this.donutChart,
       labels: pieLabels,
-      series: pieSeries
-    };
+      series: pieSeries as ApexNonAxisChartSeries
+    } as Partial<ApexOptions>;
 
     this.pie_color = pieColors.length ? pieColors : [...this.pie_color];
 
@@ -322,9 +315,6 @@ export class ApexChartsComponent implements OnInit, OnDestroy {
     this.uniqueSubscribers = totals['uniqueSubscribers'] ?? 0;
     this.newSubscribers = totals['newSubscribers'] ?? 0;
     this.returningSubscribers = totals['returningSubscribers'] ?? 0;
-  }
-  toDisplayLabel(key: string): any {
-    throw new Error('Method not implemented.');
   }
 
   private resetColorPalette(): void {

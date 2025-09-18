@@ -13,6 +13,7 @@ export interface SubscriberTypeSeriesDto {
 export interface SubscriberByTypeChartDto {
   chart?: ApexChart;
   xaxis?: ApexXAxis;
+  categories?: string[];
   series?: ApexAxisChartSeries | ApexNonAxisChartSeries;
 }
 
