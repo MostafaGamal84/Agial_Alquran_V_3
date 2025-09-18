@@ -1,8 +1,17 @@
-// angular import
-import { Component, OnInit, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, OnDestroy, OnInit, effect, inject } from '@angular/core';
+import { NgApexchartsModule, ApexOptions } from 'ng-apexcharts';
+import { Subject, takeUntil } from 'rxjs';
 
-// project import
+import { DARK, LIGHT } from 'src/app/@theme/const';
+import { ThemeLayoutService } from 'src/app/@theme/services/theme-layout.service';
+import {
+  DashboardService,
+  SubscriberDistributionSliceDto,
+  SubscriberTypeAnalyticsDto,
+  SubscriberTypeBreakdownDto
+} from 'src/app/core/services/dashboard.service';
+
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { ChartDB } from 'src/app/fake-data/chartDB';
 import { ThemeLayoutService } from 'src/app/@theme/services/theme-layout.service';
@@ -19,43 +28,83 @@ import { NgApexchartsModule, ApexOptions } from 'ng-apexcharts';
   templateUrl: './apex-charts.component.html',
   styleUrls: ['./apex-charts.component.scss']
 })
-export class ApexChartsComponent implements OnInit {
-  private themeService = inject(ThemeLayoutService);
+export class ApexChartsComponent implements OnInit, OnDestroy {
+  private readonly themeService: ThemeLayoutService = inject(ThemeLayoutService);
+  private readonly dashboardService: DashboardService = inject(DashboardService);
+  private readonly destroy$ = new Subject<void>();
 
-  // public props
-  barChart: Partial<ApexOptions>;
-  barStackedChart: Partial<ApexOptions>;
-  barHorizontalChart: Partial<ApexOptions>;
-  barHStackChart: Partial<ApexOptions>;
-  pieChart: Partial<ApexOptions>;
-  donutChart: Partial<ApexOptions>;
-  radialChart: Partial<ApexOptions>;
-  customsAngleChart: Partial<ApexOptions>;
-  lineChart: Partial<ApexOptions>;
-  realTimeChart: Partial<ApexOptions>;
-  areaChart: Partial<ApexOptions>;
-  dateTimeChart: Partial<ApexOptions>;
-  mixedChart: Partial<ApexOptions>;
-  lineAreaChart: Partial<ApexOptions>;
-  candlestickChart: Partial<ApexOptions>;
-  bubbleChart: Partial<ApexOptions>;
-  bubble3DChart: Partial<ApexOptions>;
-  scatterChart: Partial<ApexOptions>;
-  scatterDateTimeChart: Partial<ApexOptions>;
-  heatmapChart: Partial<ApexOptions>;
-  heatmapRoundedChart: Partial<ApexOptions>;
-  // eslint-disable-next-line
-  chartDB: any;
+  public barChart: Partial<ApexOptions> = {
+    chart: {
+      type: 'bar',
+      height: 360,
+      toolbar: {
+        show: false
+      }
+    },
+    plotOptions: {
+      bar: {
+        borderRadius: 6,
+        columnWidth: '40%'
+      }
+    },
+    dataLabels: {
+      enabled: false
+    },
+    xaxis: {
+      categories: []
+    },
+    grid: {
+      strokeDashArray: 4
+    },
+    series: []
+  };
 
-  // color change while theme color change
-  preset = ['#0050B3', 'var(--primary-500)', '#52C41A'];
-  barChartColor = ['var(--primary-500)', '#52c41a', '#faad14', '#13c2c2'];
-  bHorizontalColor = ['var(--primary-500)', '#52c41a'];
-  pie_color = ['#0050B3', 'var(--primary-500)', '#52C41A', '#FF4D4F', '#FAAD14'];
-  radialColor = ['var(--primary-500)'];
-  customs_color = ['#0050B3', 'var(--primary-500)', '#52C41A', '#FF4D4F'];
+  public pieChart: Partial<ApexOptions> = {
+    chart: {
+      type: 'pie',
+      height: 320
+    },
+    dataLabels: {
+      enabled: false
+    },
+    labels: [],
+    legend: {
+      position: 'bottom'
+    },
+    series: []
+  };
 
-  // constructor
+  public donutChart: Partial<ApexOptions> = {
+    chart: {
+      type: 'donut',
+      height: 320
+    },
+    dataLabels: {
+      enabled: false
+    },
+    labels: [],
+    legend: {
+      position: 'bottom'
+    },
+    series: []
+  };
+
+  public preset: string[] = [];
+  public pie_color: string[] = [];
+
+  public distributionSlices: SubscriberDistributionSliceDto[] = [];
+  public breakdown: SubscriberTypeBreakdownDto[] = [];
+  public breakdownColumns: string[] = [];
+  public totalsList: { key: string; label: string; value: number }[] = [];
+
+  public totalSubscribers = 0;
+  public uniqueSubscribers = 0;
+  public newSubscribers = 0;
+  public returningSubscribers = 0;
+
+  public startDate?: string;
+  public endDate?: string;
+
   constructor() {
     effect(() => {
       this.isDarkTheme(this.themeService.isDarkMode());
@@ -115,7 +164,7 @@ export class ApexChartsComponent implements OnInit {
     this.loadAnalytics();
   }
 
-  getDisplayValue(item: SubscriberTypeBreakdownDto, key: string): string {
+  public getDisplayValue(item: SubscriberTypeBreakdownDto, key: string): string {
     const value = item[key];
 
     if (typeof value === 'number') {
@@ -133,27 +182,31 @@ export class ApexChartsComponent implements OnInit {
     return String(value);
   }
 
-  trackByKey(_: number, item: { key: string }): string {
+  public trackByKey(_: number, item: { key: string }): string {
     return item.key;
   }
 
-  trackBySlice(_: number, item: SubscriberDistributionSliceDto): string {
+  public trackBySlice(_: number, item: SubscriberDistributionSliceDto): string {
     return item.label;
   }
 
-  trackByBreakdown(_: number, item: SubscriberTypeBreakdownDto): string {
+  public trackByBreakdown(_: number, item: SubscriberTypeBreakdownDto): string {
     return `${item.label ?? item.type ?? item.name ?? ''}`;
   }
 
   private loadAnalytics(): void {
     this.dashboardService
       .getSubscribersByType(this.startDate, this.endDate)
-      .pipe(takeUntilDestroyed())
+      .pipe(takeUntil(this.destroy$))
       .subscribe((response) => {
         this.applyAnalytics(response);
       });
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
   private applyAnalytics(data: SubscriberTypeAnalyticsDto): void {
     const subscribersByType = data?.subscribersByType ?? {};
     const distributionSlices = data?.distribution?.slices ?? [];
