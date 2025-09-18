@@ -108,6 +108,29 @@ export class ApexChartsComponent implements OnInit, OnDestroy {
 
   public startDate?: string;
   public endDate?: string;
+  chartDB: typeof ChartDB;
+  barStackedChart: any;
+  barHorizontalChart: any;
+  barHStackChart: any;
+  radialChart: any;
+  customsAngleChart: any;
+  lineChart: any;
+  realTimeChart: any;
+  areaChart: any;
+  dateTimeChart: any;
+  mixedChart: any;
+  lineAreaChart: any;
+  candlestickChart: any;
+  bubbleChart: any;
+  bubble3DChart: any;
+  scatterChart: any;
+  scatterDateTimeChart: any;
+  heatmapChart: any;
+  heatmapRoundedChart: any;
+  barChartColor: string[];
+  bHorizontalColor: string[];
+  radialColor: string[];
+  customs_color: string[];
 
   constructor() {
     effect(() => {
@@ -138,28 +161,35 @@ export class ApexChartsComponent implements OnInit, OnDestroy {
       mixedChart
     } = this.chartDB;
 
-    // eslint-disable-next-line
-    ((this.barChart = barChart),
-      (this.barStackedChart = barStackedChart),
-      (this.barHorizontalChart = barHorizontalChart),
-      (this.barHStackChart = barHStackChart),
-      (this.pieChart = pieChart),
-      (this.donutChart = donutChart),
-      (this.radialChart = radialChart),
-      (this.customsAngleChart = customsAngleChart),
-      (this.lineChart = lineChart),
-      (this.realTimeChart = realTimeChart),
-      (this.areaChart = areaChart),
-      (this.dateTimeChart = dateTimeChart),
-      (this.mixedChart = mixedChart),
-      (this.lineAreaChart = lineAreaChart),
-      (this.candlestickChart = candlestickChart),
-      (this.bubbleChart = bubbleChart),
-      (this.bubble3DChart = bubble3DChart),
-      (this.scatterChart = scatterChart),
-      (this.scatterDateTimeChart = scatterDateTimeChart),
-      (this.heatmapChart = heatmapChart),
-      (this.heatmapRoundedChart = heatmapRoundedChart));
+    // Ensure chart.type is properly typed as ChartType
+    function fixChartType(obj: any): any {
+      if (obj && obj.chart && typeof obj.chart.type === 'string') {
+        obj.chart.type = obj.chart.type as ChartType;
+      }
+      return obj;
+    }
+
+    ((this.barChart = fixChartType(barChart)),
+      (this.barStackedChart = fixChartType(barStackedChart)),
+      (this.barHorizontalChart = fixChartType(barHorizontalChart)),
+      (this.barHStackChart = fixChartType(barHStackChart)),
+      (this.pieChart = fixChartType(pieChart)),
+      (this.donutChart = fixChartType(donutChart)),
+      (this.radialChart = fixChartType(radialChart)),
+      (this.customsAngleChart = fixChartType(customsAngleChart)),
+      (this.lineChart = fixChartType(lineChart)),
+      (this.realTimeChart = fixChartType(realTimeChart)),
+      (this.areaChart = fixChartType(areaChart)),
+      (this.dateTimeChart = fixChartType(dateTimeChart)),
+      (this.mixedChart = fixChartType(mixedChart)),
+      (this.lineAreaChart = fixChartType(lineAreaChart)),
+      (this.candlestickChart = fixChartType(candlestickChart)),
+      (this.bubbleChart = fixChartType(bubbleChart)),
+      (this.bubble3DChart = fixChartType(bubble3DChart)),
+      (this.scatterChart = fixChartType(scatterChart)),
+      (this.scatterDateTimeChart = fixChartType(scatterDateTimeChart)),
+      (this.heatmapChart = fixChartType(heatmapChart)),
+      (this.heatmapRoundedChart = fixChartType(heatmapRoundedChart)));
   }
 
   // lifecycle hooks
@@ -315,6 +345,9 @@ export class ApexChartsComponent implements OnInit, OnDestroy {
     this.uniqueSubscribers = totals['uniqueSubscribers'] ?? 0;
     this.newSubscribers = totals['newSubscribers'] ?? 0;
     this.returningSubscribers = totals['returningSubscribers'] ?? 0;
+  }
+  toDisplayLabel(key: string): any {
+    throw new Error('Method not implemented.');
   }
 
   private resetColorPalette(): void {
