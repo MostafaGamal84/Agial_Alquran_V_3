@@ -228,10 +228,10 @@ export class ApexChartsComponent implements OnInit {
       value
     }));
 
-    this.totalSubscribers = totals.totalSubscribers ?? 0;
-    this.uniqueSubscribers = totals.uniqueSubscribers ?? 0;
-    this.newSubscribers = totals.newSubscribers ?? 0;
-    this.returningSubscribers = totals.returningSubscribers ?? 0;
+    this.totalSubscribers = totals['totalSubscribers'] ?? 0;
+    this.uniqueSubscribers = totals['uniqueSubscribers'] ?? 0;
+    this.newSubscribers = totals['newSubscribers'] ?? 0;
+    this.returningSubscribers = totals['returningSubscribers'] ?? 0;
   }
 
   private resetColorPalette(): void {

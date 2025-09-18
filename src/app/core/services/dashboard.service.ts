@@ -1,5 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
+import type { ApexAxisChartSeries, ApexChart, ApexNonAxisChartSeries, ApexXAxis } from 'ng-apexcharts';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
@@ -10,9 +11,9 @@ export interface SubscriberTypeSeriesDto {
 }
 
 export interface SubscriberByTypeChartDto {
-  chart?: Record<string, unknown>;
-  xaxis?: Record<string, unknown>;
-  series?: SubscriberTypeSeriesDto[] | number[];
+  chart?: ApexChart;
+  xaxis?: ApexXAxis;
+  series?: ApexAxisChartSeries | ApexNonAxisChartSeries;
 }
 
 export interface SubscriberDistributionSliceDto {
