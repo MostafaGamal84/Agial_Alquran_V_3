@@ -548,6 +548,7 @@ export class TeacherSalaryComponent
   }
 
   loadMonthlySummary(): void {
+
     const monthParam = this.toMonthParam(this.selectedMonth.value);
     const teacherId = this.canManagePayments ? this.selectedTeacher.value : null;
     this.summaryLoading = true;
