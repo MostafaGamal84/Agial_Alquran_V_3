@@ -1,0 +1,348 @@
+<mat-drawer-container class="teacher-salary-container">
+  <mat-drawer
+    #detailDrawer
+    class="teacher-salary-drawer"
+    mode="over"
+    position="end"
+    (closedStart)="onDrawerClosed()"
+  >
+    <div class="drawer-content">
+      <div class="drawer-header">
+        <div>
+          <h3 class="drawer-title">Invoice details</h3>
+          @if (selectedInvoice?.teacherName || detailSummary?.teacherName) {
+            <p class="drawer-subtitle">
+              {{ selectedInvoice?.teacherName ?? detailSummary?.teacherName }}
+            </p>
+          }
+        </div>
+        <button mat-icon-button type="button" (click)="closeDetails()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <mat-divider></mat-divider>
+
+      @if (detailsLoading) {
+        <div class="drawer-loading">
+          <mat-progress-spinner diameter="40" mode="indeterminate"></mat-progress-spinner>
+        </div>
+      } @else if (invoiceDetails || selectedInvoice) {
+        <div class="drawer-section">
+          <h4>Invoice</h4>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="label">Month</span>
+              <span class="value">{{ formatMonth(selectedInvoice) }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Salary</span>
+              <span class="value">{{ formatSalary(selectedInvoice) }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Status</span>
+              <span class="value">{{ getStatusLabel(selectedInvoice) }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Paid at</span>
+              <span class="value">
+                @if (selectedInvoice?.payedAt) {
+                  {{ selectedInvoice?.payedAt | date: 'medium' }}
+                } @else {
+                  —
+                }
+              </span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Receipt</span>
+              <span class="value">
+                @if (selectedInvoice && getReceiptUrl(selectedInvoice)) {
+                  <a
+                    [href]="getReceiptUrl(selectedInvoice)"
+                    target="_blank"
+                    rel="noopener"
+                  >
+                    View receipt
+                  </a>
+                } @else {
+                  —
+                }
+              </span>
+            </div>
+          </div>
+        </div>
+        <mat-divider></mat-divider>
+        <div class="drawer-section">
+          <div class="section-header">
+            <h4>Monthly summary</h4>
+          </div>
+          @if (detailSummaryMetrics.length > 0) {
+            <div class="summary-metrics">
+              @for (metric of detailSummaryMetrics; track metric.label) {
+                <div class="metric-card">
+                  <span class="metric-label">{{ metric.label }}</span>
+                  <span class="metric-value">{{ formatMetricValue(metric) }}</span>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="empty-state">No summary data available for this invoice.</p>
+          }
+        </div>
+      } @else {
+        <div class="drawer-empty">
+          <p>Select an invoice to view its details.</p>
+        </div>
+      }
+    </div>
+  </mat-drawer>
+
+  <mat-drawer-content>
+    <div class="page-header">
+      <div>
+        <h2 class="page-title">Teacher Salary</h2>
+        <p class="page-subtitle">
+          Review salary invoices, update payment status, and monitor monthly performance.
+        </p>
+      </div>
+      @if (canGenerateInvoices) {
+        <button
+          mat-flat-button
+          color="primary"
+          type="button"
+          (click)="onGenerateMonthly()"
+          [disabled]="manualGenerationLoading"
+        >
+          <mat-icon>cached</mat-icon>
+          Generate monthly invoices
+        </button>
+      }
+    </div>
+
+    @if (generationResult) {
+      <mat-card class="generation-card">
+        <div class="generation-content">
+          <div class="generation-title">Last generation summary</div>
+          <div class="generation-stats">
+            <span><strong>{{ generationResult?.createdCount ?? 0 }}</strong> created</span>
+            <span><strong>{{ generationResult?.updatedCount ?? 0 }}</strong> updated</span>
+            <span><strong>{{ generationResult?.skippedCount ?? 0 }}</strong> skipped</span>
+          </div>
+        </div>
+      </mat-card>
+    }
+
+    <mat-card class="filters-card">
+      <div class="filters-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Month</mat-label>
+          <input matInput [matDatepicker]="monthPicker" [formControl]="selectedMonth" />
+          <mat-datepicker-toggle matIconSuffix [for]="monthPicker"></mat-datepicker-toggle>
+          <mat-datepicker
+            #monthPicker
+            startView="multi-year"
+            (monthSelected)="setMonth($event, monthPicker)"
+            panelClass="month-picker"
+          ></mat-datepicker>
+        </mat-form-field>
+
+        @if (canManagePayments) {
+          <mat-form-field appearance="outline" class="teacher-select">
+            <mat-label>Teacher</mat-label>
+            <mat-select [formControl]="selectedTeacher" [disabled]="teacherLoading">
+              <mat-option [value]="null">All teachers</mat-option>
+              @for (teacher of teachers; track teacher.id) {
+                <mat-option [value]="teacher.id">{{ teacher.fullName }}</mat-option>
+              }
+            </mat-select>
+            @if (teacherLoading) {
+              <mat-progress-spinner
+                matSuffix
+                diameter="20"
+                mode="indeterminate"
+              ></mat-progress-spinner>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="teacher-search">
+            <mat-label>Search teacher</mat-label>
+            <input
+              matInput
+              placeholder="Search by name or email"
+              [formControl]="teacherSearchControl"
+            />
+            @if (teacherSearchControl.value) {
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                (click)="clearTeacherSearch()"
+                [disabled]="teacherLoading"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
+            }
+          </mat-form-field>
+
+          <button
+            mat-stroked-button
+            type="button"
+            class="refresh-button"
+            (click)="refreshTeachers()"
+            [disabled]="teacherLoading"
+          >
+            <mat-icon>refresh</mat-icon>
+            Refresh
+          </button>
+        } @else {
+          <div class="teacher-context">
+            <mat-icon>person</mat-icon>
+            <span>Showing salary information for your account.</span>
+          </div>
+        }
+
+        <button
+          mat-stroked-button
+          color="primary"
+          type="button"
+          class="reload-button"
+          (click)="reloadAll()"
+          [disabled]="invoicesLoading || summaryLoading"
+        >
+          <mat-icon>refresh</mat-icon>
+          Reload
+        </button>
+      </div>
+    </mat-card>
+
+    @if (invoicesLoading) {
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    }
+
+    <mat-card class="table-card">
+      <div class="table-container">
+        <table mat-table [dataSource]="dataSource" class="teacher-salary-table">
+          <ng-container matColumnDef="teacher">
+            <th mat-header-cell *matHeaderCellDef>Teacher</th>
+            <td mat-cell *matCellDef="let row">
+              <div class="cell-primary">{{ row.teacherName ?? '—' }}</div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="month">
+            <th mat-header-cell *matHeaderCellDef>Month</th>
+            <td mat-cell *matCellDef="let row">{{ getMonthDisplay(row) }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="salary">
+            <th mat-header-cell *matHeaderCellDef>Salary</th>
+            <td mat-cell *matCellDef="let row">{{ formatSalary(row) }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let row">
+              <span
+                class="status-badge"
+                [class.status-paid]="isInvoicePaid(row)"
+                [class.status-unpaid]="!isInvoicePaid(row)"
+              >
+                <mat-icon>{{ isInvoicePaid(row) ? 'check_circle' : 'hourglass_bottom' }}</mat-icon>
+                {{ getStatusLabel(row) }}
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="paidAt">
+            <th mat-header-cell *matHeaderCellDef>Paid at</th>
+            <td mat-cell *matCellDef="let row">
+              @if (row.payedAt) {
+                {{ row.payedAt | date: 'medium' }}
+              } @else {
+                —
+              }
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="receipt">
+            <th mat-header-cell *matHeaderCellDef>Receipt</th>
+            <td mat-cell *matCellDef="let row">
+              @if (getReceiptUrl(row)) {
+                <a
+                  [href]="getReceiptUrl(row)"
+                  target="_blank"
+                  rel="noopener"
+                  (click)="$event.stopPropagation()"
+                >
+                  View
+                </a>
+              } @else {
+                —
+              }
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="toggle">
+            <th mat-header-cell *matHeaderCellDef class="toggle-header">Paid?</th>
+            <td mat-cell *matCellDef="let row" class="toggle-cell">
+              <mat-slide-toggle
+                color="primary"
+                [checked]="isInvoicePaid(row)"
+                [disabled]="isStatusUpdating(row.id)"
+                (click)="$event.stopPropagation()"
+                (change)="onTogglePaid($event, row)"
+              ></mat-slide-toggle>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr
+            mat-row
+            *matRowDef="let row; columns: displayedColumns"
+            (click)="openInvoice(row)"
+            [class.is-selected]="selectedInvoice?.id === row.id"
+          ></tr>
+        </table>
+      </div>
+      <mat-paginator [pageSize]="10" [pageSizeOptions]="[5, 10, 25, 50]" showFirstLastButtons></mat-paginator>
+      @if (!invoicesLoading && dataSource.data.length === 0) {
+        <div class="empty-state">No invoices found for the selected filters.</div>
+      }
+    </mat-card>
+
+    <mat-card class="summary-card">
+      <div class="summary-header">
+        <div>
+          <h3>Monthly summary</h3>
+          <p class="summary-subtitle">
+            Attendance and salary overview for
+            <strong>{{ formatSummaryMonth() }}</strong>.
+          </p>
+        </div>
+        <button
+          mat-icon-button
+          type="button"
+          (click)="loadMonthlySummary()"
+          [disabled]="summaryLoading"
+        >
+          <mat-icon>refresh</mat-icon>
+        </button>
+      </div>
+      @if (summaryLoading) {
+        <div class="summary-loading">
+          <mat-progress-spinner diameter="40" mode="indeterminate"></mat-progress-spinner>
+        </div>
+      } @else if (summaryMetrics.length > 0) {
+        <div class="summary-grid">
+          @for (metric of summaryMetrics; track metric.label) {
+            <div class="summary-card-item">
+              <span class="metric-label">{{ metric.label }}</span>
+              <span class="metric-value">{{ formatMetricValue(metric) }}</span>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="empty-state">No summary data available for this month.</div>
+      }
+    </mat-card>
+  </mat-drawer-content>
+</mat-drawer-container>

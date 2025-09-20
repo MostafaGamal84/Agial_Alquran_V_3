@@ -1,0 +1,315 @@
+.teacher-salary-container {
+  height: 100%;
+  min-height: 600px;
+}
+
+.teacher-salary-drawer {
+  width: min(420px, 100vw);
+  max-width: 420px;
+  padding: 0;
+}
+
+.drawer-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+}
+
+.drawer-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.drawer-subtitle {
+  margin: 0;
+  color: rgba(0, 0, 0, 0.54);
+  font-size: 0.875rem;
+}
+
+.drawer-loading,
+.drawer-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.drawer-section {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.detail-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detail-item .label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(0, 0, 0, 0.54);
+}
+
+.detail-item .value {
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.87);
+  word-break: break-word;
+}
+
+.summary-metrics {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+.metric-card {
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  background: rgba(63, 81, 181, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(0, 0, 0, 0.54);
+}
+
+.metric-value {
+  font-weight: 600;
+  font-size: 1rem;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+.page-subtitle {
+  margin: 0.25rem 0 0;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.filters-card {
+  margin-bottom: 1.5rem;
+}
+
+.filters-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+.teacher-select,
+.teacher-search {
+  min-width: 220px;
+}
+
+.teacher-context {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgba(0, 0, 0, 0.6);
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background-color: rgba(63, 81, 181, 0.08);
+}
+
+.refresh-button,
+.reload-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.table-card {
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.teacher-salary-table {
+  width: 100%;
+  min-width: 720px;
+}
+
+.teacher-salary-table .cell-primary {
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  background-color: rgba(158, 158, 158, 0.15);
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.status-badge mat-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.status-badge.status-paid {
+  background-color: rgba(46, 125, 50, 0.15);
+  color: #2e7d32;
+}
+
+.status-badge.status-unpaid {
+  background-color: rgba(229, 57, 53, 0.12);
+  color: #c62828;
+}
+
+.toggle-header,
+.toggle-cell {
+  text-align: center;
+}
+
+.toggle-cell mat-slide-toggle {
+  pointer-events: auto;
+}
+
+.teacher-salary-table tr.mat-row {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.teacher-salary-table tr.mat-row:hover {
+  background-color: rgba(63, 81, 181, 0.08);
+}
+
+.teacher-salary-table tr.mat-row.is-selected {
+  background-color: rgba(63, 81, 181, 0.12);
+}
+
+.empty-state {
+  padding: 1.5rem;
+  text-align: center;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.summary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.summary-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.summary-subtitle {
+  margin: 0.25rem 0 0;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.summary-loading {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 0;
+}
+
+.summary-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.summary-card-item {
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background: rgba(63, 81, 181, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.generation-card {
+  margin-bottom: 1.5rem;
+}
+
+.generation-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.generation-title {
+  font-weight: 600;
+}
+
+.generation-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  color: rgba(0, 0, 0, 0.7);
+}
+
+@media (max-width: 768px) {
+  .teacher-salary-table {
+    min-width: 100%;
+  }
+
+  .filters-grid {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .refresh-button,
+  .reload-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
