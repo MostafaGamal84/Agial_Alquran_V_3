@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
   Component,
@@ -6,22 +7,35 @@ import {
   ViewChild,
   inject
 } from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatDrawer } from '@angular/material/sidenav';
-import { MatDatepicker } from '@angular/material/datepicker';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
+import { MatDatepicker, MatDatepickerModule } from '@angular/material/datepicker';
 import {
   DateAdapter,
   MAT_DATE_FORMATS,
   MAT_DATE_LOCALE
 } from '@angular/material/core';
 import {
+  MatMomentDateModule,
   MomentDateAdapter,
   MAT_MOMENT_DATE_ADAPTER_OPTIONS
 } from '@angular/material-moment-adapter';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import moment, { Moment } from 'moment';
-import { MatSlideToggleChange } from '@angular/material/slide-toggle';
+import {
+  MatSlideToggleChange,
+  MatSlideToggleModule
+} from '@angular/material/slide-toggle';
 import { Subscription } from 'rxjs';
 import {
   debounceTime,
@@ -65,6 +79,26 @@ interface SummaryMetric {
 
 @Component({
   selector: 'app-teacher-salary',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatSidenavModule,
+    MatIconModule,
+    MatDividerModule,
+    MatButtonModule,
+    MatProgressSpinnerModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatDatepickerModule,
+    MatMomentDateModule,
+    MatSelectModule,
+    MatProgressBarModule,
+    MatTableModule,
+    MatSlideToggleModule,
+    MatPaginatorModule
+  ],
   templateUrl: './teacher-salary.component.html',
   styleUrls: ['./teacher-salary.component.scss'],
   providers: [
@@ -513,7 +547,8 @@ export class TeacherSalaryComponent
       });
   }
 
-  private loadMonthlySummary(): void {
+  loadMonthlySummary(): void {
+
     const monthParam = this.toMonthParam(this.selectedMonth.value);
     const teacherId = this.canManagePayments ? this.selectedTeacher.value : null;
     this.summaryLoading = true;
