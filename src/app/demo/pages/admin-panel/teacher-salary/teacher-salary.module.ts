@@ -6,7 +6,7 @@ import { TeacherSalaryRoutingModule } from './teacher-salary-routing.module';
 import { TeacherSalaryComponent } from './teacher-salary.component';
 
 @NgModule({
-  declarations: [TeacherSalaryComponent],
-  imports: [CommonModule, SharedModule, TeacherSalaryRoutingModule]
+  imports: [CommonModule, SharedModule, TeacherSalaryComponent, TeacherSalaryRoutingModule]
+
 })
 export class TeacherSalaryModule {}
