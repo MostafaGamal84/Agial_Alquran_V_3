@@ -7,5 +7,6 @@ import { TeacherSalaryComponent } from './teacher-salary.component';
 
 @NgModule({
   imports: [CommonModule, SharedModule, TeacherSalaryComponent, TeacherSalaryRoutingModule]
+
 })
 export class TeacherSalaryModule {}
