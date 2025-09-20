@@ -619,6 +619,18 @@ export const menus: Navigation[] = [
           //   ]
           // }
         ]
+      },
+      {
+        id: 'teacher-salary',
+        title: 'Teacher Salary',
+        type: 'item',
+        icon: '#custom-dollar-square',
+        url: '/teacher-salary',
+        role: [
+          UserTypesEnum.Admin.toString(),
+          UserTypesEnum.Manager.toString(),
+          UserTypesEnum.Teacher.toString()
+        ]
       }
     ]
   },

@@ -75,6 +75,16 @@ const routes: Routes = [
         data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager] }
       },
       {
+        path: 'teacher-salary',
+        loadChildren: () =>
+          import('./demo/pages/admin-panel/teacher-salary/teacher-salary.module').then(
+            (m) => m.TeacherSalaryModule
+          ),
+        data: {
+          roles: [UserTypesEnum.Admin, UserTypesEnum.Manager, UserTypesEnum.Teacher]
+        }
+      },
+      {
         path: 'application',
         loadChildren: () => import('./demo/pages/application/application.module').then((m) => m.ApplicationModule),
         data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager] }
