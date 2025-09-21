@@ -124,16 +124,21 @@ export class TeacherSalaryService {
   ): Observable<
     ApiResponse<TeacherSalaryInvoice | TeacherSalaryInvoiceDetails | boolean | null>
   > {
-    const formData = new FormData();
-    Object.entries(model).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        formData.append(key, String(value));
-      }
-    });
+    const createFormData = () => {
+      const formData = new FormData();
+      Object.entries(model).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          formData.append(key, String(value));
+        }
+      });
+      return formData;
+    };
 
-    return this.http.patch<
+    const endpoint = `${this.baseUrl}/invoices/${model.id}/payment`;
+
+    return this.http.post<
       ApiResponse<TeacherSalaryInvoice | TeacherSalaryInvoiceDetails | boolean | null>
-    >(`${this.baseUrl}/invoices/${model.id}/payment`, formData);
+    >(endpoint, createFormData());
   }
 
   uploadInvoiceReceipt(
