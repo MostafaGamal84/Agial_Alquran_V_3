@@ -291,8 +291,8 @@
                 type="button"
                 color="primary"
                 class="action-button"
-                matTooltip="Generate & upload invoice PDF"
-                aria-label="Generate invoice PDF"
+                matTooltip="Generate, open, and upload printable invoice"
+                aria-label="Generate printable invoice"
                 (click)="onGenerateInvoiceReceipt($event, row)"
                 (mousedown)="$event.preventDefault()"
                 [disabled]="
@@ -302,7 +302,7 @@
                 @if (isReceiptUploading(row.id)) {
                   <mat-icon class="spin">autorenew</mat-icon>
                 } @else {
-                  <mat-icon>picture_as_pdf</mat-icon>
+                  <mat-icon>print</mat-icon>
                 }
               </button>
             </td>
