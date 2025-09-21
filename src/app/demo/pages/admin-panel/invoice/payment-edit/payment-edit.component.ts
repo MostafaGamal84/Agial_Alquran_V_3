@@ -5,7 +5,13 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { StudentPaymentDto, CurrencyEnum, UpdatePaymentDto, StudentPaymentService } from 'src/app/@theme/services/student-payment.service';
+import { catchError, map, of, switchMap } from 'rxjs';
+import {
+  StudentPaymentDto,
+  CurrencyEnum,
+  UpdatePaymentDto,
+  StudentPaymentService
+} from 'src/app/@theme/services/student-payment.service';
 
 @Component({
   selector: 'app-payment-edit',
@@ -36,27 +42,55 @@ export class PaymentEditComponent {
   }
 
   confirm() {
-    const dto: UpdatePaymentDto = {
-      id: this.data.invoiceId,
-      amount: this.form.get('amount')?.value ?? undefined,
-      payStatue: true,
-      isCancelled: false
-    };
-    this.service.updatePayment(dto, this.receiptFile).subscribe(() => {
-      this.dialogRef.close(true);
-    });
+    this.submitUpdate(true, false);
   }
 
   cancel() {
+    this.submitUpdate(false, true);
+  }
+
+  private submitUpdate(payStatue: boolean, isCancelled: boolean): void {
     const dto: UpdatePaymentDto = {
       id: this.data.invoiceId,
       amount: this.form.get('amount')?.value ?? undefined,
-      payStatue: false,
-      isCancelled: true
+      payStatue,
+      isCancelled
     };
-    this.service.updatePayment(dto, this.receiptFile).subscribe(() => {
-      this.dialogRef.close(true);
-    });
+
+    const receipt$ = this.receiptFile
+      ? of(this.receiptFile)
+      : this.service.downloadPaymentReceipt(this.data.invoiceId).pipe(
+          map((blob) => this.toReceiptFile(blob)),
+          catchError((error) => {
+            console.error('Failed to load receipt PDF for payment update.', error);
+            return of(undefined);
+          })
+        );
+
+    receipt$
+      .pipe(switchMap((receipt) => this.service.updatePayment(dto, receipt)))
+      .subscribe({
+        next: () => this.dialogRef.close(true),
+        error: (error) =>
+          console.error('Failed to update payment status with receipt attachment.', error)
+      });
+  }
+
+  private toReceiptFile(blob: Blob): File | undefined {
+    if (!blob || blob.size === 0) {
+      return undefined;
+    }
+
+    const type = blob.type && blob.type !== '' ? blob.type : 'application/pdf';
+    const timestamp = new Date().toISOString().split('T')[0];
+    const fileName = `payment-receipt-${this.data.invoiceId}-${timestamp}.pdf`;
+
+    try {
+      return new File([blob], fileName, { type });
+    } catch (error) {
+      console.error('Failed to construct receipt file from blob.', error);
+      return undefined;
+    }
   }
 }
 
