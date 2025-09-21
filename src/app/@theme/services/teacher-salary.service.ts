@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
@@ -91,6 +91,7 @@ export interface GenerateMonthlyResponse {
 @Injectable({ providedIn: 'root' })
 export class TeacherSalaryService {
   private http = inject(HttpClient);
+  private readonly baseUrl = `${environment.apiUrl}/admin/teacher-salary`;
 
   getInvoices(
     month?: string | null,
@@ -105,7 +106,7 @@ export class TeacherSalaryService {
     }
 
     return this.http.get<ApiResponse<TeacherSalaryInvoice[]>>(
-      `${environment.apiUrl}/api/TeacherSallary/Invoices`,
+      `${this.baseUrl}/invoices`,
       { params }
     );
   }
@@ -114,13 +115,12 @@ export class TeacherSalaryService {
     invoiceId: number
   ): Observable<ApiResponse<TeacherSalaryInvoiceDetails>> {
     return this.http.get<ApiResponse<TeacherSalaryInvoiceDetails>>(
-      `${environment.apiUrl}/api/TeacherSallary/Invoice/${invoiceId}/Details`
+      `${this.baseUrl}/invoices/${invoiceId}/details`
     );
   }
 
   updatePayment(
-    model: UpdateTeacherPaymentDto,
-    receipt?: ReceiptUpload
+    model: UpdateTeacherPaymentDto
   ): Observable<
     ApiResponse<TeacherSalaryInvoice | TeacherSalaryInvoiceDetails | boolean | null>
   > {
@@ -131,25 +131,32 @@ export class TeacherSalaryService {
       }
     });
 
-    if (receipt) {
-      formData.append('ReceiptPath', receipt.file, receipt.fileName);
-    }
-
-    return this.http.post<
+    return this.http.patch<
       ApiResponse<TeacherSalaryInvoice | TeacherSalaryInvoiceDetails | boolean | null>
-    >(
-      `${environment.apiUrl}/api/TeacherSallary/UpdatePayment`,
-      formData
-    );
+    >(`${this.baseUrl}/invoices/${model.id}/payment`, formData);
   }
 
-  getPaymentReceipt(invoiceId: number): Observable<HttpResponse<Blob>> {
-    const params = new HttpParams().set('invoiceId', invoiceId.toString());
-    return this.http.get(`${environment.apiUrl}/api/TeacherSallary/GetPaymentReceipt`, {
-      params,
-      observe: 'response',
-      responseType: 'blob'
-    });
+  uploadInvoiceReceipt(
+    invoiceId: number,
+    receipt: ReceiptUpload,
+    additionalFields?: Partial<UpdateTeacherPaymentDto>
+  ): Observable<ApiResponse<TeacherSalaryInvoice | null>> {
+    const formData = new FormData();
+    formData.append('invoiceId', invoiceId.toString());
+    formData.append('receipt', receipt.file, receipt.fileName);
+
+    if (additionalFields) {
+      Object.entries(additionalFields).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          formData.append(key, String(value));
+        }
+      });
+    }
+
+    return this.http.post<ApiResponse<TeacherSalaryInvoice | null>>(
+      `${this.baseUrl}/invoices/${invoiceId}/receipt`,
+      formData
+    );
   }
 
   getMonthlySummary(
@@ -165,7 +172,7 @@ export class TeacherSalaryService {
     }
 
     return this.http.get<ApiResponse<TeacherMonthlySummary | null>>(
-      `${environment.apiUrl}/api/TeacherSallary/MonthlySummary`,
+      `${this.baseUrl}/monthly-summary`,
       { params }
     );
   }
@@ -179,7 +186,7 @@ export class TeacherSalaryService {
     }
 
     return this.http.post<ApiResponse<GenerateMonthlyResponse | null>>(
-      `${environment.apiUrl}/api/TeacherSallary/GenerateMonthly`,
+      `${this.baseUrl}/generate`,
       {},
       { params }
     );

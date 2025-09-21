@@ -210,12 +210,39 @@
 }
 
 .toggle-header,
-.toggle-cell {
+.toggle-cell,
+.actions-header,
+.actions-cell {
   text-align: center;
 }
 
 .toggle-cell mat-slide-toggle {
   pointer-events: auto;
+}
+
+.actions-cell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.action-button {
+  --button-size: 36px;
+  width: var(--button-size);
+  height: var(--button-size);
+}
+
+.action-button .spin {
+  animation: invoice-spin 0.9s linear infinite;
+}
+
+@keyframes invoice-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .teacher-salary-table tr.mat-row {
