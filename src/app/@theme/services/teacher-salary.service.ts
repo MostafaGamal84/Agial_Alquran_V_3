@@ -136,23 +136,9 @@ export class TeacherSalaryService {
 
     const endpoint = `${this.baseUrl}/invoices/${model.id}/payment`;
 
-    return this.http
-      .patch<
-        ApiResponse<TeacherSalaryInvoice | TeacherSalaryInvoiceDetails | boolean | null>
-      >(endpoint, createFormData())
-      .pipe(
-        catchError((error: HttpErrorResponse) => {
-          if (error.status === 405) {
-            return this.http.post<
-              ApiResponse<
-                TeacherSalaryInvoice | TeacherSalaryInvoiceDetails | boolean | null
-              >
-            >(endpoint, createFormData());
-          }
-
-          return throwError(() => error);
-        })
-      );
+    return this.http.post<
+      ApiResponse<TeacherSalaryInvoice | TeacherSalaryInvoiceDetails | boolean | null>
+    >(endpoint, createFormData());
   }
 
   uploadInvoiceReceipt(
