@@ -89,7 +89,6 @@ interface SummaryMetric {
   type: 'number' | 'currency' | 'percentage' | 'text';
   suffix?: string;
 }
-
 interface SummaryCardItem {
   titleEn: string;
   titleAr: string;
@@ -1260,7 +1259,6 @@ export class TeacherSalaryComponent
   private buildInvoicePrintHtml(context: InvoicePrintContext): string {
     const invoice = context.invoice;
     const summary = context.summary;
-
     const invoiceNumberValue = invoice.id ?? null;
     const invoiceNumber =
       invoiceNumberValue !== null ? this.numberFormatter.format(invoiceNumberValue) : '—';
@@ -1318,10 +1316,7 @@ export class TeacherSalaryComponent
       'totalAbsence',
       'missedSessions'
     ]);
-    const sessionCount = this.resolveSummaryNumber(summary, [
-      'sessionCount',
-      'lessonsCount'
-    ]);
+    const sessionCount = this.resolveSummaryNumber(summary, ['sessionCount', 'lessonsCount']);
     const teachingMinutes = this.resolveSummaryNumber(summary, [
       'teachingMinutes',
       'totalMinutes'
@@ -1839,7 +1834,6 @@ ${styles}
       return this.numberFormatter.format(value);
     }
   }
-
   private formatArabicCurrency(value: number | null | undefined): string {
     if (value === null || value === undefined || Number.isNaN(value)) {
       return '—';
