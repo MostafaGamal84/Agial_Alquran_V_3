@@ -134,7 +134,7 @@ export class TeacherSalaryService {
       return formData;
     };
 
-    const endpoint = `${this.baseUrl}/invoices/${model.id}/payment`;
+    const endpoint = `${environment.apiUrl}/api/TeacherSallary/UpdatePayment`;
 
     return this.http.post<
       ApiResponse<TeacherSalaryInvoice | TeacherSalaryInvoiceDetails | boolean | null>
