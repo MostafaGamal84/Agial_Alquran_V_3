@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import {
   AfterViewInit,
   Component,
@@ -40,7 +41,8 @@ import { Subscription } from 'rxjs';
 import {
   debounceTime,
   distinctUntilChanged,
-  finalize
+  finalize,
+  switchMap
 } from 'rxjs/operators';
 
 import {
@@ -49,7 +51,9 @@ import {
   TeacherMonthlySummary,
   TeacherSalaryInvoiceDetails,
   ApiError,
-  GenerateMonthlyResponse
+  GenerateMonthlyResponse,
+  UpdateTeacherPaymentDto,
+  ReceiptUpload
 } from 'src/app/@theme/services/teacher-salary.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import {
@@ -131,6 +135,10 @@ export class TeacherSalaryComponent
     currency: 'USD',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
+  });
+  private readonly dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
+    dateStyle: 'medium',
+    timeStyle: 'short'
   });
 
   readonly selectedMonth = new FormControl<Moment>(
@@ -267,15 +275,28 @@ export class TeacherSalaryComponent
   ): void {
     event.source.checked = event.checked;
     const invoiceId = invoice.id;
+    if (!invoiceId) {
+      event.source.checked = !event.checked;
+      this.toastService.error('Invoice identifier was invalid.');
+      return;
+    }
+
     const newValue = event.checked;
-    const payload = {
-      isPayed: newValue,
-      payedAt: newValue ? undefined : null
-    };
+    const payload = this.buildUpdatePaymentPayload(invoice, newValue);
     this.updatingStatusIds.add(invoiceId);
 
-    this.teacherSalaryService
-      .updateInvoiceStatus(invoiceId, payload)
+    const update$ = newValue
+      ? this.teacherSalaryService
+          .getPaymentReceipt(invoiceId)
+          .pipe(
+            switchMap((response) => {
+              const receipt = this.buildReceiptUpload(response, invoice);
+              return this.teacherSalaryService.updatePayment(payload, receipt);
+            })
+          )
+      : this.teacherSalaryService.updatePayment(payload);
+
+    update$
       .pipe(
         finalize(() => {
           this.updatingStatusIds.delete(invoiceId);
@@ -299,9 +320,16 @@ export class TeacherSalaryComponent
             );
           }
         },
-        error: () => {
+        error: async (error) => {
           event.source.checked = !newValue;
-          this.toastService.error('Failed to update invoice payment status.');
+          if (newValue && this.isReceiptDownloadError(error)) {
+            await this.notifyReceiptDownloadFailure(error);
+          } else {
+            await this.notifyHttpError(
+              error,
+              'Failed to update invoice payment status.'
+            );
+          }
         }
       });
   }
@@ -374,6 +402,38 @@ export class TeacherSalaryComponent
     } catch {
       return value.toFixed(2);
     }
+  }
+
+  private formatDateTime(value: unknown): string {
+    if (value === null || value === undefined || value === '') {
+      return '—';
+    }
+
+    let date: Date | null = null;
+    if (value instanceof Date) {
+      date = value;
+    } else if (typeof value === 'number' && Number.isFinite(value)) {
+      date = new Date(value);
+    } else if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (trimmed.length === 0) {
+        return '—';
+      }
+      const parsed = new Date(trimmed);
+      if (!Number.isNaN(parsed.getTime())) {
+        date = parsed;
+      }
+    }
+
+    if (date && !Number.isNaN(date.getTime())) {
+      try {
+        return this.dateTimeFormatter.format(date);
+      } catch {
+        return date.toLocaleString();
+      }
+    }
+
+    return String(value);
   }
 
   formatMetricValue(metric: SummaryMetric): string {
@@ -818,4 +878,189 @@ export class TeacherSalaryComponent
   private findInvoiceById(id: number): TeacherSalaryInvoice | null {
     return this.dataSource.data.find((invoice) => invoice.id === id) ?? null;
   }
+
+  private buildUpdatePaymentPayload(
+    invoice: TeacherSalaryInvoice,
+    isPaid: boolean
+  ): UpdateTeacherPaymentDto {
+    const payload: UpdateTeacherPaymentDto = {
+      id: invoice.id
+    };
+
+    const amount = this.getSalaryAmount(invoice);
+    if (amount !== null) {
+      payload.amount = amount;
+    }
+
+    if (isPaid) {
+      payload.payStatue = true;
+      payload.isCancelled = false;
+    } else {
+      payload.payStatue = false;
+      payload.isCancelled = true;
+    }
+
+    return payload;
+  }
+
+  private buildReceiptUpload(
+    response: HttpResponse<Blob>,
+    invoice: TeacherSalaryInvoice
+  ): ReceiptUpload {
+    const blob = response.body;
+    if (!blob || blob.size === 0) {
+      throw new Error('RECEIPT_UNAVAILABLE');
+    }
+
+    const fileNameFromHeader = this.extractFileNameFromContentDisposition(
+      response.headers.get('content-disposition')
+    );
+    const fileName = fileNameFromHeader ?? this.buildReceiptFileName(invoice);
+    const type = blob.type && blob.type.trim().length > 0 ? blob.type : 'application/pdf';
+    const normalizedBlob = blob.type && blob.type.trim().length > 0 ? blob : new Blob([blob], { type });
+
+    return {
+      file: normalizedBlob,
+      fileName
+    };
+  }
+
+  private extractFileNameFromContentDisposition(
+    headerValue: string | null
+  ): string | null {
+    if (!headerValue) {
+      return null;
+    }
+    const match = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/i.exec(headerValue);
+    if (!match) {
+      return null;
+    }
+    let fileName = match[1];
+    if (!fileName) {
+      return null;
+    }
+    fileName = fileName.replace(/^['"]|['"]$/g, '');
+    try {
+      return decodeURIComponent(fileName);
+    } catch {
+      return fileName;
+    }
+  }
+
+  private buildReceiptFileName(invoice: TeacherSalaryInvoice): string {
+    const teacherPart = this.toSlug(invoice.teacherName ?? 'teacher');
+    const monthDisplay = this.formatMonth(invoice);
+    const monthPart = this.toSlug(monthDisplay);
+    const teacher = teacherPart.length > 0 ? teacherPart : 'teacher';
+    const month = monthPart.length > 0 ? monthPart : 'month';
+    const idPart = invoice.id ? `-${invoice.id}` : '';
+    return `teacher-invoice-${teacher}-${month}${idPart}.pdf`;
+  }
+
+  private toSlug(value: string): string {
+    const normalized = value
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    return normalized;
+  }
+
+  private isReceiptDownloadError(error: unknown): boolean {
+    if (error instanceof HttpErrorResponse) {
+      return error.url?.includes('/GetPaymentReceipt') ?? false;
+    }
+    if (error instanceof Error) {
+      return error.message === 'RECEIPT_UNAVAILABLE';
+    }
+    return false;
+  }
+
+  private async notifyReceiptDownloadFailure(error: unknown): Promise<void> {
+    if (error instanceof Error && error.message === 'RECEIPT_UNAVAILABLE') {
+      this.toastService.error('Receipt file for this invoice was unavailable.');
+      return;
+    }
+    if (error instanceof HttpErrorResponse) {
+      const message = await this.extractHttpErrorMessage(error);
+      if (message && message.trim().length > 0) {
+        this.toastService.error(message);
+        return;
+      }
+      if (error.status === 404) {
+        this.toastService.error('No stored receipt was found for this invoice.');
+        return;
+      }
+      if (error.status === 500) {
+        this.toastService.error('The stored receipt could not be read.');
+        return;
+      }
+    }
+    this.toastService.error('Failed to retrieve the teacher payment receipt.');
+  }
+
+  private async notifyHttpError(
+    error: unknown,
+    fallback: string
+  ): Promise<void> {
+    if (error instanceof HttpErrorResponse) {
+      const message = await this.extractHttpErrorMessage(error);
+      if (message && message.trim().length > 0) {
+        this.toastService.error(message);
+        return;
+      }
+    }
+    this.toastService.error(fallback);
+  }
+
+  private async extractHttpErrorMessage(
+    error: HttpErrorResponse
+  ): Promise<string | null> {
+    const raw = error.error;
+    if (!raw) {
+      return null;
+    }
+    if (typeof raw === 'string') {
+      const trimmed = raw.trim();
+      return trimmed.length > 0 ? trimmed : null;
+    }
+    if (raw instanceof Blob) {
+      try {
+        const text = (await raw.text()).trim();
+        if (!text) {
+          return null;
+        }
+        try {
+          const parsed = JSON.parse(text);
+          if (typeof parsed === 'string') {
+            return parsed;
+          }
+          if (parsed && typeof parsed.message === 'string') {
+            return parsed.message;
+          }
+          if (parsed && typeof parsed.error === 'string') {
+            return parsed.error;
+          }
+        } catch {
+          return text;
+        }
+      } catch {
+        return null;
+      }
+    }
+    if (typeof raw === 'object' && raw !== null) {
+      const maybeMessage =
+        (raw as { message?: string; error?: string }).message ??
+        (raw as { message?: string; error?: string }).error;
+      if (typeof maybeMessage === 'string') {
+        const trimmed = maybeMessage.trim();
+        if (trimmed.length > 0) {
+          return trimmed;
+        }
+      }
+    }
+    return null;
+  }
+
 }
