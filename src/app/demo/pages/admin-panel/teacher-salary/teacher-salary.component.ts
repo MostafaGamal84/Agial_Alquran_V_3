@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import {
   AfterViewInit,
   Component,
@@ -32,6 +33,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import moment, { Moment } from 'moment';
+import jsPDF from 'jspdf';
 import {
   MatSlideToggleChange,
   MatSlideToggleModule
@@ -40,7 +42,8 @@ import { Subscription } from 'rxjs';
 import {
   debounceTime,
   distinctUntilChanged,
-  finalize
+  finalize,
+  switchMap
 } from 'rxjs/operators';
 
 import {
@@ -49,7 +52,10 @@ import {
   TeacherMonthlySummary,
   TeacherSalaryInvoiceDetails,
   ApiError,
-  GenerateMonthlyResponse
+  ApiResponse,
+  GenerateMonthlyResponse,
+  UpdateTeacherPaymentDto,
+  ReceiptUpload
 } from 'src/app/@theme/services/teacher-salary.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import {
@@ -75,6 +81,12 @@ interface SummaryMetric {
   value: number | string;
   type: 'number' | 'currency' | 'percentage' | 'text';
   suffix?: string;
+}
+
+interface InvoicePdfContext {
+  invoice: TeacherSalaryInvoice;
+  summary: TeacherMonthlySummary | null;
+  details: TeacherSalaryInvoiceDetails | null;
 }
 
 @Component({
@@ -131,6 +143,10 @@ export class TeacherSalaryComponent
     currency: 'USD',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
+  });
+  private readonly dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
+    dateStyle: 'medium',
+    timeStyle: 'short'
   });
 
   readonly selectedMonth = new FormControl<Moment>(
@@ -267,15 +283,29 @@ export class TeacherSalaryComponent
   ): void {
     event.source.checked = event.checked;
     const invoiceId = invoice.id;
+    if (!invoiceId) {
+      event.source.checked = !event.checked;
+      this.toastService.error('Invoice identifier was invalid.');
+      return;
+    }
+
+    const invoiceSnapshot: TeacherSalaryInvoice = { ...invoice };
     const newValue = event.checked;
-    const payload = {
-      isPayed: newValue,
-      payedAt: newValue ? undefined : null
-    };
+    const payload = this.buildUpdatePaymentPayload(invoice, newValue);
     this.updatingStatusIds.add(invoiceId);
 
-    this.teacherSalaryService
-      .updateInvoiceStatus(invoiceId, payload)
+    const update$ = newValue
+      ? this.teacherSalaryService
+          .getPaymentReceipt(invoiceId)
+          .pipe(
+            switchMap((response) => {
+              const receipt = this.buildReceiptUpload(response, invoice);
+              return this.teacherSalaryService.updatePayment(payload, receipt);
+            })
+          )
+      : this.teacherSalaryService.updatePayment(payload);
+
+    update$
       .pipe(
         finalize(() => {
           this.updatingStatusIds.delete(invoiceId);
@@ -284,9 +314,16 @@ export class TeacherSalaryComponent
       .subscribe({
         next: (response) => {
           if (response.isSuccess) {
+            const updatedInvoice = this.mergeInvoiceData(
+              invoiceSnapshot,
+              this.extractInvoiceFromStatusResponse(response)
+            );
             this.toastService.success(
               `Invoice marked as ${newValue ? 'paid' : 'unpaid'}.`
             );
+            if (this.canGenerateInvoices && newValue) {
+              this.queueInvoicePdfGeneration(invoiceId, updatedInvoice);
+            }
             this.loadInvoices();
             if (this.selectedInvoice?.id === invoiceId) {
               this.loadInvoiceDetails(invoiceId, false);
@@ -299,9 +336,16 @@ export class TeacherSalaryComponent
             );
           }
         },
-        error: () => {
+        error: async (error) => {
           event.source.checked = !newValue;
-          this.toastService.error('Failed to update invoice payment status.');
+          if (newValue && this.isReceiptDownloadError(error)) {
+            await this.notifyReceiptDownloadFailure(error);
+          } else {
+            await this.notifyHttpError(
+              error,
+              'Failed to update invoice payment status.'
+            );
+          }
         }
       });
   }
@@ -374,6 +418,38 @@ export class TeacherSalaryComponent
     } catch {
       return value.toFixed(2);
     }
+  }
+
+  private formatDateTime(value: unknown): string {
+    if (value === null || value === undefined || value === '') {
+      return '—';
+    }
+
+    let date: Date | null = null;
+    if (value instanceof Date) {
+      date = value;
+    } else if (typeof value === 'number' && Number.isFinite(value)) {
+      date = new Date(value);
+    } else if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (trimmed.length === 0) {
+        return '—';
+      }
+      const parsed = new Date(trimmed);
+      if (!Number.isNaN(parsed.getTime())) {
+        date = parsed;
+      }
+    }
+
+    if (date && !Number.isNaN(date.getTime())) {
+      try {
+        return this.dateTimeFormatter.format(date);
+      } catch {
+        return date.toLocaleString();
+      }
+    }
+
+    return String(value);
   }
 
   formatMetricValue(metric: SummaryMetric): string {
@@ -818,4 +894,717 @@ export class TeacherSalaryComponent
   private findInvoiceById(id: number): TeacherSalaryInvoice | null {
     return this.dataSource.data.find((invoice) => invoice.id === id) ?? null;
   }
+
+  private buildUpdatePaymentPayload(
+    invoice: TeacherSalaryInvoice,
+    isPaid: boolean
+  ): UpdateTeacherPaymentDto {
+    const payload: UpdateTeacherPaymentDto = {
+      id: invoice.id
+    };
+
+    const amount = this.getSalaryAmount(invoice);
+    if (amount !== null) {
+      payload.amount = amount;
+    }
+
+    if (isPaid) {
+      payload.payStatue = true;
+      payload.isCancelled = false;
+    } else {
+      payload.payStatue = false;
+      payload.isCancelled = true;
+    }
+
+    return payload;
+  }
+
+  private buildReceiptUpload(
+    response: HttpResponse<Blob>,
+    invoice: TeacherSalaryInvoice
+  ): ReceiptUpload {
+    const blob = response.body;
+    if (!blob || blob.size === 0) {
+      throw new Error('RECEIPT_UNAVAILABLE');
+    }
+
+    const fileNameFromHeader = this.extractFileNameFromContentDisposition(
+      response.headers.get('content-disposition')
+    );
+    const fileName = fileNameFromHeader ?? this.buildReceiptFileName(invoice);
+    const type = blob.type && blob.type.trim().length > 0 ? blob.type : 'application/pdf';
+    const normalizedBlob = blob.type && blob.type.trim().length > 0 ? blob : new Blob([blob], { type });
+
+    return {
+      file: normalizedBlob,
+      fileName
+    };
+  }
+
+  private extractFileNameFromContentDisposition(
+    headerValue: string | null
+  ): string | null {
+    if (!headerValue) {
+      return null;
+    }
+    const match = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/i.exec(headerValue);
+    if (!match) {
+      return null;
+    }
+    let fileName = match[1];
+    if (!fileName) {
+      return null;
+    }
+    fileName = fileName.replace(/^['"]|['"]$/g, '');
+    try {
+      return decodeURIComponent(fileName);
+    } catch {
+      return fileName;
+    }
+  }
+
+  private buildReceiptFileName(invoice: TeacherSalaryInvoice): string {
+    const teacherPart = this.toSlug(invoice.teacherName ?? 'teacher');
+    const monthDisplay = this.formatMonth(invoice);
+    const monthPart = this.toSlug(monthDisplay);
+    const teacher = teacherPart.length > 0 ? teacherPart : 'teacher';
+    const month = monthPart.length > 0 ? monthPart : 'month';
+    const idPart = invoice.id ? `-${invoice.id}` : '';
+    return `teacher-invoice-${teacher}-${month}${idPart}.pdf`;
+  }
+
+  private mergeInvoiceData(
+    fallback: TeacherSalaryInvoice,
+    updates?: TeacherSalaryInvoice | null
+  ): TeacherSalaryInvoice {
+    const base = { ...fallback };
+    if (!updates) {
+      return base;
+    }
+    return { ...base, ...updates };
+  }
+
+  private extractInvoiceFromStatusResponse(
+    response: ApiResponse<
+      TeacherSalaryInvoice | TeacherSalaryInvoiceDetails | boolean | null
+    >
+  ): TeacherSalaryInvoice | null {
+    if (!response) {
+      return null;
+    }
+    return this.resolveInvoiceFromPayload(response.data);
+  }
+
+  private resolveInvoiceFromPayload(payload: unknown): TeacherSalaryInvoice | null {
+    if (!payload || typeof payload === 'boolean') {
+      return null;
+    }
+    if (this.isTeacherSalaryInvoice(payload)) {
+      return payload;
+    }
+    if (Array.isArray(payload)) {
+      const match = payload.find((item) => this.isTeacherSalaryInvoice(item));
+      return match ?? null;
+    }
+    if (typeof payload === 'object') {
+      const record = payload as Record<string, unknown>;
+      const invoiceCandidate = record['invoice'];
+      if (this.isTeacherSalaryInvoice(invoiceCandidate)) {
+        return invoiceCandidate;
+      }
+      const dataCandidate = record['data'];
+      if (dataCandidate && dataCandidate !== payload) {
+        const nested = this.resolveInvoiceFromPayload(dataCandidate);
+        if (nested) {
+          return nested;
+        }
+      }
+    }
+    return null;
+  }
+
+  private isTeacherSalaryInvoice(
+    value: unknown
+  ): value is TeacherSalaryInvoice {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      return false;
+    }
+    const invoice = value as TeacherSalaryInvoice;
+    return Number.isFinite(invoice.id ?? NaN);
+  }
+
+  private toSlug(value: string): string {
+    const normalized = value
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    return normalized;
+  }
+
+  private queueInvoicePdfGeneration(
+    invoiceId: number,
+    fallbackInvoice: TeacherSalaryInvoice
+  ): void {
+    if (!this.canGenerateInvoices) {
+      return;
+    }
+
+    const context = this.buildInvoicePdfContext(invoiceId, fallbackInvoice);
+    if (context) {
+      this.generateInvoicePdf(context);
+      return;
+    }
+
+    const subscription = this.teacherSalaryService
+      .getInvoiceDetails(invoiceId)
+      .subscribe({
+        next: (response) => {
+          if (response.isSuccess) {
+            const fetched = response.data ?? null;
+            const fetchedContext = this.buildInvoicePdfContext(
+              invoiceId,
+              fallbackInvoice,
+              fetched
+            );
+            if (fetchedContext) {
+              this.generateInvoicePdf(fetchedContext);
+            } else {
+              this.toastService.error(
+                'Invoice data was incomplete for PDF generation.'
+              );
+            }
+          } else {
+            this.handleErrors(
+              response.errors,
+              'Failed to generate the invoice PDF.'
+            );
+          }
+        },
+        error: () => {
+          this.toastService.error('Failed to generate the invoice PDF.');
+        }
+      });
+
+    this.subscriptions.add(subscription);
+  }
+
+  private buildInvoicePdfContext(
+    invoiceId: number,
+    fallbackInvoice: TeacherSalaryInvoice,
+    details?: TeacherSalaryInvoiceDetails | null
+  ): InvoicePdfContext | null {
+    const detailSource =
+      details ??
+      (this.invoiceDetails?.invoice?.id === invoiceId ? this.invoiceDetails : null);
+
+    const invoiceCandidate =
+      detailSource?.invoice ??
+      this.findInvoiceById(invoiceId) ??
+      (this.selectedInvoice?.id === invoiceId ? this.selectedInvoice : null) ??
+      fallbackInvoice ??
+      null;
+
+    if (!invoiceCandidate) {
+      return null;
+    }
+
+    const summaryCandidate =
+      detailSource?.monthlySummary ??
+      (this.selectedInvoice?.id === invoiceId ? this.detailSummary : null) ??
+      null;
+
+    return {
+      invoice: invoiceCandidate,
+      summary: summaryCandidate ?? null,
+      details: detailSource ?? null
+    };
+  }
+
+  private generateInvoicePdf(context: InvoicePdfContext): void {
+    try {
+      const doc = this.createInvoicePdfDocument(context);
+      const fileName = this.buildReceiptFileName(context.invoice);
+      this.presentInvoicePdf(doc, fileName);
+    } catch (error) {
+      console.error('Failed to generate invoice PDF', error);
+      this.toastService.error('Failed to generate the invoice PDF.');
+    }
+  }
+
+  private createInvoicePdfDocument(context: InvoicePdfContext): jsPDF {
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const leftMargin = 14;
+    const rightMargin = 14;
+    const maxWidth = pageWidth - leftMargin - rightMargin;
+    let y = 20;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.text('Teacher Salary Invoice', pageWidth / 2, y, { align: 'center' });
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    y += 10;
+
+    const invoice = context.invoice;
+    const summary = context.summary;
+    const invoiceNumber = invoice.id ? invoice.id.toString() : '—';
+    const teacherId =
+      this.resolveInvoiceNumber(invoice, ['teacherId']) ??
+      this.resolveSummaryNumber(summary, ['teacherId']);
+    const teacherName = this.resolveTeacherName(invoice, summary);
+    const billingMonth = this.resolveInvoiceMonth(context);
+    const paymentDate = this.resolvePaymentDateDisplay(invoice);
+    const statusLabel = this.getStatusLabel(invoice);
+    const invoiceAmount = this.formatCurrency(this.getSalaryAmount(invoice));
+    const generatedOn = this.formatDateTime(new Date());
+
+    y = this.drawKeyValue(doc, 'Invoice Number', invoiceNumber, leftMargin, y, maxWidth);
+    if (teacherId !== null) {
+      y = this.drawKeyValue(
+        doc,
+        'Teacher ID',
+        this.numberFormatter.format(teacherId),
+        leftMargin,
+        y,
+        maxWidth
+      );
+    }
+    y = this.drawKeyValue(doc, 'Teacher', teacherName, leftMargin, y, maxWidth);
+    y = this.drawKeyValue(doc, 'Billing Month', billingMonth, leftMargin, y, maxWidth);
+    y = this.drawKeyValue(doc, 'Payment Date', paymentDate, leftMargin, y, maxWidth);
+    y = this.drawKeyValue(doc, 'Status', statusLabel, leftMargin, y, maxWidth);
+    y = this.drawKeyValue(doc, 'Invoice Amount', invoiceAmount, leftMargin, y, maxWidth);
+    y = this.drawKeyValue(doc, 'Generated On', generatedOn, leftMargin, y, maxWidth);
+
+    y = this.drawSectionDivider(doc, y, leftMargin, pageWidth - rightMargin);
+    y = this.drawSectionHeader(doc, 'Salary Breakdown', leftMargin, y);
+
+    const baseSalary = this.resolveSummaryNumber(summary, ['baseSalary']);
+    const salaryTotal =
+      this.resolveSummaryNumber(summary, ['salaryTotal', 'totalSalary']) ??
+      this.getSalaryAmount(invoice);
+    const bonuses = this.resolveSummaryNumber(summary, [
+      'bonusTotal',
+      'bonuses',
+      'totalBonus'
+    ]);
+    const deductions = this.resolveSummaryNumber(summary, [
+      'deductionTotal',
+      'deductions',
+      'totalDeduction'
+    ]);
+    const netSalary =
+      this.resolveSummaryNumber(summary, ['netSalary', 'takeHomePay']) ??
+      this.resolveInvoiceNumber(invoice, ['netSalary', 'netPay']);
+    const hourlyRate = this.resolveSummaryNumber(summary, ['hourlyRate']);
+
+    const salaryRows: Array<[string, number | null]> = [
+      ['Base Salary', baseSalary],
+      ['Bonuses', bonuses],
+      ['Deductions', deductions],
+      ['Net Salary', netSalary ?? salaryTotal],
+      ['Total Salary', salaryTotal],
+      ['Hourly Rate', hourlyRate]
+    ];
+
+    for (const [label, value] of salaryRows) {
+      if (value !== null && value !== undefined) {
+        y = this.drawKeyValue(
+          doc,
+          label,
+          this.formatCurrency(value),
+          leftMargin,
+          y,
+          maxWidth
+        );
+      }
+    }
+
+    y = this.drawSectionDivider(doc, y, leftMargin, pageWidth - rightMargin);
+    y = this.drawSectionHeader(doc, 'Attendance Summary', leftMargin, y);
+
+    const attendanceCount = this.resolveSummaryNumber(summary, [
+      'attendanceCount',
+      'totalAttendance',
+      'attendedSessions'
+    ]);
+    const absenceCount = this.resolveSummaryNumber(summary, [
+      'absenceCount',
+      'totalAbsence',
+      'missedSessions'
+    ]);
+    const sessionCount = this.resolveSummaryNumber(summary, [
+      'sessionCount',
+      'lessonsCount'
+    ]);
+    const teachingMinutes = this.resolveSummaryNumber(summary, [
+      'teachingMinutes',
+      'totalMinutes'
+    ]);
+    const overtimeMinutes = this.resolveSummaryNumber(summary, ['overtimeMinutes']);
+    const attendanceRate = this.resolveSummaryNumber(summary, ['attendanceRate']);
+
+    if (attendanceCount !== null) {
+      y = this.drawKeyValue(
+        doc,
+        'Attendance',
+        this.numberFormatter.format(attendanceCount),
+        leftMargin,
+        y,
+        maxWidth
+      );
+    }
+    if (absenceCount !== null) {
+      y = this.drawKeyValue(
+        doc,
+        'Absence',
+        this.numberFormatter.format(absenceCount),
+        leftMargin,
+        y,
+        maxWidth
+      );
+    }
+    if (sessionCount !== null) {
+      y = this.drawKeyValue(
+        doc,
+        'Sessions',
+        this.numberFormatter.format(sessionCount),
+        leftMargin,
+        y,
+        maxWidth
+      );
+    }
+    if (teachingMinutes !== null) {
+      y = this.drawKeyValue(
+        doc,
+        'Teaching Minutes',
+        `${this.numberFormatter.format(teachingMinutes)} min`,
+        leftMargin,
+        y,
+        maxWidth
+      );
+    }
+    if (overtimeMinutes !== null) {
+      y = this.drawKeyValue(
+        doc,
+        'Overtime Minutes',
+        `${this.numberFormatter.format(overtimeMinutes)} min`,
+        leftMargin,
+        y,
+        maxWidth
+      );
+    }
+    if (attendanceRate !== null) {
+      const normalizedRate =
+        Math.abs(attendanceRate) <= 1
+          ? attendanceRate * 100
+          : attendanceRate;
+      const rateDisplay = `${this.percentFormatter.format(normalizedRate)}%`;
+      y = this.drawKeyValue(doc, 'Attendance Rate', rateDisplay, leftMargin, y, maxWidth);
+    }
+
+    y = this.drawSectionDivider(doc, y, leftMargin, pageWidth - rightMargin);
+    y = this.drawSectionHeader(doc, 'Notes', leftMargin, y);
+
+    const notes =
+      'This invoice has been generated automatically based on recorded salary and attendance data for the selected period.';
+    const noteLines = doc.splitTextToSize(notes, maxWidth);
+    const noteHeight = (Array.isArray(noteLines) ? noteLines.length : 1) * 6 + 2;
+    y = this.ensurePdfSpace(doc, y, noteHeight);
+    doc.setFont('helvetica', 'italic');
+    doc.text(noteLines, leftMargin, y);
+    doc.setFont('helvetica', 'normal');
+
+    return doc;
+  }
+
+  private drawSectionDivider(
+    doc: jsPDF,
+    y: number,
+    left: number,
+    right: number
+  ): number {
+    y = this.ensurePdfSpace(doc, y, 6);
+    doc.setDrawColor(180, 180, 180);
+    doc.setLineWidth(0.2);
+    doc.line(left, y, right, y);
+    doc.setDrawColor(0, 0, 0);
+    return y + 4;
+  }
+
+  private drawSectionHeader(doc: jsPDF, title: string, x: number, y: number): number {
+    y = this.ensurePdfSpace(doc, y, 10);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.text(title, x, y);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    return y + 6;
+  }
+
+  private drawKeyValue(
+    doc: jsPDF,
+    label: string,
+    value: string,
+    x: number,
+    y: number,
+    maxWidth: number,
+    lineHeight = 6
+  ): number {
+    const safeValue = value && value.trim().length > 0 ? value : '—';
+    const labelText = `${label}: `;
+    const labelWidth = doc.getTextWidth(labelText);
+    const availableWidth = Math.max(maxWidth - labelWidth, 40);
+    const valueLines = doc.splitTextToSize(safeValue, availableWidth);
+    const lineCount = Array.isArray(valueLines) ? valueLines.length : 1;
+    const requiredHeight = lineCount * lineHeight + 2;
+    y = this.ensurePdfSpace(doc, y, requiredHeight);
+    doc.setFont('helvetica', 'bold');
+    doc.text(labelText, x, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(valueLines, x + labelWidth, y);
+    return y + lineCount * lineHeight + 2;
+  }
+
+  private ensurePdfSpace(doc: jsPDF, y: number, requiredHeight: number): number {
+    const topMargin = 20;
+    const bottomMargin = 20;
+    const pageHeight = doc.internal.pageSize.getHeight();
+    if (y < topMargin) {
+      return topMargin;
+    }
+    if (y + requiredHeight > pageHeight - bottomMargin) {
+      doc.addPage();
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(12);
+      return topMargin;
+    }
+    return y;
+  }
+
+  private presentInvoicePdf(doc: jsPDF, fileName: string): void {
+    try {
+      if (typeof doc.autoPrint === 'function') {
+        doc.autoPrint();
+      }
+    } catch {
+      // Ignore failures from autoPrint support on different browsers.
+    }
+
+    const blob = doc.output('blob');
+    const blobUrl = typeof URL !== 'undefined' ? URL.createObjectURL(blob) : '';
+
+    if (typeof window !== 'undefined' && blobUrl) {
+      const printWindow = window.open(blobUrl, '_blank');
+      if (!printWindow && typeof document !== 'undefined') {
+        const anchor = document.createElement('a');
+        anchor.href = blobUrl;
+        anchor.download = fileName;
+        anchor.click();
+      }
+    }
+
+    if (blobUrl) {
+      setTimeout(() => {
+        try {
+          URL.revokeObjectURL(blobUrl);
+        } catch {
+          // Ignore revoke errors.
+        }
+      }, 120000);
+    }
+  }
+
+  private resolveTeacherName(
+    invoice: TeacherSalaryInvoice,
+    summary: TeacherMonthlySummary | null
+  ): string {
+    const invoiceName =
+      typeof invoice.teacherName === 'string' && invoice.teacherName.trim().length > 0
+        ? invoice.teacherName.trim()
+        : null;
+    if (invoiceName) {
+      return invoiceName;
+    }
+    const summaryName = this.resolveSummaryString(summary, ['teacherName']);
+    return summaryName ?? '—';
+  }
+
+  private resolveInvoiceMonth(context: InvoicePdfContext): string {
+    const invoiceMonth = this.formatMonth(context.invoice);
+    if (invoiceMonth && invoiceMonth !== '—') {
+      return invoiceMonth;
+    }
+    const summaryMonth = this.resolveSummaryString(context.summary, ['month']);
+    if (summaryMonth) {
+      return this.formatMonthString(summaryMonth);
+    }
+    return '—';
+  }
+
+  private resolvePaymentDateDisplay(invoice: TeacherSalaryInvoice): string {
+    const candidates: unknown[] = [
+      invoice.payedAt,
+      (invoice as Record<string, unknown>)['paidAt'],
+      (invoice as Record<string, unknown>)['paymentDate'],
+      (invoice as Record<string, unknown>)['lastPaymentDate']
+    ];
+    for (const candidate of candidates) {
+      const formatted = this.formatDateTime(candidate);
+      if (formatted !== '—') {
+        return formatted;
+      }
+    }
+    return this.formatDateTime(new Date());
+  }
+
+  private resolveInvoiceNumber(
+    invoice: TeacherSalaryInvoice | null | undefined,
+    fields: string[]
+  ): number | null {
+    if (!invoice) {
+      return null;
+    }
+    for (const field of fields) {
+      const value = (invoice as Record<string, unknown>)[field];
+      const numeric = this.coerceNumber(value);
+      if (numeric !== null) {
+        return numeric;
+      }
+    }
+    return null;
+  }
+
+  private resolveSummaryNumber(
+    summary: TeacherMonthlySummary | null | undefined,
+    fields: string[]
+  ): number | null {
+    if (!summary) {
+      return null;
+    }
+    for (const field of fields) {
+      const value = (summary as Record<string, unknown>)[field];
+      const numeric = this.coerceNumber(value);
+      if (numeric !== null) {
+        return numeric;
+      }
+    }
+    return null;
+  }
+
+  private resolveSummaryString(
+    summary: TeacherMonthlySummary | null | undefined,
+    fields: string[]
+  ): string | null {
+    if (!summary) {
+      return null;
+    }
+    for (const field of fields) {
+      const value = (summary as Record<string, unknown>)[field];
+      if (typeof value === 'string' && value.trim().length > 0) {
+        return value.trim();
+      }
+    }
+    return null;
+  }
+
+  private isReceiptDownloadError(error: unknown): boolean {
+    if (error instanceof HttpErrorResponse) {
+      return error.url?.includes('/GetPaymentReceipt') ?? false;
+    }
+    if (error instanceof Error) {
+      return error.message === 'RECEIPT_UNAVAILABLE';
+    }
+    return false;
+  }
+
+  private async notifyReceiptDownloadFailure(error: unknown): Promise<void> {
+    if (error instanceof Error && error.message === 'RECEIPT_UNAVAILABLE') {
+      this.toastService.error('Receipt file for this invoice was unavailable.');
+      return;
+    }
+    if (error instanceof HttpErrorResponse) {
+      const message = await this.extractHttpErrorMessage(error);
+      if (message && message.trim().length > 0) {
+        this.toastService.error(message);
+        return;
+      }
+      if (error.status === 404) {
+        this.toastService.error('No stored receipt was found for this invoice.');
+        return;
+      }
+      if (error.status === 500) {
+        this.toastService.error('The stored receipt could not be read.');
+        return;
+      }
+    }
+    this.toastService.error('Failed to retrieve the teacher payment receipt.');
+  }
+
+  private async notifyHttpError(
+    error: unknown,
+    fallback: string
+  ): Promise<void> {
+    if (error instanceof HttpErrorResponse) {
+      const message = await this.extractHttpErrorMessage(error);
+      if (message && message.trim().length > 0) {
+        this.toastService.error(message);
+        return;
+      }
+    }
+    this.toastService.error(fallback);
+  }
+
+  private async extractHttpErrorMessage(
+    error: HttpErrorResponse
+  ): Promise<string | null> {
+    const raw = error.error;
+    if (!raw) {
+      return null;
+    }
+    if (typeof raw === 'string') {
+      const trimmed = raw.trim();
+      return trimmed.length > 0 ? trimmed : null;
+    }
+    if (raw instanceof Blob) {
+      try {
+        const text = (await raw.text()).trim();
+        if (!text) {
+          return null;
+        }
+        try {
+          const parsed = JSON.parse(text);
+          if (typeof parsed === 'string') {
+            return parsed;
+          }
+          if (parsed && typeof parsed.message === 'string') {
+            return parsed.message;
+          }
+          if (parsed && typeof parsed.error === 'string') {
+            return parsed.error;
+          }
+        } catch {
+          return text;
+        }
+      } catch {
+        return null;
+      }
+    }
+    if (typeof raw === 'object' && raw !== null) {
+      const maybeMessage =
+        (raw as { message?: string; error?: string }).message ??
+        (raw as { message?: string; error?: string }).error;
+      if (typeof maybeMessage === 'string') {
+        const trimmed = maybeMessage.trim();
+        if (trimmed.length > 0) {
+          return trimmed;
+        }
+      }
+    }
+    return null;
+  }
+
 }
