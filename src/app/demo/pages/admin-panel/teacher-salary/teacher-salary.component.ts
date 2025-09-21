@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 import {
   AfterViewInit,
   Component,
@@ -32,17 +32,19 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import moment, { Moment } from 'moment';
 import jsPDF from 'jspdf';
 import {
   MatSlideToggleChange,
   MatSlideToggleModule
 } from '@angular/material/slide-toggle';
-import { Subscription } from 'rxjs';
+import { Observable, Subscription, of } from 'rxjs';
 import {
   debounceTime,
   distinctUntilChanged,
   finalize,
+  map,
   switchMap
 } from 'rxjs/operators';
 
@@ -89,6 +91,20 @@ interface InvoicePdfContext {
   details: TeacherSalaryInvoiceDetails | null;
 }
 
+interface InvoicePdfArtifacts {
+  doc: jsPDF;
+  blob: Blob;
+  fileName: string;
+  receipt: ReceiptUpload;
+}
+
+class InvoicePdfContextError extends Error {
+  constructor(message: string, readonly apiErrors?: ApiError[]) {
+    super(message);
+    this.name = 'InvoicePdfContextError';
+  }
+}
+
 @Component({
   selector: 'app-teacher-salary',
   standalone: true,
@@ -107,6 +123,7 @@ interface InvoicePdfContext {
     MatMomentDateModule,
     MatSelectModule,
     MatProgressBarModule,
+    MatTooltipModule,
     MatTableModule,
     MatSlideToggleModule,
     MatPaginatorModule
@@ -177,6 +194,7 @@ export class TeacherSalaryComponent
   generationResult: GenerateMonthlyResponse | null = null;
 
   private readonly updatingStatusIds = new Set<number>();
+  private readonly uploadingReceiptIds = new Set<number>();
   private readonly role = this.authenticationService.getRole();
   readonly canManagePayments =
     this.role === UserTypesEnum.Admin || this.role === UserTypesEnum.Manager;
@@ -222,6 +240,7 @@ export class TeacherSalaryComponent
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
     this.updatingStatusIds.clear();
+    this.uploadingReceiptIds.clear();
   }
 
   setMonth(normalizedMonthAndYear: Moment, datepicker: MatDatepicker<Moment>): void {
@@ -294,16 +313,7 @@ export class TeacherSalaryComponent
     const payload = this.buildUpdatePaymentPayload(invoice, newValue);
     this.updatingStatusIds.add(invoiceId);
 
-    const update$ = newValue
-      ? this.teacherSalaryService
-          .getPaymentReceipt(invoiceId)
-          .pipe(
-            switchMap((response) => {
-              const receipt = this.buildReceiptUpload(response, invoice);
-              return this.teacherSalaryService.updatePayment(payload, receipt);
-            })
-          )
-      : this.teacherSalaryService.updatePayment(payload);
+    const update$ = this.teacherSalaryService.updatePayment(payload);
 
     update$
       .pipe(
@@ -328,9 +338,6 @@ export class TeacherSalaryComponent
             if (this.selectedInvoice?.id === invoiceId) {
               this.loadInvoiceDetails(invoiceId, false);
             }
-            if (newValue) {
-              this.generateInvoicePdf(invoiceId, invoiceForPdf);
-            }
           } else {
             event.source.checked = !newValue;
             this.handleErrors(
@@ -341,20 +348,105 @@ export class TeacherSalaryComponent
         },
         error: async (error) => {
           event.source.checked = !newValue;
-          if (newValue && this.isReceiptDownloadError(error)) {
-            await this.notifyReceiptDownloadFailure(error);
-          } else {
-            await this.notifyHttpError(
-              error,
-              'Failed to update invoice payment status.'
-            );
-          }
+          await this.notifyHttpError(
+            error,
+            'Failed to update invoice payment status.'
+          );
         }
       });
   }
 
   isStatusUpdating(invoiceId: number): boolean {
     return this.updatingStatusIds.has(invoiceId);
+  }
+
+  isReceiptUploading(invoiceId: number | null | undefined): boolean {
+    return typeof invoiceId === 'number' && this.uploadingReceiptIds.has(invoiceId);
+  }
+
+  onGenerateInvoiceReceipt(
+    event: MouseEvent,
+    invoice: TeacherSalaryInvoice
+  ): void {
+    event.stopPropagation();
+    if (!this.canGenerateInvoices) {
+      return;
+    }
+
+    const invoiceId = invoice.id;
+    if (!invoiceId) {
+      this.toastService.error('Invoice identifier was invalid.');
+      return;
+    }
+
+    if (this.isReceiptUploading(invoiceId)) {
+      return;
+    }
+
+    const invoiceSnapshot: TeacherSalaryInvoice = { ...invoice };
+    const additionalFields: Partial<UpdateTeacherPaymentDto> = {
+      payStatue: true,
+      isCancelled: false
+    };
+    const salaryAmount = this.getSalaryAmount(invoiceSnapshot);
+    if (salaryAmount !== null) {
+      additionalFields.amount = salaryAmount;
+    }
+
+    this.uploadingReceiptIds.add(invoiceId);
+
+    const subscription = this.getInvoicePdfContext(invoiceId, invoiceSnapshot)
+      .pipe(
+        map((context) => this.createInvoicePdfArtifacts(context)),
+        switchMap((artifacts) => {
+          this.presentInvoicePdf(artifacts.doc, artifacts.fileName, artifacts.blob);
+          return this.teacherSalaryService.uploadInvoiceReceipt(
+            invoiceId,
+            artifacts.receipt,
+            additionalFields
+          );
+        }),
+        finalize(() => {
+          this.uploadingReceiptIds.delete(invoiceId);
+        })
+      )
+      .subscribe({
+        next: (response) => {
+          if (response.isSuccess) {
+            const updatedInvoice = this.mergeInvoiceData(
+              invoiceSnapshot,
+              this.extractInvoiceFromStatusResponse(response)
+            );
+            this.applyInvoiceUpdate(updatedInvoice);
+            this.toastService.success(
+              'Invoice PDF generated and uploaded successfully.'
+            );
+          } else {
+            this.handleErrors(response.errors, 'Failed to upload the invoice PDF.');
+          }
+        },
+        error: async (error) => {
+          if (error instanceof InvoicePdfContextError) {
+            if (error.apiErrors?.length) {
+              this.handleErrors(error.apiErrors, 'Failed to upload the invoice PDF.');
+            } else {
+              this.toastService.error(
+                error.message || 'Failed to upload the invoice PDF.'
+              );
+            }
+            return;
+          }
+
+          if (error instanceof Error && error.message === 'PDF_GENERATION_FAILED') {
+            this.toastService.error('Failed to generate the invoice PDF.');
+            return;
+          }
+
+          await this.notifyHttpError(error, 'Failed to upload the invoice PDF.');
+        }
+      });
+
+    this.subscriptions.add(subscription);
   }
 
   onGenerateMonthly(): void {
@@ -685,6 +777,9 @@ export class TeacherSalaryComponent
 
   private updateDisplayedColumns(): void {
     const baseColumns = ['teacher', 'month', 'salary', 'status', 'paidAt', 'receipt'];
+    if (this.canGenerateInvoices) {
+      baseColumns.push('actions');
+    }
     this.displayedColumns = this.canManagePayments
       ? [...baseColumns, 'toggle']
       : baseColumns;
@@ -922,50 +1017,6 @@ export class TeacherSalaryComponent
     return payload;
   }
 
-  private buildReceiptUpload(
-    response: HttpResponse<Blob>,
-    invoice: TeacherSalaryInvoice
-  ): ReceiptUpload {
-    const blob = response.body;
-    if (!blob || blob.size === 0) {
-      throw new Error('RECEIPT_UNAVAILABLE');
-    }
-
-    const fileNameFromHeader = this.extractFileNameFromContentDisposition(
-      response.headers.get('content-disposition')
-    );
-    const fileName = fileNameFromHeader ?? this.buildReceiptFileName(invoice);
-    const type = blob.type && blob.type.trim().length > 0 ? blob.type : 'application/pdf';
-    const normalizedBlob = blob.type && blob.type.trim().length > 0 ? blob : new Blob([blob], { type });
-
-    return {
-      file: normalizedBlob,
-      fileName
-    };
-  }
-
-  private extractFileNameFromContentDisposition(
-    headerValue: string | null
-  ): string | null {
-    if (!headerValue) {
-      return null;
-    }
-    const match = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/i.exec(headerValue);
-    if (!match) {
-      return null;
-    }
-    let fileName = match[1];
-    if (!fileName) {
-      return null;
-    }
-    fileName = fileName.replace(/^['"]|['"]$/g, '');
-    try {
-      return decodeURIComponent(fileName);
-    } catch {
-      return fileName;
-    }
-  }
-
   private buildReceiptFileName(invoice: TeacherSalaryInvoice): string {
     const teacherPart = this.toSlug(invoice.teacherName ?? 'teacher');
     const monthDisplay = this.formatMonth(invoice);
@@ -985,6 +1036,30 @@ export class TeacherSalaryComponent
       return base;
     }
     return { ...base, ...updates };
+  }
+
+  private applyInvoiceUpdate(updatedInvoice: TeacherSalaryInvoice | null): void {
+    if (!updatedInvoice?.id) {
+      this.loadInvoices();
+      return;
+    }
+
+    const index = this.dataSource.data.findIndex(
+      (invoice) => invoice.id === updatedInvoice.id
+    );
+
+    if (index === -1) {
+      this.loadInvoices();
+      return;
+    }
+
+    const updatedData = [...this.dataSource.data];
+    updatedData[index] = this.mergeInvoiceData(updatedData[index], updatedInvoice);
+    this.applyInvoices(updatedData);
+
+    if (this.selectedInvoice?.id === updatedInvoice.id) {
+      this.loadInvoiceDetails(updatedInvoice.id, false);
+    }
   }
 
   private extractInvoiceFromStatusResponse(
@@ -1053,43 +1128,55 @@ export class TeacherSalaryComponent
       return;
     }
 
-    const context = this.buildInvoicePdfContext(invoiceId, fallbackInvoice);
-    if (context) {
-      this.generateInvoicePdf(context);
-      return;
-    }
-
-    const subscription = this.teacherSalaryService
-      .getInvoiceDetails(invoiceId)
-      .subscribe({
-        next: (response) => {
-          if (response.isSuccess) {
-            const fetched = response.data ?? null;
-            const fetchedContext = this.buildInvoicePdfContext(
-              invoiceId,
-              fallbackInvoice,
-              fetched
-            );
-            if (fetchedContext) {
-              this.generateInvoicePdf(fetchedContext);
-            } else {
-              this.toastService.error(
-                'Invoice data was incomplete for PDF generation.'
-              );
-            }
-          } else {
-            this.handleErrors(
-              response.errors,
-              'Failed to generate the invoice PDF.'
-            );
-          }
-        },
-        error: () => {
-          this.toastService.error('Failed to generate the invoice PDF.');
-        }
-      });
+    const subscription = this.getInvoicePdfContext(
+      invoiceId,
+      fallbackInvoice
+    ).subscribe({
+      next: (context) => {
+        this.generateInvoicePdf(context);
+      },
+      error: (error) => {
+        this.handleInvoicePdfError(error, 'Failed to generate the invoice PDF.');
+      }
+    });
 
     this.subscriptions.add(subscription);
+  }
+
+  private getInvoicePdfContext(
+    invoiceId: number,
+    fallbackInvoice: TeacherSalaryInvoice
+  ): Observable<InvoicePdfContext> {
+    const immediateContext = this.buildInvoicePdfContext(
+      invoiceId,
+      fallbackInvoice
+    );
+    if (immediateContext) {
+      return of(immediateContext);
+    }
+
+    return this.teacherSalaryService.getInvoiceDetails(invoiceId).pipe(
+      map((response) => {
+        if (response.isSuccess) {
+          const details = response.data ?? null;
+          const context = this.buildInvoicePdfContext(
+            invoiceId,
+            fallbackInvoice,
+            details
+          );
+          if (context) {
+            return context;
+          }
+          throw new InvoicePdfContextError(
+            'Invoice data was incomplete for PDF generation.'
+          );
+        }
+        throw new InvoicePdfContextError(
+          'Failed to generate the invoice PDF.',
+          response.errors
+        );
+      })
+    );
   }
 
   private buildInvoicePdfContext(
@@ -1124,15 +1211,56 @@ export class TeacherSalaryComponent
     };
   }
 
-  private generateInvoicePdf(context: InvoicePdfContext): void {
+  private createInvoicePdfArtifacts(
+    context: InvoicePdfContext
+  ): InvoicePdfArtifacts {
     try {
       const doc = this.createInvoicePdfDocument(context);
+      const blob = doc.output('blob');
       const fileName = this.buildReceiptFileName(context.invoice);
-      this.presentInvoicePdf(doc, fileName);
+      return {
+        doc,
+        blob,
+        fileName,
+        receipt: {
+          file: blob,
+          fileName
+        }
+      };
+    } catch (error) {
+      console.error('Failed to generate invoice PDF', error);
+      throw new Error('PDF_GENERATION_FAILED');
+    }
+  }
+
+  private generateInvoicePdf(context: InvoicePdfContext): void {
+    try {
+      const artifacts = this.createInvoicePdfArtifacts(context);
+      this.presentInvoicePdf(artifacts.doc, artifacts.fileName, artifacts.blob);
     } catch (error) {
       console.error('Failed to generate invoice PDF', error);
       this.toastService.error('Failed to generate the invoice PDF.');
     }
+  }
+
+  private handleInvoicePdfError(error: unknown, fallback: string): void {
+    if (error instanceof InvoicePdfContextError) {
+      if (error.apiErrors?.length) {
+        this.handleErrors(error.apiErrors, fallback);
+        return;
+      }
+      if (error.message) {
+        this.toastService.error(error.message);
+        return;
+      }
+    }
+
+    if (error instanceof Error && error.message === 'PDF_GENERATION_FAILED') {
+      this.toastService.error('Failed to generate the invoice PDF.');
+      return;
+    }
+
+    this.toastService.error(fallback);
   }
 
   private createInvoicePdfDocument(context: InvoicePdfContext): jsPDF {
@@ -1387,7 +1515,7 @@ export class TeacherSalaryComponent
     return y;
   }
 
-  private presentInvoicePdf(doc: jsPDF, fileName: string): void {
+  private presentInvoicePdf(doc: jsPDF, fileName: string, blob?: Blob): void {
     try {
       if (typeof doc.autoPrint === 'function') {
         doc.autoPrint();
@@ -1396,8 +1524,8 @@ export class TeacherSalaryComponent
       // Ignore failures from autoPrint support on different browsers.
     }
 
-    const blob = doc.output('blob');
-    const blobUrl = typeof URL !== 'undefined' ? URL.createObjectURL(blob) : '';
+    const pdfBlob = blob ?? doc.output('blob');
+    const blobUrl = typeof URL !== 'undefined' ? URL.createObjectURL(pdfBlob) : '';
 
     if (typeof window !== 'undefined' && blobUrl) {
       const printWindow = window.open(blobUrl, '_blank');
@@ -1511,38 +1639,6 @@ export class TeacherSalaryComponent
       }
     }
     return null;
-  }
-  private isReceiptDownloadError(error: unknown): boolean {
-    if (error instanceof HttpErrorResponse) {
-      return error.url?.includes('/GetPaymentReceipt') ?? false;
-    }
-    if (error instanceof Error) {
-      return error.message === 'RECEIPT_UNAVAILABLE';
-    }
-    return false;
-  }
-
-  private async notifyReceiptDownloadFailure(error: unknown): Promise<void> {
-    if (error instanceof Error && error.message === 'RECEIPT_UNAVAILABLE') {
-      this.toastService.error('Receipt file for this invoice was unavailable.');
-      return;
-    }
-    if (error instanceof HttpErrorResponse) {
-      const message = await this.extractHttpErrorMessage(error);
-      if (message && message.trim().length > 0) {
-        this.toastService.error(message);
-        return;
-      }
-      if (error.status === 404) {
-        this.toastService.error('No stored receipt was found for this invoice.');
-        return;
-      }
-      if (error.status === 500) {
-        this.toastService.error('The stored receipt could not be read.');
-        return;
-      }
-    }
-    this.toastService.error('Failed to retrieve the teacher payment receipt.');
   }
 
   private async notifyHttpError(
