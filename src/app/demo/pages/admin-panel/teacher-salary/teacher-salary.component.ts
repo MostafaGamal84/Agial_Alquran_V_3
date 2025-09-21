@@ -34,7 +34,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import moment, { Moment } from 'moment';
-import jsPDF from 'jspdf';
+import jsPDF, { TextOptionsLight } from 'jspdf';
 import {
   MatSlideToggleChange,
   MatSlideToggleModule
@@ -68,6 +68,19 @@ import {
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { environment } from 'src/environments/environment';
+import {
+  PDF_ARABIC_FONT_FILE,
+  PDF_ARABIC_FONT_NAME,
+  PDF_ARABIC_FONT_VFS
+} from 'src/app/@theme/utils/pdf-fonts';
+
+type RgbColor = { r: number; g: number; b: number };
+
+const PDF_ACCENT_COLOR: RgbColor = { r: 19, g: 66, b: 115 };
+const PDF_ACCENT_LIGHT: RgbColor = { r: 243, g: 246, b: 253 };
+const PDF_BORDER_COLOR: RgbColor = { r: 223, g: 230, b: 242 };
+const PDF_TEXT_MUTED: RgbColor = { r: 90, g: 90, b: 90 };
+const PDF_TEXT_PRIMARY: RgbColor = { r: 33, g: 33, b: 33 };
 
 export const MONTH_FORMATS = {
   parse: { dateInput: 'MMMM YYYY' },
@@ -84,6 +97,27 @@ interface SummaryMetric {
   value: number | string;
   type: 'number' | 'currency' | 'percentage' | 'text';
   suffix?: string;
+}
+
+interface KeyValueOptions {
+  labelAr?: string;
+  valueAr?: string;
+  highlight?: boolean;
+}
+
+interface SummaryCardItem {
+  titleEn: string;
+  titleAr: string;
+  value: string;
+  valueAr?: string;
+}
+
+interface SummaryCardLayout {
+  englishLines: string[];
+  arabicLines: string[];
+  height: number;
+  horizontalPadding: number;
+  verticalPadding: number;
 }
 
 interface InvoicePdfContext {
@@ -143,6 +177,8 @@ class InvoicePdfContextError extends Error {
 export class TeacherSalaryComponent
   implements OnInit, AfterViewInit, OnDestroy
 {
+  private static pdfFontsRegistered = false;
+
   private teacherSalaryService = inject(TeacherSalaryService);
   private toastService = inject(ToastService);
   private lookupService = inject(LookupService);
@@ -512,36 +548,32 @@ export class TeacherSalaryComponent
     }
   }
 
-  private formatDateTime(value: unknown): string {
+  private formatDateTime(value: unknown, locale?: string): string {
     if (value === null || value === undefined || value === '') {
       return '—';
     }
 
-    let date: Date | null = null;
-    if (value instanceof Date) {
-      date = value;
-    } else if (typeof value === 'number' && Number.isFinite(value)) {
-      date = new Date(value);
-    } else if (typeof value === 'string') {
-      const trimmed = value.trim();
-      if (trimmed.length === 0) {
-        return '—';
-      }
-      const parsed = new Date(trimmed);
-      if (!Number.isNaN(parsed.getTime())) {
-        date = parsed;
-      }
+    const date = this.parseDate(value);
+    if (!date) {
+      return typeof value === 'string' ? value : '—';
     }
 
-    if (date && !Number.isNaN(date.getTime())) {
+    if (locale) {
       try {
-        return this.dateTimeFormatter.format(date);
+        return new Intl.DateTimeFormat(locale, {
+          dateStyle: 'medium',
+          timeStyle: 'short'
+        }).format(date);
       } catch {
-        return date.toLocaleString();
+        return date.toLocaleString(locale);
       }
     }
 
-    return String(value);
+    try {
+      return this.dateTimeFormatter.format(date);
+    } catch {
+      return date.toLocaleString();
+    }
   }
 
   formatMetricValue(metric: SummaryMetric): string {
@@ -1272,96 +1304,51 @@ export class TeacherSalaryComponent
 
   private createInvoicePdfDocument(context: InvoicePdfContext): jsPDF {
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    this.preparePdfDocument(doc);
+
     const pageWidth = doc.internal.pageSize.getWidth();
     const leftMargin = 14;
     const rightMargin = 14;
     const maxWidth = pageWidth - leftMargin - rightMargin;
     let y = 20;
 
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(18);
-    doc.text('Teacher Salary Invoice', pageWidth / 2, y, { align: 'center' });
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'normal');
-    y += 10;
-
     const invoice = context.invoice;
     const summary = context.summary;
-    const invoiceNumber = invoice.id ? invoice.id.toString() : '—';
-    const teacherId =
+    const invoiceNumberValue = invoice.id ?? null;
+    const invoiceNumber =
+      invoiceNumberValue !== null ? this.numberFormatter.format(invoiceNumberValue) : '—';
+    const invoiceNumberAr = this.formatArabicNumber(invoiceNumberValue);
+    const teacherIdValue =
       this.resolveInvoiceNumber(invoice, ['teacherId']) ??
       this.resolveSummaryNumber(summary, ['teacherId']);
     const teacherName = this.resolveTeacherName(invoice, summary);
-    const billingMonth = this.resolveInvoiceMonth(context);
-    const paymentDate = this.resolvePaymentDateDisplay(invoice);
-    const statusLabel = this.getStatusLabel(invoice);
-    const invoiceAmount = this.formatCurrency(this.getSalaryAmount(invoice));
-    const generatedOn = this.formatDateTime(new Date());
-
-    y = this.drawKeyValue(doc, 'Invoice Number', invoiceNumber, leftMargin, y, maxWidth);
-    if (teacherId !== null) {
-      y = this.drawKeyValue(
-        doc,
-        'Teacher ID',
-        this.numberFormatter.format(teacherId),
-        leftMargin,
-        y,
-        maxWidth
-      );
-    }
-    y = this.drawKeyValue(doc, 'Teacher', teacherName, leftMargin, y, maxWidth);
-    y = this.drawKeyValue(doc, 'Billing Month', billingMonth, leftMargin, y, maxWidth);
-    y = this.drawKeyValue(doc, 'Payment Date', paymentDate, leftMargin, y, maxWidth);
-    y = this.drawKeyValue(doc, 'Status', statusLabel, leftMargin, y, maxWidth);
-    y = this.drawKeyValue(doc, 'Invoice Amount', invoiceAmount, leftMargin, y, maxWidth);
-    y = this.drawKeyValue(doc, 'Generated On', generatedOn, leftMargin, y, maxWidth);
-
-    y = this.drawSectionDivider(doc, y, leftMargin, pageWidth - rightMargin);
-    y = this.drawSectionHeader(doc, 'Salary Breakdown', leftMargin, y);
+    const billingMonthEn = this.resolveInvoiceMonth(context);
+    const billingMonthAr = this.resolveInvoiceMonthArabic(context);
+    const paymentDateEn = this.resolvePaymentDateDisplay(invoice);
+    const paymentDateAr = this.resolvePaymentDateDisplay(invoice, 'ar-EG');
+    const statusLabelEn = this.getStatusLabel(invoice);
+    const statusLabelAr = this.getStatusLabelAr(invoice);
+    const invoiceAmountValue = this.getSalaryAmount(invoice);
+    const invoiceAmountEn = this.formatCurrency(invoiceAmountValue);
+    const invoiceAmountAr = this.formatArabicCurrency(invoiceAmountValue);
+    const generatedOnEn = this.formatDateTime(new Date());
+    const generatedOnAr = this.formatDateTime(new Date(), 'ar-EG');
 
     const baseSalary = this.resolveSummaryNumber(summary, ['baseSalary']);
     const salaryTotal =
-      this.resolveSummaryNumber(summary, ['salaryTotal', 'totalSalary']) ??
-      this.getSalaryAmount(invoice);
-    const bonuses = this.resolveSummaryNumber(summary, [
-      'bonusTotal',
-      'bonuses',
-      'totalBonus'
-    ]);
+      this.resolveSummaryNumber(summary, ['salaryTotal', 'totalSalary']) ?? invoiceAmountValue;
+    const bonuses = this.resolveSummaryNumber(summary, ['bonusTotal', 'bonuses', 'totalBonus']);
     const deductions = this.resolveSummaryNumber(summary, [
       'deductionTotal',
       'deductions',
       'totalDeduction'
     ]);
-    const netSalary =
+    const netSalaryValue =
       this.resolveSummaryNumber(summary, ['netSalary', 'takeHomePay']) ??
-      this.resolveInvoiceNumber(invoice, ['netSalary', 'netPay']);
+      this.resolveInvoiceNumber(invoice, ['netSalary', 'netPay']) ??
+      salaryTotal ??
+      invoiceAmountValue;
     const hourlyRate = this.resolveSummaryNumber(summary, ['hourlyRate']);
-
-    const salaryRows: Array<[string, number | null]> = [
-      ['Base Salary', baseSalary],
-      ['Bonuses', bonuses],
-      ['Deductions', deductions],
-      ['Net Salary', netSalary ?? salaryTotal],
-      ['Total Salary', salaryTotal],
-      ['Hourly Rate', hourlyRate]
-    ];
-
-    for (const [label, value] of salaryRows) {
-      if (value !== null && value !== undefined) {
-        y = this.drawKeyValue(
-          doc,
-          label,
-          this.formatCurrency(value),
-          leftMargin,
-          y,
-          maxWidth
-        );
-      }
-    }
-
-    y = this.drawSectionDivider(doc, y, leftMargin, pageWidth - rightMargin);
-    y = this.drawSectionHeader(doc, 'Attendance Summary', leftMargin, y);
 
     const attendanceCount = this.resolveSummaryNumber(summary, [
       'attendanceCount',
@@ -1373,89 +1360,451 @@ export class TeacherSalaryComponent
       'totalAbsence',
       'missedSessions'
     ]);
-    const sessionCount = this.resolveSummaryNumber(summary, [
-      'sessionCount',
-      'lessonsCount'
-    ]);
+    const sessionCount = this.resolveSummaryNumber(summary, ['sessionCount', 'lessonsCount']);
     const teachingMinutes = this.resolveSummaryNumber(summary, [
       'teachingMinutes',
       'totalMinutes'
     ]);
     const overtimeMinutes = this.resolveSummaryNumber(summary, ['overtimeMinutes']);
-    const attendanceRate = this.resolveSummaryNumber(summary, ['attendanceRate']);
+    const attendanceRateRaw = this.resolveSummaryNumber(summary, ['attendanceRate']);
+    const attendanceRateNormalized =
+      attendanceRateRaw === null || attendanceRateRaw === undefined
+        ? null
+        : Math.abs(attendanceRateRaw) <= 1
+        ? attendanceRateRaw * 100
+        : attendanceRateRaw;
+    const attendanceRateEn =
+      attendanceRateNormalized === null
+        ? '—'
+        : `${this.percentFormatter.format(attendanceRateNormalized)}%`;
+    const attendanceRateAr =
+      attendanceRateNormalized === null
+        ? '—'
+        : `${this.formatArabicPercent(attendanceRateNormalized)}٪`;
 
-    if (attendanceCount !== null) {
-      y = this.drawKeyValue(
-        doc,
-        'Attendance',
-        this.numberFormatter.format(attendanceCount),
-        leftMargin,
-        y,
-        maxWidth
-      );
-    }
-    if (absenceCount !== null) {
-      y = this.drawKeyValue(
-        doc,
-        'Absence',
-        this.numberFormatter.format(absenceCount),
-        leftMargin,
-        y,
-        maxWidth
-      );
-    }
-    if (sessionCount !== null) {
-      y = this.drawKeyValue(
-        doc,
-        'Sessions',
-        this.numberFormatter.format(sessionCount),
-        leftMargin,
-        y,
-        maxWidth
-      );
-    }
-    if (teachingMinutes !== null) {
-      y = this.drawKeyValue(
-        doc,
-        'Teaching Minutes',
-        `${this.numberFormatter.format(teachingMinutes)} min`,
-        leftMargin,
-        y,
-        maxWidth
-      );
-    }
-    if (overtimeMinutes !== null) {
-      y = this.drawKeyValue(
-        doc,
-        'Overtime Minutes',
-        `${this.numberFormatter.format(overtimeMinutes)} min`,
-        leftMargin,
-        y,
-        maxWidth
-      );
-    }
-    if (attendanceRate !== null) {
-      const normalizedRate =
-        Math.abs(attendanceRate) <= 1
-          ? attendanceRate * 100
-          : attendanceRate;
-      const rateDisplay = `${this.percentFormatter.format(normalizedRate)}%`;
-      y = this.drawKeyValue(doc, 'Attendance Rate', rateDisplay, leftMargin, y, maxWidth);
+    y = this.drawInvoiceHeader(
+      doc,
+      leftMargin,
+      y,
+      maxWidth,
+      'Teacher Salary Invoice',
+      'فاتورة راتب المعلم'
+    );
+
+    const summaryCards: SummaryCardItem[] = [
+      {
+        titleEn: 'Invoice Amount',
+        titleAr: 'إجمالي الفاتورة',
+        value: invoiceAmountEn,
+        valueAr: invoiceAmountAr
+      },
+      {
+        titleEn: 'Net Salary',
+        titleAr: 'صافي الراتب',
+        value: this.formatCurrency(netSalaryValue),
+        valueAr: this.formatArabicCurrency(netSalaryValue)
+      },
+      {
+        titleEn: 'Attendance Rate',
+        titleAr: 'نسبة الحضور',
+        value: attendanceRateEn,
+        valueAr: attendanceRateAr
+      },
+      {
+        titleEn: 'Status',
+        titleAr: 'الحالة',
+        value: statusLabelEn,
+        valueAr: statusLabelAr
+      }
+    ];
+
+    y = this.drawSummaryCards(doc, summaryCards, leftMargin, y, maxWidth);
+
+    y = this.drawSectionDivider(doc, y, leftMargin, pageWidth - rightMargin);
+    y = this.drawSectionHeader(
+      doc,
+      'Invoice Details',
+      'بيانات الفاتورة',
+      leftMargin,
+      y,
+      maxWidth
+    );
+
+    y = this.drawKeyValue(doc, 'Invoice Number', invoiceNumber, leftMargin, y, maxWidth, 6, {
+      labelAr: 'رقم الفاتورة',
+      valueAr: invoiceNumberAr
+    });
+    y = this.drawKeyValue(
+      doc,
+      'Teacher ID',
+      teacherIdValue !== null ? this.numberFormatter.format(teacherIdValue) : '—',
+      leftMargin,
+      y,
+      maxWidth,
+      6,
+      {
+        labelAr: 'رقم المعلم',
+        valueAr: this.formatArabicNumber(teacherIdValue)
+      }
+    );
+    y = this.drawKeyValue(doc, 'Teacher', teacherName, leftMargin, y, maxWidth, 6, {
+      labelAr: 'اسم المعلم',
+      valueAr: teacherName
+    });
+    y = this.drawKeyValue(
+      doc,
+      'Billing Month',
+      billingMonthEn,
+      leftMargin,
+      y,
+      maxWidth,
+      6,
+      {
+        labelAr: 'شهر الفاتورة',
+        valueAr: billingMonthAr
+      }
+    );
+    y = this.drawKeyValue(
+      doc,
+      'Payment Date',
+      paymentDateEn,
+      leftMargin,
+      y,
+      maxWidth,
+      6,
+      {
+        labelAr: 'تاريخ الدفع',
+        valueAr: paymentDateAr
+      }
+    );
+    y = this.drawKeyValue(doc, 'Status', statusLabelEn, leftMargin, y, maxWidth, 6, {
+      labelAr: 'الحالة',
+      valueAr: statusLabelAr
+    });
+    y = this.drawKeyValue(
+      doc,
+      'Invoice Amount',
+      invoiceAmountEn,
+      leftMargin,
+      y,
+      maxWidth,
+      6,
+      {
+        labelAr: 'قيمة الفاتورة',
+        valueAr: invoiceAmountAr,
+        highlight: true
+      }
+    );
+    y = this.drawKeyValue(
+      doc,
+      'Generated On',
+      generatedOnEn,
+      leftMargin,
+      y,
+      maxWidth,
+      6,
+      {
+        labelAr: 'تاريخ الإنشاء',
+        valueAr: generatedOnAr
+      }
+    );
+
+    y = this.drawSectionDivider(doc, y, leftMargin, pageWidth - rightMargin);
+    y = this.drawSectionHeader(
+      doc,
+      'Salary Breakdown',
+      'تفاصيل الراتب',
+      leftMargin,
+      y,
+      maxWidth
+    );
+
+    const salaryRows: Array<[string, number | null | undefined, string]> = [
+      ['Base Salary', baseSalary, 'الراتب الأساسي'],
+      ['Bonuses', bonuses, 'المكافآت'],
+      ['Deductions', deductions, 'الخصومات'],
+      ['Net Salary', netSalaryValue, 'صافي الراتب'],
+      ['Total Salary', salaryTotal, 'إجمالي الراتب'],
+      ['Hourly Rate', hourlyRate, 'الأجر بالساعة']
+    ];
+
+    for (const [label, value, labelAr] of salaryRows) {
+      if (value !== null && value !== undefined) {
+        const englishValue = this.formatCurrency(value);
+        const arabicValue = this.formatArabicCurrency(value);
+        y = this.drawKeyValue(
+          doc,
+          label,
+          englishValue,
+          leftMargin,
+          y,
+          maxWidth,
+          6,
+          {
+            labelAr,
+            valueAr: arabicValue,
+            highlight: label === 'Net Salary' || label === 'Total Salary'
+          }
+        );
+      }
     }
 
     y = this.drawSectionDivider(doc, y, leftMargin, pageWidth - rightMargin);
-    y = this.drawSectionHeader(doc, 'Notes', leftMargin, y);
+    y = this.drawSectionHeader(
+      doc,
+      'Attendance Summary',
+      'ملخص الحضور',
+      leftMargin,
+      y,
+      maxWidth
+    );
 
-    const notes =
+    const attendanceRows: Array<
+      [string, number | null, string, (value: number) => string, string]
+    > = [
+      [
+        'Attendance',
+        attendanceCount,
+        'الحضور',
+        (value) => this.numberFormatter.format(value),
+        ' حضور'
+      ],
+      [
+        'Absence',
+        absenceCount,
+        'الغياب',
+        (value) => this.numberFormatter.format(value),
+        ' غياب'
+      ],
+      [
+        'Sessions',
+        sessionCount,
+        'عدد الحصص',
+        (value) => this.numberFormatter.format(value),
+        ' حصة'
+      ],
+      [
+        'Teaching Minutes',
+        teachingMinutes,
+        'دقائق التدريس',
+        (value) => `${this.numberFormatter.format(value)} min`,
+        ' دقيقة'
+      ],
+      [
+        'Overtime Minutes',
+        overtimeMinutes,
+        'الدقائق الإضافية',
+        (value) => `${this.numberFormatter.format(value)} min`,
+        ' دقيقة إضافية'
+      ]
+    ];
+
+    for (const [label, value, labelAr, formatter, suffixAr] of attendanceRows) {
+      if (value !== null && value !== undefined) {
+        y = this.drawKeyValue(
+          doc,
+          label,
+          formatter(value),
+          leftMargin,
+          y,
+          maxWidth,
+          6,
+          {
+            labelAr,
+            valueAr: `${this.formatArabicNumber(value)}${suffixAr}`
+          }
+        );
+      }
+    }
+
+    if (attendanceRateNormalized !== null) {
+      y = this.drawKeyValue(
+        doc,
+        'Attendance Rate',
+        attendanceRateEn,
+        leftMargin,
+        y,
+        maxWidth,
+        6,
+        {
+          labelAr: 'نسبة الحضور',
+          valueAr: attendanceRateAr
+        }
+      );
+    }
+
+    y = this.drawSectionDivider(doc, y, leftMargin, pageWidth - rightMargin);
+    y = this.drawSectionHeader(doc, 'Notes', 'ملاحظات', leftMargin, y, maxWidth);
+
+    const notesEn =
       'This invoice has been generated automatically based on recorded salary and attendance data for the selected period.';
-    const noteLines = doc.splitTextToSize(notes, maxWidth);
-    const noteHeight = (Array.isArray(noteLines) ? noteLines.length : 1) * 6 + 2;
+    const notesAr =
+      'تم إنشاء هذه الفاتورة تلقائياً استناداً إلى بيانات الراتب والحضور للفترة المحددة.';
+    const noteLinesEn = this.normalizeLines(doc.splitTextToSize(notesEn, maxWidth - 12));
+    const noteLinesAr = this.normalizeLines(doc.splitTextToSize(notesAr, maxWidth - 12));
+    const noteHeight = Math.max(noteLinesEn.length, noteLinesAr.length) * 6 + 16;
+
     y = this.ensurePdfSpace(doc, y, noteHeight);
-    doc.setFont('helvetica', 'italic');
-    doc.text(noteLines, leftMargin, y);
-    doc.setFont('helvetica', 'normal');
+    doc.setFillColor(PDF_ACCENT_LIGHT.r, PDF_ACCENT_LIGHT.g, PDF_ACCENT_LIGHT.b);
+    doc.setDrawColor(PDF_BORDER_COLOR.r, PDF_BORDER_COLOR.g, PDF_BORDER_COLOR.b);
+    doc.roundedRect(leftMargin, y, maxWidth, noteHeight, 3, 3, 'FD');
+    doc.setDrawColor(0, 0, 0);
+    doc.setTextColor(PDF_TEXT_MUTED.r, PDF_TEXT_MUTED.g, PDF_TEXT_MUTED.b);
+    doc.setFont(PDF_ARABIC_FONT_NAME, 'normal');
+    doc.setFontSize(11);
+
+    let noteY = y + 8;
+    for (const line of noteLinesEn) {
+      doc.text(line, leftMargin + 6, noteY);
+      noteY += 6;
+    }
+    this.drawArabicText(doc, noteLinesAr, leftMargin + maxWidth - 6, y + 8, 6, {
+      align: 'right'
+    });
+
+    doc.setFont(PDF_ARABIC_FONT_NAME, 'normal');
+    doc.setFontSize(12);
+    doc.setTextColor(PDF_TEXT_PRIMARY.r, PDF_TEXT_PRIMARY.g, PDF_TEXT_PRIMARY.b);
 
     return doc;
+  }
+
+  private drawSummaryCards(
+    doc: jsPDF,
+    items: SummaryCardItem[],
+    x: number,
+    y: number,
+    width: number,
+    lineHeight = 6
+  ): number {
+    if (!items.length) {
+      return y;
+    }
+    const columns = width > 160 ? 3 : 2;
+    const gutter = 6;
+    const cardWidth = (width - gutter * (columns - 1)) / columns;
+    let currentX = x;
+    let currentY = y;
+    let rowHeight = 0;
+
+    items.forEach((item, index) => {
+      const layout = this.buildSummaryCardLayout(doc, item, cardWidth, lineHeight);
+      const ensuredY = this.ensurePdfSpace(doc, currentY, layout.height + 4);
+      if (ensuredY !== currentY) {
+        currentY = ensuredY;
+        currentX = x;
+        rowHeight = 0;
+      }
+
+      const height = this.drawSummaryCard(
+        doc,
+        item,
+        currentX,
+        currentY,
+        cardWidth,
+        lineHeight,
+        layout
+      );
+
+      rowHeight = Math.max(rowHeight, height);
+
+      if ((index + 1) % columns === 0) {
+        currentX = x;
+        currentY += rowHeight + gutter;
+        rowHeight = 0;
+      } else {
+        currentX += cardWidth + gutter;
+      }
+    });
+
+    if (items.length % columns !== 0) {
+      currentY += rowHeight + gutter;
+    }
+
+    return currentY;
+  }
+
+  private drawSummaryCard(
+    doc: jsPDF,
+    item: SummaryCardItem,
+    x: number,
+    y: number,
+    width: number,
+    lineHeight: number,
+    layout: SummaryCardLayout
+  ): number {
+    doc.setFillColor(PDF_ACCENT_LIGHT.r, PDF_ACCENT_LIGHT.g, PDF_ACCENT_LIGHT.b);
+    doc.setDrawColor(PDF_BORDER_COLOR.r, PDF_BORDER_COLOR.g, PDF_BORDER_COLOR.b);
+    doc.roundedRect(x, y, width, layout.height, 3, 3, 'FD');
+    doc.setDrawColor(0, 0, 0);
+
+    doc.setFillColor(PDF_ACCENT_COLOR.r, PDF_ACCENT_COLOR.g, PDF_ACCENT_COLOR.b);
+    doc.roundedRect(x, y, width, 3, 3, 'F');
+
+    const labelY = y + layout.verticalPadding + lineHeight - 1;
+    doc.setFont(PDF_ARABIC_FONT_NAME, 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(PDF_ACCENT_COLOR.r, PDF_ACCENT_COLOR.g, PDF_ACCENT_COLOR.b);
+    doc.text(item.titleEn, x + layout.horizontalPadding, labelY);
+    this.drawArabicText(
+      doc,
+      item.titleAr,
+      x + width - layout.horizontalPadding,
+      labelY,
+      lineHeight,
+      { align: 'right' }
+    );
+
+    doc.setFont(PDF_ARABIC_FONT_NAME, 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(PDF_TEXT_PRIMARY.r, PDF_TEXT_PRIMARY.g, PDF_TEXT_PRIMARY.b);
+    let englishY = y + layout.verticalPadding + lineHeight + 2;
+    for (const line of layout.englishLines) {
+      doc.text(line, x + layout.horizontalPadding, englishY);
+      englishY += lineHeight;
+    }
+
+    this.drawArabicText(
+      doc,
+      layout.arabicLines,
+      x + width - layout.horizontalPadding,
+      y + layout.verticalPadding + lineHeight + 2,
+      lineHeight,
+      { align: 'right' }
+    );
+
+    doc.setFont(PDF_ARABIC_FONT_NAME, 'normal');
+    doc.setFontSize(12);
+    doc.setTextColor(PDF_TEXT_PRIMARY.r, PDF_TEXT_PRIMARY.g, PDF_TEXT_PRIMARY.b);
+
+    return layout.height;
+  }
+
+  private buildSummaryCardLayout(
+    doc: jsPDF,
+    item: SummaryCardItem,
+    width: number,
+    lineHeight: number
+  ): SummaryCardLayout {
+    const horizontalPadding = 8;
+    const verticalPadding = 8;
+    const availableWidth = width - horizontalPadding * 2;
+    const englishLines = this.normalizeLines(doc.splitTextToSize(item.value, availableWidth));
+    const arabicLines = this.normalizeLines(
+      doc.splitTextToSize(item.valueAr ?? item.value, availableWidth)
+    );
+    const contentHeight = Math.max(
+      englishLines.length * lineHeight,
+      arabicLines.length * lineHeight
+    );
+    const height = verticalPadding * 2 + lineHeight + contentHeight + 2;
+    return {
+      englishLines,
+      arabicLines,
+      height,
+      horizontalPadding,
+      verticalPadding
+    };
   }
 
   private drawSectionDivider(
@@ -1465,20 +1814,30 @@ export class TeacherSalaryComponent
     right: number
   ): number {
     y = this.ensurePdfSpace(doc, y, 6);
-    doc.setDrawColor(180, 180, 180);
-    doc.setLineWidth(0.2);
+    doc.setDrawColor(PDF_BORDER_COLOR.r, PDF_BORDER_COLOR.g, PDF_BORDER_COLOR.b);
+    doc.setLineWidth(0.3);
     doc.line(left, y, right, y);
     doc.setDrawColor(0, 0, 0);
-    return y + 4;
+    return y + 6;
   }
 
-  private drawSectionHeader(doc: jsPDF, title: string, x: number, y: number): number {
-    y = this.ensurePdfSpace(doc, y, 10);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(14);
-    doc.text(title, x, y);
+  private drawSectionHeader(
+    doc: jsPDF,
+    titleEn: string,
+    titleAr: string,
+    x: number,
+    y: number,
+    maxWidth: number
+  ): number {
+    y = this.ensurePdfSpace(doc, y, 12);
+    doc.setFont(PDF_ARABIC_FONT_NAME, 'bold');
+    doc.setFontSize(13);
+    doc.setTextColor(PDF_ACCENT_COLOR.r, PDF_ACCENT_COLOR.g, PDF_ACCENT_COLOR.b);
+    doc.text(titleEn, x, y);
+    this.drawArabicText(doc, titleAr, x + maxWidth, y, 6, { align: 'right' });
     doc.setFontSize(12);
-    doc.setFont('helvetica', 'normal');
+    doc.setFont(PDF_ARABIC_FONT_NAME, 'normal');
+    doc.setTextColor(PDF_TEXT_PRIMARY.r, PDF_TEXT_PRIMARY.g, PDF_TEXT_PRIMARY.b);
     return y + 6;
   }
 
@@ -1489,21 +1848,77 @@ export class TeacherSalaryComponent
     x: number,
     y: number,
     maxWidth: number,
-    lineHeight = 6
+    lineHeight = 6,
+    options: KeyValueOptions = {}
   ): number {
     const safeValue = value && value.trim().length > 0 ? value : '—';
-    const labelText = `${label}: `;
-    const labelWidth = doc.getTextWidth(labelText);
-    const availableWidth = Math.max(maxWidth - labelWidth, 40);
-    const valueLines = doc.splitTextToSize(safeValue, availableWidth);
-    const lineCount = Array.isArray(valueLines) ? valueLines.length : 1;
-    const requiredHeight = lineCount * lineHeight + 2;
-    y = this.ensurePdfSpace(doc, y, requiredHeight);
-    doc.setFont('helvetica', 'bold');
-    doc.text(labelText, x, y);
-    doc.setFont('helvetica', 'normal');
-    doc.text(valueLines, x + labelWidth, y);
-    return y + lineCount * lineHeight + 2;
+    const englishLines = this.normalizeLines(doc.splitTextToSize(safeValue, maxWidth));
+    const arabicLines =
+      options.labelAr || options.valueAr
+        ? this.normalizeLines(
+            doc.splitTextToSize(options.valueAr ?? safeValue, maxWidth)
+          )
+        : [];
+    const contentHeight = Math.max(
+      englishLines.length * lineHeight,
+      arabicLines.length * lineHeight
+    );
+    const paddingY = 3;
+    const blockHeight = paddingY * 2 + lineHeight + contentHeight;
+
+    y = this.ensurePdfSpace(doc, y, blockHeight + 2);
+
+    if (options.highlight) {
+      doc.setFillColor(PDF_ACCENT_LIGHT.r, PDF_ACCENT_LIGHT.g, PDF_ACCENT_LIGHT.b);
+      doc.setDrawColor(PDF_BORDER_COLOR.r, PDF_BORDER_COLOR.g, PDF_BORDER_COLOR.b);
+      doc.roundedRect(x, y, maxWidth, blockHeight, 3, 3, 'FD');
+      doc.setDrawColor(0, 0, 0);
+    }
+
+    const labelY = y + paddingY + lineHeight - 1;
+    doc.setFont(PDF_ARABIC_FONT_NAME, 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(PDF_TEXT_MUTED.r, PDF_TEXT_MUTED.g, PDF_TEXT_MUTED.b);
+    doc.text(`${label}`, x, labelY);
+    if (options.labelAr) {
+      this.drawArabicText(doc, options.labelAr, x + maxWidth, labelY, lineHeight, {
+        align: 'right'
+      });
+    }
+
+    doc.setFont(
+      PDF_ARABIC_FONT_NAME,
+      options.highlight ? 'bold' : 'normal'
+    );
+    doc.setFontSize(options.highlight ? 12 : 11);
+    doc.setTextColor(
+      options.highlight ? PDF_ACCENT_COLOR.r : PDF_TEXT_PRIMARY.r,
+      options.highlight ? PDF_ACCENT_COLOR.g : PDF_TEXT_PRIMARY.g,
+      options.highlight ? PDF_ACCENT_COLOR.b : PDF_TEXT_PRIMARY.b
+    );
+    let englishY = y + paddingY + lineHeight + 2;
+    for (const line of englishLines) {
+      doc.text(line, x, englishY);
+      englishY += lineHeight;
+    }
+
+    if (options.labelAr || options.valueAr) {
+      const displayLines = arabicLines.length ? arabicLines : englishLines;
+      this.drawArabicText(
+        doc,
+        displayLines,
+        x + maxWidth,
+        y + paddingY + lineHeight + 2,
+        lineHeight,
+        { align: 'right' }
+      );
+    }
+
+    doc.setFont(PDF_ARABIC_FONT_NAME, 'normal');
+    doc.setFontSize(12);
+    doc.setTextColor(PDF_TEXT_PRIMARY.r, PDF_TEXT_PRIMARY.g, PDF_TEXT_PRIMARY.b);
+
+    return y + blockHeight + 2;
   }
 
   private ensurePdfSpace(doc: jsPDF, y: number, requiredHeight: number): number {
@@ -1515,11 +1930,185 @@ export class TeacherSalaryComponent
     }
     if (y + requiredHeight > pageHeight - bottomMargin) {
       doc.addPage();
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(12);
+      this.preparePdfDocument(doc);
       return topMargin;
     }
     return y;
+  }
+
+  private drawArabicText(
+    doc: jsPDF,
+    text: string | string[],
+    x: number,
+    y: number,
+    lineHeight: number,
+    options: TextOptionsLight = {}
+  ): number {
+    const lines = this.normalizeLines(text);
+    const mergedOptions: TextOptionsLight = {
+      align: 'right',
+      isInputRtl: true,
+      isOutputRtl: true,
+      ...options
+    };
+    let currentY = y;
+    for (const line of lines) {
+      doc.text(line, x, currentY, mergedOptions);
+      currentY += lineHeight;
+    }
+    return currentY;
+  }
+
+  private normalizeLines(value: string | string[]): string[] {
+    if (Array.isArray(value)) {
+      return value.length ? value : [''];
+    }
+    const text = value ?? '';
+    return text.length ? [text] : [''];
+  }
+
+  private preparePdfDocument(doc: jsPDF): void {
+    this.ensurePdfFonts(doc);
+    doc.setFont(PDF_ARABIC_FONT_NAME, 'normal');
+    doc.setFontSize(12);
+    doc.setTextColor(PDF_TEXT_PRIMARY.r, PDF_TEXT_PRIMARY.g, PDF_TEXT_PRIMARY.b);
+  }
+
+  private ensurePdfFonts(doc: jsPDF): void {
+    if (!TeacherSalaryComponent.pdfFontsRegistered) {
+      doc.addFileToVFS(PDF_ARABIC_FONT_FILE, PDF_ARABIC_FONT_VFS);
+      doc.addFont(PDF_ARABIC_FONT_FILE, PDF_ARABIC_FONT_NAME, 'normal', 'Identity-H');
+      doc.addFont(PDF_ARABIC_FONT_FILE, PDF_ARABIC_FONT_NAME, 'bold', 'Identity-H');
+      TeacherSalaryComponent.pdfFontsRegistered = true;
+    }
+  }
+
+  private drawInvoiceHeader(
+    doc: jsPDF,
+    x: number,
+    y: number,
+    width: number,
+    titleEn: string,
+    titleAr: string
+  ): number {
+    const headerHeight = 28;
+    y = this.ensurePdfSpace(doc, y, headerHeight + 6);
+    doc.setFillColor(PDF_ACCENT_COLOR.r, PDF_ACCENT_COLOR.g, PDF_ACCENT_COLOR.b);
+    doc.roundedRect(x, y, width, headerHeight, 4, 4, 'F');
+    const titleY = y + headerHeight / 2 + 1;
+    doc.setFont(PDF_ARABIC_FONT_NAME, 'bold');
+    doc.setFontSize(18);
+    doc.setTextColor(255, 255, 255);
+    doc.text(titleEn, x + 10, titleY, { baseline: 'middle' });
+    this.drawArabicText(doc, titleAr, x + width - 10, titleY, 6, {
+      align: 'right',
+      baseline: 'middle'
+    });
+    doc.setFont(PDF_ARABIC_FONT_NAME, 'normal');
+    doc.setFontSize(12);
+    doc.setTextColor(PDF_TEXT_PRIMARY.r, PDF_TEXT_PRIMARY.g, PDF_TEXT_PRIMARY.b);
+    return y + headerHeight + 8;
+  }
+
+  private formatArabicNumber(value: number | null | undefined): string {
+    if (value === null || value === undefined || Number.isNaN(value)) {
+      return '—';
+    }
+    try {
+      return new Intl.NumberFormat('ar-EG', { maximumFractionDigits: 0 }).format(value);
+    } catch {
+      return this.numberFormatter.format(value);
+    }
+  }
+
+  private formatArabicCurrency(value: number | null | undefined): string {
+    if (value === null || value === undefined || Number.isNaN(value)) {
+      return '—';
+    }
+    try {
+      return new Intl.NumberFormat('ar-EG', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(value);
+    } catch {
+      return this.formatCurrency(value);
+    }
+  }
+
+  private formatArabicPercent(value: number | null | undefined): string {
+    if (value === null || value === undefined || Number.isNaN(value)) {
+      return '—';
+    }
+    try {
+      return new Intl.NumberFormat('ar-EG', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+      }).format(value);
+    } catch {
+      return this.percentFormatter.format(value);
+    }
+  }
+
+  private formatArabicMonthString(value?: string | null): string {
+    if (!value) {
+      return '—';
+    }
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) {
+      try {
+        return new Intl.DateTimeFormat('ar-EG', {
+          month: 'long',
+          year: 'numeric'
+        }).format(parsed);
+      } catch {
+        return this.formatMonthString(value);
+      }
+    }
+    return value;
+  }
+
+  private resolveInvoiceMonthArabic(context: InvoicePdfContext): string {
+    const invoiceMonthValue = this.extractMonthValue(context.invoice);
+    if (invoiceMonthValue) {
+      const formatted = this.formatArabicMonthString(invoiceMonthValue);
+      if (formatted !== '—') {
+        return formatted;
+      }
+    }
+    const summaryMonth = this.resolveSummaryString(context.summary, ['month']);
+    if (summaryMonth) {
+      return this.formatArabicMonthString(summaryMonth);
+    }
+    const selected = this.selectedMonth.value;
+    return selected ? this.formatArabicMonthString(selected.toISOString()) : '—';
+  }
+
+  private getStatusLabelAr(invoice: TeacherSalaryInvoice | null): string {
+    if (!invoice) {
+      return '—';
+    }
+    return this.isInvoicePaid(invoice) ? 'مدفوعة' : 'غير مدفوعة';
+  }
+
+  private parseDate(value: unknown): Date | null {
+    if (value instanceof Date) {
+      return Number.isNaN(value.getTime()) ? null : value;
+    }
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (!trimmed) {
+        return null;
+      }
+      const parsed = new Date(trimmed);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+    return null;
   }
 
   private presentInvoicePdf(doc: jsPDF, fileName: string, blob?: Blob): void {
@@ -1582,7 +2171,10 @@ export class TeacherSalaryComponent
     return '—';
   }
 
-  private resolvePaymentDateDisplay(invoice: TeacherSalaryInvoice): string {
+  private resolvePaymentDateDisplay(
+    invoice: TeacherSalaryInvoice,
+    locale?: string
+  ): string {
     const candidates: unknown[] = [
       invoice.payedAt,
       (invoice as Record<string, unknown>)['paidAt'],
@@ -1590,12 +2182,12 @@ export class TeacherSalaryComponent
       (invoice as Record<string, unknown>)['lastPaymentDate']
     ];
     for (const candidate of candidates) {
-      const formatted = this.formatDateTime(candidate);
+      const formatted = this.formatDateTime(candidate, locale);
       if (formatted !== '—') {
         return formatted;
       }
     }
-    return this.formatDateTime(new Date());
+    return this.formatDateTime(new Date(), locale);
   }
 
   private resolveInvoiceNumber(
