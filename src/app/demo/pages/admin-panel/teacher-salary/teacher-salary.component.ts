@@ -34,7 +34,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import moment, { Moment } from 'moment';
-import jsPDF, { TextOptionsLight } from 'jspdf';
 import {
   MatSlideToggleChange,
   MatSlideToggleModule
@@ -68,19 +67,11 @@ import {
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { environment } from 'src/environments/environment';
-import {
-  PDF_ARABIC_FONT_FILE,
-  PDF_ARABIC_FONT_NAME,
-  PDF_ARABIC_FONT_VFS
-} from 'src/app/@theme/utils/pdf-fonts';
-
-type RgbColor = { r: number; g: number; b: number };
-
-const PDF_ACCENT_COLOR: RgbColor = { r: 19, g: 66, b: 115 };
-const PDF_ACCENT_LIGHT: RgbColor = { r: 243, g: 246, b: 253 };
-const PDF_BORDER_COLOR: RgbColor = { r: 223, g: 230, b: 242 };
-const PDF_TEXT_MUTED: RgbColor = { r: 90, g: 90, b: 90 };
-const PDF_TEXT_PRIMARY: RgbColor = { r: 33, g: 33, b: 33 };
+const PRINT_ACCENT_COLOR = '#134273';
+const PRINT_ACCENT_LIGHT = '#f3f6fd';
+const PRINT_BORDER_COLOR = '#dfe6f2';
+const PRINT_TEXT_MUTED = '#5a5a5a';
+const PRINT_TEXT_PRIMARY = '#212121';
 
 export const MONTH_FORMATS = {
   parse: { dateInput: 'MMMM YYYY' },
@@ -99,12 +90,6 @@ interface SummaryMetric {
   suffix?: string;
 }
 
-interface KeyValueOptions {
-  labelAr?: string;
-  valueAr?: string;
-  highlight?: boolean;
-}
-
 interface SummaryCardItem {
   titleEn: string;
   titleAr: string;
@@ -112,31 +97,23 @@ interface SummaryCardItem {
   valueAr?: string;
 }
 
-interface SummaryCardLayout {
-  englishLines: string[];
-  arabicLines: string[];
-  height: number;
-  horizontalPadding: number;
-  verticalPadding: number;
-}
-
-interface InvoicePdfContext {
+interface InvoicePrintContext {
   invoice: TeacherSalaryInvoice;
   summary: TeacherMonthlySummary | null;
   details: TeacherSalaryInvoiceDetails | null;
 }
 
-interface InvoicePdfArtifacts {
-  doc: jsPDF;
+interface InvoicePrintArtifacts {
+  html: string;
   blob: Blob;
   fileName: string;
   receipt: ReceiptUpload;
 }
 
-class InvoicePdfContextError extends Error {
+class InvoicePrintContextError extends Error {
   constructor(message: string, readonly apiErrors?: ApiError[]) {
     super(message);
-    this.name = 'InvoicePdfContextError';
+    this.name = 'InvoicePrintContextError';
   }
 }
 
@@ -177,7 +154,6 @@ class InvoicePdfContextError extends Error {
 export class TeacherSalaryComponent
   implements OnInit, AfterViewInit, OnDestroy
 {
-  private static pdfFontsRegistered = false;
 
   private teacherSalaryService = inject(TeacherSalaryService);
   private toastService = inject(ToastService);
@@ -428,11 +404,11 @@ export class TeacherSalaryComponent
 
     this.uploadingReceiptIds.add(invoiceId);
 
-    const subscription = this.getInvoicePdfContext(invoiceId, invoiceSnapshot)
+    const subscription = this.getInvoicePrintContext(invoiceId, invoiceSnapshot)
       .pipe(
-        map((context) => this.createInvoicePdfArtifacts(context)),
+        map((context) => this.createInvoicePrintArtifacts(context)),
         switchMap((artifacts) => {
-          this.presentInvoicePdf(artifacts.doc, artifacts.fileName, artifacts.blob);
+          this.presentInvoicePrint(artifacts.html, artifacts.fileName, artifacts.blob);
           return this.teacherSalaryService.uploadInvoiceReceipt(
             invoiceId,
             artifacts.receipt,
@@ -452,30 +428,39 @@ export class TeacherSalaryComponent
             );
             this.applyInvoiceUpdate(updatedInvoice);
             this.toastService.success(
-              'Invoice PDF generated and uploaded successfully.'
+              'Printable invoice generated and uploaded successfully.'
             );
           } else {
-            this.handleErrors(response.errors, 'Failed to upload the invoice PDF.');
+            this.handleErrors(
+              response.errors,
+              'Failed to upload the printable invoice.'
+            );
           }
         },
         error: async (error) => {
-          if (error instanceof InvoicePdfContextError) {
+          if (error instanceof InvoicePrintContextError) {
             if (error.apiErrors?.length) {
-              this.handleErrors(error.apiErrors, 'Failed to upload the invoice PDF.');
+              this.handleErrors(
+                error.apiErrors,
+                'Failed to upload the printable invoice.'
+              );
             } else {
               this.toastService.error(
-                error.message || 'Failed to upload the invoice PDF.'
+                error.message || 'Failed to upload the printable invoice.'
               );
             }
             return;
           }
 
-          if (error instanceof Error && error.message === 'PDF_GENERATION_FAILED') {
-            this.toastService.error('Failed to generate the invoice PDF.');
+          if (error instanceof Error && error.message === 'PRINT_RENDER_FAILED') {
+            this.toastService.error('Failed to render the printable invoice.');
             return;
           }
 
-          await this.notifyHttpError(error, 'Failed to upload the invoice PDF.');
+          await this.notifyHttpError(
+            error,
+            'Failed to upload the printable invoice.'
+          );
         }
       });
 
@@ -1077,7 +1062,7 @@ export class TeacherSalaryComponent
     const teacher = teacherPart.length > 0 ? teacherPart : 'teacher';
     const month = monthPart.length > 0 ? monthPart : 'month';
     const idPart = invoice.id ? `-${invoice.id}` : '';
-    return `teacher-invoice-${teacher}-${month}${idPart}.pdf`;
+    return `teacher-invoice-${teacher}-${month}${idPart}.html`;
   }
 
   private mergeInvoiceData(
@@ -1182,11 +1167,11 @@ export class TeacherSalaryComponent
     return normalized;
   }
 
-  private getInvoicePdfContext(
+  private getInvoicePrintContext(
     invoiceId: number,
     fallbackInvoice: TeacherSalaryInvoice
-  ): Observable<InvoicePdfContext> {
-    const immediateContext = this.buildInvoicePdfContext(
+  ): Observable<InvoicePrintContext> {
+    const immediateContext = this.buildInvoicePrintContext(
       invoiceId,
       fallbackInvoice
     );
@@ -1198,7 +1183,7 @@ export class TeacherSalaryComponent
       map((response) => {
         if (response.isSuccess) {
           const details = response.data ?? null;
-          const context = this.buildInvoicePdfContext(
+          const context = this.buildInvoicePrintContext(
             invoiceId,
             fallbackInvoice,
             details
@@ -1206,23 +1191,23 @@ export class TeacherSalaryComponent
           if (context) {
             return context;
           }
-          throw new InvoicePdfContextError(
-            'Invoice data was incomplete for PDF generation.'
+          throw new InvoicePrintContextError(
+            'Invoice data was incomplete for building the printable invoice.'
           );
         }
-        throw new InvoicePdfContextError(
-          'Failed to generate the invoice PDF.',
+        throw new InvoicePrintContextError(
+          'Failed to load data for the printable invoice.',
           response.errors
         );
       })
     );
   }
 
-  private buildInvoicePdfContext(
+  private buildInvoicePrintContext(
     invoiceId: number,
     fallbackInvoice: TeacherSalaryInvoice,
     details?: TeacherSalaryInvoiceDetails | null
-  ): InvoicePdfContext | null {
+  ): InvoicePrintContext | null {
     const detailSource =
       details ??
       (this.invoiceDetails?.invoice?.id === invoiceId ? this.invoiceDetails : null);
@@ -1250,15 +1235,15 @@ export class TeacherSalaryComponent
     };
   }
 
-  private createInvoicePdfArtifacts(
-    context: InvoicePdfContext
-  ): InvoicePdfArtifacts {
+  private createInvoicePrintArtifacts(
+    context: InvoicePrintContext
+  ): InvoicePrintArtifacts {
     try {
-      const doc = this.createInvoicePdfDocument(context);
-      const blob = doc.output('blob');
+      const html = this.buildInvoicePrintHtml(context);
       const fileName = this.buildReceiptFileName(context.invoice);
+      const blob = new Blob([html], { type: 'text/html' });
       return {
-        doc,
+        html,
         blob,
         fileName,
         receipt: {
@@ -1267,53 +1252,15 @@ export class TeacherSalaryComponent
         }
       };
     } catch (error) {
-      console.error('Failed to generate invoice PDF', error);
-      throw new Error('PDF_GENERATION_FAILED');
+      console.error('Failed to render printable invoice', error);
+      throw new Error('PRINT_RENDER_FAILED');
     }
   }
 
-  private generateInvoicePdf(context: InvoicePdfContext): void {
-    try {
-      const artifacts = this.createInvoicePdfArtifacts(context);
-      this.presentInvoicePdf(artifacts.doc, artifacts.fileName, artifacts.blob);
-    } catch (error) {
-      console.error('Failed to generate invoice PDF', error);
-      this.toastService.error('Failed to generate the invoice PDF.');
-    }
-  }
-
-  private handleInvoicePdfError(error: unknown, fallback: string): void {
-    if (error instanceof InvoicePdfContextError) {
-      if (error.apiErrors?.length) {
-        this.handleErrors(error.apiErrors, fallback);
-        return;
-      }
-      if (error.message) {
-        this.toastService.error(error.message);
-        return;
-      }
-    }
-
-    if (error instanceof Error && error.message === 'PDF_GENERATION_FAILED') {
-      this.toastService.error('Failed to generate the invoice PDF.');
-      return;
-    }
-
-    this.toastService.error(fallback);
-  }
-
-  private createInvoicePdfDocument(context: InvoicePdfContext): jsPDF {
-    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    this.preparePdfDocument(doc);
-
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const leftMargin = 14;
-    const rightMargin = 14;
-    const maxWidth = pageWidth - leftMargin - rightMargin;
-    let y = 20;
-
+  private buildInvoicePrintHtml(context: InvoicePrintContext): string {
     const invoice = context.invoice;
     const summary = context.summary;
+
     const invoiceNumberValue = invoice.id ?? null;
     const invoiceNumber =
       invoiceNumberValue !== null ? this.numberFormatter.format(invoiceNumberValue) : '—';
@@ -1322,6 +1269,12 @@ export class TeacherSalaryComponent
       this.resolveInvoiceNumber(invoice, ['teacherId']) ??
       this.resolveSummaryNumber(summary, ['teacherId']);
     const teacherName = this.resolveTeacherName(invoice, summary);
+    const teacherNameAr =
+      this.resolveSummaryString(summary, [
+        'teacherNameAr',
+        'teacherArabicName',
+        'teacherName'
+      ]) ?? teacherName;
     const billingMonthEn = this.resolveInvoiceMonth(context);
     const billingMonthAr = this.resolveInvoiceMonthArabic(context);
     const paymentDateEn = this.resolvePaymentDateDisplay(invoice);
@@ -1336,8 +1289,13 @@ export class TeacherSalaryComponent
 
     const baseSalary = this.resolveSummaryNumber(summary, ['baseSalary']);
     const salaryTotal =
-      this.resolveSummaryNumber(summary, ['salaryTotal', 'totalSalary']) ?? invoiceAmountValue;
-    const bonuses = this.resolveSummaryNumber(summary, ['bonusTotal', 'bonuses', 'totalBonus']);
+      this.resolveSummaryNumber(summary, ['salaryTotal', 'totalSalary']) ??
+      invoiceAmountValue;
+    const bonuses = this.resolveSummaryNumber(summary, [
+      'bonusTotal',
+      'bonuses',
+      'totalBonus'
+    ]);
     const deductions = this.resolveSummaryNumber(summary, [
       'deductionTotal',
       'deductions',
@@ -1360,7 +1318,10 @@ export class TeacherSalaryComponent
       'totalAbsence',
       'missedSessions'
     ]);
-    const sessionCount = this.resolveSummaryNumber(summary, ['sessionCount', 'lessonsCount']);
+    const sessionCount = this.resolveSummaryNumber(summary, [
+      'sessionCount',
+      'lessonsCount'
+    ]);
     const teachingMinutes = this.resolveSummaryNumber(summary, [
       'teachingMinutes',
       'totalMinutes'
@@ -1381,15 +1342,6 @@ export class TeacherSalaryComponent
       attendanceRateNormalized === null
         ? '—'
         : `${this.formatArabicPercent(attendanceRateNormalized)}٪`;
-
-    y = this.drawInvoiceHeader(
-      doc,
-      leftMargin,
-      y,
-      maxWidth,
-      'Teacher Salary Invoice',
-      'فاتورة راتب المعلم'
-    );
 
     const summaryCards: SummaryCardItem[] = [
       {
@@ -1418,596 +1370,463 @@ export class TeacherSalaryComponent
       }
     ];
 
-    y = this.drawSummaryCards(doc, summaryCards, leftMargin, y, maxWidth);
-
-    y = this.drawSectionDivider(doc, y, leftMargin, pageWidth - rightMargin);
-    y = this.drawSectionHeader(
-      doc,
-      'Invoice Details',
-      'بيانات الفاتورة',
-      leftMargin,
-      y,
-      maxWidth
-    );
-
-    y = this.drawKeyValue(doc, 'Invoice Number', invoiceNumber, leftMargin, y, maxWidth, 6, {
-      labelAr: 'رقم الفاتورة',
-      valueAr: invoiceNumberAr
-    });
-    y = this.drawKeyValue(
-      doc,
-      'Teacher ID',
-      teacherIdValue !== null ? this.numberFormatter.format(teacherIdValue) : '—',
-      leftMargin,
-      y,
-      maxWidth,
-      6,
+    const infoRows = [
       {
+        labelEn: 'Invoice Number',
+        valueEn: invoiceNumber,
+        labelAr: 'رقم الفاتورة',
+        valueAr: invoiceNumberAr
+      },
+      {
+        labelEn: 'Teacher ID',
+        valueEn:
+          teacherIdValue !== null ? this.numberFormatter.format(teacherIdValue) : '—',
         labelAr: 'رقم المعلم',
         valueAr: this.formatArabicNumber(teacherIdValue)
-      }
-    );
-    y = this.drawKeyValue(doc, 'Teacher', teacherName, leftMargin, y, maxWidth, 6, {
-      labelAr: 'اسم المعلم',
-      valueAr: teacherName
-    });
-    y = this.drawKeyValue(
-      doc,
-      'Billing Month',
-      billingMonthEn,
-      leftMargin,
-      y,
-      maxWidth,
-      6,
+      },
       {
+        labelEn: 'Teacher',
+        valueEn: teacherName,
+        labelAr: 'اسم المعلم',
+        valueAr: teacherNameAr
+      },
+      {
+        labelEn: 'Billing Month',
+        valueEn: billingMonthEn,
         labelAr: 'شهر الفاتورة',
         valueAr: billingMonthAr
-      }
-    );
-    y = this.drawKeyValue(
-      doc,
-      'Payment Date',
-      paymentDateEn,
-      leftMargin,
-      y,
-      maxWidth,
-      6,
+      },
       {
+        labelEn: 'Payment Date',
+        valueEn: paymentDateEn,
         labelAr: 'تاريخ الدفع',
         valueAr: paymentDateAr
-      }
-    );
-    y = this.drawKeyValue(doc, 'Status', statusLabelEn, leftMargin, y, maxWidth, 6, {
-      labelAr: 'الحالة',
-      valueAr: statusLabelAr
-    });
-    y = this.drawKeyValue(
-      doc,
-      'Invoice Amount',
-      invoiceAmountEn,
-      leftMargin,
-      y,
-      maxWidth,
-      6,
+      },
       {
+        labelEn: 'Status',
+        valueEn: statusLabelEn,
+        labelAr: 'الحالة',
+        valueAr: statusLabelAr
+      },
+      {
+        labelEn: 'Invoice Amount',
+        valueEn: invoiceAmountEn,
         labelAr: 'قيمة الفاتورة',
         valueAr: invoiceAmountAr,
         highlight: true
-      }
-    );
-    y = this.drawKeyValue(
-      doc,
-      'Generated On',
-      generatedOnEn,
-      leftMargin,
-      y,
-      maxWidth,
-      6,
+      },
       {
+        labelEn: 'Generated On',
+        valueEn: generatedOnEn,
         labelAr: 'تاريخ الإنشاء',
         valueAr: generatedOnAr
       }
-    );
-
-    y = this.drawSectionDivider(doc, y, leftMargin, pageWidth - rightMargin);
-    y = this.drawSectionHeader(
-      doc,
-      'Salary Breakdown',
-      'تفاصيل الراتب',
-      leftMargin,
-      y,
-      maxWidth
-    );
-
-    const salaryRows: Array<[string, number | null | undefined, string]> = [
-      ['Base Salary', baseSalary, 'الراتب الأساسي'],
-      ['Bonuses', bonuses, 'المكافآت'],
-      ['Deductions', deductions, 'الخصومات'],
-      ['Net Salary', netSalaryValue, 'صافي الراتب'],
-      ['Total Salary', salaryTotal, 'إجمالي الراتب'],
-      ['Hourly Rate', hourlyRate, 'الأجر بالساعة']
     ];
 
-    for (const [label, value, labelAr] of salaryRows) {
-      if (value !== null && value !== undefined) {
-        const englishValue = this.formatCurrency(value);
-        const arabicValue = this.formatArabicCurrency(value);
-        y = this.drawKeyValue(
-          doc,
-          label,
-          englishValue,
-          leftMargin,
-          y,
-          maxWidth,
-          6,
-          {
-            labelAr,
-            valueAr: arabicValue,
-            highlight: label === 'Net Salary' || label === 'Total Salary'
-          }
-        );
-      }
-    }
-
-    y = this.drawSectionDivider(doc, y, leftMargin, pageWidth - rightMargin);
-    y = this.drawSectionHeader(
-      doc,
-      'Attendance Summary',
-      'ملخص الحضور',
-      leftMargin,
-      y,
-      maxWidth
-    );
-
-    const attendanceRows: Array<
-      [string, number | null, string, (value: number) => string, string]
-    > = [
-      [
-        'Attendance',
-        attendanceCount,
-        'الحضور',
-        (value) => this.numberFormatter.format(value),
-        ' حضور'
-      ],
-      [
-        'Absence',
-        absenceCount,
-        'الغياب',
-        (value) => this.numberFormatter.format(value),
-        ' غياب'
-      ],
-      [
-        'Sessions',
-        sessionCount,
-        'عدد الحصص',
-        (value) => this.numberFormatter.format(value),
-        ' حصة'
-      ],
-      [
-        'Teaching Minutes',
-        teachingMinutes,
-        'دقائق التدريس',
-        (value) => `${this.numberFormatter.format(value)} min`,
-        ' دقيقة'
-      ],
-      [
-        'Overtime Minutes',
-        overtimeMinutes,
-        'الدقائق الإضافية',
-        (value) => `${this.numberFormatter.format(value)} min`,
-        ' دقيقة إضافية'
-      ]
+    const salaryRows = [
+      { labelEn: 'Base Salary', value: baseSalary, labelAr: 'الراتب الأساسي' },
+      { labelEn: 'Bonuses', value: bonuses, labelAr: 'المكافآت' },
+      { labelEn: 'Deductions', value: deductions, labelAr: 'الخصومات' },
+      { labelEn: 'Net Salary', value: netSalaryValue, labelAr: 'صافي الراتب', highlight: true },
+      { labelEn: 'Total Salary', value: salaryTotal, labelAr: 'إجمالي الراتب', highlight: true },
+      { labelEn: 'Hourly Rate', value: hourlyRate, labelAr: 'الأجر بالساعة' }
     ];
 
-    for (const [label, value, labelAr, formatter, suffixAr] of attendanceRows) {
-      if (value !== null && value !== undefined) {
-        y = this.drawKeyValue(
-          doc,
-          label,
-          formatter(value),
-          leftMargin,
-          y,
-          maxWidth,
-          6,
-          {
-            labelAr,
-            valueAr: `${this.formatArabicNumber(value)}${suffixAr}`
-          }
-        );
+    const attendanceRows = [
+      {
+        labelEn: 'Attendance',
+        value: attendanceCount,
+        labelAr: 'الحضور',
+        formatEn: (value: number) => this.numberFormatter.format(value),
+        formatAr: (value: number) => `${this.formatArabicNumber(value)} حضور`
+      },
+      {
+        labelEn: 'Absence',
+        value: absenceCount,
+        labelAr: 'الغياب',
+        formatEn: (value: number) => this.numberFormatter.format(value),
+        formatAr: (value: number) => `${this.formatArabicNumber(value)} غياب`
+      },
+      {
+        labelEn: 'Sessions',
+        value: sessionCount,
+        labelAr: 'عدد الحصص',
+        formatEn: (value: number) => this.numberFormatter.format(value),
+        formatAr: (value: number) => `${this.formatArabicNumber(value)} حصة`
+      },
+      {
+        labelEn: 'Teaching Minutes',
+        value: teachingMinutes,
+        labelAr: 'دقائق التدريس',
+        formatEn: (value: number) => `${this.numberFormatter.format(value)} min`,
+        formatAr: (value: number) => `${this.formatArabicNumber(value)} دقيقة`
+      },
+      {
+        labelEn: 'Overtime Minutes',
+        value: overtimeMinutes,
+        labelAr: 'الدقائق الإضافية',
+        formatEn: (value: number) => `${this.numberFormatter.format(value)} min`,
+        formatAr: (value: number) => `${this.formatArabicNumber(value)} دقيقة إضافية`
       }
-    }
+    ];
 
-    if (attendanceRateNormalized !== null) {
-      y = this.drawKeyValue(
-        doc,
-        'Attendance Rate',
-        attendanceRateEn,
-        leftMargin,
-        y,
-        maxWidth,
-        6,
-        {
-          labelAr: 'نسبة الحضور',
-          valueAr: attendanceRateAr
-        }
-      );
-    }
+    const attendanceRowsHtml = attendanceRows
+      .filter((row) => row.value !== null && row.value !== undefined)
+      .map((row) =>
+        this.buildPrintRow(
+          row.labelEn,
+          row.formatEn(row.value as number),
+          row.labelAr,
+          row.formatAr(row.value as number)
+        )
+      )
+      .join('');
 
-    y = this.drawSectionDivider(doc, y, leftMargin, pageWidth - rightMargin);
-    y = this.drawSectionHeader(doc, 'Notes', 'ملاحظات', leftMargin, y, maxWidth);
+    const salaryRowsHtml = salaryRows
+      .filter((row) => row.value !== null && row.value !== undefined)
+      .map((row) =>
+        this.buildPrintRow(
+          row.labelEn,
+          this.formatCurrency(row.value as number),
+          row.labelAr,
+          this.formatArabicCurrency(row.value as number),
+          { highlight: Boolean(row.highlight) }
+        )
+      )
+      .join('');
+
+    const infoRowsHtml = infoRows
+      .map((row) =>
+        this.buildPrintRow(
+          row.labelEn,
+          row.valueEn,
+          row.labelAr,
+          row.valueAr,
+          { highlight: Boolean((row as { highlight?: boolean }).highlight) }
+        )
+      )
+      .join('');
+
+    const summaryCardsHtml = summaryCards
+      .map((card) => this.buildSummaryCardHtml(card))
+      .join('');
 
     const notesEn =
       'This invoice has been generated automatically based on recorded salary and attendance data for the selected period.';
     const notesAr =
       'تم إنشاء هذه الفاتورة تلقائياً استناداً إلى بيانات الراتب والحضور للفترة المحددة.';
-    const noteLinesEn = this.normalizeLines(doc.splitTextToSize(notesEn, maxWidth - 12));
-    const noteLinesAr = this.normalizeLines(doc.splitTextToSize(notesAr, maxWidth - 12));
-    const noteHeight = Math.max(noteLinesEn.length, noteLinesAr.length) * 6 + 16;
 
-    y = this.ensurePdfSpace(doc, y, noteHeight);
-    doc.setFillColor(PDF_ACCENT_LIGHT.r, PDF_ACCENT_LIGHT.g, PDF_ACCENT_LIGHT.b);
-    doc.setDrawColor(PDF_BORDER_COLOR.r, PDF_BORDER_COLOR.g, PDF_BORDER_COLOR.b);
-    doc.roundedRect(leftMargin, y, maxWidth, noteHeight, 3, 3, 'FD');
-    doc.setDrawColor(0, 0, 0);
-    doc.setTextColor(PDF_TEXT_MUTED.r, PDF_TEXT_MUTED.g, PDF_TEXT_MUTED.b);
-    doc.setFont(PDF_ARABIC_FONT_NAME, 'normal');
-    doc.setFontSize(11);
-
-    let noteY = y + 8;
-    for (const line of noteLinesEn) {
-      doc.text(line, leftMargin + 6, noteY);
-      noteY += 6;
-    }
-    this.drawArabicText(doc, noteLinesAr, leftMargin + maxWidth - 6, y + 8, 6, {
-      align: 'right'
-    });
-
-    doc.setFont(PDF_ARABIC_FONT_NAME, 'normal');
-    doc.setFontSize(12);
-    doc.setTextColor(PDF_TEXT_PRIMARY.r, PDF_TEXT_PRIMARY.g, PDF_TEXT_PRIMARY.b);
-
-    return doc;
-  }
-
-  private drawSummaryCards(
-    doc: jsPDF,
-    items: SummaryCardItem[],
-    x: number,
-    y: number,
-    width: number,
-    lineHeight = 6
-  ): number {
-    if (!items.length) {
-      return y;
-    }
-    const columns = width > 160 ? 3 : 2;
-    const gutter = 6;
-    const cardWidth = (width - gutter * (columns - 1)) / columns;
-    let currentX = x;
-    let currentY = y;
-    let rowHeight = 0;
-
-    items.forEach((item, index) => {
-      const layout = this.buildSummaryCardLayout(doc, item, cardWidth, lineHeight);
-      const ensuredY = this.ensurePdfSpace(doc, currentY, layout.height + 4);
-      if (ensuredY !== currentY) {
-        currentY = ensuredY;
-        currentX = x;
-        rowHeight = 0;
-      }
-
-      const height = this.drawSummaryCard(
-        doc,
-        item,
-        currentX,
-        currentY,
-        cardWidth,
-        lineHeight,
-        layout
-      );
-
-      rowHeight = Math.max(rowHeight, height);
-
-      if ((index + 1) % columns === 0) {
-        currentX = x;
-        currentY += rowHeight + gutter;
-        rowHeight = 0;
-      } else {
-        currentX += cardWidth + gutter;
-      }
-    });
-
-    if (items.length % columns !== 0) {
-      currentY += rowHeight + gutter;
-    }
-
-    return currentY;
-  }
-
-  private drawSummaryCard(
-    doc: jsPDF,
-    item: SummaryCardItem,
-    x: number,
-    y: number,
-    width: number,
-    lineHeight: number,
-    layout: SummaryCardLayout
-  ): number {
-    doc.setFillColor(PDF_ACCENT_LIGHT.r, PDF_ACCENT_LIGHT.g, PDF_ACCENT_LIGHT.b);
-    doc.setDrawColor(PDF_BORDER_COLOR.r, PDF_BORDER_COLOR.g, PDF_BORDER_COLOR.b);
-    doc.roundedRect(x, y, width, layout.height, 3, 3, 'FD');
-    doc.setDrawColor(0, 0, 0);
-
-    doc.setFillColor(PDF_ACCENT_COLOR.r, PDF_ACCENT_COLOR.g, PDF_ACCENT_COLOR.b);
-    doc.roundedRect(x, y, width, 3, 3, 'F');
-
-    const labelY = y + layout.verticalPadding + lineHeight - 1;
-    doc.setFont(PDF_ARABIC_FONT_NAME, 'bold');
-    doc.setFontSize(11);
-    doc.setTextColor(PDF_ACCENT_COLOR.r, PDF_ACCENT_COLOR.g, PDF_ACCENT_COLOR.b);
-    doc.text(item.titleEn, x + layout.horizontalPadding, labelY);
-    this.drawArabicText(
-      doc,
-      item.titleAr,
-      x + width - layout.horizontalPadding,
-      labelY,
-      lineHeight,
-      { align: 'right' }
-    );
-
-    doc.setFont(PDF_ARABIC_FONT_NAME, 'bold');
-    doc.setFontSize(12);
-    doc.setTextColor(PDF_TEXT_PRIMARY.r, PDF_TEXT_PRIMARY.g, PDF_TEXT_PRIMARY.b);
-    let englishY = y + layout.verticalPadding + lineHeight + 2;
-    for (const line of layout.englishLines) {
-      doc.text(line, x + layout.horizontalPadding, englishY);
-      englishY += lineHeight;
-    }
-
-    this.drawArabicText(
-      doc,
-      layout.arabicLines,
-      x + width - layout.horizontalPadding,
-      y + layout.verticalPadding + lineHeight + 2,
-      lineHeight,
-      { align: 'right' }
-    );
-
-    doc.setFont(PDF_ARABIC_FONT_NAME, 'normal');
-    doc.setFontSize(12);
-    doc.setTextColor(PDF_TEXT_PRIMARY.r, PDF_TEXT_PRIMARY.g, PDF_TEXT_PRIMARY.b);
-
-    return layout.height;
-  }
-
-  private buildSummaryCardLayout(
-    doc: jsPDF,
-    item: SummaryCardItem,
-    width: number,
-    lineHeight: number
-  ): SummaryCardLayout {
-    const horizontalPadding = 8;
-    const verticalPadding = 8;
-    const availableWidth = width - horizontalPadding * 2;
-    const englishLines = this.normalizeLines(doc.splitTextToSize(item.value, availableWidth));
-    const arabicLines = this.normalizeLines(
-      doc.splitTextToSize(item.valueAr ?? item.value, availableWidth)
-    );
-    const contentHeight = Math.max(
-      englishLines.length * lineHeight,
-      arabicLines.length * lineHeight
-    );
-    const height = verticalPadding * 2 + lineHeight + contentHeight + 2;
-    return {
-      englishLines,
-      arabicLines,
-      height,
-      horizontalPadding,
-      verticalPadding
-    };
-  }
-
-  private drawSectionDivider(
-    doc: jsPDF,
-    y: number,
-    left: number,
-    right: number
-  ): number {
-    y = this.ensurePdfSpace(doc, y, 6);
-    doc.setDrawColor(PDF_BORDER_COLOR.r, PDF_BORDER_COLOR.g, PDF_BORDER_COLOR.b);
-    doc.setLineWidth(0.3);
-    doc.line(left, y, right, y);
-    doc.setDrawColor(0, 0, 0);
-    return y + 6;
-  }
-
-  private drawSectionHeader(
-    doc: jsPDF,
-    titleEn: string,
-    titleAr: string,
-    x: number,
-    y: number,
-    maxWidth: number
-  ): number {
-    y = this.ensurePdfSpace(doc, y, 12);
-    doc.setFont(PDF_ARABIC_FONT_NAME, 'bold');
-    doc.setFontSize(13);
-    doc.setTextColor(PDF_ACCENT_COLOR.r, PDF_ACCENT_COLOR.g, PDF_ACCENT_COLOR.b);
-    doc.text(titleEn, x, y);
-    this.drawArabicText(doc, titleAr, x + maxWidth, y, 6, { align: 'right' });
-    doc.setFontSize(12);
-    doc.setFont(PDF_ARABIC_FONT_NAME, 'normal');
-    doc.setTextColor(PDF_TEXT_PRIMARY.r, PDF_TEXT_PRIMARY.g, PDF_TEXT_PRIMARY.b);
-    return y + 6;
-  }
-
-  private drawKeyValue(
-    doc: jsPDF,
-    label: string,
-    value: string,
-    x: number,
-    y: number,
-    maxWidth: number,
-    lineHeight = 6,
-    options: KeyValueOptions = {}
-  ): number {
-    const safeValue = value && value.trim().length > 0 ? value : '—';
-    const englishLines = this.normalizeLines(doc.splitTextToSize(safeValue, maxWidth));
-    const arabicLines =
-      options.labelAr || options.valueAr
-        ? this.normalizeLines(
-            doc.splitTextToSize(options.valueAr ?? safeValue, maxWidth)
+    const styles = this.buildPrintStyles();
+    const attendanceRateRowHtml =
+      attendanceRateNormalized !== null
+        ? this.buildPrintRow(
+            'Attendance Rate',
+            attendanceRateEn,
+            'نسبة الحضور',
+            attendanceRateAr
           )
-        : [];
-    const contentHeight = Math.max(
-      englishLines.length * lineHeight,
-      arabicLines.length * lineHeight
-    );
-    const paddingY = 3;
-    const blockHeight = paddingY * 2 + lineHeight + contentHeight;
+        : '';
+    const documentTitleSuffix = invoiceNumber !== '—' ? ` #${invoiceNumber}` : '';
+    const documentTitle = `Teacher Salary Invoice${documentTitleSuffix}`;
 
-    y = this.ensurePdfSpace(doc, y, blockHeight + 2);
-
-    if (options.highlight) {
-      doc.setFillColor(PDF_ACCENT_LIGHT.r, PDF_ACCENT_LIGHT.g, PDF_ACCENT_LIGHT.b);
-      doc.setDrawColor(PDF_BORDER_COLOR.r, PDF_BORDER_COLOR.g, PDF_BORDER_COLOR.b);
-      doc.roundedRect(x, y, maxWidth, blockHeight, 3, 3, 'FD');
-      doc.setDrawColor(0, 0, 0);
-    }
-
-    const labelY = y + paddingY + lineHeight - 1;
-    doc.setFont(PDF_ARABIC_FONT_NAME, 'bold');
-    doc.setFontSize(11);
-    doc.setTextColor(PDF_TEXT_MUTED.r, PDF_TEXT_MUTED.g, PDF_TEXT_MUTED.b);
-    doc.text(`${label}`, x, labelY);
-    if (options.labelAr) {
-      this.drawArabicText(doc, options.labelAr, x + maxWidth, labelY, lineHeight, {
-        align: 'right'
-      });
-    }
-
-    doc.setFont(
-      PDF_ARABIC_FONT_NAME,
-      options.highlight ? 'bold' : 'normal'
-    );
-    doc.setFontSize(options.highlight ? 12 : 11);
-    doc.setTextColor(
-      options.highlight ? PDF_ACCENT_COLOR.r : PDF_TEXT_PRIMARY.r,
-      options.highlight ? PDF_ACCENT_COLOR.g : PDF_TEXT_PRIMARY.g,
-      options.highlight ? PDF_ACCENT_COLOR.b : PDF_TEXT_PRIMARY.b
-    );
-    let englishY = y + paddingY + lineHeight + 2;
-    for (const line of englishLines) {
-      doc.text(line, x, englishY);
-      englishY += lineHeight;
-    }
-
-    if (options.labelAr || options.valueAr) {
-      const displayLines = arabicLines.length ? arabicLines : englishLines;
-      this.drawArabicText(
-        doc,
-        displayLines,
-        x + maxWidth,
-        y + paddingY + lineHeight + 2,
-        lineHeight,
-        { align: 'right' }
-      );
-    }
-
-    doc.setFont(PDF_ARABIC_FONT_NAME, 'normal');
-    doc.setFontSize(12);
-    doc.setTextColor(PDF_TEXT_PRIMARY.r, PDF_TEXT_PRIMARY.g, PDF_TEXT_PRIMARY.b);
-
-    return y + blockHeight + 2;
-  }
-
-  private ensurePdfSpace(doc: jsPDF, y: number, requiredHeight: number): number {
-    const topMargin = 20;
-    const bottomMargin = 20;
-    const pageHeight = doc.internal.pageSize.getHeight();
-    if (y < topMargin) {
-      return topMargin;
-    }
-    if (y + requiredHeight > pageHeight - bottomMargin) {
-      doc.addPage();
-      this.preparePdfDocument(doc);
-      return topMargin;
-    }
-    return y;
-  }
-
-  private drawArabicText(
-    doc: jsPDF,
-    text: string | string[],
-    x: number,
-    y: number,
-    lineHeight: number,
-    options: TextOptionsLight = {}
-  ): number {
-    const lines = this.normalizeLines(text);
-    const mergedOptions: TextOptionsLight = {
-      align: 'right',
-      isInputRtl: true,
-      isOutputRtl: true,
-      ...options
-    };
-    let currentY = y;
-    for (const line of lines) {
-      doc.text(line, x, currentY, mergedOptions);
-      currentY += lineHeight;
-    }
-    return currentY;
-  }
-
-  private normalizeLines(value: string | string[]): string[] {
-    if (Array.isArray(value)) {
-      return value.length ? value : [''];
-    }
-    const text = value ?? '';
-    return text.length ? [text] : [''];
-  }
-
-  private preparePdfDocument(doc: jsPDF): void {
-    this.ensurePdfFonts(doc);
-    doc.setFont(PDF_ARABIC_FONT_NAME, 'normal');
-    doc.setFontSize(12);
-    doc.setTextColor(PDF_TEXT_PRIMARY.r, PDF_TEXT_PRIMARY.g, PDF_TEXT_PRIMARY.b);
-  }
-
-  private ensurePdfFonts(doc: jsPDF): void {
-    if (!TeacherSalaryComponent.pdfFontsRegistered) {
-      doc.addFileToVFS(PDF_ARABIC_FONT_FILE, PDF_ARABIC_FONT_VFS);
-      doc.addFont(PDF_ARABIC_FONT_FILE, PDF_ARABIC_FONT_NAME, 'normal', 'Identity-H');
-      doc.addFont(PDF_ARABIC_FONT_FILE, PDF_ARABIC_FONT_NAME, 'bold', 'Identity-H');
-      TeacherSalaryComponent.pdfFontsRegistered = true;
-    }
-  }
-
-  private drawInvoiceHeader(
-    doc: jsPDF,
-    x: number,
-    y: number,
-    width: number,
-    titleEn: string,
-    titleAr: string
-  ): number {
-    const headerHeight = 28;
-    y = this.ensurePdfSpace(doc, y, headerHeight + 6);
-    doc.setFillColor(PDF_ACCENT_COLOR.r, PDF_ACCENT_COLOR.g, PDF_ACCENT_COLOR.b);
-    doc.roundedRect(x, y, width, headerHeight, 4, 4, 'F');
-    const titleY = y + headerHeight / 2 + 1;
-    doc.setFont(PDF_ARABIC_FONT_NAME, 'bold');
-    doc.setFontSize(18);
-    doc.setTextColor(255, 255, 255);
-    doc.text(titleEn, x + 10, titleY, { baseline: 'middle' });
-    this.drawArabicText(doc, titleAr, x + width - 10, titleY, 6, {
-      align: 'right',
-      baseline: 'middle'
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>${this.escapeHtml(documentTitle)}</title>
+  <style>
+${styles}
+  </style>
+</head>
+<body>
+  <div class="print-page">
+    <header class="print-header">
+      <div class="header-text">
+        <h1>Teacher Salary Invoice</h1>
+        <h2 dir="rtl">فاتورة راتب المعلم</h2>
+      </div>
+      <div class="header-meta">
+        <span class="label">Invoice</span>
+        <span class="value">${this.escapeHtml(invoiceNumber)}</span>
+        <span class="value" dir="rtl">${this.escapeHtml(invoiceNumberAr)}</span>
+      </div>
+    </header>
+    <section class="summary-cards">
+      ${summaryCardsHtml}
+    </section>
+    <section class="print-section">
+      <div class="section-title">
+        <h3>Invoice Details</h3>
+        <h4 dir="rtl">بيانات الفاتورة</h4>
+      </div>
+      <div class="print-grid">
+        ${infoRowsHtml}
+      </div>
+    </section>
+    <section class="print-section">
+      <div class="section-title">
+        <h3>Salary Breakdown</h3>
+        <h4 dir="rtl">تفاصيل الراتب</h4>
+      </div>
+      <div class="print-grid">
+        ${salaryRowsHtml}
+      </div>
+    </section>
+    <section class="print-section">
+      <div class="section-title">
+        <h3>Attendance Summary</h3>
+        <h4 dir="rtl">ملخص الحضور</h4>
+      </div>
+      <div class="print-grid">
+        ${attendanceRowsHtml}
+        ${attendanceRateRowHtml}
+      </div>
+    </section>
+    <section class="print-section">
+      <div class="section-title">
+        <h3>Notes</h3>
+        <h4 dir="rtl">ملاحظات</h4>
+      </div>
+      <div class="notes-card">
+        <p>${this.escapeHtml(notesEn)}</p>
+        <p dir="rtl">${this.escapeHtml(notesAr)}</p>
+      </div>
+    </section>
+  </div>
+  <script>
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        try {
+          window.print();
+        } catch (err) {
+          console.error(err);
+        }
+      }, 300);
     });
-    doc.setFont(PDF_ARABIC_FONT_NAME, 'normal');
-    doc.setFontSize(12);
-    doc.setTextColor(PDF_TEXT_PRIMARY.r, PDF_TEXT_PRIMARY.g, PDF_TEXT_PRIMARY.b);
-    return y + headerHeight + 8;
+  </script>
+</body>
+</html>`;
+  }
+
+  private buildPrintStyles(): string {
+    return `
+      :root {
+        color-scheme: only light;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 24px;
+        background: ${PRINT_ACCENT_LIGHT};
+        color: ${PRINT_TEXT_PRIMARY};
+        font-family: 'Cairo', 'Tajawal', 'Helvetica Neue', Arial, sans-serif;
+        line-height: 1.6;
+      }
+      .print-page {
+        max-width: 860px;
+        margin: 0 auto;
+        background: #fff;
+        padding: 32px;
+        border-radius: 20px;
+        box-shadow: 0 24px 48px rgba(19, 66, 115, 0.12);
+      }
+      .print-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        background: ${PRINT_ACCENT_COLOR};
+        color: #fff;
+        padding: 24px;
+        border-radius: 16px;
+      }
+      .header-text h1 {
+        margin: 0;
+        font-size: 28px;
+      }
+      .header-text h2 {
+        margin: 4px 0 0;
+        font-size: 22px;
+        font-weight: 500;
+      }
+      .header-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        font-weight: 600;
+      }
+      .header-meta .label {
+        text-transform: uppercase;
+        font-size: 12px;
+        letter-spacing: 1px;
+        opacity: 0.8;
+      }
+      .header-meta .value {
+        font-size: 20px;
+      }
+      .summary-cards {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        margin: 28px 0;
+      }
+      .summary-card {
+        background: ${PRINT_ACCENT_LIGHT};
+        border: 1px solid ${PRINT_BORDER_COLOR};
+        border-radius: 14px;
+        padding: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .summary-card .summary-title {
+        font-weight: 600;
+        color: ${PRINT_TEXT_MUTED};
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .summary-card .summary-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: ${PRINT_ACCENT_COLOR};
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .print-section + .print-section {
+        margin-top: 32px;
+      }
+      .section-title h3,
+      .section-title h4 {
+        margin: 0;
+      }
+      .section-title h4 {
+        color: ${PRINT_TEXT_MUTED};
+        font-weight: 500;
+      }
+      .print-grid {
+        margin-top: 16px;
+        display: grid;
+        gap: 12px;
+      }
+      .print-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
+        align-items: stretch;
+        border: 1px solid ${PRINT_BORDER_COLOR};
+        border-radius: 12px;
+        padding: 14px 18px;
+        background: #fff;
+      }
+      .print-row.highlight {
+        border-color: ${PRINT_ACCENT_COLOR};
+        background: rgba(19, 66, 115, 0.08);
+      }
+      .row-text {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .row-text .label {
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: ${PRINT_TEXT_MUTED};
+        letter-spacing: 0.5px;
+      }
+      .row-text .value {
+        font-size: 16px;
+        font-weight: 600;
+        color: ${PRINT_TEXT_PRIMARY};
+        word-break: break-word;
+      }
+      .row-text.ar {
+        text-align: right;
+        direction: rtl;
+      }
+      .row-text.ar .value {
+        font-family: 'Cairo', 'Tajawal', 'Helvetica Neue', Arial, sans-serif;
+      }
+      .notes-card {
+        border: 1px dashed ${PRINT_ACCENT_COLOR};
+        border-radius: 12px;
+        padding: 18px;
+        background: ${PRINT_ACCENT_LIGHT};
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .notes-card p {
+        margin: 0;
+        color: ${PRINT_TEXT_MUTED};
+        font-size: 15px;
+      }
+      @media print {
+        body {
+          background: #fff;
+          padding: 0;
+        }
+        .print-page {
+          box-shadow: none;
+          border-radius: 0;
+        }
+      }
+    `;
+  }
+
+  private buildPrintRow(
+    labelEn: string,
+    valueEn: string,
+    labelAr: string,
+    valueAr: string,
+    options: { highlight?: boolean } = {}
+  ): string {
+    const classes = ['print-row'];
+    if (options.highlight) {
+      classes.push('highlight');
+    }
+    return `
+      <div class="${classes.join(' ')}">
+        <div class="row-text en">
+          <span class="label">${this.escapeHtml(labelEn)}</span>
+          <span class="value">${this.escapeHtml(valueEn)}</span>
+        </div>
+        <div class="row-text ar" dir="rtl">
+          <span class="label">${this.escapeHtml(labelAr)}</span>
+          <span class="value">${this.escapeHtml(valueAr)}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  private buildSummaryCardHtml(card: SummaryCardItem): string {
+    return `
+      <div class="summary-card">
+        <div class="summary-title">
+          <span>${this.escapeHtml(card.titleEn)}</span>
+          <span dir="rtl">${this.escapeHtml(card.titleAr)}</span>
+        </div>
+        <div class="summary-value">
+          <span>${this.escapeHtml(card.value)}</span>
+          <span dir="rtl">${this.escapeHtml(card.valueAr ?? card.value)}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  private escapeHtml(value: string | null | undefined): string {
+    if (value === null || value === undefined) {
+      return '';
+    }
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   private formatArabicNumber(value: number | null | undefined): string {
@@ -2069,7 +1888,7 @@ export class TeacherSalaryComponent
     return value;
   }
 
-  private resolveInvoiceMonthArabic(context: InvoicePdfContext): string {
+  private resolveInvoiceMonthArabic(context: InvoicePrintContext): string {
     const invoiceMonthValue = this.extractMonthValue(context.invoice);
     if (invoiceMonthValue) {
       const formatted = this.formatArabicMonthString(invoiceMonthValue);
@@ -2085,62 +1904,39 @@ export class TeacherSalaryComponent
     return selected ? this.formatArabicMonthString(selected.toISOString()) : '—';
   }
 
-  private getStatusLabelAr(invoice: TeacherSalaryInvoice | null): string {
-    if (!invoice) {
-      return '—';
-    }
-    return this.isInvoicePaid(invoice) ? 'مدفوعة' : 'غير مدفوعة';
-  }
+  private presentInvoicePrint(html: string, fileName: string, blob?: Blob): void {
+    const printableBlob = blob ?? new Blob([html], { type: 'text/html' });
 
-  private parseDate(value: unknown): Date | null {
-    if (value instanceof Date) {
-      return Number.isNaN(value.getTime()) ? null : value;
-    }
-    if (typeof value === 'number' && Number.isFinite(value)) {
-      const date = new Date(value);
-      return Number.isNaN(date.getTime()) ? null : date;
-    }
-    if (typeof value === 'string') {
-      const trimmed = value.trim();
-      if (!trimmed) {
-        return null;
+    if (typeof window !== 'undefined') {
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.open();
+        printWindow.document.write(html);
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => {
+          try {
+            printWindow.print();
+          } catch {
+            // Ignore print errors.
+          }
+        }, 400);
+        return;
       }
-      const parsed = new Date(trimmed);
-      return Number.isNaN(parsed.getTime()) ? null : parsed;
-    }
-    return null;
-  }
-
-  private presentInvoicePdf(doc: jsPDF, fileName: string, blob?: Blob): void {
-    try {
-      if (typeof doc.autoPrint === 'function') {
-        doc.autoPrint();
-      }
-    } catch {
-      // Ignore failures from autoPrint support on different browsers.
-    }
-
-    const pdfBlob = blob ?? doc.output('blob');
-    const blobUrl = typeof URL !== 'undefined' ? URL.createObjectURL(pdfBlob) : '';
-
-    if (typeof window !== 'undefined' && blobUrl) {
-      const printWindow = window.open(blobUrl, '_blank');
-      if (!printWindow && typeof document !== 'undefined') {
+      if (typeof URL !== 'undefined') {
+        const blobUrl = URL.createObjectURL(printableBlob);
         const anchor = document.createElement('a');
         anchor.href = blobUrl;
         anchor.download = fileName;
         anchor.click();
+        setTimeout(() => {
+          try {
+            URL.revokeObjectURL(blobUrl);
+          } catch {
+            // Ignore revoke errors.
+          }
+        }, 120000);
       }
-    }
-
-    if (blobUrl) {
-      setTimeout(() => {
-        try {
-          URL.revokeObjectURL(blobUrl);
-        } catch {
-          // Ignore revoke errors.
-        }
-      }, 120000);
     }
   }
 
@@ -2159,7 +1955,7 @@ export class TeacherSalaryComponent
     return summaryName ?? '—';
   }
 
-  private resolveInvoiceMonth(context: InvoicePdfContext): string {
+  private resolveInvoiceMonth(context: InvoicePrintContext): string {
     const invoiceMonth = this.formatMonth(context.invoice);
     if (invoiceMonth && invoiceMonth !== '—') {
       return invoiceMonth;
