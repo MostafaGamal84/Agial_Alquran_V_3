@@ -328,6 +328,9 @@ export class TeacherSalaryComponent
             if (this.selectedInvoice?.id === invoiceId) {
               this.loadInvoiceDetails(invoiceId, false);
             }
+            if (newValue) {
+              this.generateInvoicePdf(invoiceId, invoiceForPdf);
+            }
           } else {
             event.source.checked = !newValue;
             this.handleErrors(
@@ -1032,7 +1035,6 @@ export class TeacherSalaryComponent
     const invoice = value as TeacherSalaryInvoice;
     return Number.isFinite(invoice.id ?? NaN);
   }
-
   private toSlug(value: string): string {
     const normalized = value
       .toLowerCase()
@@ -1510,7 +1512,6 @@ export class TeacherSalaryComponent
     }
     return null;
   }
-
   private isReceiptDownloadError(error: unknown): boolean {
     if (error instanceof HttpErrorResponse) {
       return error.url?.includes('/GetPaymentReceipt') ?? false;
