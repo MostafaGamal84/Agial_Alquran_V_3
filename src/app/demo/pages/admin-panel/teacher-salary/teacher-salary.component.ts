@@ -45,6 +45,7 @@ import {
   finalize,
   switchMap
 } from 'rxjs/operators';
+import { jsPDF } from 'jspdf';
 
 import {
   TeacherSalaryService,
@@ -289,6 +290,7 @@ export class TeacherSalaryComponent
     }
 
     const invoiceSnapshot: TeacherSalaryInvoice = { ...invoice };
+
     const newValue = event.checked;
     const payload = this.buildUpdatePaymentPayload(invoice, newValue);
     this.updatingStatusIds.add(invoiceId);
@@ -319,9 +321,13 @@ export class TeacherSalaryComponent
             if (this.canGenerateInvoices && newValue) {
               this.queueInvoicePdfGeneration(invoiceId, invoiceSnapshot);
             }
+
             this.loadInvoices();
             if (this.selectedInvoice?.id === invoiceId) {
               this.loadInvoiceDetails(invoiceId, false);
+            }
+            if (newValue) {
+              this.generateInvoicePdf(invoiceId, invoiceForPdf);
             }
           } else {
             event.source.checked = !newValue;
@@ -1445,6 +1451,7 @@ export class TeacherSalaryComponent
     }
     return null;
   }
+
 
   private isReceiptDownloadError(error: unknown): boolean {
     if (error instanceof HttpErrorResponse) {
