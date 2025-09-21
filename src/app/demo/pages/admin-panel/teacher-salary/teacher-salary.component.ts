@@ -45,7 +45,6 @@ import {
   finalize,
   switchMap
 } from 'rxjs/operators';
-import { jsPDF } from 'jspdf';
 
 import {
   TeacherSalaryService,
