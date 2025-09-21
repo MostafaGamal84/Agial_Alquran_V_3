@@ -1131,7 +1131,15 @@ export class TeacherSalaryComponent
         rawValue === null ||
         rawValue === undefined ||
         typeof rawValue === 'function' ||
-        typeof rawValue === 'object'
+        (typeof rawValue === 'object' && rawValue !== null)
+      ) {
+        continue;
+      }
+
+      if (
+        typeof rawValue !== 'string' &&
+        typeof rawValue !== 'number' &&
+        typeof rawValue !== 'boolean'
       ) {
         continue;
       }
