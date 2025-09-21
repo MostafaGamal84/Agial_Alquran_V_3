@@ -67,6 +67,7 @@ import {
 } from 'src/app/@theme/services/lookup.service';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
+import { environment } from 'src/environments/environment';
 
 export const MONTH_FORMATS = {
   parse: { dateInput: 'MMMM YYYY' },
@@ -147,6 +148,7 @@ export class TeacherSalaryComponent
   private lookupService = inject(LookupService);
   private authenticationService = inject(AuthenticationService);
 
+  private readonly apiBaseUrl = environment.apiUrl.replace(/\/+$/, '');
   private subscriptions = new Subscription();
   private readonly numberFormatter = new Intl.NumberFormat(undefined, {
     maximumFractionDigits: 0
@@ -632,17 +634,31 @@ export class TeacherSalaryComponent
   }
 
   getReceiptUrl(invoice: TeacherSalaryInvoice): string | null {
-    const candidates: unknown[] = [
+    const directCandidates: unknown[] = [
       invoice.receiptUrl,
       (invoice as Record<string, unknown>)['receiptLink'],
       (invoice as Record<string, unknown>)['receipt'],
       (invoice as Record<string, unknown>)['receiptUrl']
     ];
-    for (const candidate of candidates) {
+    for (const candidate of directCandidates) {
       if (typeof candidate === 'string' && candidate.trim().length > 0) {
-        return candidate;
+        const trimmed = candidate.trim();
+        if (/^(https?:)?\/\//i.test(trimmed) || /^blob:/i.test(trimmed) || /^data:/i.test(trimmed)) {
+          return trimmed;
+        }
+        return this.toAbsoluteApiUrl(trimmed);
       }
     }
+
+    const receiptPath = (invoice as Record<string, unknown>)['receiptPath'];
+    if (typeof receiptPath === 'string' && receiptPath.trim().length > 0) {
+      return this.toAbsoluteApiUrl(receiptPath);
+    }
+
+    if (invoice.id) {
+      return `${this.apiBaseUrl}/api/TeacherSallary/GetPaymentReceipt?invoiceId=${invoice.id}`;
+    }
+
     return null;
   }
 
@@ -838,7 +854,9 @@ export class TeacherSalaryComponent
       invoice.payedAt,
       (invoice as Record<string, unknown>)['createdAt'],
       (invoice as Record<string, unknown>)['invoiceDate'],
-      (invoice as Record<string, unknown>)['updatedAt']
+      (invoice as Record<string, unknown>)['updatedAt'],
+      (invoice as Record<string, unknown>)['modifiedAt'],
+      (invoice as Record<string, unknown>)['modefiedAt']
     ];
     for (const candidate of fallbackCandidates) {
       if (candidate instanceof Date) {
@@ -894,6 +912,7 @@ export class TeacherSalaryComponent
       return null;
     }
     const fields = [
+      'salary',
       'salaryAmount',
       'totalSalary',
       'salaryTotal',
@@ -942,8 +961,15 @@ export class TeacherSalaryComponent
       }
     };
 
-    addMetric('Attendance', ['attendanceCount', 'totalAttendance', 'attendedSessions'], 'number');
-    addMetric('Absence', ['absenceCount', 'totalAbsence', 'missedSessions'], 'number');
+    addMetric('Reports', ['totalReports', 'reportCount'], 'number');
+    addMetric(
+      'Attendance',
+      ['presentCount', 'attendanceCount', 'totalAttendance', 'attendedSessions'],
+      'number'
+    );
+    addMetric('Absence (Excused)', ['absentWithExcuseCount'], 'number');
+    addMetric('Absence (Unexcused)', ['absentWithoutExcuseCount'], 'number');
+    addMetric('Absence (Total)', ['absenceCount', 'totalAbsence', 'missedSessions'], 'number');
     addMetric('Sessions', ['sessionCount', 'lessonsCount'], 'number');
     addMetric('Teaching Minutes', ['teachingMinutes', 'totalMinutes'], 'number', 'min');
     addMetric('Overtime Minutes', ['overtimeMinutes'], 'number', 'min');
@@ -1110,6 +1136,15 @@ export class TeacherSalaryComponent
     const invoice = value as TeacherSalaryInvoice;
     return Number.isFinite(invoice.id ?? NaN);
   }
+
+  private toAbsoluteApiUrl(path: string): string {
+    if (/^https?:\/\//i.test(path)) {
+      return path;
+    }
+    const sanitized = path.replace(/^\/+/, '');
+    return `${this.apiBaseUrl}/${sanitized}`;
+  }
+
   private toSlug(value: string): string {
     const normalized = value
       .toLowerCase()
