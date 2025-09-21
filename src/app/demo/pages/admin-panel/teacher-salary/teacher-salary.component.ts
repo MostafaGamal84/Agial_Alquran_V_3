@@ -1739,7 +1739,7 @@ export class TeacherSalaryComponent
     doc.setDrawColor(0, 0, 0);
 
     doc.setFillColor(PDF_ACCENT_COLOR.r, PDF_ACCENT_COLOR.g, PDF_ACCENT_COLOR.b);
-    doc.roundedRect(x, y, width, 3, 3, 3, 'F');
+    doc.roundedRect(x, y, width, 3, 3, 'F');
 
     const labelY = y + layout.verticalPadding + lineHeight - 1;
     doc.setFont(PDF_ARABIC_FONT_NAME, 'bold');
