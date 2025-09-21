@@ -21,12 +21,17 @@ export interface TeacherSalaryInvoice {
   teacherId?: number;
   teacherName?: string;
   month?: string;
+  salary?: number;
   salaryAmount?: number;
   totalSalary?: number;
   isPayed?: boolean;
   payedAt?: string | null;
   receiptUrl?: string | null;
+  receiptPath?: string | null;
   receiptId?: number | null;
+  createdAt?: string | null;
+  modifiedAt?: string | null;
+  modefiedAt?: string | null;
   status?: string | null;
   [key: string]: unknown;
 }
@@ -35,9 +40,13 @@ export interface TeacherMonthlySummary {
   month?: string;
   teacherId?: number;
   teacherName?: string;
+  totalReports?: number;
+  presentCount?: number;
   attendanceCount?: number;
   totalAttendance?: number;
   attendedSessions?: number;
+  absentWithExcuseCount?: number;
+  absentWithoutExcuseCount?: number;
   absenceCount?: number;
   totalAbsence?: number;
   missedSessions?: number;
@@ -46,6 +55,7 @@ export interface TeacherMonthlySummary {
   overtimeMinutes?: number;
   sessionCount?: number;
   lessonsCount?: number;
+  salary?: number;
   salaryTotal?: number;
   totalSalary?: number;
   baseSalary?: number;
@@ -124,16 +134,21 @@ export class TeacherSalaryService {
   ): Observable<
     ApiResponse<TeacherSalaryInvoice | TeacherSalaryInvoiceDetails | boolean | null>
   > {
-    const formData = new FormData();
-    Object.entries(model).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        formData.append(key, String(value));
-      }
-    });
+    const createFormData = () => {
+      const formData = new FormData();
+      Object.entries(model).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          formData.append(key, String(value));
+        }
+      });
+      return formData;
+    };
 
-    return this.http.patch<
+    const endpoint = `${this.baseUrl}/invoices/${model.id}/payment`;
+
+    return this.http.post<
       ApiResponse<TeacherSalaryInvoice | TeacherSalaryInvoiceDetails | boolean | null>
-    >(`${this.baseUrl}/invoices/${model.id}/payment`, formData);
+    >(endpoint, createFormData());
   }
 
   uploadInvoiceReceipt(
