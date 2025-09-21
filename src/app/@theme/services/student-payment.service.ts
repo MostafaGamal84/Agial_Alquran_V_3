@@ -77,6 +77,14 @@ export class StudentPaymentService {
     );
   }
 
+  downloadPaymentReceipt(paymentId: number): Observable<Blob> {
+    const params = new HttpParams().set('paymentId', paymentId.toString());
+    return this.http.get(`${environment.apiUrl}/api/StudentPayment/GetPaymentReceipt`, {
+      params,
+      responseType: 'blob'
+    });
+  }
+
   updatePayment(
     model: UpdatePaymentDto,
     receipt?: File
