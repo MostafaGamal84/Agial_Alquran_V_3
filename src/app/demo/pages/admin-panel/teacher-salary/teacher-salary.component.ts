@@ -333,13 +333,8 @@ export class TeacherSalaryComponent
             this.toastService.success(
               `Invoice marked as ${newValue ? 'paid' : 'unpaid'}.`
             );
-            if (this.canGenerateInvoices && newValue) {
-              this.queueInvoicePdfGeneration(invoiceId, updatedInvoice);
-            }
+            this.applyInvoiceUpdate(updatedInvoice);
             this.loadInvoices();
-            if (this.selectedInvoice?.id === invoiceId) {
-              this.loadInvoiceDetails(invoiceId, false);
-            }
           } else {
             event.source.checked = !newValue;
             this.handleErrors(
@@ -1153,29 +1148,6 @@ export class TeacherSalaryComponent
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
     return normalized;
-  }
-
-  private queueInvoicePdfGeneration(
-    invoiceId: number,
-    fallbackInvoice: TeacherSalaryInvoice
-  ): void {
-    if (!this.canGenerateInvoices) {
-      return;
-    }
-
-    const subscription = this.getInvoicePdfContext(
-      invoiceId,
-      fallbackInvoice
-    ).subscribe({
-      next: (context) => {
-        this.generateInvoicePdf(context);
-      },
-      error: (error) => {
-        this.handleInvoicePdfError(error, 'Failed to generate the invoice PDF.');
-      }
-    });
-
-    this.subscriptions.add(subscription);
   }
 
   private getInvoicePdfContext(
