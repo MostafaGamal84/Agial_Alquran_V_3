@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
@@ -69,9 +69,16 @@ export interface TeacherSalaryInvoiceDetails {
   [key: string]: unknown;
 }
 
-export interface UpdateInvoiceStatusRequest {
-  isPayed: boolean;
-  payedAt?: string | null;
+export interface UpdateTeacherPaymentDto {
+  id: number;
+  amount?: number | null;
+  payStatue?: boolean | null;
+  isCancelled?: boolean | null;
+}
+
+export interface ReceiptUpload {
+  file: Blob;
+  fileName: string;
 }
 
 export interface GenerateMonthlyResponse {
@@ -111,14 +118,34 @@ export class TeacherSalaryService {
     );
   }
 
-  updateInvoiceStatus(
-    invoiceId: number,
-    body: UpdateInvoiceStatusRequest
-  ): Observable<ApiResponse<TeacherSalaryInvoice | boolean | null>> {
-    return this.http.put<ApiResponse<TeacherSalaryInvoice | boolean | null>>(
-      `${environment.apiUrl}/api/TeacherSallary/Invoice/${invoiceId}/Status`,
-      body
+  updatePayment(
+    model: UpdateTeacherPaymentDto,
+    receipt?: ReceiptUpload
+  ): Observable<ApiResponse<boolean>> {
+    const formData = new FormData();
+    Object.entries(model).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        formData.append(key, String(value));
+      }
+    });
+
+    if (receipt) {
+      formData.append('ReceiptPath', receipt.file, receipt.fileName);
+    }
+
+    return this.http.post<ApiResponse<boolean>>(
+      `${environment.apiUrl}/api/TeacherSallary/UpdatePayment`,
+      formData
     );
+  }
+
+  getPaymentReceipt(invoiceId: number): Observable<HttpResponse<Blob>> {
+    const params = new HttpParams().set('invoiceId', invoiceId.toString());
+    return this.http.get(`${environment.apiUrl}/api/TeacherSallary/GetPaymentReceipt`, {
+      params,
+      observe: 'response',
+      responseType: 'blob'
+    });
   }
 
   getMonthlySummary(
