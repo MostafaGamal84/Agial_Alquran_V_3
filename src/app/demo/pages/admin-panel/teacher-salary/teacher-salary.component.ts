@@ -52,6 +52,7 @@ import {
   TeacherMonthlySummary,
   TeacherSalaryInvoiceDetails,
   ApiError,
+  ApiResponse,
   GenerateMonthlyResponse,
   UpdateTeacherPaymentDto,
   ReceiptUpload
@@ -289,7 +290,6 @@ export class TeacherSalaryComponent
     }
 
     const invoiceSnapshot: TeacherSalaryInvoice = { ...invoice };
-
     const newValue = event.checked;
     const payload = this.buildUpdatePaymentPayload(invoice, newValue);
     this.updatingStatusIds.add(invoiceId);
@@ -314,13 +314,16 @@ export class TeacherSalaryComponent
       .subscribe({
         next: (response) => {
           if (response.isSuccess) {
+            const updatedInvoice = this.mergeInvoiceData(
+              invoiceSnapshot,
+              this.extractInvoiceFromStatusResponse(response)
+            );
             this.toastService.success(
               `Invoice marked as ${newValue ? 'paid' : 'unpaid'}.`
             );
             if (this.canGenerateInvoices && newValue) {
-              this.queueInvoicePdfGeneration(invoiceId, invoiceSnapshot);
+              this.queueInvoicePdfGeneration(invoiceId, updatedInvoice);
             }
-
             this.loadInvoices();
             if (this.selectedInvoice?.id === invoiceId) {
               this.loadInvoiceDetails(invoiceId, false);
@@ -973,6 +976,65 @@ export class TeacherSalaryComponent
     return `teacher-invoice-${teacher}-${month}${idPart}.pdf`;
   }
 
+  private mergeInvoiceData(
+    fallback: TeacherSalaryInvoice,
+    updates?: TeacherSalaryInvoice | null
+  ): TeacherSalaryInvoice {
+    const base = { ...fallback };
+    if (!updates) {
+      return base;
+    }
+    return { ...base, ...updates };
+  }
+
+  private extractInvoiceFromStatusResponse(
+    response: ApiResponse<
+      TeacherSalaryInvoice | TeacherSalaryInvoiceDetails | boolean | null
+    >
+  ): TeacherSalaryInvoice | null {
+    if (!response) {
+      return null;
+    }
+    return this.resolveInvoiceFromPayload(response.data);
+  }
+
+  private resolveInvoiceFromPayload(payload: unknown): TeacherSalaryInvoice | null {
+    if (!payload || typeof payload === 'boolean') {
+      return null;
+    }
+    if (this.isTeacherSalaryInvoice(payload)) {
+      return payload;
+    }
+    if (Array.isArray(payload)) {
+      const match = payload.find((item) => this.isTeacherSalaryInvoice(item));
+      return match ?? null;
+    }
+    if (typeof payload === 'object') {
+      const record = payload as Record<string, unknown>;
+      const invoiceCandidate = record['invoice'];
+      if (this.isTeacherSalaryInvoice(invoiceCandidate)) {
+        return invoiceCandidate;
+      }
+      const dataCandidate = record['data'];
+      if (dataCandidate && dataCandidate !== payload) {
+        const nested = this.resolveInvoiceFromPayload(dataCandidate);
+        if (nested) {
+          return nested;
+        }
+      }
+    }
+    return null;
+  }
+
+  private isTeacherSalaryInvoice(
+    value: unknown
+  ): value is TeacherSalaryInvoice {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      return false;
+    }
+    const invoice = value as TeacherSalaryInvoice;
+    return Number.isFinite(invoice.id ?? NaN);
+  }
   private toSlug(value: string): string {
     const normalized = value
       .toLowerCase()
@@ -1450,8 +1512,6 @@ export class TeacherSalaryComponent
     }
     return null;
   }
-
-
   private isReceiptDownloadError(error: unknown): boolean {
     if (error instanceof HttpErrorResponse) {
       return error.url?.includes('/GetPaymentReceipt') ?? false;

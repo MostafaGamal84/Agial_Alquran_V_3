@@ -121,7 +121,9 @@ export class TeacherSalaryService {
   updatePayment(
     model: UpdateTeacherPaymentDto,
     receipt?: ReceiptUpload
-  ): Observable<ApiResponse<boolean>> {
+  ): Observable<
+    ApiResponse<TeacherSalaryInvoice | TeacherSalaryInvoiceDetails | boolean | null>
+  > {
     const formData = new FormData();
     Object.entries(model).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
@@ -133,7 +135,9 @@ export class TeacherSalaryService {
       formData.append('ReceiptPath', receipt.file, receipt.fileName);
     }
 
-    return this.http.post<ApiResponse<boolean>>(
+    return this.http.post<
+      ApiResponse<TeacherSalaryInvoice | TeacherSalaryInvoiceDetails | boolean | null>
+    >(
       `${environment.apiUrl}/api/TeacherSallary/UpdatePayment`,
       formData
     );
