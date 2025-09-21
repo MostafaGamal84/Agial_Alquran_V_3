@@ -44,6 +44,7 @@ import {
   finalize,
   switchMap
 } from 'rxjs/operators';
+import { jsPDF } from 'jspdf';
 
 import {
   TeacherSalaryService,
@@ -308,9 +309,16 @@ export class TeacherSalaryComponent
             this.toastService.success(
               `Invoice marked as ${newValue ? 'paid' : 'unpaid'}.`
             );
+            const invoiceForPdf = this.extractInvoiceFromStatusResponse(
+              response.data,
+              invoice
+            );
             this.loadInvoices();
             if (this.selectedInvoice?.id === invoiceId) {
               this.loadInvoiceDetails(invoiceId, false);
+            }
+            if (newValue) {
+              this.generateInvoicePdf(invoiceId, invoiceForPdf);
             }
           } else {
             event.source.checked = !newValue;
@@ -973,6 +981,7 @@ export class TeacherSalaryComponent
     }
     if (error instanceof Error) {
       return error.message === 'RECEIPT_UNAVAILABLE';
+
     }
     return false;
   }
@@ -1062,5 +1071,6 @@ export class TeacherSalaryComponent
     }
     return null;
   }
+
 
 }
