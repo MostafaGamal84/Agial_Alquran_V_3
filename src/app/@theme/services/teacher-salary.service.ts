@@ -1,6 +1,6 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, catchError, throwError } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 export interface ApiError {
@@ -124,16 +124,35 @@ export class TeacherSalaryService {
   ): Observable<
     ApiResponse<TeacherSalaryInvoice | TeacherSalaryInvoiceDetails | boolean | null>
   > {
-    const formData = new FormData();
-    Object.entries(model).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        formData.append(key, String(value));
-      }
-    });
+    const createFormData = () => {
+      const formData = new FormData();
+      Object.entries(model).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          formData.append(key, String(value));
+        }
+      });
+      return formData;
+    };
 
-    return this.http.patch<
-      ApiResponse<TeacherSalaryInvoice | TeacherSalaryInvoiceDetails | boolean | null>
-    >(`${this.baseUrl}/invoices/${model.id}/payment`, formData);
+    const endpoint = `${this.baseUrl}/invoices/${model.id}/payment`;
+
+    return this.http
+      .patch<
+        ApiResponse<TeacherSalaryInvoice | TeacherSalaryInvoiceDetails | boolean | null>
+      >(endpoint, createFormData())
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+          if (error.status === 405) {
+            return this.http.post<
+              ApiResponse<
+                TeacherSalaryInvoice | TeacherSalaryInvoiceDetails | boolean | null
+              >
+            >(endpoint, createFormData());
+          }
+
+          return throwError(() => error);
+        })
+      );
   }
 
   uploadInvoiceReceipt(
