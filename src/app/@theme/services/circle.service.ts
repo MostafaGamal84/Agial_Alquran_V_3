@@ -18,8 +18,8 @@ export interface CircleDto {
   managers?: CircleManagerDto[];
 
   students?: CircleStudentDto[];
-  day?: DaysEnum | null;
-  time?: number | null;
+  day?: DaysEnum | string | null;
+  time?: number | string | null;
 }
 
 export interface CircleManagerDto {

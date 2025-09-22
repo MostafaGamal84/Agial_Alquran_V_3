@@ -4,8 +4,9 @@ import { MatTableDataSource } from '@angular/material/table';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { CircleDto, CircleStudentDto } from 'src/app/@theme/services/circle.service';
-import { DAY_LABELS, DaysEnum } from 'src/app/@theme/types/DaysEnum';
-import { minutesToTimeString } from 'src/app/@theme/utils/time';
+import { formatDayValue } from 'src/app/@theme/types/DaysEnum';
+import { formatTimeValue } from 'src/app/@theme/utils/time';
+
 
 
 @Component({
@@ -30,23 +31,12 @@ export class CoursesDetailsComponent implements OnInit {
     }
   }
 
-  getDayLabel(day?: DaysEnum | number | null | string): string {
-    if (day === null || day === undefined) {
-      return '';
-    }
-    if (typeof day === 'string') {
-      return day;
-    }
-    return this.dayLabelMap.get(day as DaysEnum) ?? '';
+  getDayLabel(day: CircleDto['day']): string {
+    return formatDayValue(day);
   }
 
-  getFormattedTime(time?: number | string | null): string {
-    if (time === null || time === undefined) {
-      return '';
-    }
-    if (typeof time === 'string') {
-      return time;
-    }
-    return minutesToTimeString(time);
+  getFormattedTime(time: CircleDto['time']): string {
+    return formatTimeValue(time);
+
   }
 }

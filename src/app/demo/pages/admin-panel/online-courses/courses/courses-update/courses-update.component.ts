@@ -19,8 +19,9 @@ import {
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
-import { DAY_OPTIONS, DaysEnum } from 'src/app/@theme/types/DaysEnum';
-import { minutesToTimeString, timeStringToMinutes } from 'src/app/@theme/utils/time';
+import { DAY_OPTIONS, DaysEnum, coerceDayValue } from 'src/app/@theme/types/DaysEnum';
+import { formatTimeValue, timeStringToMinutes } from 'src/app/@theme/utils/time';
+
 
 @Component({
   selector: 'app-courses-update',
@@ -101,11 +102,13 @@ export class CoursesUpdateComponent implements OnInit {
         course.students
           ?.map((s: CircleStudentDto) => s.id ?? s.studentId ?? s.student?.id)
           .filter((id): id is number => id !== undefined) ?? [];
+      const resolvedDay = coerceDayValue(course.day) ?? null;
+      const resolvedTime = formatTimeValue(course.time);
       this.circleForm.patchValue({
         name: course.name,
         teacherId: course.teacherId,
-        day: (course.day as DaysEnum | null | undefined) ?? null,
-        time: minutesToTimeString(course.time ?? undefined),
+        day: resolvedDay,
+        time: resolvedTime,
         managers:
           course.managers?.map((m: CircleManagerDto | number) =>
             typeof m === 'number' ? m : m.managerId
@@ -129,8 +132,9 @@ export class CoursesUpdateComponent implements OnInit {
                 .filter((id): id is number => id !== undefined) ?? [];
             this.circleForm.patchValue({ studentsIds: fetchedStudents });
             this.circleForm.patchValue({
-              day: (res.data.day as DaysEnum | null | undefined) ?? null,
-              time: minutesToTimeString(res.data.time ?? undefined)
+              day: coerceDayValue(res.data.day) ?? null,
+              time: formatTimeValue(res.data.time)
+
             });
             if (res.data.students?.length) {
               const courseStudents = res.data.students.map(
@@ -161,8 +165,9 @@ export class CoursesUpdateComponent implements OnInit {
             this.circleForm.patchValue({
               name: res.data.name,
               teacherId: res.data.teacherId,
-              day: (res.data.day as DaysEnum | null | undefined) ?? null,
-              time: minutesToTimeString(res.data.time ?? undefined),
+              day: coerceDayValue(res.data.day) ?? null,
+              time: formatTimeValue(res.data.time),
+
               managers: res.data.managers
                 ? res.data.managers.map((m: CircleManagerDto | number) =>
                     typeof m === 'number' ? m : m.managerId
@@ -200,12 +205,16 @@ export class CoursesUpdateComponent implements OnInit {
       studentsIds: number[];
     };
 
+    const dayValue = coerceDayValue(formValue.day) ?? null;
+    const timeValue = timeStringToMinutes(formValue.time) ?? null;
+
     const model: UpdateCircleDto = {
       id: this.id,
       name: formValue.name,
       teacherId: formValue.teacherId,
-      day: formValue.day,
-      time: timeStringToMinutes(formValue.time),
+      day: dayValue,
+      time: timeValue,
+
       managers: formValue.managers,
       studentsIds: formValue.studentsIds
     };

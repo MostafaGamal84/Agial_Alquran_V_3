@@ -21,8 +21,9 @@ import {
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
-import { DAY_LABELS, DaysEnum } from 'src/app/@theme/types/DaysEnum';
-import { minutesToTimeString } from 'src/app/@theme/utils/time';
+import { formatDayValue } from 'src/app/@theme/types/DaysEnum';
+import { formatTimeValue } from 'src/app/@theme/utils/time';
+
 
 @Component({
   selector: 'app-courses-view',
@@ -102,24 +103,13 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
 
   }
 
-  getDayLabel(day?: DaysEnum | number | null | string): string {
-    if (day === null || day === undefined) {
-      return '';
-    }
-    if (typeof day === 'string') {
-      return day;
-    }
-    return this.dayLabelMap.get(day as DaysEnum) ?? '';
+  getDayLabel(day: CircleDto['day']): string {
+    return formatDayValue(day);
   }
 
-  getFormattedTime(time?: number | string | null): string {
-    if (time === null || time === undefined) {
-      return '';
-    }
-    if (typeof time === 'string') {
-      return time;
-    }
-    return minutesToTimeString(time);
+  getFormattedTime(time: CircleDto['time']): string {
+    return formatTimeValue(time);
+
   }
 }
 
