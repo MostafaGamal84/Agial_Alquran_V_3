@@ -4,6 +4,8 @@ import { MatTableDataSource } from '@angular/material/table';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { CircleDto, CircleStudentDto } from 'src/app/@theme/services/circle.service';
+import { formatDayValue } from 'src/app/@theme/types/DaysEnum';
+import { formatTimeValue } from 'src/app/@theme/utils/time';
 
 
 @Component({
@@ -25,5 +27,13 @@ export class CoursesDetailsComponent implements OnInit {
       this.dataSource.data = course.students || [];
 
     }
+  }
+
+  getDayLabel(day: CircleDto['day']): string {
+    return formatDayValue(day);
+  }
+
+  getFormattedTime(time: CircleDto['time']): string {
+    return formatTimeValue(time);
   }
 }
