@@ -15,14 +15,15 @@ export type CircleTimeValue = TimeSpanDto | number | string | null | undefined;
 
 export interface CircleDto {
   id: number;
-  name: string;
-  teacherId?: number;
+  name?: string | null;
+  teacherId?: number | null;
   teacher?: LookUpUserDto;
+  teacherName?: string | null;
   managers?: CircleManagerDto[];
-
   students?: CircleStudentDto[];
   day?: DayValue;
   dayId?: DayValue;
+  dayName?: string | null;
   time?: CircleTimeValue;
   startTime?: CircleTimeValue;
 }
@@ -43,13 +44,13 @@ export interface CircleStudentDto {
 }
 
 export interface CreateCircleDto {
-  name?: string;
-  teacherId?: number;
-  managers?: number[];
-  studentsIds?: number[];
+  name?: string | null;
+  teacherId?: number | null;
+  managers?: number[] | null;
+  studentsIds?: number[] | null;
   dayId?: DaysEnum | null;
-  day?: DaysEnum | null;
-  time?: TimeSpanDto | null;
+  startTime?: string | null;
+  time?: number | null;
 }
 
 export interface UpdateCircleDto extends CreateCircleDto {

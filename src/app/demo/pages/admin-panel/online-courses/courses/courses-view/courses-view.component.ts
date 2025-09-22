@@ -21,7 +21,7 @@ import {
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
-import { DAY_LABELS, formatDayValue } from 'src/app/@theme/types/DaysEnum';
+import { formatDayValue } from 'src/app/@theme/types/DaysEnum';
 import { formatTimeValue } from 'src/app/@theme/utils/time';
 
 
@@ -102,11 +102,14 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
   }
 
   getDayLabel(circle: CircleDto): string {
-    return formatDayValue(circle.day ?? circle.dayId);
+    if (circle.dayName) {
+      return circle.dayName;
+    }
+    return formatDayValue(circle.dayId ?? circle.day);
   }
 
   getFormattedStartTime(circle: CircleDto): string {
-    return formatTimeValue(circle.time ?? circle.startTime);
+    return formatTimeValue(circle.startTime ?? circle.time);
   }
 }
 

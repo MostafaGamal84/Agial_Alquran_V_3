@@ -4,7 +4,7 @@ import { MatTableDataSource } from '@angular/material/table';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { CircleDto, CircleStudentDto } from 'src/app/@theme/services/circle.service';
-import { DAY_LABELS, formatDayValue } from 'src/app/@theme/types/DaysEnum';
+import { formatDayValue } from 'src/app/@theme/types/DaysEnum';
 import { formatTimeValue } from 'src/app/@theme/utils/time';
 
 
@@ -33,14 +33,17 @@ export class CoursesDetailsComponent implements OnInit {
     if (!circle) {
       return '';
     }
-    return formatDayValue(circle.day ?? circle.dayId);
+    if (circle.dayName) {
+      return circle.dayName;
+    }
+    return formatDayValue(circle.dayId ?? circle.day);
   }
 
   getFormattedStartTime(circle?: CircleDto): string {
     if (!circle) {
       return '';
     }
-    return formatTimeValue(circle.time ?? circle.startTime);
+    return formatTimeValue(circle.startTime ?? circle.time);
 
   }
 }
