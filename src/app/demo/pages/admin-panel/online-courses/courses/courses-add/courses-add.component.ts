@@ -33,6 +33,7 @@ interface CircleFormValue {
   studentsIds: number[];
 }
 
+
 @Component({
   selector: 'app-courses-add',
   imports: [SharedModule, CommonModule],
@@ -55,8 +56,8 @@ export class CoursesAddComponent implements OnInit {
     this.circleForm = this.fb.group({
       name: ['', Validators.required],
       teacherId: [null, Validators.required],
-      day: [null, Validators.required],
-      time: ['', Validators.required],
+      dayId: [null, Validators.required],
+      startTime: ['', Validators.required],
       managers: [[]],
       studentsIds: [[]]
     });
@@ -88,7 +89,6 @@ export class CoursesAddComponent implements OnInit {
 
     const dayValue = coerceDayValue(formValue.day) ?? null;
     const timeValue = timeStringToTimeSpan(formValue.time) ?? null;
-
     const model: CreateCircleDto = {
       name: formValue.name,
       teacherId: formValue.teacherId,
@@ -104,8 +104,8 @@ export class CoursesAddComponent implements OnInit {
           this.circleForm.reset({
             name: '',
             teacherId: null,
-            day: null,
-            time: '',
+            dayId: null,
+            startTime: '',
             managers: [],
             studentsIds: []
           });

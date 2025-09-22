@@ -34,8 +34,6 @@ interface CircleFormValue {
   managers: number[];
   studentsIds: number[];
 }
-
-
 @Component({
   selector: 'app-courses-update',
   imports: [SharedModule, CommonModule],
@@ -63,8 +61,8 @@ export class CoursesUpdateComponent implements OnInit {
     this.circleForm = this.fb.group({
       name: ['', Validators.required],
       teacherId: [null, Validators.required],
-      day: [null, Validators.required],
-      time: ['', Validators.required],
+      dayId: [null, Validators.required],
+      startTime: ['', Validators.required],
       managers: [{ value: [], disabled: this.isManager }],
       studentsIds: [[]]
     });
@@ -120,8 +118,8 @@ export class CoursesUpdateComponent implements OnInit {
       this.circleForm.patchValue({
         name: course.name,
         teacherId: course.teacherId,
-        day: resolvedDay,
-        time: resolvedTime,
+        dayId: resolvedDay,
+        startTime: resolvedStartTime,
         managers:
           course.managers?.map((m: CircleManagerDto | number) =>
             typeof m === 'number' ? m : m.managerId
@@ -183,7 +181,6 @@ export class CoursesUpdateComponent implements OnInit {
               teacherId: res.data.teacherId,
               day: coerceDayValue(res.data.day ?? res.data.dayId) ?? null,
               time: formatTimeValue(res.data.time ?? res.data.startTime),
-
               managers: res.data.managers
                 ? res.data.managers.map((m: CircleManagerDto | number) =>
                     typeof m === 'number' ? m : m.managerId
@@ -222,7 +219,9 @@ export class CoursesUpdateComponent implements OnInit {
       name: formValue.name,
       teacherId: formValue.teacherId,
       day: dayValue,
-      time: timeValue,
+      dayId: dayValue,
+      startTime: startTimeValue,
+      time: timeValue ?? null,
 
       managers: formValue.managers,
       studentsIds: formValue.studentsIds
