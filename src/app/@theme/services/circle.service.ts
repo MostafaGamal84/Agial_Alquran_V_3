@@ -49,7 +49,8 @@ export interface CreateCircleDto {
   managers?: number[] | null;
   studentsIds?: number[] | null;
   dayId?: DaysEnum | null;
-  startTime?: TimeSpanDto | null;
+  startTime?: string | null;
+
   time?: number | null;
 }
 

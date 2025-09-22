@@ -54,6 +54,28 @@ export function timeStringToTimeSpan(
   return { ticks };
 }
 
+export function timeStringToTimeSpanString(
+  time?: string | null
+): string | undefined {
+  const minutes = timeStringToMinutes(time);
+  if (minutes === undefined) {
+    return undefined;
+  }
+
+  const totalMinutes = Math.round(minutes);
+  if (!Number.isFinite(totalMinutes)) {
+    return undefined;
+  }
+
+  const hours = Math.floor(totalMinutes / 60);
+  const minutesPart = totalMinutes % 60;
+
+  const paddedHours = hours.toString().padStart(2, '0');
+  const paddedMinutes = minutesPart.toString().padStart(2, '0');
+
+  return `${paddedHours}:${paddedMinutes}:00`;
+}
+
 export function minutesToTimeString(value?: number | null): string {
   if (value === null || value === undefined || Number.isNaN(value)) {
     return '';

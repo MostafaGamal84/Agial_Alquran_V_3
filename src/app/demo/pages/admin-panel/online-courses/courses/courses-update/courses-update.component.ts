@@ -23,7 +23,8 @@ import { DAY_OPTIONS, DayValue, coerceDayValue } from 'src/app/@theme/types/Days
 import {
   formatTimeValue,
   timeStringToMinutes,
-  timeStringToTimeSpan
+  timeStringToTimeSpanString
+
 } from 'src/app/@theme/utils/time';
 
 interface CircleFormValue {
@@ -211,7 +212,8 @@ export class CoursesUpdateComponent implements OnInit {
     const formValue = this.circleForm.getRawValue() as CircleFormValue;
 
     const dayValue = coerceDayValue(formValue.dayId) ?? null;
-    const startTimeValue = timeStringToTimeSpan(formValue.startTime) ?? null;
+    const startTimeValue = timeStringToTimeSpanString(formValue.startTime) ?? null;
+
     const minutesValue = timeStringToMinutes(formValue.startTime);
 
     const model: UpdateCircleDto = {
