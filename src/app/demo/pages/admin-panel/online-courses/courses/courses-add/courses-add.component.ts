@@ -17,6 +17,7 @@ import {
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { DAY_OPTIONS, DaysEnum, coerceDayValue } from 'src/app/@theme/types/DaysEnum';
+
 import { timeStringToMinutes } from 'src/app/@theme/utils/time';
 
 @Component({
@@ -87,6 +88,7 @@ export class CoursesAddComponent implements OnInit {
       teacherId: formValue.teacherId,
       day: dayValue,
       time: timeValue,
+
       managers: formValue.managers,
       studentsIds: formValue.studentsIds
     };

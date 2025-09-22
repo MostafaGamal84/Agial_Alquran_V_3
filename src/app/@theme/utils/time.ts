@@ -8,6 +8,7 @@ export function timeStringToMinutes(time?: string | null): number | undefined {
   }
 
   const [hoursPart, minutesPart] = trimmed.split(':');
+
   const hours = Number(hoursPart);
   const minutes = Number(minutesPart);
 
@@ -64,3 +65,4 @@ export function formatTimeValue(value?: number | string | null): string {
 
   return trimmed;
 }
+

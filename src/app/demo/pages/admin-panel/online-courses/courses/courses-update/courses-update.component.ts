@@ -22,6 +22,7 @@ import { AuthenticationService } from 'src/app/@theme/services/authentication.se
 import { DAY_OPTIONS, DaysEnum, coerceDayValue } from 'src/app/@theme/types/DaysEnum';
 import { formatTimeValue, timeStringToMinutes } from 'src/app/@theme/utils/time';
 
+
 @Component({
   selector: 'app-courses-update',
   imports: [SharedModule, CommonModule],
@@ -133,6 +134,7 @@ export class CoursesUpdateComponent implements OnInit {
             this.circleForm.patchValue({
               day: coerceDayValue(res.data.day) ?? null,
               time: formatTimeValue(res.data.time)
+
             });
             if (res.data.students?.length) {
               const courseStudents = res.data.students.map(
@@ -165,6 +167,7 @@ export class CoursesUpdateComponent implements OnInit {
               teacherId: res.data.teacherId,
               day: coerceDayValue(res.data.day) ?? null,
               time: formatTimeValue(res.data.time),
+
               managers: res.data.managers
                 ? res.data.managers.map((m: CircleManagerDto | number) =>
                     typeof m === 'number' ? m : m.managerId
@@ -211,6 +214,7 @@ export class CoursesUpdateComponent implements OnInit {
       teacherId: formValue.teacherId,
       day: dayValue,
       time: timeValue,
+
       managers: formValue.managers,
       studentsIds: formValue.studentsIds
     };

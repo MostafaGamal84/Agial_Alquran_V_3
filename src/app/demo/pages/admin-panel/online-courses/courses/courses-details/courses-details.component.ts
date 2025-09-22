@@ -8,6 +8,7 @@ import { formatDayValue } from 'src/app/@theme/types/DaysEnum';
 import { formatTimeValue } from 'src/app/@theme/utils/time';
 
 
+
 @Component({
   selector: 'app-courses-details',
   imports: [SharedModule, RouterModule],
@@ -19,6 +20,7 @@ export class CoursesDetailsComponent implements OnInit {
   course?: CircleDto;
   displayedColumns: string[] = ['fullName', 'action'];
   dataSource = new MatTableDataSource<CircleStudentDto>();
+  private readonly dayLabelMap = DAY_LABELS;
 
   ngOnInit() {
     const course = history.state.course as CircleDto | undefined;
@@ -35,5 +37,6 @@ export class CoursesDetailsComponent implements OnInit {
 
   getFormattedTime(time: CircleDto['time']): string {
     return formatTimeValue(time);
+
   }
 }

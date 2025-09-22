@@ -24,6 +24,7 @@ import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { formatDayValue } from 'src/app/@theme/types/DaysEnum';
 import { formatTimeValue } from 'src/app/@theme/utils/time';
 
+
 @Component({
   selector: 'app-courses-view',
   imports: [SharedModule, RouterModule],
@@ -44,6 +45,7 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
 
   readonly paginator = viewChild.required(MatPaginator);
   isTeacherOrStudent = [UserTypesEnum.Teacher, UserTypesEnum.Student].includes(this.auth.getRole()!);
+  private readonly dayLabelMap = DAY_LABELS;
 
   ngOnInit() {
     this.loadCircles();
@@ -107,6 +109,7 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
 
   getFormattedTime(time: CircleDto['time']): string {
     return formatTimeValue(time);
+
   }
 }
 
