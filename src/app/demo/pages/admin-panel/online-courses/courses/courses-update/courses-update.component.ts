@@ -19,18 +19,18 @@ import {
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
+import { DAY_OPTIONS, DayValue, coerceDayValue } from 'src/app/@theme/types/DaysEnum';
 import {
-  DAY_OPTIONS,
-  DayValue,
-  coerceDayValue
-} from 'src/app/@theme/types/DaysEnum';
-import { formatTimeValue, timeStringToTimeSpan } from 'src/app/@theme/utils/time';
+  formatTimeValue,
+  timeStringToMinutes,
+  timeStringToTimeSpan
+} from 'src/app/@theme/utils/time';
 
 interface CircleFormValue {
   name: string;
   teacherId: number;
-  day: DayValue;
-  time: string;
+  dayId: DayValue;
+  startTime: string;
   managers: number[];
   studentsIds: number[];
 }
@@ -114,11 +114,11 @@ export class CoursesUpdateComponent implements OnInit {
           ?.map((s: CircleStudentDto) => s.id ?? s.studentId ?? s.student?.id)
           .filter((id): id is number => id !== undefined) ?? [];
       const resolvedDay = coerceDayValue(course.day ?? course.dayId) ?? null;
-      const resolvedTime = formatTimeValue(course.time ?? course.startTime);
+      const resolvedStartTime = formatTimeValue(course.startTime ?? course.time);
       this.circleForm.patchValue({
-        name: course.name,
-        teacherId: course.teacherId,
-        dayId: resolvedDay,
+        name: course.name ?? '',
+        teacherId: course.teacherId ?? null,
+        dayId: resolvedDay ?? null,
         startTime: resolvedStartTime,
         managers:
           course.managers?.map((m: CircleManagerDto | number) =>
@@ -146,9 +146,8 @@ export class CoursesUpdateComponent implements OnInit {
                 .filter((id): id is number => id !== undefined) ?? [];
             this.circleForm.patchValue({ studentsIds: fetchedStudents });
             this.circleForm.patchValue({
-              day: coerceDayValue(res.data.day ?? res.data.dayId) ?? null,
-              time: formatTimeValue(res.data.time ?? res.data.startTime)
-
+              dayId: coerceDayValue(res.data.day ?? res.data.dayId) ?? null,
+              startTime: formatTimeValue(res.data.startTime ?? res.data.time)
             });
             if (res.data.students?.length) {
               const courseStudents = res.data.students.map(
@@ -177,10 +176,10 @@ export class CoursesUpdateComponent implements OnInit {
                 )
                 .filter((id): id is number => id !== undefined) ?? [];
             this.circleForm.patchValue({
-              name: res.data.name,
-              teacherId: res.data.teacherId,
-              day: coerceDayValue(res.data.day ?? res.data.dayId) ?? null,
-              time: formatTimeValue(res.data.time ?? res.data.startTime),
+              name: res.data.name ?? '',
+              teacherId: res.data.teacherId ?? null,
+              dayId: coerceDayValue(res.data.day ?? res.data.dayId) ?? null,
+              startTime: formatTimeValue(res.data.startTime ?? res.data.time),
               managers: res.data.managers
                 ? res.data.managers.map((m: CircleManagerDto | number) =>
                     typeof m === 'number' ? m : m.managerId
@@ -211,18 +210,17 @@ export class CoursesUpdateComponent implements OnInit {
     }
     const formValue = this.circleForm.getRawValue() as CircleFormValue;
 
-    const dayValue = coerceDayValue(formValue.day) ?? null;
-    const timeValue = timeStringToTimeSpan(formValue.time) ?? null;
+    const dayValue = coerceDayValue(formValue.dayId) ?? null;
+    const startTimeValue = timeStringToTimeSpan(formValue.startTime) ?? null;
+    const minutesValue = timeStringToMinutes(formValue.startTime);
 
     const model: UpdateCircleDto = {
       id: this.id,
       name: formValue.name,
       teacherId: formValue.teacherId,
-      day: dayValue,
-      dayId: dayValue,
-      startTime: startTimeValue,
-      time: timeValue ?? null,
-
+      dayId: dayValue ?? null,
+      startTime: startTimeValue ?? null,
+      time: minutesValue ?? null,
       managers: formValue.managers,
       studentsIds: formValue.studentsIds
     };
