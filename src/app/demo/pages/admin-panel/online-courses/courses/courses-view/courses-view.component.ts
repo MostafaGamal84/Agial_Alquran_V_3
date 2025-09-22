@@ -107,8 +107,6 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
 
   getFormattedStartTime(circle: CircleDto): string {
     return formatTimeValue(circle.time ?? circle.startTime);
-
-
   }
 }
 

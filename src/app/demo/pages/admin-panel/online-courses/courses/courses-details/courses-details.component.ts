@@ -34,7 +34,6 @@ export class CoursesDetailsComponent implements OnInit {
       return '';
     }
     return formatDayValue(circle.day ?? circle.dayId);
-
   }
 
   getFormattedStartTime(circle?: CircleDto): string {
@@ -42,7 +41,6 @@ export class CoursesDetailsComponent implements OnInit {
       return '';
     }
     return formatTimeValue(circle.time ?? circle.startTime);
-
 
   }
 }
