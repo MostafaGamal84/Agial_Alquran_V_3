@@ -20,8 +20,6 @@ export class CoursesDetailsComponent implements OnInit {
   course?: CircleDto;
   displayedColumns: string[] = ['fullName', 'action'];
   dataSource = new MatTableDataSource<CircleStudentDto>();
-  private readonly dayLabelMap = DAY_LABELS;
-
   ngOnInit() {
     const course = history.state.course as CircleDto | undefined;
     if (course) {
@@ -31,12 +29,18 @@ export class CoursesDetailsComponent implements OnInit {
     }
   }
 
-  getDayLabel(day: CircleDto['day']): string {
-    return formatDayValue(day);
+  getDayLabel(circle?: CircleDto): string {
+    if (!circle) {
+      return '';
+    }
+    return formatDayValue(circle.day ?? circle.dayId);
   }
 
-  getFormattedTime(time: CircleDto['time']): string {
-    return formatTimeValue(time);
+  getFormattedStartTime(circle?: CircleDto): string {
+    if (!circle) {
+      return '';
+    }
+    return formatTimeValue(circle.time ?? circle.startTime);
 
   }
 }

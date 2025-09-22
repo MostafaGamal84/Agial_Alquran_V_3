@@ -19,8 +19,21 @@ import {
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
-import { DAY_OPTIONS, DaysEnum, coerceDayValue } from 'src/app/@theme/types/DaysEnum';
-import { formatTimeValue, timeStringToMinutes } from 'src/app/@theme/utils/time';
+import {
+  DAY_OPTIONS,
+  DayValue,
+  coerceDayValue
+} from 'src/app/@theme/types/DaysEnum';
+import { formatTimeValue, timeStringToTimeSpan } from 'src/app/@theme/utils/time';
+
+interface CircleFormValue {
+  name: string;
+  teacherId: number;
+  day: DayValue;
+  time: string;
+  managers: number[];
+  studentsIds: number[];
+}
 
 
 @Component({
@@ -102,8 +115,8 @@ export class CoursesUpdateComponent implements OnInit {
         course.students
           ?.map((s: CircleStudentDto) => s.id ?? s.studentId ?? s.student?.id)
           .filter((id): id is number => id !== undefined) ?? [];
-      const resolvedDay = coerceDayValue(course.day) ?? null;
-      const resolvedTime = formatTimeValue(course.time);
+      const resolvedDay = coerceDayValue(course.day ?? course.dayId) ?? null;
+      const resolvedTime = formatTimeValue(course.time ?? course.startTime);
       this.circleForm.patchValue({
         name: course.name,
         teacherId: course.teacherId,
@@ -115,13 +128,16 @@ export class CoursesUpdateComponent implements OnInit {
           ) ?? [],
         studentsIds: studentIds
       });
-      if (
-        !studentIds.length ||
-        course.day === undefined ||
-        course.day === null ||
-        course.time === undefined ||
-        course.time === null
-      ) {
+      const hasDayValue =
+        course.day !== undefined && course.day !== null
+          ? true
+          : course.dayId !== undefined && course.dayId !== null;
+      const hasTimeValue =
+        course.time !== undefined && course.time !== null
+          ? true
+          : course.startTime !== undefined && course.startTime !== null;
+
+      if (!studentIds.length || !hasDayValue || !hasTimeValue) {
         this.circle.get(this.id).subscribe((res) => {
           if (res.isSuccess) {
             const fetchedStudents =
@@ -132,8 +148,8 @@ export class CoursesUpdateComponent implements OnInit {
                 .filter((id): id is number => id !== undefined) ?? [];
             this.circleForm.patchValue({ studentsIds: fetchedStudents });
             this.circleForm.patchValue({
-              day: coerceDayValue(res.data.day) ?? null,
-              time: formatTimeValue(res.data.time)
+              day: coerceDayValue(res.data.day ?? res.data.dayId) ?? null,
+              time: formatTimeValue(res.data.time ?? res.data.startTime)
 
             });
             if (res.data.students?.length) {
@@ -165,8 +181,8 @@ export class CoursesUpdateComponent implements OnInit {
             this.circleForm.patchValue({
               name: res.data.name,
               teacherId: res.data.teacherId,
-              day: coerceDayValue(res.data.day) ?? null,
-              time: formatTimeValue(res.data.time),
+              day: coerceDayValue(res.data.day ?? res.data.dayId) ?? null,
+              time: formatTimeValue(res.data.time ?? res.data.startTime),
 
               managers: res.data.managers
                 ? res.data.managers.map((m: CircleManagerDto | number) =>
@@ -196,17 +212,10 @@ export class CoursesUpdateComponent implements OnInit {
       this.circleForm.markAllAsTouched();
       return;
     }
-    const formValue = this.circleForm.getRawValue() as {
-      name: string;
-      teacherId: number;
-      day: DaysEnum;
-      time: string;
-      managers: number[];
-      studentsIds: number[];
-    };
+    const formValue = this.circleForm.getRawValue() as CircleFormValue;
 
     const dayValue = coerceDayValue(formValue.day) ?? null;
-    const timeValue = timeStringToMinutes(formValue.time) ?? null;
+    const timeValue = timeStringToTimeSpan(formValue.time) ?? null;
 
     const model: UpdateCircleDto = {
       id: this.id,

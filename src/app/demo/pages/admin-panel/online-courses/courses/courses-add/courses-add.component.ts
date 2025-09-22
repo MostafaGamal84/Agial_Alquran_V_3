@@ -16,9 +16,22 @@ import {
 } from 'src/app/@theme/services/circle.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
-import { DAY_OPTIONS, DaysEnum, coerceDayValue } from 'src/app/@theme/types/DaysEnum';
+import {
+  DAY_OPTIONS,
+  DayValue,
+  coerceDayValue
+} from 'src/app/@theme/types/DaysEnum';
 
-import { timeStringToMinutes } from 'src/app/@theme/utils/time';
+import { timeStringToTimeSpan } from 'src/app/@theme/utils/time';
+
+interface CircleFormValue {
+  name: string;
+  teacherId: number;
+  day: DayValue;
+  time: string;
+  managers: number[];
+  studentsIds: number[];
+}
 
 @Component({
   selector: 'app-courses-add',
@@ -71,24 +84,16 @@ export class CoursesAddComponent implements OnInit {
       this.circleForm.markAllAsTouched();
       return;
     }
-    const formValue = this.circleForm.value as {
-      name: string;
-      teacherId: number;
-      day: DaysEnum;
-      time: string;
-      managers: number[];
-      studentsIds: number[];
-    };
+    const formValue = this.circleForm.value as CircleFormValue;
 
     const dayValue = coerceDayValue(formValue.day) ?? null;
-    const timeValue = timeStringToMinutes(formValue.time) ?? null;
+    const timeValue = timeStringToTimeSpan(formValue.time) ?? null;
 
     const model: CreateCircleDto = {
       name: formValue.name,
       teacherId: formValue.teacherId,
       day: dayValue,
       time: timeValue,
-
       managers: formValue.managers,
       studentsIds: formValue.studentsIds
     };
