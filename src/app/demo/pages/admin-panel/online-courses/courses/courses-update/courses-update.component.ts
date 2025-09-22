@@ -19,6 +19,8 @@ import {
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
+import { DAY_OPTIONS, DaysEnum } from 'src/app/@theme/types/DaysEnum';
+import { minutesToTimeString, timeStringToMinutes } from 'src/app/@theme/utils/time';
 
 @Component({
   selector: 'app-courses-update',
@@ -40,12 +42,15 @@ export class CoursesUpdateComponent implements OnInit {
   students: LookUpUserDto[] = [];
   id!: number;
   isManager = false;
+  days = DAY_OPTIONS;
 
   ngOnInit(): void {
     this.isManager = this.auth.getRole() === UserTypesEnum.Manager;
     this.circleForm = this.fb.group({
       name: ['', Validators.required],
       teacherId: [null, Validators.required],
+      day: [null, Validators.required],
+      time: ['', Validators.required],
       managers: [{ value: [], disabled: this.isManager }],
       studentsIds: [[]]
     });
@@ -99,13 +104,21 @@ export class CoursesUpdateComponent implements OnInit {
       this.circleForm.patchValue({
         name: course.name,
         teacherId: course.teacherId,
+        day: (course.day as DaysEnum | null | undefined) ?? null,
+        time: minutesToTimeString(course.time ?? undefined),
         managers:
           course.managers?.map((m: CircleManagerDto | number) =>
             typeof m === 'number' ? m : m.managerId
           ) ?? [],
         studentsIds: studentIds
       });
-      if (!studentIds.length) {
+      if (
+        !studentIds.length ||
+        course.day === undefined ||
+        course.day === null ||
+        course.time === undefined ||
+        course.time === null
+      ) {
         this.circle.get(this.id).subscribe((res) => {
           if (res.isSuccess) {
             const fetchedStudents =
@@ -115,6 +128,10 @@ export class CoursesUpdateComponent implements OnInit {
                 )
                 .filter((id): id is number => id !== undefined) ?? [];
             this.circleForm.patchValue({ studentsIds: fetchedStudents });
+            this.circleForm.patchValue({
+              day: (res.data.day as DaysEnum | null | undefined) ?? null,
+              time: minutesToTimeString(res.data.time ?? undefined)
+            });
             if (res.data.students?.length) {
               const courseStudents = res.data.students.map(
                 (s: CircleStudentDto) =>
@@ -144,6 +161,8 @@ export class CoursesUpdateComponent implements OnInit {
             this.circleForm.patchValue({
               name: res.data.name,
               teacherId: res.data.teacherId,
+              day: (res.data.day as DaysEnum | null | undefined) ?? null,
+              time: minutesToTimeString(res.data.time ?? undefined),
               managers: res.data.managers
                 ? res.data.managers.map((m: CircleManagerDto | number) =>
                     typeof m === 'number' ? m : m.managerId
@@ -172,7 +191,24 @@ export class CoursesUpdateComponent implements OnInit {
       this.circleForm.markAllAsTouched();
       return;
     }
-    const model: UpdateCircleDto = { id: this.id, ...this.circleForm.getRawValue() };
+    const formValue = this.circleForm.getRawValue() as {
+      name: string;
+      teacherId: number;
+      day: DaysEnum;
+      time: string;
+      managers: number[];
+      studentsIds: number[];
+    };
+
+    const model: UpdateCircleDto = {
+      id: this.id,
+      name: formValue.name,
+      teacherId: formValue.teacherId,
+      day: formValue.day,
+      time: timeStringToMinutes(formValue.time),
+      managers: formValue.managers,
+      studentsIds: formValue.studentsIds
+    };
     this.circle.update(model).subscribe({
       next: (res) => {
         if (res.isSuccess) {
