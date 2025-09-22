@@ -4,6 +4,12 @@
       <div class="p-10">
         <h5 class="m-b-10">{{ course?.name }}</h5>
         <div *ngIf="course?.teacher">Teacher: {{ course.teacher.fullName || course.teacher.id }}</div>
+        <div *ngIf="course?.day !== undefined && course?.day !== null">
+          Day: {{ getDayLabel(course?.day) }}
+        </div>
+        <div *ngIf="course?.time !== undefined && course?.time !== null">
+          Time: {{ getFormattedTime(course?.time) }}
+        </div>
       </div>
       <div class="p-b-15">
         <div class="table-containe table-reponsive">
