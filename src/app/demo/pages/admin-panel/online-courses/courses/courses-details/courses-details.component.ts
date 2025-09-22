@@ -20,8 +20,6 @@ export class CoursesDetailsComponent implements OnInit {
   course?: CircleDto;
   displayedColumns: string[] = ['fullName', 'action'];
   dataSource = new MatTableDataSource<CircleStudentDto>();
-  private readonly dayLabelMap = DAY_LABELS;
-
   ngOnInit() {
     const course = history.state.course as CircleDto | undefined;
     if (course) {

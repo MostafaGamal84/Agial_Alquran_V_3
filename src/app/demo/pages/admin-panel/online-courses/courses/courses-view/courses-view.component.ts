@@ -45,8 +45,6 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
 
   readonly paginator = viewChild.required(MatPaginator);
   isTeacherOrStudent = [UserTypesEnum.Teacher, UserTypesEnum.Student].includes(this.auth.getRole()!);
-  private readonly dayLabelMap = DAY_LABELS;
-
   ngOnInit() {
     this.loadCircles();
   }
