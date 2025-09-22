@@ -7,8 +7,9 @@
         <div
           *ngIf="
             course &&
-            ((course.dayId !== undefined && course.dayId !== null) ||
-              (course.day !== undefined && course.day !== null))
+            ((course.day !== undefined && course.day !== null) ||
+              (course.dayId !== undefined && course.dayId !== null))
+
           "
         >
           Day: {{ getDayLabel(course) }}
@@ -16,8 +17,9 @@
         <div
           *ngIf="
             course &&
-            ((course.startTime !== undefined && course.startTime !== null) ||
-              (course.time !== undefined && course.time !== null))
+            ((course.time !== undefined && course.time !== null) ||
+              (course.startTime !== undefined && course.startTime !== null))
+
           "
         >
           Start Time: {{ getFormattedStartTime(course) }}

@@ -18,7 +18,7 @@ import { ToastService } from 'src/app/@theme/services/toast.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { DAY_OPTIONS, DaysEnum, coerceDayValue } from 'src/app/@theme/types/DaysEnum';
 
-import { timeStringToMinutes, timeStringToTimeSpan } from 'src/app/@theme/utils/time';
+import { timeStringToTimeSpan } from 'src/app/@theme/utils/time';
 
 
 @Component({
@@ -81,19 +81,15 @@ export class CoursesAddComponent implements OnInit {
       studentsIds: number[];
     };
 
-    const dayValue = coerceDayValue(formValue.dayId) ?? null;
-    const startTimeValue = timeStringToTimeSpan(formValue.startTime) ?? null;
-    const timeValue = timeStringToMinutes(formValue.startTime);
+    const dayValue = coerceDayValue(formValue.day) ?? null;
+    const timeValue = timeStringToTimeSpan(formValue.time) ?? null;
 
 
     const model: CreateCircleDto = {
       name: formValue.name,
       teacherId: formValue.teacherId,
       day: dayValue,
-      dayId: dayValue,
-      startTime: startTimeValue,
-      time: timeValue ?? null,
-
+      time: timeValue,
       managers: formValue.managers,
       studentsIds: formValue.studentsIds
     };

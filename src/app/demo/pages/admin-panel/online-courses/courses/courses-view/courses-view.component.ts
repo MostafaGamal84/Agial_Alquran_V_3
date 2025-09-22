@@ -102,11 +102,12 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
   }
 
   getDayLabel(circle: CircleDto): string {
-    return formatDayValue(circle.dayId ?? circle.day);
+    return formatDayValue(circle.day ?? circle.dayId);
   }
 
   getFormattedStartTime(circle: CircleDto): string {
-    return formatTimeValue(circle.startTime ?? circle.time);
+    return formatTimeValue(circle.time ?? circle.startTime);
+
 
   }
 }
