@@ -21,7 +21,7 @@ import {
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
-import { formatDayValue } from 'src/app/@theme/types/DaysEnum';
+import { DAY_LABELS, formatDayValue } from 'src/app/@theme/types/DaysEnum';
 import { formatTimeValue } from 'src/app/@theme/utils/time';
 
 
