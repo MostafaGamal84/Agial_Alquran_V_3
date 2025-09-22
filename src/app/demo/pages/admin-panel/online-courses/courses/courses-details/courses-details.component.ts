@@ -29,12 +29,18 @@ export class CoursesDetailsComponent implements OnInit {
     }
   }
 
-  getDayLabel(day: CircleDto['day']): string {
-    return formatDayValue(day);
+  getDayLabel(circle?: CircleDto): string {
+    if (!circle) {
+      return '';
+    }
+    return formatDayValue(circle.dayId ?? circle.day);
   }
 
-  getFormattedTime(time: CircleDto['time']): string {
-    return formatTimeValue(time);
+  getFormattedStartTime(circle?: CircleDto): string {
+    if (!circle) {
+      return '';
+    }
+    return formatTimeValue(circle.startTime ?? circle.time);
 
   }
 }

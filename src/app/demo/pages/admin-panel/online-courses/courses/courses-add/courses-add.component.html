@@ -19,15 +19,15 @@
         <div class="col-md-6">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>Day</mat-label>
-            <mat-select formControlName="day">
+            <mat-select formControlName="dayId">
               <mat-option *ngFor="let day of days" [value]="day.value">{{ day.label }}</mat-option>
             </mat-select>
           </mat-form-field>
         </div>
         <div class="col-md-6">
           <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Time</mat-label>
-            <input matInput type="time" formControlName="time" placeholder="Select Time" />
+            <mat-label>Start Time</mat-label>
+            <input matInput type="time" formControlName="startTime" placeholder="Select Start Time" />
           </mat-form-field>
         </div>
         <div class="col-md-6">

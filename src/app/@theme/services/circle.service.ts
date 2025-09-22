@@ -11,7 +11,8 @@ import {
 import { DayValue, DaysEnum } from '../types/DaysEnum';
 import { TimeSpanDto } from '../utils/time';
 
-export type CircleTimeValue = TimeSpanDto | number | string | null;
+export type CircleTimeValue = TimeSpanDto | number | string | null | undefined;
+
 
 export interface CircleDto {
   id: number;
@@ -22,7 +23,9 @@ export interface CircleDto {
 
   students?: CircleStudentDto[];
   day?: DayValue;
+  dayId?: DayValue;
   time?: CircleTimeValue;
+  startTime?: CircleTimeValue;
 }
 
 export interface CircleManagerDto {
@@ -45,8 +48,11 @@ export interface CreateCircleDto {
   teacherId?: number;
   managers?: number[];
   studentsIds?: number[];
+  dayId?: DaysEnum | null;
   day?: DaysEnum | null;
-  time?: TimeSpanDto | null;
+  startTime?: TimeSpanDto | null;
+  time?: number | null;
+
 }
 
 export interface UpdateCircleDto extends CreateCircleDto {
