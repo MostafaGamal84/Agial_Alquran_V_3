@@ -4,11 +4,23 @@
       <div class="p-10">
         <h5 class="m-b-10">{{ course?.name }}</h5>
         <div *ngIf="course?.teacher">Teacher: {{ course.teacher.fullName || course.teacher.id }}</div>
-        <div *ngIf="course?.day !== undefined && course?.day !== null">
-          Day: {{ getDayLabel(course?.day) }}
+        <div
+          *ngIf="
+            course &&
+            ((course.day !== undefined && course.day !== null) ||
+              (course.dayId !== undefined && course.dayId !== null))
+          "
+        >
+          Day: {{ getDayLabel(course) }}
         </div>
-        <div *ngIf="course?.time !== undefined && course?.time !== null">
-          Time: {{ getFormattedTime(course?.time) }}
+        <div
+          *ngIf="
+            course &&
+            ((course.time !== undefined && course.time !== null) ||
+              (course.startTime !== undefined && course.startTime !== null))
+          "
+        >
+          Start Time: {{ getFormattedStartTime(course) }}
         </div>
       </div>
       <div class="p-b-15">
