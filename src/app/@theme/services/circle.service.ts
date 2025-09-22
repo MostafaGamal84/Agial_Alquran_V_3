@@ -8,7 +8,10 @@ import {
   LookUpUserDto,
   PagedResultDto
 } from './lookup.service';
-import { DaysEnum } from '../types/DaysEnum';
+import { DayValue, DaysEnum } from '../types/DaysEnum';
+import { TimeSpanDto } from '../utils/time';
+
+export type CircleTimeValue = TimeSpanDto | number | string | null | undefined;
 
 export interface CircleDto {
   id: number;
@@ -18,8 +21,10 @@ export interface CircleDto {
   managers?: CircleManagerDto[];
 
   students?: CircleStudentDto[];
-  day?: DaysEnum | string | null;
-  time?: number | string | null;
+  day?: DayValue;
+  dayId?: DayValue;
+  time?: CircleTimeValue;
+  startTime?: CircleTimeValue;
 }
 
 export interface CircleManagerDto {
@@ -42,7 +47,9 @@ export interface CreateCircleDto {
   teacherId?: number;
   managers?: number[];
   studentsIds?: number[];
+  dayId?: DaysEnum | null;
   day?: DaysEnum | null;
+  startTime?: TimeSpanDto | null;
   time?: number | null;
 }
 

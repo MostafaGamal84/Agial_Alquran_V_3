@@ -45,8 +45,6 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
 
   readonly paginator = viewChild.required(MatPaginator);
   isTeacherOrStudent = [UserTypesEnum.Teacher, UserTypesEnum.Student].includes(this.auth.getRole()!);
-  private readonly dayLabelMap = DAY_LABELS;
-
   ngOnInit() {
     this.loadCircles();
   }
@@ -103,12 +101,12 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
 
   }
 
-  getDayLabel(day: CircleDto['day']): string {
-    return formatDayValue(day);
+  getDayLabel(circle: CircleDto): string {
+    return formatDayValue(circle.dayId ?? circle.day);
   }
 
-  getFormattedTime(time: CircleDto['time']): string {
-    return formatTimeValue(time);
+  getFormattedStartTime(circle: CircleDto): string {
+    return formatTimeValue(circle.startTime ?? circle.time);
 
   }
 }

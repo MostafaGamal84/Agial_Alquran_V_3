@@ -18,7 +18,7 @@ import { ToastService } from 'src/app/@theme/services/toast.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { DAY_OPTIONS, DaysEnum, coerceDayValue } from 'src/app/@theme/types/DaysEnum';
 
-import { timeStringToMinutes } from 'src/app/@theme/utils/time';
+import { timeStringToMinutes, timeStringToTimeSpan } from 'src/app/@theme/utils/time';
 
 @Component({
   selector: 'app-courses-add',
@@ -42,8 +42,8 @@ export class CoursesAddComponent implements OnInit {
     this.circleForm = this.fb.group({
       name: ['', Validators.required],
       teacherId: [null, Validators.required],
-      day: [null, Validators.required],
-      time: ['', Validators.required],
+      dayId: [null, Validators.required],
+      startTime: ['', Validators.required],
       managers: [[]],
       studentsIds: [[]]
     });
@@ -74,20 +74,23 @@ export class CoursesAddComponent implements OnInit {
     const formValue = this.circleForm.value as {
       name: string;
       teacherId: number;
-      day: DaysEnum;
-      time: string;
+      dayId: DaysEnum;
+      startTime: string;
       managers: number[];
       studentsIds: number[];
     };
 
-    const dayValue = coerceDayValue(formValue.day) ?? null;
-    const timeValue = timeStringToMinutes(formValue.time) ?? null;
+    const dayValue = coerceDayValue(formValue.dayId) ?? null;
+    const startTimeValue = timeStringToTimeSpan(formValue.startTime) ?? null;
+    const timeValue = timeStringToMinutes(formValue.startTime);
 
     const model: CreateCircleDto = {
       name: formValue.name,
       teacherId: formValue.teacherId,
       day: dayValue,
-      time: timeValue,
+      dayId: dayValue,
+      startTime: startTimeValue,
+      time: timeValue ?? null,
 
       managers: formValue.managers,
       studentsIds: formValue.studentsIds
@@ -99,8 +102,8 @@ export class CoursesAddComponent implements OnInit {
           this.circleForm.reset({
             name: '',
             teacherId: null,
-            day: null,
-            time: '',
+            dayId: null,
+            startTime: '',
             managers: [],
             studentsIds: []
           });
