@@ -16,6 +16,8 @@ import {
 } from 'src/app/@theme/services/circle.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
+import { DAY_OPTIONS, DaysEnum } from 'src/app/@theme/types/DaysEnum';
+import { timeStringToMinutes } from 'src/app/@theme/utils/time';
 
 @Component({
   selector: 'app-courses-add',
@@ -33,11 +35,14 @@ export class CoursesAddComponent implements OnInit {
   teachers: LookUpUserDto[] = [];
   managers: LookUpUserDto[] = [];
   students: LookUpUserDto[] = [];
+  days = DAY_OPTIONS;
 
   ngOnInit(): void {
     this.circleForm = this.fb.group({
       name: ['', Validators.required],
       teacherId: [null, Validators.required],
+      day: [null, Validators.required],
+      time: ['', Validators.required],
       managers: [[]],
       studentsIds: [[]]
     });
@@ -65,12 +70,35 @@ export class CoursesAddComponent implements OnInit {
       this.circleForm.markAllAsTouched();
       return;
     }
-    const model: CreateCircleDto = this.circleForm.value;
+    const formValue = this.circleForm.value as {
+      name: string;
+      teacherId: number;
+      day: DaysEnum;
+      time: string;
+      managers: number[];
+      studentsIds: number[];
+    };
+
+    const model: CreateCircleDto = {
+      name: formValue.name,
+      teacherId: formValue.teacherId,
+      day: formValue.day,
+      time: timeStringToMinutes(formValue.time),
+      managers: formValue.managers,
+      studentsIds: formValue.studentsIds
+    };
     this.circle.create(model).subscribe({
       next: (res) => {
         if (res.isSuccess) {
           this.toast.success('Circle created successfully');
-          this.circleForm.reset();
+          this.circleForm.reset({
+            name: '',
+            teacherId: null,
+            day: null,
+            time: '',
+            managers: [],
+            studentsIds: []
+          });
         } else if (res.errors?.length) {
           res.errors.forEach((e) => this.toast.error(e.message));
         } else {

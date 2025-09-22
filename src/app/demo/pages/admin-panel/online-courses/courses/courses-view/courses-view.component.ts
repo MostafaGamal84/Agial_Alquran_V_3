@@ -21,6 +21,8 @@ import {
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
+import { DAY_LABELS, DaysEnum } from 'src/app/@theme/types/DaysEnum';
+import { minutesToTimeString } from 'src/app/@theme/utils/time';
 
 @Component({
   selector: 'app-courses-view',
@@ -35,13 +37,14 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
   private auth = inject(AuthenticationService);
 
 
-  displayedColumns: string[] = ['name', 'teacher', 'managers', 'action'];
+  displayedColumns: string[] = ['name', 'teacher', 'day', 'time', 'managers', 'action'];
   dataSource = new MatTableDataSource<CircleDto>();
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
 
   readonly paginator = viewChild.required(MatPaginator);
   isTeacherOrStudent = [UserTypesEnum.Teacher, UserTypesEnum.Student].includes(this.auth.getRole()!);
+  private readonly dayLabelMap = DAY_LABELS;
 
   ngOnInit() {
     this.loadCircles();
@@ -97,6 +100,26 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
         .join(', ') || ''
     );
 
+  }
+
+  getDayLabel(day?: DaysEnum | number | null | string): string {
+    if (day === null || day === undefined) {
+      return '';
+    }
+    if (typeof day === 'string') {
+      return day;
+    }
+    return this.dayLabelMap.get(day as DaysEnum) ?? '';
+  }
+
+  getFormattedTime(time?: number | string | null): string {
+    if (time === null || time === undefined) {
+      return '';
+    }
+    if (typeof time === 'string') {
+      return time;
+    }
+    return minutesToTimeString(time);
   }
 }
 
