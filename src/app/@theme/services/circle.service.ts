@@ -13,6 +13,7 @@ import { TimeSpanDto } from '../utils/time';
 
 export type CircleTimeValue = TimeSpanDto | number | string | null | undefined;
 
+
 export interface CircleDto {
   id: number;
   name: string;
@@ -51,6 +52,7 @@ export interface CreateCircleDto {
   day?: DaysEnum | null;
   startTime?: TimeSpanDto | null;
   time?: number | null;
+
 }
 
 export interface UpdateCircleDto extends CreateCircleDto {

@@ -20,6 +20,7 @@ import { DAY_OPTIONS, DaysEnum, coerceDayValue } from 'src/app/@theme/types/Days
 
 import { timeStringToMinutes, timeStringToTimeSpan } from 'src/app/@theme/utils/time';
 
+
 @Component({
   selector: 'app-courses-add',
   imports: [SharedModule, CommonModule],
@@ -83,6 +84,7 @@ export class CoursesAddComponent implements OnInit {
     const dayValue = coerceDayValue(formValue.dayId) ?? null;
     const startTimeValue = timeStringToTimeSpan(formValue.startTime) ?? null;
     const timeValue = timeStringToMinutes(formValue.startTime);
+
 
     const model: CreateCircleDto = {
       name: formValue.name,

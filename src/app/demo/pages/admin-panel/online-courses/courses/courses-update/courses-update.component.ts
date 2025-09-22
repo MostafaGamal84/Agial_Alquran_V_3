@@ -27,6 +27,7 @@ import {
 } from 'src/app/@theme/utils/time';
 
 
+
 @Component({
   selector: 'app-courses-update',
   imports: [SharedModule, CommonModule],
@@ -215,6 +216,7 @@ export class CoursesUpdateComponent implements OnInit {
     const dayValue = coerceDayValue(formValue.dayId) ?? null;
     const startTimeValue = timeStringToTimeSpan(formValue.startTime) ?? null;
     const timeValue = timeStringToMinutes(formValue.startTime);
+
 
     const model: UpdateCircleDto = {
       id: this.id,
