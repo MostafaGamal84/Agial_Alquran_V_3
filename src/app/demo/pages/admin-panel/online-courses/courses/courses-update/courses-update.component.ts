@@ -20,7 +20,7 @@ import { ToastService } from 'src/app/@theme/services/toast.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { DAY_OPTIONS, DaysEnum, coerceDayValue } from 'src/app/@theme/types/DaysEnum';
-import { formatTimeValue, timeStringToMinutes } from 'src/app/@theme/utils/time';
+import { formatTimeValue, timeStringToTimeSpan } from 'src/app/@theme/utils/time';
 
 
 @Component({
@@ -206,7 +206,7 @@ export class CoursesUpdateComponent implements OnInit {
     };
 
     const dayValue = coerceDayValue(formValue.day) ?? null;
-    const timeValue = timeStringToMinutes(formValue.time) ?? null;
+    const timeValue = timeStringToTimeSpan(formValue.time) ?? null;
 
     const model: UpdateCircleDto = {
       id: this.id,
