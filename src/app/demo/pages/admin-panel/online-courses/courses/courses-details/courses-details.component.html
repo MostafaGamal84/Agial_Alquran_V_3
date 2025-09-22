@@ -3,12 +3,15 @@
     <app-card cardTitle="Course Details" padding="0" cardClass="sm-block">
       <div class="p-10">
         <h5 class="m-b-10">{{ course?.name }}</h5>
-        <div *ngIf="course?.teacher">Teacher: {{ course.teacher.fullName || course.teacher.id }}</div>
+        <div *ngIf="course?.teacher || course?.teacherName || course?.teacherId">
+          Teacher: {{ course?.teacher?.fullName || course?.teacherName || course?.teacherId }}
+        </div>
         <div
           *ngIf="
             course &&
             ((course.day !== undefined && course.day !== null) ||
-              (course.dayId !== undefined && course.dayId !== null))
+              (course.dayId !== undefined && course.dayId !== null) ||
+              course.dayName)
           "
         >
           Day: {{ getDayLabel(course) }}
