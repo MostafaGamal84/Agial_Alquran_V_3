@@ -560,6 +560,29 @@ export class TeacherSalaryComponent
     }
   }
 
+  /**
+   * Attempts to parse a value into a Date object.
+   * Returns null if parsing fails.
+   */
+  private parseDate(value: unknown): Date | null {
+    if (value instanceof Date && !Number.isNaN(value.getTime())) {
+      return value;
+    }
+    if (typeof value === 'string' && value.trim().length > 0) {
+      const parsed = new Date(value);
+      if (!Number.isNaN(parsed.getTime())) {
+        return parsed;
+      }
+    }
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      const parsed = new Date(value);
+      if (!Number.isNaN(parsed.getTime())) {
+        return parsed;
+      }
+    }
+    return null;
+  }
+
   formatMetricValue(metric: SummaryMetric): string {
     if (metric.value === null || metric.value === undefined || metric.value === '') {
       return '—';
@@ -1278,7 +1301,7 @@ export class TeacherSalaryComponent
     const paymentDateEn = this.resolvePaymentDateDisplay(invoice);
     const paymentDateAr = this.resolvePaymentDateDisplay(invoice, 'ar-EG');
     const statusLabelEn = this.getStatusLabel(invoice);
-    const statusLabelAr = this.getStatusLabelAr(invoice);
+    const statusLabelAr = this.getStatusLabel(invoice);
     const invoiceAmountValue = this.getSalaryAmount(invoice);
     const invoiceAmountEn = this.formatCurrency(invoiceAmountValue);
     const invoiceAmountAr = this.formatArabicCurrency(invoiceAmountValue);
