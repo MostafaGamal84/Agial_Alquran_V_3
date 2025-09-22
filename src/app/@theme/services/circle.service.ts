@@ -50,6 +50,7 @@ export interface CreateCircleDto {
   studentsIds?: number[] | null;
   dayId?: DaysEnum | null;
   startTime?: string | null;
+
   time?: number | null;
 }
 

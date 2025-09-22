@@ -24,6 +24,7 @@ import {
   formatTimeValue,
   timeStringToMinutes,
   timeStringToTimeSpanString
+
 } from 'src/app/@theme/utils/time';
 
 interface CircleFormValue {
@@ -212,6 +213,7 @@ export class CoursesUpdateComponent implements OnInit {
 
     const dayValue = coerceDayValue(formValue.dayId) ?? null;
     const startTimeValue = timeStringToTimeSpanString(formValue.startTime) ?? null;
+
     const minutesValue = timeStringToMinutes(formValue.startTime);
 
     const model: UpdateCircleDto = {

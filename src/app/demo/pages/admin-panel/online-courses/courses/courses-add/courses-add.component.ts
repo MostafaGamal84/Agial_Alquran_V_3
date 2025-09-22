@@ -23,6 +23,7 @@ import {
   timeStringToTimeSpanString
 } from 'src/app/@theme/utils/time';
 
+
 interface CircleFormValue {
   name: string;
   teacherId: number;
@@ -88,6 +89,7 @@ export class CoursesAddComponent implements OnInit {
 
     const dayValue = coerceDayValue(formValue.dayId) ?? null;
     const startTimeValue = timeStringToTimeSpanString(formValue.startTime) ?? null;
+
     const timeValue = timeStringToMinutes(formValue.startTime);
     const model: CreateCircleDto = {
       name: formValue.name,
