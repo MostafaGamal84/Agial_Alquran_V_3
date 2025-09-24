@@ -6,24 +6,27 @@
         <div *ngIf="course?.teacher || course?.teacherName || course?.teacherId">
           Teacher: {{ course?.teacher?.fullName || course?.teacherName || course?.teacherId }}
         </div>
-        <div
-          *ngIf="
-            course &&
-            ((course.day !== undefined && course.day !== null) ||
-              (course.dayId !== undefined && course.dayId !== null) ||
-              course.dayName)
-          "
-        >
-          Day: {{ getDayLabel(course) }}
-        </div>
-        <div
-          *ngIf="
-            course &&
-            ((course.time !== undefined && course.time !== null) ||
-              (course.startTime !== undefined && course.startTime !== null))
-          "
-        >
-          Start Time: {{ getFormattedStartTime(course) }}
+        <div *ngIf="course as currentCourse">
+          <ng-container *ngIf="getSchedule(currentCourse).length; else fallbackSchedule">
+            <div>Schedule:</div>
+            <ul class="m-b-10">
+              <li *ngFor="let day of getSchedule(currentCourse)" class="schedule-item">
+                <span class="schedule-day">{{ getScheduleDayLabel(day) }}</span>
+                <ng-container *ngIf="getScheduleTimeLabel(day) as time">
+                  <span class="schedule-separator">•</span>
+                  <span class="schedule-time">{{ time }}</span>
+                </ng-container>
+              </li>
+            </ul>
+          </ng-container>
+          <ng-template #fallbackSchedule>
+            <div *ngIf="getDayLabel(currentCourse)">
+              Day: {{ getDayLabel(currentCourse) }}
+            </div>
+            <div *ngIf="getFormattedStartTime(currentCourse)">
+              Start Time: {{ getFormattedStartTime(currentCourse) }}
+            </div>
+          </ng-template>
         </div>
       </div>
       <div class="p-b-15">
