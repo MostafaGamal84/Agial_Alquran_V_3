@@ -12,7 +12,7 @@ import {
 } from 'src/app/@theme/services/lookup.service';
 import {
   CircleService,
-  CircleTimeValue,
+  CircleDayRequestDto,
   CreateCircleDto
 } from 'src/app/@theme/services/circle.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
@@ -125,19 +125,18 @@ export class CoursesAddComponent implements OnInit {
     }
     const formValue = this.circleForm.getRawValue() as CircleFormValue;
 
-    const schedule = Array.isArray(formValue.days)
-      ? formValue.days
-          .map((entry) => {
-            const dayValue = coerceDayValue(entry?.dayId ?? undefined);
-            if (dayValue === undefined) {
-              return null;
-            }
+    const schedule: CircleDayRequestDto[] = Array.isArray(formValue.days)
+      ? formValue.days.reduce<CircleDayRequestDto[]>((acc, entry) => {
+          const dayValue = coerceDayValue(entry?.dayId ?? undefined);
+          if (dayValue === undefined) {
+            return acc;
+          }
 
-            const startTimeValue = timeStringToTimeSpan(entry?.startTime);
-            const time: CircleTimeValue = startTimeValue ?? null;
-            return { dayId: dayValue, time };
-          })
-          .filter((value): value is { dayId: DayValue; time: CircleTimeValue } => value !== null)
+          const startTimeValue = timeStringToTimeSpan(entry?.startTime);
+          acc.push({ dayId: dayValue, time: startTimeValue ?? null });
+          return acc;
+        }, [])
+
       : [];
 
     const model: CreateCircleDto = {
