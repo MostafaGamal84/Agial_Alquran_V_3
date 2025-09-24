@@ -1,5 +1,5 @@
 // angular import
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 // project import
@@ -14,6 +14,10 @@ import { activityData } from 'src/app/fake-data/activity_data';
 import { VisitorsBarChartComponent } from './visitors-bar-chart/visitors-bar-chart.component';
 import { EarningCoursesLineChartComponent } from './earning-courses-line-chart/earning-courses-line-chart.component';
 import { courseStatesData } from 'src/app/fake-data/courseStates_data';
+import { CircleService, CircleDayDto, UpcomingCircleDto } from 'src/app/@theme/services/circle.service';
+import { ToastService } from 'src/app/@theme/services/toast.service';
+import { formatDayValue } from 'src/app/@theme/types/DaysEnum';
+import { formatTimeValue } from 'src/app/@theme/utils/time';
 
 export interface activity_Data {
   image: string;
@@ -50,15 +54,21 @@ const courseStates_data = courseStatesData;
   templateUrl: './online-dashboard.component.html',
   styleUrl: './online-dashboard.component.scss'
 })
-export class OnlineDashboardComponent {
+export class OnlineDashboardComponent implements OnInit {
   // public props
   selected: Date | null;
+
+  private circleService = inject(CircleService);
+  private toast = inject(ToastService);
 
   activity: string[] = ['Name', 'Qualification', 'Rating'];
   activitySource = activity_Data;
 
   courseStates: string[] = ['Name', 'Teacher', 'Rating', 'Earning', 'Sale', 'Action'];
   courseSource = courseStates_data;
+
+  upcomingCircles: UpcomingCircleDto[] = [];
+  upcomingLoading = false;
 
   // public methods
   dashboard_summary = [
@@ -96,25 +106,6 @@ export class OnlineDashboardComponent {
     }
   ];
 
-  course_list = [
-    {
-      title: 'Bootstrap 5 Beginner Course',
-      image: 'assets/images/admin/img-bootstrap.svg'
-    },
-    {
-      title: 'PHP Training Course',
-      image: 'assets/images/admin/img-php.svg'
-    },
-    {
-      title: 'UI/UX Training Course',
-      image: 'assets/images/admin/img-ux.svg'
-    },
-    {
-      title: 'Web Designing Course',
-      image: 'assets/images/admin/img-web.svg'
-    }
-  ];
-
   queriesList = [
     {
       image: 'assets/images/user/avatar-2.png',
@@ -131,29 +122,6 @@ export class OnlineDashboardComponent {
     {
       image: 'assets/images/user/avatar-4.jpg',
       title: 'PHP Learning'
-    }
-  ];
-
-  trendingCourse = [
-    {
-      image: 'assets/images/admin/img-bootstrap.svg',
-      title: 'Bootstrap 5 Beginner Course'
-    },
-    {
-      image: 'assets/images/admin/img-php.svg',
-      title: 'PHP Training Course'
-    },
-    {
-      image: 'assets/images/admin/img-ux.svg',
-      title: 'UI/UX Training Course'
-    },
-    {
-      image: 'assets/images/admin/img-web.svg',
-      title: 'Web Designing Course'
-    },
-    {
-      image: 'assets/images/admin/img-c.svg',
-      title: 'C Training Course'
     }
   ];
 
@@ -179,4 +147,148 @@ export class OnlineDashboardComponent {
       time: '05 Feb | 4:00 PM'
     }
   ];
+  ngOnInit(): void {
+    this.loadUpcomingCircles();
+  }
+
+  loadUpcomingCircles(take = 4): void {
+    this.upcomingLoading = true;
+    this.circleService.getUpcoming(undefined, undefined, take).subscribe({
+      next: (res) => {
+        this.upcomingLoading = false;
+        if (res.isSuccess) {
+          this.upcomingCircles = res.data ?? [];
+        } else {
+          this.upcomingCircles = [];
+          if (res.errors?.length) {
+            res.errors.forEach((error) => this.toast.error(error.message));
+          }
+        }
+      },
+      error: () => {
+        this.upcomingLoading = false;
+        this.upcomingCircles = [];
+        this.toast.error('Failed to load upcoming courses');
+      }
+    });
+  }
+
+  getUpcomingScheduleLabel(circle: UpcomingCircleDto): string {
+    const primaryDay = this.resolveUpcomingPrimaryDay(circle);
+
+    const dayLabel =
+      circle.nextDayName ??
+      (circle.nextDayId !== undefined && circle.nextDayId !== null
+        ? formatDayValue(circle.nextDayId)
+        : primaryDay
+          ? formatDayValue(primaryDay.dayId)
+          : '');
+
+    let dateLabel = '';
+    if (circle.nextOccurrenceDate) {
+      const date = new Date(circle.nextOccurrenceDate);
+      if (!Number.isNaN(date.getTime())) {
+        dateLabel = date.toLocaleDateString();
+      }
+    }
+
+    const timeLabel = formatTimeValue(circle.startTime ?? primaryDay?.time);
+
+    const parts = [dayLabel, dateLabel, timeLabel]
+      .map((part) => (typeof part === 'string' ? part.trim() : ''))
+      .filter((part) => !!part);
+
+    return parts.join(' • ');
+  }
+
+  getUpcomingTeacherName(circle: UpcomingCircleDto): string {
+    const teacher = circle.teacher;
+
+    if (teacher && typeof teacher === 'object') {
+      const lookUp = teacher as { fullName?: string; name?: string };
+      if (lookUp.fullName) {
+        return lookUp.fullName;
+      }
+      if (lookUp.name) {
+        return lookUp.name;
+      }
+    }
+
+    if (circle.teacherName) {
+      return circle.teacherName;
+    }
+
+    if (circle.teacherId !== undefined && circle.teacherId !== null) {
+      return `Teacher #${circle.teacherId}`;
+    }
+
+    return '';
+  }
+
+  getCircleInitials(name?: string | null): string {
+    if (!name) {
+      return 'C';
+    }
+
+    const segments = name
+      .split(/\s+/)
+      .filter((segment) => !!segment)
+      .slice(0, 2);
+
+    const initials = segments.map((segment) => segment.charAt(0)).join('').toUpperCase();
+
+    return initials || name.charAt(0).toUpperCase() || 'C';
+  }
+
+  getUpcomingManagersLabel(circle: UpcomingCircleDto): string {
+    const managers = circle.managers;
+
+    if (!managers || !managers.length) {
+      return '';
+    }
+
+    const names = managers
+      .map((manager) => {
+        if (!manager) {
+          return '';
+        }
+
+        const managerValue = manager.manager;
+
+        if (typeof managerValue === 'string') {
+          return managerValue;
+        }
+
+        if (managerValue && typeof managerValue === 'object') {
+          const lookUp = managerValue as { fullName?: string; name?: string };
+          if (lookUp.fullName) {
+            return lookUp.fullName;
+          }
+          if (lookUp.name) {
+            return lookUp.name;
+          }
+        }
+
+        if (manager.managerName) {
+          return manager.managerName;
+        }
+
+        if (manager.managerId !== undefined && manager.managerId !== null) {
+          return `#${manager.managerId}`;
+        }
+
+        return '';
+      })
+      .filter((name) => !!name);
+
+    return names.join(', ');
+  }
+
+  private resolveUpcomingPrimaryDay(circle?: UpcomingCircleDto | null): CircleDayDto | undefined {
+    if (!circle || !Array.isArray(circle.days)) {
+      return undefined;
+    }
+
+    return circle.days.find((day): day is CircleDayDto => Boolean(day)) ?? undefined;
+  }
 }

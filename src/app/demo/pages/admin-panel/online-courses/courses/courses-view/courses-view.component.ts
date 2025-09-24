@@ -12,6 +12,7 @@ import { MatButton } from '@angular/material/button';
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
   CircleService,
+  CircleDayDto,
   CircleDto,
   CircleManagerDto
 } from 'src/app/@theme/services/circle.service';
@@ -92,24 +93,95 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
     });
   }
 
-  displayManagers(managers?: CircleManagerDto[]): string {
-    return (
-      managers
-        ?.map((m) => m.manager || String(m.managerId))
-        .join(', ') || ''
-    );
+  displayManagers(
+    managers?: (CircleManagerDto | number | string | null | undefined)[]
+  ): string {
+    if (!managers || !managers.length) {
+      return '';
+    }
 
+    const names = managers
+      .map((m) => {
+        if (m === null || m === undefined) {
+          return '';
+        }
+
+        if (typeof m === 'number' || typeof m === 'string') {
+          return String(m);
+        }
+
+        const manager = m.manager;
+
+        if (typeof manager === 'string') {
+          return manager;
+        }
+
+        if (manager && typeof manager === 'object') {
+          const lookUp = manager as { fullName?: string; name?: string };
+          if (lookUp.fullName) {
+            return lookUp.fullName;
+          }
+
+          if (lookUp.name) {
+            return lookUp.name;
+          }
+        }
+
+        if (m.managerName) {
+          return m.managerName;
+        }
+
+        if (m.managerId !== undefined && m.managerId !== null) {
+          return String(m.managerId);
+        }
+
+        return '';
+      })
+      .filter((name) => !!name);
+
+    return names.join(', ');
   }
 
   getDayLabel(circle: CircleDto): string {
+    const primaryDay = this.resolvePrimaryDay(circle);
+
+    if (primaryDay) {
+      if (primaryDay.dayName) {
+        return primaryDay.dayName;
+      }
+
+      if (primaryDay.dayId !== undefined && primaryDay.dayId !== null) {
+        return formatDayValue(primaryDay.dayId);
+      }
+    }
+
+    if (circle.dayNames?.length) {
+      const candidate = circle.dayNames[0];
+      if (candidate) {
+        return candidate;
+      }
+    }
+
     if (circle.dayName) {
       return circle.dayName;
     }
+
     return formatDayValue(circle.dayId ?? circle.day);
   }
 
   getFormattedStartTime(circle: CircleDto): string {
-    return formatTimeValue(circle.startTime ?? circle.time);
+    const primaryDay = this.resolvePrimaryDay(circle);
+    const timeSource = primaryDay?.time ?? circle.startTime ?? circle.time;
+
+    return formatTimeValue(timeSource);
+  }
+
+  private resolvePrimaryDay(circle?: CircleDto | null): CircleDayDto | undefined {
+    if (!circle || !Array.isArray(circle.days)) {
+      return undefined;
+    }
+
+    return circle.days.find((day): day is CircleDayDto => Boolean(day)) ?? undefined;
   }
 }
 
