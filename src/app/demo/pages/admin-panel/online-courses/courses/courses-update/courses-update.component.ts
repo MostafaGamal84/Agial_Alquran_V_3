@@ -21,7 +21,7 @@ import { ToastService } from 'src/app/@theme/services/toast.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { DAY_OPTIONS, DayValue, coerceDayValue } from 'src/app/@theme/types/DaysEnum';
-import { formatTimeValue, timeStringToTimeSpanString } from 'src/app/@theme/utils/time';
+import { formatTimeValue, timeStringToTimeSpan } from 'src/app/@theme/utils/time';
 
 interface CircleFormValue {
   name: string;
@@ -253,7 +253,7 @@ export class CoursesUpdateComponent implements OnInit {
     const formValue = this.circleForm.getRawValue() as CircleFormValue;
 
     const dayValue = coerceDayValue(formValue.dayId);
-    const startTimeValue = timeStringToTimeSpanString(formValue.startTime);
+    const startTimeValue = timeStringToTimeSpan(formValue.startTime);
 
     const schedule =
       dayValue !== undefined
