@@ -1,7 +1,7 @@
 // angular imports
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -12,6 +12,7 @@ import {
 } from 'src/app/@theme/services/lookup.service';
 import {
   CircleService,
+  CircleTimeValue,
   CreateCircleDto
 } from 'src/app/@theme/services/circle.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
@@ -21,11 +22,15 @@ import { DAY_OPTIONS, DayValue, coerceDayValue } from 'src/app/@theme/types/Days
 import { timeStringToTimeSpan } from 'src/app/@theme/utils/time';
 
 
+interface CircleScheduleFormValue {
+  dayId: DayValue | null;
+  startTime: string | null;
+}
+
 interface CircleFormValue {
   name: string;
   teacherId: number;
-  dayId: DayValue;
-  startTime: string;
+  days: CircleScheduleFormValue[];
   managers: number[];
   studentsIds: number[];
 }
@@ -53,8 +58,7 @@ export class CoursesAddComponent implements OnInit {
     this.circleForm = this.fb.group({
       name: ['', Validators.required],
       teacherId: [null, Validators.required],
-      dayId: [null, Validators.required],
-      startTime: ['', Validators.required],
+      days: this.fb.array([this.createDayGroup()]),
       managers: [[]],
       studentsIds: [[]]
     });
@@ -77,20 +81,64 @@ export class CoursesAddComponent implements OnInit {
       });
   }
 
+  get daysArray(): FormArray<FormGroup> {
+    return this.circleForm.get('days') as FormArray<FormGroup>;
+  }
+
+  addDay(): void {
+    this.daysArray.push(this.createDayGroup());
+    this.daysArray.markAsDirty();
+    this.daysArray.markAsTouched();
+    this.daysArray.updateValueAndValidity();
+  }
+
+  removeDay(index: number): void {
+    if (this.daysArray.length <= 1) {
+      this.daysArray.at(0).reset({ dayId: null, startTime: '' });
+      this.daysArray.markAsDirty();
+      this.daysArray.markAsTouched();
+      this.daysArray.updateValueAndValidity();
+      return;
+    }
+
+    this.daysArray.removeAt(index);
+    this.daysArray.markAsDirty();
+    this.daysArray.markAsTouched();
+    this.daysArray.updateValueAndValidity();
+  }
+
+  trackByIndex(index: number): number {
+    return index;
+  }
+
+  private createDayGroup(initial?: Partial<CircleScheduleFormValue>): FormGroup {
+    return this.fb.group({
+      dayId: [initial?.dayId ?? null, Validators.required],
+      startTime: [initial?.startTime ?? '', Validators.required]
+    });
+  }
+
   onSubmit() {
     if (this.circleForm.invalid) {
       this.circleForm.markAllAsTouched();
       return;
     }
-    const formValue = this.circleForm.value as CircleFormValue;
+    const formValue = this.circleForm.getRawValue() as CircleFormValue;
 
-    const dayValue = coerceDayValue(formValue.dayId);
-    const startTimeValue = timeStringToTimeSpan(formValue.startTime);
+    const schedule = Array.isArray(formValue.days)
+      ? formValue.days
+          .map((entry) => {
+            const dayValue = coerceDayValue(entry?.dayId ?? undefined);
+            if (dayValue === undefined) {
+              return null;
+            }
 
-    const schedule =
-      dayValue !== undefined
-        ? [{ dayId: dayValue, time: startTimeValue ?? null }]
-        : [];
+            const startTimeValue = timeStringToTimeSpan(entry?.startTime);
+            const time: CircleTimeValue = startTimeValue ?? null;
+            return { dayId: dayValue, time };
+          })
+          .filter((value): value is { dayId: DayValue; time: CircleTimeValue } => value !== null)
+      : [];
 
     const model: CreateCircleDto = {
       name: formValue.name,
@@ -103,14 +151,7 @@ export class CoursesAddComponent implements OnInit {
       next: (res) => {
         if (res.isSuccess) {
           this.toast.success('Circle created successfully');
-          this.circleForm.reset({
-            name: '',
-            teacherId: null,
-            dayId: null,
-            startTime: '',
-            managers: [],
-            studentsIds: []
-          });
+          this.resetForm();
         } else if (res.errors?.length) {
           res.errors.forEach((e) => this.toast.error(e.message));
         } else {
@@ -119,6 +160,29 @@ export class CoursesAddComponent implements OnInit {
       },
       error: () => this.toast.error('Error creating circle')
     });
+  }
+
+  private resetForm(): void {
+    while (this.daysArray.length > 1) {
+      this.daysArray.removeAt(0);
+    }
+
+    if (!this.daysArray.length) {
+      this.daysArray.push(this.createDayGroup());
+    }
+
+    this.daysArray.at(0).reset({ dayId: null, startTime: '' });
+
+    this.circleForm.reset({
+      name: '',
+      teacherId: null,
+      managers: [],
+      studentsIds: [],
+      days: this.daysArray.value
+    });
+
+    this.circleForm.markAsPristine();
+    this.circleForm.markAsUntouched();
   }
 }
 
