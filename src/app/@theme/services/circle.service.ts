@@ -15,7 +15,7 @@ export type CircleTimeValue = TimeSpanDto | number | string | null | undefined;
 
 export interface CircleDayRequestDto {
   dayId: DaysEnum | number;
-  time?: string | null;
+  time?: CircleTimeValue;
 }
 
 export interface CircleDayDto {
