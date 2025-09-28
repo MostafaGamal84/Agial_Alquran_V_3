@@ -38,3 +38,19 @@
     }
   }
 }
+
+.schedule-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  white-space: normal;
+}
+
+.schedule-cell__item {
+  display: inline-flex;
+  align-items: center;
+}
+
+.schedule-cell__time {
+  font-variant-numeric: tabular-nums;
+}
