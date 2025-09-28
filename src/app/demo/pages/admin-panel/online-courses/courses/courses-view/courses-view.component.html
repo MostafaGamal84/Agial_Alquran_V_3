@@ -32,14 +32,34 @@
               </ng-container>
               <ng-container matColumnDef="day">
                 <th mat-header-cell *matHeaderCellDef>DAY</th>
-                <td mat-cell *matCellDef="let element" class="text-nowrap">
-                  {{ getDayLabel(element) }}
+                <td mat-cell *matCellDef="let element">
+                  <ng-container *ngIf="element.scheduleEntries?.length; else noDay">
+                    <div class="schedule-cell">
+                      <div
+                        *ngFor="let schedule of element.scheduleEntries"
+                        class="schedule-cell__item"
+                      >
+                        {{ schedule.day || '-' }}
+                      </div>
+                    </div>
+                  </ng-container>
+                  <ng-template #noDay>-</ng-template>
                 </td>
               </ng-container>
               <ng-container matColumnDef="time">
                 <th mat-header-cell *matHeaderCellDef>START TIME</th>
-                <td mat-cell *matCellDef="let element" class="text-nowrap">
-                  {{ getFormattedStartTime(element) }}
+                <td mat-cell *matCellDef="let element">
+                  <ng-container *ngIf="element.scheduleEntries?.length; else noTime">
+                    <div class="schedule-cell">
+                      <div
+                        *ngFor="let schedule of element.scheduleEntries"
+                        class="schedule-cell__item schedule-cell__time"
+                      >
+                        {{ schedule.time || '-' }}
+                      </div>
+                    </div>
+                  </ng-container>
+                  <ng-template #noTime>-</ng-template>
                 </td>
               </ng-container>
               <ng-container matColumnDef="managers">

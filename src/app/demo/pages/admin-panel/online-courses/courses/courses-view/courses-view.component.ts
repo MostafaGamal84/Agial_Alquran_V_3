@@ -22,9 +22,15 @@ import {
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
-import { formatDayValue } from 'src/app/@theme/types/DaysEnum';
+import { DayValue, formatDayValue } from 'src/app/@theme/types/DaysEnum';
 import { formatTimeValue } from 'src/app/@theme/utils/time';
 
+interface CircleScheduleEntry {
+  day: string;
+  time: string;
+}
+
+type CircleViewModel = CircleDto & { scheduleEntries: CircleScheduleEntry[] };
 
 @Component({
   selector: 'app-courses-view',
@@ -40,7 +46,7 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
 
 
   displayedColumns: string[] = ['name', 'teacher', 'day', 'time', 'managers', 'action'];
-  dataSource = new MatTableDataSource<CircleDto>();
+  dataSource = new MatTableDataSource<CircleViewModel>();
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
 
@@ -53,7 +59,10 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
   private loadCircles() {
     this.circleService.getAll(this.filter).subscribe((res) => {
       if (res.isSuccess && res.data?.items) {
-        this.dataSource.data = res.data.items;
+        this.dataSource.data = res.data.items.map((circle) => ({
+          ...circle,
+          scheduleEntries: this.buildScheduleEntries(circle)
+        }));
         this.totalCount = res.data.totalCount;
       } else {
         this.dataSource.data = [];
@@ -91,6 +100,67 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
         });
       }
     });
+  }
+
+  private buildScheduleEntries(circle?: CircleDto | null): CircleScheduleEntry[] {
+    if (!circle) {
+      return [];
+    }
+
+    const schedule: CircleScheduleEntry[] = [];
+
+    if (Array.isArray(circle.days)) {
+      circle.days.forEach((day) => {
+        if (!day) {
+          return;
+        }
+
+        const dayLabel = this.resolveDayLabel(day);
+        const timeLabel = formatTimeValue(day.time);
+
+        if (dayLabel || timeLabel) {
+          schedule.push({ day: dayLabel, time: timeLabel });
+        }
+      });
+    }
+
+    if (!schedule.length) {
+      const fallbackDay = this.resolveFallbackDay(circle);
+      const fallbackTime = formatTimeValue(circle.startTime ?? circle.time);
+
+      if (fallbackDay || fallbackTime) {
+        schedule.push({ day: fallbackDay, time: fallbackTime });
+      }
+    }
+
+    return schedule;
+  }
+
+  private resolveDayLabel(day: CircleDayDto): string {
+    if (typeof day.dayName === 'string' && day.dayName.trim()) {
+      return day.dayName.trim();
+    }
+
+    return formatDayValue(day.dayId);
+  }
+
+  private resolveFallbackDay(circle: CircleDto): string {
+    const dayCandidates: DayValue[] = [
+      circle.dayName ?? undefined,
+      circle.dayNames?.[0] ?? undefined,
+      circle.dayId ?? undefined,
+      circle.dayIds?.[0] ?? undefined,
+      circle.day ?? undefined
+    ];
+
+    for (const candidate of dayCandidates) {
+      const label = formatDayValue(candidate);
+      if (label) {
+        return label;
+      }
+    }
+
+    return '';
   }
 
   displayManagers(
@@ -142,47 +212,6 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
     return names.join(', ');
   }
 
-  getDayLabel(circle: CircleDto): string {
-    const primaryDay = this.resolvePrimaryDay(circle);
-
-    if (primaryDay) {
-      if (primaryDay.dayName) {
-        return primaryDay.dayName;
-      }
-
-      if (primaryDay.dayId !== undefined && primaryDay.dayId !== null) {
-        return formatDayValue(primaryDay.dayId);
-      }
-    }
-
-    if (circle.dayNames?.length) {
-      const candidate = circle.dayNames[0];
-      if (candidate) {
-        return candidate;
-      }
-    }
-
-    if (circle.dayName) {
-      return circle.dayName;
-    }
-
-    return formatDayValue(circle.dayId ?? circle.day);
-  }
-
-  getFormattedStartTime(circle: CircleDto): string {
-    const primaryDay = this.resolvePrimaryDay(circle);
-    const timeSource = primaryDay?.time ?? circle.startTime ?? circle.time;
-
-    return formatTimeValue(timeSource);
-  }
-
-  private resolvePrimaryDay(circle?: CircleDto | null): CircleDayDto | undefined {
-    if (!circle || !Array.isArray(circle.days)) {
-      return undefined;
-    }
-
-    return circle.days.find((day): day is CircleDayDto => Boolean(day)) ?? undefined;
-  }
 }
 
 @Component({
