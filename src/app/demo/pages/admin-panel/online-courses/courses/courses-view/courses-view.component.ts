@@ -64,18 +64,24 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
   private loadCircles() {
     this.circleService.getAll(this.filter).subscribe((res) => {
       if (res.isSuccess && res.data?.items) {
-        this.dataSource.data = res.data.items.map((circle) => ({
-          ...circle,
-          scheduleEntries: this.buildScheduleEntries(circle),
-          managerLabels: this.buildManagerLabels(circle.managers),
-          studentLabels: this.buildStudentLabels(circle.students)
-        }));
+        const sourceCircles = res.data.items;
+        const viewModels = sourceCircles.map((circle) => this.buildViewModel(circle));
+        this.dataSource.data = viewModels;
         this.totalCount = res.data.totalCount;
       } else {
         this.dataSource.data = [];
         this.totalCount = 0;
       }
     });
+  }
+
+  private buildViewModel(circle: CircleDto): CircleViewModel {
+    return {
+      ...circle,
+      scheduleEntries: this.buildScheduleEntries(circle),
+      managerLabels: this.buildManagerLabels(circle.managers),
+      studentLabels: this.buildStudentLabels(circle.students)
+    };
   }
 
   applyFilter(event: Event) {
