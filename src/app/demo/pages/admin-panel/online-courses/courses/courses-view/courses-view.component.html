@@ -74,6 +74,7 @@
                 <th mat-header-cell *matHeaderCellDef>STUDENTS</th>
                 <td mat-cell *matCellDef="let element" class="chip-cell">
                   <ng-container *ngIf="element.studentLabels?.length; else studentsFallback">
+
                     <mat-chip-set aria-label="Course students" class="table-chip-set">
                       <mat-chip
                         *ngFor="let student of element.studentLabels; trackBy: trackByLabel"
@@ -90,6 +91,7 @@
                       {{ displayStudents(element.students) || '-' }}
                     </span>
                   </ng-template>
+
                 </td>
               </ng-container>
               <ng-container matColumnDef="action">

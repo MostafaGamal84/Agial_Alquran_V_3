@@ -194,6 +194,7 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
   private extractManagerLabels(
     managers?: (CircleManagerDto | string | number | null | undefined)[] | null
   ): string[] {
+
     if (!Array.isArray(managers)) {
       return [];
     }
@@ -233,6 +234,7 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
           return `#${manager.managerId}`;
         }
 
+
         return '';
       })
       .filter((label) => !!label) as string[];
@@ -250,6 +252,7 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
         if (!student) {
           return '';
         }
+
 
         if (student.fullName && student.fullName.trim()) {
           return student.fullName.trim();
@@ -289,6 +292,7 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
 
   displayStudents(students?: (CircleStudentDto | null | undefined)[] | null): string {
     return this.extractStudentLabels(students).join(', ');
+
   }
 
   trackBySchedule(_index: number, schedule: CircleScheduleEntry): string {
