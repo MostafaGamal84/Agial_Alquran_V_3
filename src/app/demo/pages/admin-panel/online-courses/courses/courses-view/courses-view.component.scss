@@ -39,18 +39,18 @@
   }
 }
 
-.schedule-cell {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.chip-cell {
   white-space: normal;
+  vertical-align: top;
 }
 
-.schedule-cell__item {
-  display: inline-flex;
-  align-items: center;
+.table-chip-set {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
-.schedule-cell__time {
-  font-variant-numeric: tabular-nums;
+.table-chip {
+  max-width: 100%;
+  white-space: normal;
 }
