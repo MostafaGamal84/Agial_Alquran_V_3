@@ -39,18 +39,34 @@
   }
 }
 
-.schedule-cell {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.multi-value-cell {
   white-space: normal;
+  vertical-align: top;
 }
 
-.schedule-cell__item {
+.multi-value-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.multi-value-list li {
   display: inline-flex;
   align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background-color: rgba(var(--accent-500-rgb, 96, 93, 255), 0.12);
+  color: var(--accent-900, #2c2b6f);
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
+  max-width: 100%;
 }
 
-.schedule-cell__time {
-  font-variant-numeric: tabular-nums;
+.multi-value-fallback {
+  display: inline-block;
+  max-width: 100%;
+  white-space: normal;
 }
