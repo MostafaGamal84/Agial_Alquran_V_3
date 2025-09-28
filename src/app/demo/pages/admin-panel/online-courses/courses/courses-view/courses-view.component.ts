@@ -146,6 +146,7 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
       return;
     }
 
+
     this.dialog.open(CourseParticipantsDialogComponent, {
       width: '480px',
       data: {
