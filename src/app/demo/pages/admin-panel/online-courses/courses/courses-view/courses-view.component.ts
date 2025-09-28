@@ -92,69 +92,6 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
     };
   }
 
-  private needsAdditionalDetails(circle: CircleDto, viewModel: CircleViewModel): boolean {
-    const hasScheduleData =
-      viewModel.scheduleEntries.length > 0 ||
-      circle.day !== undefined ||
-      circle.dayId !== undefined ||
-      (Array.isArray(circle.dayIds) && circle.dayIds.length > 0) ||
-      circle.dayName !== undefined ||
-      (Array.isArray(circle.dayNames) && circle.dayNames.length > 0) ||
-      circle.startTime !== undefined ||
-      circle.time !== undefined;
-
-    const managersDefined = circle.managers !== undefined;
-    const studentsDefined = circle.students !== undefined;
-
-    return !hasScheduleData || !managersDefined || !studentsDefined;
-  }
-
-  private fetchCircleDetails(circles: CircleDto[]): void {
-    const idsToFetch = Array.from(
-      new Set(
-        circles
-          .map((circle) => circle?.id)
-          .filter((id): id is number => typeof id === 'number' && !Number.isNaN(id))
-      )
-    );
-
-    if (!idsToFetch.length) {
-      return;
-    }
-
-    forkJoin(
-      idsToFetch.map((id) =>
-        this.circleService.get(id).pipe(
-          catchError(() => of(null))
-        )
-      )
-    ).subscribe((responses) => {
-      let hasUpdates = false;
-      const currentData = this.dataSource.data.slice();
-
-      responses.forEach((response) => {
-        if (!response?.isSuccess || !response.data) {
-          return;
-        }
-
-        const updatedModel = this.buildViewModel(response.data);
-        const index = currentData.findIndex((item) => item.id === updatedModel.id);
-
-        if (index !== -1) {
-          currentData[index] = {
-            ...currentData[index],
-            ...updatedModel
-          };
-          hasUpdates = true;
-        }
-      });
-
-      if (hasUpdates) {
-        this.dataSource.data = currentData;
-      }
-    });
-  }
-
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     this.filter.searchTerm = filterValue.trim().toLowerCase();
