@@ -1,15 +1,18 @@
-import { Component, OnInit } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Component, OnInit, inject } from '@angular/core';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
   CircleDayDto,
   CircleDto,
-  CircleStudentDto
+  CircleManagerDto,
+  CircleStudentDto,
+  CircleService
 } from 'src/app/@theme/services/circle.service';
 import { formatDayValue } from 'src/app/@theme/types/DaysEnum';
 import { formatTimeValue } from 'src/app/@theme/utils/time';
+import { ToastService } from 'src/app/@theme/services/toast.service';
 
 
 
@@ -21,16 +24,86 @@ import { formatTimeValue } from 'src/app/@theme/utils/time';
 })
 export class CoursesDetailsComponent implements OnInit {
 
+  private readonly route = inject(ActivatedRoute);
+  private readonly circleService = inject(CircleService);
+  private readonly toast = inject(ToastService);
+
   course?: CircleDto;
   displayedColumns: string[] = ['fullName', 'action'];
   dataSource = new MatTableDataSource<CircleStudentDto>();
   ngOnInit() {
     const course = history.state.course as CircleDto | undefined;
     if (course) {
-      this.course = course;
-      this.dataSource.data = course.students || [];
-
+      this.applyCourse(course);
     }
+
+    const idParam = this.route.snapshot.paramMap.get('id');
+    const circleId = idParam ? Number(idParam) : undefined;
+
+    if (circleId !== undefined && !Number.isNaN(circleId)) {
+      this.loadCourse(circleId);
+    }
+  }
+
+  private loadCourse(id: number): void {
+    this.circleService.get(id).subscribe({
+      next: (response) => {
+        if (response.isSuccess && response.data) {
+          this.applyCourse(response.data);
+        } else {
+          this.toast.error('Unable to load course details');
+        }
+      },
+      error: () => this.toast.error('Unable to load course details')
+    });
+  }
+
+  private applyCourse(course: CircleDto): void {
+    this.course = course;
+    this.dataSource.data = course.students || [];
+  }
+
+  getManagers(circle?: CircleDto): string[] {
+    if (!circle || !Array.isArray(circle.managers)) {
+      return [];
+    }
+
+    return circle.managers
+      .map((manager) => this.resolveManagerName(manager))
+      .filter((name): name is string => Boolean(name));
+  }
+
+  private resolveManagerName(
+    manager: CircleManagerDto | number | string | null | undefined
+  ): string | undefined {
+    if (manager === null || manager === undefined) {
+      return undefined;
+    }
+
+    if (typeof manager === 'string' || typeof manager === 'number') {
+      return String(manager);
+    }
+
+    if (manager.manager) {
+      const nestedManager = manager.manager as { fullName?: string; name?: string };
+      if (nestedManager.fullName) {
+        return nestedManager.fullName;
+      }
+
+      if (nestedManager.name) {
+        return nestedManager.name;
+      }
+    }
+
+    if (manager.managerName) {
+      return manager.managerName;
+    }
+
+    if (manager.managerId !== undefined && manager.managerId !== null) {
+      return String(manager.managerId);
+    }
+
+    return undefined;
   }
 
   getSchedule(circle?: CircleDto): CircleDayDto[] {

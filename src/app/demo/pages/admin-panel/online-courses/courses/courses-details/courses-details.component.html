@@ -27,6 +27,16 @@
               Start Time: {{ getFormattedStartTime(currentCourse) }}
             </div>
           </ng-template>
+          <div *ngIf="getManagers(currentCourse) as managers">
+            <ng-container *ngIf="managers.length">
+              <div>Managers:</div>
+              <ul class="m-b-10">
+                <li *ngFor="let manager of managers" class="schedule-item">
+                  <span class="schedule-day">{{ manager }}</span>
+                </li>
+              </ul>
+            </ng-container>
+          </div>
         </div>
       </div>
       <div class="p-b-15">

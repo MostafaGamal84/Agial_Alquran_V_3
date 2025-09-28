@@ -16,19 +16,50 @@
             </mat-select>
           </mat-form-field>
         </div>
-        <div class="col-md-6">
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Day</mat-label>
-            <mat-select formControlName="dayId">
-              <mat-option *ngFor="let day of days" [value]="day.value">{{ day.label }}</mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-        <div class="col-md-6">
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Start Time</mat-label>
-            <input matInput type="time" formControlName="startTime" placeholder="Select Start Time" />
-          </mat-form-field>
+        <div class="col-12">
+          <div formArrayName="days">
+            <ng-container *ngFor="let dayGroup of daysArray.controls; let i = index; trackBy: trackByIndex">
+              <div class="row" [formGroupName]="i">
+                <div class="col-md-5">
+                  <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Day</mat-label>
+                    <mat-select formControlName="dayId">
+                      <mat-option *ngFor="let day of days" [value]="day.value">{{ day.label }}</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+                <div class="col-md-5">
+                  <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>Start Time</mat-label>
+                    <input matInput type="time" formControlName="startTime" placeholder="Select Start Time" />
+                  </mat-form-field>
+                </div>
+                <div class="col-md-2 d-flex align-items-center">
+                  <button
+                    mat-icon-button
+                    color="warn"
+                    type="button"
+                    class="m-r-10"
+                    aria-label="Remove day"
+                    (click)="removeDay(i)"
+                    *ngIf="daysArray.length > 1"
+                  >
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                  <button
+                    mat-icon-button
+                    color="primary"
+                    type="button"
+                    aria-label="Add day"
+                    (click)="addDay()"
+                    *ngIf="i === daysArray.length - 1"
+                  >
+                    <mat-icon>add</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </ng-container>
+          </div>
         </div>
         <div class="col-md-6">
           <mat-form-field appearance="outline" class="w-100">
