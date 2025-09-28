@@ -26,8 +26,6 @@ import { AuthenticationService } from 'src/app/@theme/services/authentication.se
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { DayValue, formatDayValue } from 'src/app/@theme/types/DaysEnum';
 import { formatTimeValue } from 'src/app/@theme/utils/time';
-import { forkJoin, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
 
 interface CircleScheduleEntry {
   day: string;
@@ -72,14 +70,6 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
         this.dataSource.data = viewModels;
         this.totalCount = res.data.totalCount;
 
-        const circlesRequiringDetails = sourceCircles
-          .map((circle, index) => ({ circle, index }))
-          .filter(({ circle, index }) => this.needsAdditionalDetails(circle, viewModels[index]));
-
-        if (circlesRequiringDetails.length) {
-          this.fetchCircleDetails(circlesRequiringDetails, viewModels);
-
-        }
       } else {
         this.dataSource.data = [];
         this.totalCount = 0;
@@ -95,48 +85,6 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
       studentLabels: this.buildStudentLabels(circle.students)
     };
   }
-
-  private needsAdditionalDetails(circle: CircleDto, viewModel: CircleViewModel): boolean {
-    const managersMissing = circle.managers === undefined || circle.managers === null;
-    const studentsMissing = circle.students === undefined || circle.students === null;
-    const scheduleMissing = circle.days === undefined || circle.days === null;
-
-    return managersMissing || studentsMissing || scheduleMissing || !viewModel.scheduleEntries.length;
-  }
-
-  private fetchCircleDetails(
-    pending: { circle: CircleDto; index: number }[],
-    viewModels: CircleViewModel[]
-  ): void {
-    forkJoin(
-      pending.map(({ circle, index }) =>
-        this.circleService.get(circle.id).pipe(
-          map((res) => ({ index, res })),
-          catchError(() => of({ index, res: null }))
-        )
-      )
-    ).subscribe((responses) => {
-      let updated = false;
-
-      responses.forEach((response) => {
-        if (!response?.res?.isSuccess || !response.res.data) {
-          return;
-        }
-
-        const detailedViewModel = this.buildViewModel(response.res.data);
-        viewModels[response.index] = {
-          ...viewModels[response.index],
-          ...detailedViewModel
-        };
-        updated = true;
-      });
-
-      if (updated) {
-        this.dataSource.data = [...viewModels];
-      }
-    });
-  }
-
 
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
