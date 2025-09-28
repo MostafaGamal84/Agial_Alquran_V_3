@@ -15,7 +15,8 @@ import {
   CircleManagerDto,
   CircleStudentDto,
   CircleService,
-  UpdateCircleDto
+  UpdateCircleDto,
+  CircleDayRequestDto
 } from 'src/app/@theme/services/circle.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
