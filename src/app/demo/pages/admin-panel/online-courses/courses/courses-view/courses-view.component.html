@@ -51,7 +51,7 @@
               <ng-container matColumnDef="managers">
                 <th mat-header-cell *matHeaderCellDef>MANAGERS</th>
                 <td mat-cell *matCellDef="let element" class="chip-cell">
-                  <ng-container *ngIf="element.managerLabels?.length; else noManagers">
+                  <ng-container *ngIf="element.managerLabels?.length; else managersFallback">
                     <mat-chip-set aria-label="Course managers" class="table-chip-set">
                       <mat-chip
                         *ngFor="let manager of element.managerLabels; trackBy: trackByLabel"
@@ -63,13 +63,18 @@
                       </mat-chip>
                     </mat-chip-set>
                   </ng-container>
-                  <ng-template #noManagers>-</ng-template>
+                  <ng-template #managersFallback>
+                    <span class="chip-cell__fallback">
+                      {{ displayManagers(element.managers) || '-' }}
+                    </span>
+                  </ng-template>
                 </td>
               </ng-container>
               <ng-container matColumnDef="students">
                 <th mat-header-cell *matHeaderCellDef>STUDENTS</th>
                 <td mat-cell *matCellDef="let element" class="chip-cell">
-                  <ng-container *ngIf="element.studentLabels?.length; else noStudents">
+                  <ng-container *ngIf="element.studentLabels?.length; else studentsFallback">
+
                     <mat-chip-set aria-label="Course students" class="table-chip-set">
                       <mat-chip
                         *ngFor="let student of element.studentLabels; trackBy: trackByLabel"
@@ -81,7 +86,12 @@
                       </mat-chip>
                     </mat-chip-set>
                   </ng-container>
-                  <ng-template #noStudents>-</ng-template>
+                  <ng-template #studentsFallback>
+                    <span class="chip-cell__fallback">
+                      {{ displayStudents(element.students) || '-' }}
+                    </span>
+                  </ng-template>
+
                 </td>
               </ng-container>
               <ng-container matColumnDef="action">

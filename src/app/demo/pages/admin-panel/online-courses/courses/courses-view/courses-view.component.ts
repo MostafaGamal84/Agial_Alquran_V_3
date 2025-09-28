@@ -173,6 +173,28 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
   private buildManagerLabels(
     managers?: (CircleManagerDto | string | number | null | undefined)[] | null
   ): string[] {
+    return this.extractManagerLabels(managers);
+  }
+
+  private buildStudentLabels(students?: (CircleStudentDto | null | undefined)[] | null): string[] {
+    return this.extractStudentLabels(students);
+  }
+
+  formatSchedule(schedule: CircleScheduleEntry): string {
+    const day = schedule.day?.trim();
+    const time = schedule.time?.trim();
+
+    if (day && time) {
+      return `${day} • ${time}`;
+    }
+
+    return day || time || '-';
+  }
+
+  private extractManagerLabels(
+    managers?: (CircleManagerDto | string | number | null | undefined)[] | null
+  ): string[] {
+
     if (!Array.isArray(managers)) {
       return [];
     }
@@ -212,6 +234,7 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
           return `#${manager.managerId}`;
         }
 
+
         return '';
       })
       .filter((label) => !!label) as string[];
@@ -219,7 +242,7 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
     return Array.from(new Set(labels));
   }
 
-  private buildStudentLabels(students?: (CircleStudentDto | null | undefined)[] | null): string[] {
+  private extractStudentLabels(students?: (CircleStudentDto | null | undefined)[] | null): string[] {
     if (!Array.isArray(students)) {
       return [];
     }
@@ -229,6 +252,7 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
         if (!student) {
           return '';
         }
+
 
         if (student.fullName && student.fullName.trim()) {
           return student.fullName.trim();
@@ -260,15 +284,15 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
     return Array.from(new Set(labels));
   }
 
-  formatSchedule(schedule: CircleScheduleEntry): string {
-    const day = schedule.day?.trim();
-    const time = schedule.time?.trim();
+  displayManagers(
+    managers?: (CircleManagerDto | string | number | null | undefined)[] | null
+  ): string {
+    return this.extractManagerLabels(managers).join(', ');
+  }
 
-    if (day && time) {
-      return `${day} • ${time}`;
-    }
+  displayStudents(students?: (CircleStudentDto | null | undefined)[] | null): string {
+    return this.extractStudentLabels(students).join(', ');
 
-    return day || time || '-';
   }
 
   trackBySchedule(_index: number, schedule: CircleScheduleEntry): string {
