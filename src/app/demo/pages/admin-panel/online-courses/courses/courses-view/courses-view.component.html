@@ -32,39 +32,31 @@
               </ng-container>
               <ng-container matColumnDef="schedule">
                 <th mat-header-cell *matHeaderCellDef>SCHEDULE</th>
-                <td mat-cell *matCellDef="let element" class="chip-cell">
+                <td mat-cell *matCellDef="let element" class="multi-value-cell">
                   <ng-container *ngIf="element.scheduleEntries?.length; else noSchedule">
-                    <mat-chip-set aria-label="Course schedule" class="table-chip-set">
-                      <mat-chip
-                        *ngFor="let schedule of element.scheduleEntries; trackBy: trackBySchedule"
-                        appearance="outlined"
-                        class="table-chip"
-                        [matTooltip]="formatSchedule(schedule)"
-                      >
+                    <ul class="multi-value-list" aria-label="Course schedule">
+                      <li *ngFor="let schedule of element.scheduleEntries; trackBy: trackBySchedule">
                         {{ formatSchedule(schedule) }}
-                      </mat-chip>
-                    </mat-chip-set>
+                      </li>
+                    </ul>
+
                   </ng-container>
                   <ng-template #noSchedule>-</ng-template>
                 </td>
               </ng-container>
               <ng-container matColumnDef="managers">
                 <th mat-header-cell *matHeaderCellDef>MANAGERS</th>
-                <td mat-cell *matCellDef="let element" class="chip-cell">
+                <td mat-cell *matCellDef="let element" class="multi-value-cell">
                   <ng-container *ngIf="element.managerLabels?.length; else managersFallback">
-                    <mat-chip-set aria-label="Course managers" class="table-chip-set">
-                      <mat-chip
-                        *ngFor="let manager of element.managerLabels; trackBy: trackByLabel"
-                        appearance="outlined"
-                        class="table-chip"
-                        [matTooltip]="manager"
-                      >
+                    <ul class="multi-value-list" aria-label="Course managers">
+                      <li *ngFor="let manager of element.managerLabels; trackBy: trackByLabel">
                         {{ manager }}
-                      </mat-chip>
-                    </mat-chip-set>
+                      </li>
+                    </ul>
                   </ng-container>
                   <ng-template #managersFallback>
-                    <span class="chip-cell__fallback">
+                    <span class="multi-value-fallback">
+
                       {{ displayManagers(element.managers) || '-' }}
                     </span>
                   </ng-template>
@@ -72,22 +64,16 @@
               </ng-container>
               <ng-container matColumnDef="students">
                 <th mat-header-cell *matHeaderCellDef>STUDENTS</th>
-                <td mat-cell *matCellDef="let element" class="chip-cell">
+                <td mat-cell *matCellDef="let element" class="multi-value-cell">
                   <ng-container *ngIf="element.studentLabels?.length; else studentsFallback">
-
-                    <mat-chip-set aria-label="Course students" class="table-chip-set">
-                      <mat-chip
-                        *ngFor="let student of element.studentLabels; trackBy: trackByLabel"
-                        appearance="outlined"
-                        class="table-chip"
-                        [matTooltip]="student"
-                      >
+                    <ul class="multi-value-list" aria-label="Course students">
+                      <li *ngFor="let student of element.studentLabels; trackBy: trackByLabel">
                         {{ student }}
-                      </mat-chip>
-                    </mat-chip-set>
+                      </li>
+                    </ul>
                   </ng-container>
                   <ng-template #studentsFallback>
-                    <span class="chip-cell__fallback">
+                    <span class="multi-value-fallback">
                       {{ displayStudents(element.students) || '-' }}
                     </span>
                   </ng-template>
