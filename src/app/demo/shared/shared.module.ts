@@ -105,6 +105,15 @@ const MaterialModules = [
     CardComponent,
     OpenSelectOnTypeDirective
   ],
-  exports: [MaterialModules, FormsModule, ReactiveFormsModule, NgScrollbarModule, TranslateModule, CardComponent, OpenSelectOnTypeDirective]
+  exports: [
+    CommonModule,
+    MaterialModules,
+    FormsModule,
+    ReactiveFormsModule,
+    NgScrollbarModule,
+    TranslateModule,
+    CardComponent,
+    OpenSelectOnTypeDirective
+  ]
 })
 export class SharedModule {}
