@@ -14,7 +14,8 @@ import {
   CircleService,
   CircleDayDto,
   CircleDto,
-  CircleManagerDto
+  CircleManagerDto,
+  CircleStudentDto
 } from 'src/app/@theme/services/circle.service';
 import {
   FilteredResultRequestDto
@@ -30,7 +31,11 @@ interface CircleScheduleEntry {
   time: string;
 }
 
-type CircleViewModel = CircleDto & { scheduleEntries: CircleScheduleEntry[] };
+type CircleViewModel = CircleDto & {
+  scheduleEntries: CircleScheduleEntry[];
+  managerLabels: string[];
+  studentLabels: string[];
+};
 
 @Component({
   selector: 'app-courses-view',
@@ -45,7 +50,7 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
   private auth = inject(AuthenticationService);
 
 
-  displayedColumns: string[] = ['name', 'teacher', 'day', 'time', 'managers', 'action'];
+  displayedColumns: string[] = ['name', 'teacher', 'schedule', 'managers', 'students', 'action'];
   dataSource = new MatTableDataSource<CircleViewModel>();
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
@@ -61,7 +66,9 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
       if (res.isSuccess && res.data?.items) {
         this.dataSource.data = res.data.items.map((circle) => ({
           ...circle,
-          scheduleEntries: this.buildScheduleEntries(circle)
+          scheduleEntries: this.buildScheduleEntries(circle),
+          managerLabels: this.buildManagerLabels(circle.managers),
+          studentLabels: this.buildStudentLabels(circle.students)
         }));
         this.totalCount = res.data.totalCount;
       } else {
@@ -163,53 +170,113 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
     return '';
   }
 
-  displayManagers(
-    managers?: (CircleManagerDto | number | string | null | undefined)[]
-  ): string {
-    if (!managers || !managers.length) {
-      return '';
+  private buildManagerLabels(
+    managers?: (CircleManagerDto | string | number | null | undefined)[] | null
+  ): string[] {
+    if (!Array.isArray(managers)) {
+      return [];
     }
 
-    const names = managers
-      .map((m) => {
-        if (m === null || m === undefined) {
+    const labels = managers
+      .map((manager) => {
+        if (manager === null || manager === undefined) {
           return '';
         }
 
-        if (typeof m === 'number' || typeof m === 'string') {
-          return String(m);
+        if (typeof manager === 'string' || typeof manager === 'number') {
+          return String(manager).trim();
         }
 
-        const manager = m.manager;
+        const value = manager.manager;
 
-        if (typeof manager === 'string') {
-          return manager;
+        if (typeof value === 'string') {
+          return value.trim();
         }
 
-        if (manager && typeof manager === 'object') {
-          const lookUp = manager as { fullName?: string; name?: string };
-          if (lookUp.fullName) {
-            return lookUp.fullName;
+        if (value && typeof value === 'object') {
+          const lookUp = value as { fullName?: string | null; name?: string | null };
+          if (lookUp.fullName && lookUp.fullName.trim()) {
+            return lookUp.fullName.trim();
           }
 
-          if (lookUp.name) {
-            return lookUp.name;
+          if (lookUp.name && lookUp.name.trim()) {
+            return lookUp.name.trim();
           }
         }
 
-        if (m.managerName) {
-          return m.managerName;
+        if (manager.managerName && manager.managerName.trim()) {
+          return manager.managerName.trim();
         }
 
-        if (m.managerId !== undefined && m.managerId !== null) {
-          return String(m.managerId);
+        if (manager.managerId !== undefined && manager.managerId !== null) {
+          return `#${manager.managerId}`;
         }
 
         return '';
       })
-      .filter((name) => !!name);
+      .filter((label) => !!label) as string[];
 
-    return names.join(', ');
+    return Array.from(new Set(labels));
+  }
+
+  private buildStudentLabels(students?: (CircleStudentDto | null | undefined)[] | null): string[] {
+    if (!Array.isArray(students)) {
+      return [];
+    }
+
+    const labels = students
+      .map((student) => {
+        if (!student) {
+          return '';
+        }
+
+        if (student.fullName && student.fullName.trim()) {
+          return student.fullName.trim();
+        }
+
+        if (student.student) {
+          const lookUp = student.student as { fullName?: string | null; name?: string | null };
+          if (lookUp.fullName && lookUp.fullName.trim()) {
+            return lookUp.fullName.trim();
+          }
+
+          if (lookUp.name && lookUp.name.trim()) {
+            return lookUp.name.trim();
+          }
+        }
+
+        if (student.studentId !== undefined && student.studentId !== null) {
+          return `#${student.studentId}`;
+        }
+
+        if (student.id !== undefined && student.id !== null) {
+          return `#${student.id}`;
+        }
+
+        return '';
+      })
+      .filter((label) => !!label) as string[];
+
+    return Array.from(new Set(labels));
+  }
+
+  formatSchedule(schedule: CircleScheduleEntry): string {
+    const day = schedule.day?.trim();
+    const time = schedule.time?.trim();
+
+    if (day && time) {
+      return `${day} • ${time}`;
+    }
+
+    return day || time || '-';
+  }
+
+  trackBySchedule(_index: number, schedule: CircleScheduleEntry): string {
+    return `${schedule.day ?? ''}-${schedule.time ?? ''}`;
+  }
+
+  trackByLabel(_index: number, label: string): string {
+    return label;
   }
 
 }
