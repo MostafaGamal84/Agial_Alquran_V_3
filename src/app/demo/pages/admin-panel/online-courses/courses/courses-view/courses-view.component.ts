@@ -8,6 +8,8 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatDialog, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
 import { MatButton } from '@angular/material/button';
 
+import { catchError, forkJoin, of } from 'rxjs';
+
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
@@ -68,6 +70,12 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
         const viewModels = sourceCircles.map((circle) => this.buildViewModel(circle));
         this.dataSource.data = viewModels;
         this.totalCount = res.data.totalCount;
+        const circlesRequiringDetails = sourceCircles.filter((circle, index) =>
+          this.needsAdditionalDetails(circle, viewModels[index])
+        );
+        if (circlesRequiringDetails.length) {
+          this.fetchCircleDetails(circlesRequiringDetails);
+        }
       } else {
         this.dataSource.data = [];
         this.totalCount = 0;
