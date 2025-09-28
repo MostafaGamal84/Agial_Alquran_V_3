@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -23,11 +23,15 @@ import { AuthenticationService } from 'src/app/@theme/services/authentication.se
 import { DAY_OPTIONS, DayValue, coerceDayValue } from 'src/app/@theme/types/DaysEnum';
 import { formatTimeValue, timeStringToTimeSpanString } from 'src/app/@theme/utils/time';
 
+interface CircleScheduleFormValue {
+  dayId: DayValue | null;
+  startTime: string | null;
+}
+
 interface CircleFormValue {
   name: string;
   teacherId: number;
-  dayId: DayValue;
-  startTime: string;
+  days: CircleScheduleFormValue[];
   managers: number[];
   studentsIds: number[];
 }
@@ -58,12 +62,10 @@ export class CoursesUpdateComponent implements OnInit {
     this.circleForm = this.fb.group({
       name: ['', Validators.required],
       teacherId: [null, Validators.required],
-      dayId: [null, Validators.required],
-      startTime: ['', Validators.required],
+      days: this.fb.array([this.createDayGroup()]),
       managers: [{ value: [], disabled: this.isManager }],
       studentsIds: [[]]
     });
-    this.isManager = this.auth.getRole() === UserTypesEnum.Manager;
     const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
 
     const course = history.state.course as CircleDto | undefined;
@@ -110,43 +112,24 @@ export class CoursesUpdateComponent implements OnInit {
         course.students
           ?.map((s: CircleStudentDto) => s.id ?? s.studentId ?? s.student?.id)
           .filter((id): id is number => id !== undefined) ?? [];
-      const primaryDay = this.resolvePrimaryDay(course);
-      const resolvedDay =
-        coerceDayValue(
-          primaryDay?.dayId ??
-            course.dayIds?.[0] ??
-            course.dayNames?.[0] ??
-            course.dayId ??
-            course.day
-        ) ?? null;
-      const resolvedStartTime = formatTimeValue(
-        primaryDay?.time ?? course.startTime ?? course.time
-      );
+      const schedule = this.extractSchedule(course);
       this.circleForm.patchValue({
         name: course.name ?? '',
         teacherId: course.teacherId ?? null,
-        dayId: resolvedDay ?? null,
-        startTime: resolvedStartTime,
-        managers:
+        studentsIds: studentIds
+      });
+      this.circleForm
+        .get('managers')
+        ?.setValue(
           course.managers?.map((m: CircleManagerDto | number) =>
             typeof m === 'number' ? m : m.managerId
           ) ?? [],
-        studentsIds: studentIds
-      });
-      const hasDayValue = Boolean(
-        primaryDay?.dayId !== undefined ||
-          primaryDay?.dayName ||
-          (course.dayIds && course.dayIds.length) ||
-          (course.dayNames && course.dayNames.length) ||
-          course.day !== undefined ||
-          course.dayId !== undefined
-      );
-      const hasTimeValue = Boolean(
-        primaryDay?.time !== undefined && primaryDay?.time !== null
-          ? true
-          : course.startTime !== undefined && course.startTime !== null
-            ? true
-            : course.time !== undefined && course.time !== null
+          { emitEvent: false }
+        );
+      this.setDays(schedule);
+      const hasDayValue = schedule.some((entry) => entry.dayId !== null && entry.dayId !== undefined);
+      const hasTimeValue = schedule.some((entry) =>
+        typeof entry.startTime === 'string' ? entry.startTime.trim().length > 0 : false
       );
 
       if (!studentIds.length || !hasDayValue || !hasTimeValue) {
@@ -159,20 +142,16 @@ export class CoursesUpdateComponent implements OnInit {
                 )
                 .filter((id): id is number => id !== undefined) ?? [];
             this.circleForm.patchValue({ studentsIds: fetchedStudents });
-            const fetchedPrimaryDay = this.resolvePrimaryDay(res.data);
-            this.circleForm.patchValue({
-              dayId:
-                coerceDayValue(
-                  fetchedPrimaryDay?.dayId ??
-                    res.data.dayIds?.[0] ??
-                    res.data.dayNames?.[0] ??
-                    res.data.dayId ??
-                    res.data.day
-                ) ?? null,
-              startTime: formatTimeValue(
-                fetchedPrimaryDay?.time ?? res.data.startTime ?? res.data.time
-              )
-            });
+            this.circleForm
+              .get('managers')
+              ?.setValue(
+                res.data.managers?.map((m: CircleManagerDto | number) =>
+                  typeof m === 'number' ? m : m.managerId
+                ) ?? [],
+                { emitEvent: false }
+              );
+            const fetchedSchedule = this.extractSchedule(res.data);
+            this.setDays(fetchedSchedule);
             if (res.data.students?.length) {
               const courseStudents = res.data.students.map(
                 (s: CircleStudentDto) =>
@@ -199,28 +178,23 @@ export class CoursesUpdateComponent implements OnInit {
                   s.id ?? s.studentId ?? s.student?.id
                 )
                 .filter((id): id is number => id !== undefined) ?? [];
-            const fetchedPrimaryDay = this.resolvePrimaryDay(res.data);
             this.circleForm.patchValue({
               name: res.data.name ?? '',
               teacherId: res.data.teacherId ?? null,
-              dayId:
-                coerceDayValue(
-                  fetchedPrimaryDay?.dayId ??
-                    res.data.dayIds?.[0] ??
-                    res.data.dayNames?.[0] ??
-                    res.data.dayId ??
-                    res.data.day
-                ) ?? null,
-              startTime: formatTimeValue(
-                fetchedPrimaryDay?.time ?? res.data.startTime ?? res.data.time
-              ),
-              managers: res.data.managers
-                ? res.data.managers.map((m: CircleManagerDto | number) =>
-                    typeof m === 'number' ? m : m.managerId
-                  )
-                : [],
               studentsIds: fetchedStudents
             });
+            this.circleForm
+              .get('managers')
+              ?.setValue(
+                res.data.managers
+                  ? res.data.managers.map((m: CircleManagerDto | number) =>
+                      typeof m === 'number' ? m : m.managerId
+                    )
+                  : [],
+                { emitEvent: false }
+              );
+            const fetchedSchedule = this.extractSchedule(res.data);
+            this.setDays(fetchedSchedule);
             if (res.data.students?.length) {
               const courseStudents = res.data.students.map((s: CircleStudentDto) =>
                 (s as CircleStudentDto).student
@@ -235,6 +209,111 @@ export class CoursesUpdateComponent implements OnInit {
         });
       }
     }
+  }
+
+  get daysArray(): FormArray<FormGroup> {
+    return this.circleForm.get('days') as FormArray<FormGroup>;
+  }
+
+  addDay(): void {
+    this.daysArray.push(this.createDayGroup());
+    this.daysArray.markAsDirty();
+    this.daysArray.markAsTouched();
+    this.daysArray.updateValueAndValidity();
+  }
+
+  removeDay(index: number): void {
+    if (this.daysArray.length <= 1) {
+      this.daysArray.at(0).reset({ dayId: null, startTime: '' });
+      this.daysArray.markAsDirty();
+      this.daysArray.markAsTouched();
+      this.daysArray.updateValueAndValidity();
+      return;
+    }
+
+    this.daysArray.removeAt(index);
+    this.daysArray.markAsDirty();
+    this.daysArray.markAsTouched();
+    this.daysArray.updateValueAndValidity();
+  }
+
+  trackByIndex(index: number): number {
+    return index;
+  }
+
+  private createDayGroup(initial?: Partial<CircleScheduleFormValue>): FormGroup {
+    return this.fb.group({
+      dayId: [initial?.dayId ?? null, Validators.required],
+      startTime: [initial?.startTime ?? '', Validators.required]
+    });
+  }
+
+  private setDays(schedule: CircleScheduleFormValue[]): void {
+    const array = this.daysArray;
+    while (array.length) {
+      array.removeAt(array.length - 1);
+    }
+
+    if (!schedule.length) {
+      array.push(this.createDayGroup());
+    } else {
+      schedule.forEach((entry) => array.push(this.createDayGroup(entry)));
+    }
+
+    array.markAsPristine();
+    array.markAsUntouched();
+    array.updateValueAndValidity();
+  }
+
+  private extractSchedule(circle?: CircleDto | null): CircleScheduleFormValue[] {
+    if (!circle) {
+      return [];
+    }
+
+    const normalized =
+      Array.isArray(circle.days) && circle.days.length
+        ? circle.days
+            .map((day) => {
+              const resolvedDay = coerceDayValue(day?.dayId ?? day?.dayName ?? undefined);
+              const startTime = formatTimeValue(day?.time);
+              return {
+                dayId: resolvedDay ?? null,
+                startTime: startTime ? startTime : ''
+              };
+            })
+            .filter(
+              (entry) =>
+                entry.dayId !== null ||
+                (typeof entry.startTime === 'string' && entry.startTime.trim().length > 0)
+            )
+        : [];
+
+    if (normalized.length) {
+      return normalized;
+    }
+
+    const primaryDay = this.resolvePrimaryDay(circle);
+    const fallbackDayId =
+      coerceDayValue(
+        primaryDay?.dayId ??
+          circle.dayIds?.[0] ??
+          circle.dayNames?.[0] ??
+          circle.dayId ??
+          circle.day
+      ) ?? null;
+    const fallbackTime = formatTimeValue(primaryDay?.time ?? circle.startTime ?? circle.time);
+    const trimmedFallbackTime = fallbackTime.trim();
+
+    if (fallbackDayId === null && !trimmedFallbackTime) {
+      return [];
+    }
+
+    return [
+      {
+        dayId: fallbackDayId,
+        startTime: trimmedFallbackTime || ''
+      }
+    ];
   }
 
   private resolvePrimaryDay(circle?: CircleDto | null): CircleDayDto | undefined {
@@ -252,13 +331,18 @@ export class CoursesUpdateComponent implements OnInit {
     }
     const formValue = this.circleForm.getRawValue() as CircleFormValue;
 
-    const dayValue = coerceDayValue(formValue.dayId);
-    const startTimeValue = timeStringToTimeSpanString(formValue.startTime);
+    const schedule: CircleDayRequestDto[] = Array.isArray(formValue.days)
+      ? formValue.days.reduce<CircleDayRequestDto[]>((acc, entry) => {
+          const dayValue = coerceDayValue(entry?.dayId ?? undefined);
+          if (dayValue === undefined) {
+            return acc;
+          }
 
-    const schedule =
-      dayValue !== undefined
-        ? [{ dayId: dayValue, time: startTimeValue ?? null }]
-        : [];
+          const startTimeValue = timeStringToTimeSpanString(entry?.startTime ?? undefined);
+          acc.push({ dayId: dayValue, time: startTimeValue ?? null });
+          return acc;
+        }, [])
+      : [];
 
     const model: UpdateCircleDto = {
       id: this.id,
