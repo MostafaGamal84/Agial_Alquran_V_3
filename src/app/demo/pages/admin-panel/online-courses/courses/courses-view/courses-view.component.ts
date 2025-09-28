@@ -8,6 +8,8 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatDialog, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
 import { MatButton } from '@angular/material/button';
 
+import { catchError, forkJoin, of } from 'rxjs';
+
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
@@ -77,6 +79,7 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
 
         if (circlesRequiringDetails.length) {
           this.fetchCircleDetails(circlesRequiringDetails, viewModels);
+
         }
       } else {
         this.dataSource.data = [];
@@ -134,6 +137,7 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
       }
     });
   }
+
 
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
