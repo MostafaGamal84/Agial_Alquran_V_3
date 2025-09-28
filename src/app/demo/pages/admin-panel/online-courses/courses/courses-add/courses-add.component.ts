@@ -136,7 +136,6 @@ export class CoursesAddComponent implements OnInit {
           acc.push({ dayId: dayValue, time: startTimeValue ?? null });
           return acc;
         }, [])
-
       : [];
 
     const model: CreateCircleDto = {
