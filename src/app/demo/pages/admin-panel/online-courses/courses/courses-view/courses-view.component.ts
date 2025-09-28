@@ -1,11 +1,19 @@
 // angular import
 import { AfterViewInit, Component, OnInit, inject, viewChild } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { NgFor, NgIf } from '@angular/common';
 
 // angular material
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatDialog, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialog,
+  MatDialogActions,
+  MatDialogClose,
+  MatDialogContent,
+  MatDialogTitle
+} from '@angular/material/dialog';
 import { MatButton } from '@angular/material/button';
 
 
@@ -37,6 +45,19 @@ type CircleViewModel = CircleDto & {
   managerLabels: string[];
   studentLabels: string[];
 };
+
+interface CourseParticipantsDialogData {
+  name?: string | null;
+  managers: string[];
+  students: string[];
+  showManagers: boolean;
+  showStudents: boolean;
+}
+
+interface CourseParticipantsDialogOptions {
+  showManagers?: boolean;
+  showStudents?: boolean;
+}
 
 @Component({
   selector: 'app-courses-view',
@@ -113,6 +134,26 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
           },
           error: () => this.toast.error('Error deleting course')
         });
+      }
+    });
+  }
+
+  openParticipantsDialog(
+    course: CircleViewModel,
+    { showManagers = true, showStudents = true }: CourseParticipantsDialogOptions = {}
+  ): void {
+    if (!showManagers && !showStudents) {
+      return;
+    }
+
+    this.dialog.open(CourseParticipantsDialogComponent, {
+      width: '480px',
+      data: {
+        name: course.name,
+        managers: showManagers ? course.managerLabels ?? [] : [],
+        students: showStudents ? course.studentLabels ?? [] : [],
+        showManagers,
+        showStudents
       }
     });
   }
@@ -289,16 +330,6 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
     return Array.from(new Set(labels));
   }
 
-  displayManagers(
-    managers?: (CircleManagerDto | string | number | null | undefined)[] | null
-  ): string {
-    return this.extractManagerLabels(managers).join(', ');
-  }
-
-  displayStudents(students?: (CircleStudentDto | null | undefined)[] | null): string {
-    return this.extractStudentLabels(students).join(', ');
-  }
-
   trackBySchedule(_index: number, schedule: CircleScheduleEntry): string {
     return `${schedule.day ?? ''}-${schedule.time ?? ''}`;
   }
@@ -322,4 +353,88 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
   imports: [MatDialogActions, MatButton, MatDialogClose]
 })
 export class DeleteConfirmDialogComponent {}
+
+@Component({
+  selector: 'app-course-participants-dialog',
+  template: `
+    <div mat-dialog-title>{{ dialogTitle }}</div>
+    <div mat-dialog-content class="participants-dialog">
+      <section class="participants-section" *ngIf="data.showManagers">
+        <h3>Managers</h3>
+        <ng-container *ngIf="data.managers.length; else noManagers">
+          <ul>
+            <li *ngFor="let manager of data.managers">{{ manager }}</li>
+          </ul>
+        </ng-container>
+        <ng-template #noManagers>
+          <p class="empty-state">No managers assigned.</p>
+        </ng-template>
+      </section>
+      <section class="participants-section" *ngIf="data.showStudents">
+        <h3>Students</h3>
+        <ng-container *ngIf="data.students.length; else noStudents">
+          <ul>
+            <li *ngFor="let student of data.students">{{ student }}</li>
+          </ul>
+        </ng-container>
+        <ng-template #noStudents>
+          <p class="empty-state">No students enrolled.</p>
+        </ng-template>
+      </section>
+    </div>
+    <div mat-dialog-actions align="end">
+      <button mat-button mat-dialog-close>Close</button>
+    </div>
+  `,
+  styles: [
+    `
+      .participants-dialog {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        max-height: 60vh;
+        overflow: auto;
+      }
+
+      .participants-section h3 {
+        margin: 0 0 0.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+      }
+
+      .participants-section ul {
+        margin: 0;
+        padding-left: 1.25rem;
+      }
+
+      .participants-section li {
+        margin-bottom: 0.35rem;
+      }
+
+      .empty-state {
+        margin: 0;
+        color: rgba(0, 0, 0, 0.54);
+        font-style: italic;
+      }
+    `
+  ],
+  imports: [MatDialogTitle, MatDialogContent, NgIf, NgFor, MatDialogActions, MatButton, MatDialogClose]
+})
+export class CourseParticipantsDialogComponent {
+  readonly data = inject<CourseParticipantsDialogData>(MAT_DIALOG_DATA);
+
+  get dialogTitle(): string {
+    const courseName = this.data.name?.trim() || 'Course';
+
+    if (this.data.showManagers && !this.data.showStudents) {
+      return `${courseName} managers`;
+    }
+
+    if (this.data.showStudents && !this.data.showManagers) {
+      return `${courseName} students`;
+    }
+
+    return `${courseName} participants`;
+  }
+}
 
