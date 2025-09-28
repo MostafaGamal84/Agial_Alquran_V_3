@@ -45,39 +45,31 @@
                 </td>
               </ng-container>
               <ng-container matColumnDef="managers">
-                <th mat-header-cell *matHeaderCellDef>MANAGERS</th>
-                <td mat-cell *matCellDef="let element" class="multi-value-cell">
-                  <ng-container *ngIf="element.managerLabels?.length; else managersFallback">
-                    <ul class="multi-value-list" aria-label="Course managers">
-                      <li *ngFor="let manager of element.managerLabels; trackBy: trackByLabel">
-                        {{ manager }}
-                      </li>
-                    </ul>
-                  </ng-container>
-                  <ng-template #managersFallback>
-                    <span class="multi-value-fallback">
-
-                      {{ displayManagers(element.managers) || '-' }}
-                    </span>
-                  </ng-template>
+                <th mat-header-cell *matHeaderCellDef class="text-center">MANAGERS</th>
+                <td mat-cell *matCellDef="let element" class="text-center">
+                  <button
+                    type="button"
+                    class="avatar avatar-xs text-muted"
+                    matTooltip="View managers"
+                    (click)="openParticipantsDialog(element, { showStudents: false })"
+                    [disabled]="!element.managerLabels?.length && !element.managers?.length"
+                  >
+                    <i class="ti ti-users f-18"></i>
+                  </button>
                 </td>
               </ng-container>
               <ng-container matColumnDef="students">
-                <th mat-header-cell *matHeaderCellDef>STUDENTS</th>
-                <td mat-cell *matCellDef="let element" class="multi-value-cell">
-                  <ng-container *ngIf="element.studentLabels?.length; else studentsFallback">
-                    <ul class="multi-value-list" aria-label="Course students">
-                      <li *ngFor="let student of element.studentLabels; trackBy: trackByLabel">
-                        {{ student }}
-                      </li>
-                    </ul>
-                  </ng-container>
-                  <ng-template #studentsFallback>
-                    <span class="multi-value-fallback">
-                      {{ displayStudents(element.students) || '-' }}
-                    </span>
-                  </ng-template>
-
+                <th mat-header-cell *matHeaderCellDef class="text-center">STUDENTS</th>
+                <td mat-cell *matCellDef="let element" class="text-center">
+                  <button
+                    type="button"
+                    class="avatar avatar-xs text-muted"
+                    matTooltip="View students"
+                    (click)="openParticipantsDialog(element, { showManagers: false })"
+                    [disabled]="!element.studentLabels?.length && !element.students?.length"
+                  >
+                    <i class="ti ti-user f-18"></i>
+                  </button>
                 </td>
               </ng-container>
               <ng-container matColumnDef="action">

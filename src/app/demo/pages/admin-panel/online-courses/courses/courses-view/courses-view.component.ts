@@ -50,6 +50,13 @@ interface CourseParticipantsDialogData {
   name?: string | null;
   managers: string[];
   students: string[];
+  showManagers: boolean;
+  showStudents: boolean;
+}
+
+interface CourseParticipantsDialogOptions {
+  showManagers?: boolean;
+  showStudents?: boolean;
 }
 
 @Component({
@@ -131,13 +138,23 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
     });
   }
 
-  openParticipantsDialog(course: CircleViewModel): void {
+  openParticipantsDialog(
+    course: CircleViewModel,
+    { showManagers = true, showStudents = true }: CourseParticipantsDialogOptions = {}
+  ): void {
+    if (!showManagers && !showStudents) {
+      return;
+    }
+
+
     this.dialog.open(CourseParticipantsDialogComponent, {
       width: '480px',
       data: {
         name: course.name,
-        managers: course.managerLabels ?? [],
-        students: course.studentLabels ?? []
+        managers: showManagers ? course.managerLabels ?? [] : [],
+        students: showStudents ? course.studentLabels ?? [] : [],
+        showManagers,
+        showStudents
       }
     });
   }
@@ -314,16 +331,6 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
     return Array.from(new Set(labels));
   }
 
-  displayManagers(
-    managers?: (CircleManagerDto | string | number | null | undefined)[] | null
-  ): string {
-    return this.extractManagerLabels(managers).join(', ');
-  }
-
-  displayStudents(students?: (CircleStudentDto | null | undefined)[] | null): string {
-    return this.extractStudentLabels(students).join(', ');
-  }
-
   trackBySchedule(_index: number, schedule: CircleScheduleEntry): string {
     return `${schedule.day ?? ''}-${schedule.time ?? ''}`;
   }
@@ -351,9 +358,9 @@ export class DeleteConfirmDialogComponent {}
 @Component({
   selector: 'app-course-participants-dialog',
   template: `
-    <div mat-dialog-title>{{ data.name?.trim() || 'Course' }} participants</div>
+    <div mat-dialog-title>{{ dialogTitle }}</div>
     <div mat-dialog-content class="participants-dialog">
-      <section class="participants-section">
+      <section class="participants-section" *ngIf="data.showManagers">
         <h3>Managers</h3>
         <ng-container *ngIf="data.managers.length; else noManagers">
           <ul>
@@ -364,7 +371,7 @@ export class DeleteConfirmDialogComponent {}
           <p class="empty-state">No managers assigned.</p>
         </ng-template>
       </section>
-      <section class="participants-section">
+      <section class="participants-section" *ngIf="data.showStudents">
         <h3>Students</h3>
         <ng-container *ngIf="data.students.length; else noStudents">
           <ul>
@@ -416,5 +423,19 @@ export class DeleteConfirmDialogComponent {}
 })
 export class CourseParticipantsDialogComponent {
   readonly data = inject<CourseParticipantsDialogData>(MAT_DIALOG_DATA);
+
+  get dialogTitle(): string {
+    const courseName = this.data.name?.trim() || 'Course';
+
+    if (this.data.showManagers && !this.data.showStudents) {
+      return `${courseName} managers`;
+    }
+
+    if (this.data.showStudents && !this.data.showManagers) {
+      return `${courseName} students`;
+    }
+
+    return `${courseName} participants`;
+  }
 }
 
