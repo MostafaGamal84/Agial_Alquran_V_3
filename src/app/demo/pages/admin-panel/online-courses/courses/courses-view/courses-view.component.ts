@@ -8,6 +8,8 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatDialog, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
 import { MatButton } from '@angular/material/button';
 
+import { catchError, forkJoin, of } from 'rxjs';
+
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
@@ -64,16 +66,91 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
   private loadCircles() {
     this.circleService.getAll(this.filter).subscribe((res) => {
       if (res.isSuccess && res.data?.items) {
-        this.dataSource.data = res.data.items.map((circle) => ({
-          ...circle,
-          scheduleEntries: this.buildScheduleEntries(circle),
-          managerLabels: this.buildManagerLabels(circle.managers),
-          studentLabels: this.buildStudentLabels(circle.students)
-        }));
+        const sourceCircles = res.data.items;
+        const viewModels = sourceCircles.map((circle) => this.buildViewModel(circle));
+        this.dataSource.data = viewModels;
         this.totalCount = res.data.totalCount;
+        const circlesRequiringDetails = sourceCircles.filter((circle, index) =>
+          this.needsAdditionalDetails(circle, viewModels[index])
+        );
+        if (circlesRequiringDetails.length) {
+          this.fetchCircleDetails(circlesRequiringDetails);
+        }
       } else {
         this.dataSource.data = [];
         this.totalCount = 0;
+      }
+    });
+  }
+
+  private buildViewModel(circle: CircleDto): CircleViewModel {
+    return {
+      ...circle,
+      scheduleEntries: this.buildScheduleEntries(circle),
+      managerLabels: this.buildManagerLabels(circle.managers),
+      studentLabels: this.buildStudentLabels(circle.students)
+    };
+  }
+
+  private needsAdditionalDetails(circle: CircleDto, viewModel: CircleViewModel): boolean {
+    const hasScheduleData =
+      viewModel.scheduleEntries.length > 0 ||
+      circle.day !== undefined ||
+      circle.dayId !== undefined ||
+      (Array.isArray(circle.dayIds) && circle.dayIds.length > 0) ||
+      circle.dayName !== undefined ||
+      (Array.isArray(circle.dayNames) && circle.dayNames.length > 0) ||
+      circle.startTime !== undefined ||
+      circle.time !== undefined;
+
+    const managersDefined = circle.managers !== undefined;
+    const studentsDefined = circle.students !== undefined;
+
+    return !hasScheduleData || !managersDefined || !studentsDefined;
+  }
+
+  private fetchCircleDetails(circles: CircleDto[]): void {
+    const idsToFetch = Array.from(
+      new Set(
+        circles
+          .map((circle) => circle?.id)
+          .filter((id): id is number => typeof id === 'number' && !Number.isNaN(id))
+      )
+    );
+
+    if (!idsToFetch.length) {
+      return;
+    }
+
+    forkJoin(
+      idsToFetch.map((id) =>
+        this.circleService.get(id).pipe(
+          catchError(() => of(null))
+        )
+      )
+    ).subscribe((responses) => {
+      let hasUpdates = false;
+      const currentData = this.dataSource.data.slice();
+
+      responses.forEach((response) => {
+        if (!response?.isSuccess || !response.data) {
+          return;
+        }
+
+        const updatedModel = this.buildViewModel(response.data);
+        const index = currentData.findIndex((item) => item.id === updatedModel.id);
+
+        if (index !== -1) {
+          currentData[index] = {
+            ...currentData[index],
+            ...updatedModel
+          };
+          hasUpdates = true;
+        }
+      });
+
+      if (hasUpdates) {
+        this.dataSource.data = currentData;
       }
     });
   }
