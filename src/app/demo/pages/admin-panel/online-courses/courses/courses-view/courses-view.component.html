@@ -39,6 +39,7 @@
                         {{ formatSchedule(schedule) }}
                       </li>
                     </ul>
+
                   </ng-container>
                   <ng-template #noSchedule>-</ng-template>
                 </td>
@@ -55,6 +56,7 @@
                   </ng-container>
                   <ng-template #managersFallback>
                     <span class="multi-value-fallback">
+
                       {{ displayManagers(element.managers) || '-' }}
                     </span>
                   </ng-template>
@@ -75,6 +77,7 @@
                       {{ displayStudents(element.students) || '-' }}
                     </span>
                   </ng-template>
+
                 </td>
               </ng-container>
               <ng-container matColumnDef="action">
