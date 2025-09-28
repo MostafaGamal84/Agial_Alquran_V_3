@@ -30,42 +30,66 @@
                   {{ element.teacher?.fullName || element.teacherName || element.teacherId }}
                 </td>
               </ng-container>
-              <ng-container matColumnDef="day">
-                <th mat-header-cell *matHeaderCellDef>DAY</th>
-                <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="element.scheduleEntries?.length; else noDay">
-                    <div class="schedule-cell">
-                      <div
-                        *ngFor="let schedule of element.scheduleEntries"
-                        class="schedule-cell__item"
+              <ng-container matColumnDef="schedule">
+                <th mat-header-cell *matHeaderCellDef>SCHEDULE</th>
+                <td mat-cell *matCellDef="let element" class="chip-cell">
+                  <ng-container *ngIf="element.scheduleEntries?.length; else noSchedule">
+                    <mat-chip-set aria-label="Course schedule" class="table-chip-set">
+                      <mat-chip
+                        *ngFor="let schedule of element.scheduleEntries; trackBy: trackBySchedule"
+                        appearance="outlined"
+                        class="table-chip"
+                        [matTooltip]="formatSchedule(schedule)"
                       >
-                        {{ schedule.day || '-' }}
-                      </div>
-                    </div>
+                        {{ formatSchedule(schedule) }}
+                      </mat-chip>
+                    </mat-chip-set>
                   </ng-container>
-                  <ng-template #noDay>-</ng-template>
-                </td>
-              </ng-container>
-              <ng-container matColumnDef="time">
-                <th mat-header-cell *matHeaderCellDef>START TIME</th>
-                <td mat-cell *matCellDef="let element">
-                  <ng-container *ngIf="element.scheduleEntries?.length; else noTime">
-                    <div class="schedule-cell">
-                      <div
-                        *ngFor="let schedule of element.scheduleEntries"
-                        class="schedule-cell__item schedule-cell__time"
-                      >
-                        {{ schedule.time || '-' }}
-                      </div>
-                    </div>
-                  </ng-container>
-                  <ng-template #noTime>-</ng-template>
+                  <ng-template #noSchedule>-</ng-template>
                 </td>
               </ng-container>
               <ng-container matColumnDef="managers">
                 <th mat-header-cell *matHeaderCellDef>MANAGERS</th>
-                <td mat-cell *matCellDef="let element" class="text-nowrap">
-                  {{ displayManagers(element.managers) }}
+                <td mat-cell *matCellDef="let element" class="chip-cell">
+                  <ng-container *ngIf="element.managerLabels?.length; else managersFallback">
+                    <mat-chip-set aria-label="Course managers" class="table-chip-set">
+                      <mat-chip
+                        *ngFor="let manager of element.managerLabels; trackBy: trackByLabel"
+                        appearance="outlined"
+                        class="table-chip"
+                        [matTooltip]="manager"
+                      >
+                        {{ manager }}
+                      </mat-chip>
+                    </mat-chip-set>
+                  </ng-container>
+                  <ng-template #managersFallback>
+                    <span class="chip-cell__fallback">
+                      {{ displayManagers(element.managers) || '-' }}
+                    </span>
+                  </ng-template>
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="students">
+                <th mat-header-cell *matHeaderCellDef>STUDENTS</th>
+                <td mat-cell *matCellDef="let element" class="chip-cell">
+                  <ng-container *ngIf="element.studentLabels?.length; else studentsFallback">
+                    <mat-chip-set aria-label="Course students" class="table-chip-set">
+                      <mat-chip
+                        *ngFor="let student of element.studentLabels; trackBy: trackByLabel"
+                        appearance="outlined"
+                        class="table-chip"
+                        [matTooltip]="student"
+                      >
+                        {{ student }}
+                      </mat-chip>
+                    </mat-chip-set>
+                  </ng-container>
+                  <ng-template #studentsFallback>
+                    <span class="chip-cell__fallback">
+                      {{ displayStudents(element.students) || '-' }}
+                    </span>
+                  </ng-template>
                 </td>
               </ng-container>
               <ng-container matColumnDef="action">
