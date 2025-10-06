@@ -3,15 +3,13 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, output } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
-// third party
-import { TranslateService } from '@ngx-translate/core';
 import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scrollbar';
 
 // project import
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { BuyNowLinkService } from 'src/app/@theme/services/buy-now-link.service';
-import { AbleProConfig } from 'src/app/app-config';
 import { SharedModule } from 'src/app/demo/shared/shared.module';
+import { LanguageService } from 'src/app/@theme/services/language.service';
 
 @Component({
   selector: 'app-nav-right',
@@ -20,23 +18,22 @@ import { SharedModule } from 'src/app/demo/shared/shared.module';
   styleUrls: ['./toolbar-right.component.scss']
 })
 export class NavRightComponent {
-  private translate = inject(TranslateService);
   authenticationService = inject(AuthenticationService);
   buyNowLinkService = inject(BuyNowLinkService);
+  private languageService = inject(LanguageService);
 
   // public props
   readonly HeaderBlur = output();
 
   // constructor
   constructor() {
-    const translate = this.translate;
-    translate.setDefaultLang(AbleProConfig.i18n);
+    this.languageService.initialize();
   }
 
   // public method
   // user according language change of sidebar menu item
   useLanguage(language: string) {
-    this.translate.use(language);
+    this.languageService.changeLanguage(language);
   }
 
   headerBlur() {

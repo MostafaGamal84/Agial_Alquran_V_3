@@ -2,7 +2,7 @@
   @if (showHeader()) {
     <mat-card-header class="card-header justify-content-between align-item-center" [ngClass]="headerClass()">
       <div class="f-16 f-w-600">
-        {{ cardTitle() }}
+        {{ cardTitle() | translate }}
         <ng-container *ngTemplateOutlet="headerTitleTemplate()"></ng-container>
       </div>
       <ng-container *ngTemplateOutlet="headerOptionsTemplate()"></ng-container>

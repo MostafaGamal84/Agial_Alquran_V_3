@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
+import { TranslateModule } from '@ngx-translate/core';
 import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scrollbar';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 
@@ -14,7 +15,7 @@ interface ContactEntry {
 @Component({
   selector: 'app-student-details',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule, NgxScrollbar],
+  imports: [CommonModule, MatDialogModule, MatButtonModule, NgxScrollbar, TranslateModule],
   templateUrl: './student-details.component.html',
   styleUrl: './student-details.component.scss'
 })
@@ -22,6 +23,13 @@ export class StudentDetailsComponent {
   student?: Record<string, unknown>;
   contactEntries: ContactEntry[] = [];
   detailEntries: [string, unknown][] = [];
+
+  private readonly labelMap: Record<string, string> = {
+    nationality: 'Nationality',
+    governorate: 'Governorate',
+    managerName: 'Manager Name',
+    circleName: 'Circle Name'
+  };
 
   Branch = [
     { id: BranchesEnum.Mens, label: 'الرجال' },
@@ -61,6 +69,24 @@ export class StudentDetailsComponent {
       return this.getBranchLabel(typeof value === 'number' ? value : undefined);
     }
     return value;
+  }
+
+  getLabel(key: string): string {
+    if (this.labelMap[key]) {
+      return this.labelMap[key];
+    }
+
+    const normalised = key
+      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+      .replace(/[_-]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!normalised) {
+      return key;
+    }
+
+    return normalised.charAt(0).toUpperCase() + normalised.slice(1);
   }
 
   private getContactIcon(key: string): string {
