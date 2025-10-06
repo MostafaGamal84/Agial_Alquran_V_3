@@ -15,7 +15,7 @@
 @import 'node_modules/angular-calendar/css/angular-calendar.css';
 
 // font
-@import 'scss/fonts/cairo/cairo.css';
+@import '@fontsource-variable/cairo/index.css';
 @import 'scss/fonts/fontawesome.css';
 @import 'scss/fonts/material.css';
 @import 'scss/fonts/tabler-icons.min.css';
@@ -24,7 +24,9 @@
 @import './app/@theme/styles/theme-palette-colors.scss';
 @import './app/@theme/styles/theme-dark-palette-colors.scss';
 @import './app/@theme/styles/theme.scss';
-@include mat.all-component-typographies(theme-typography("'Cairo', sans-serif")); // theme typography
+@include mat.all-component-typographies(
+  theme-typography("'Cairo Variable', 'Cairo', sans-serif")
+); // theme typography
 
 // default theme
 @include mat.all-component-themes(get-light-theme($blue-theme));
