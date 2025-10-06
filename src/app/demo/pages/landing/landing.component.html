@@ -6,37 +6,43 @@
         <div class="col-xl-9 col-md-10 text-center">
           @defer (on viewport; prefetch on viewport) {
             <h1 class="m-b-25 animate__animated animate__delay-1s animate__fadeInUp">
-              Explore One of the
-              <span class="hero-text-gradient">Featured Dashboard</span>
-              Template in Themeforest
+              {{ 'Explore One of the' | translate }}
+              <span class="hero-text-gradient">{{ 'Featured Dashboard' | translate }}</span>
+              {{ 'Template in Themeforest' | translate }}
             </h1>
             <div class="row justify-content-center animate__animated animate__delay-2s animate__fadeInUp">
               <div class="col-md-8">
                 <p class="f-16 text-muted">
-                  Able Pro is the one of the Featured admin dashboard template in Envato Marketplace and used by over 5.5K+ Customer
-                  worldwide.
+                  {{
+                    'Able Pro is the one of the Featured admin dashboard template in Envato Marketplace and used by over 5.5K+ Customer worldwide.'
+                      | translate
+                  }}
                 </p>
               </div>
             </div>
             <div class="preview-button animate__animated animate__delay-3s animate__fadeInUp">
-              <a mat-stroked-button [routerLink]="['/components/input/button']" class="m-r-10 b-rad-20 component">Explore Components</a>
-              <a mat-flat-button class="b-rad-20" color="primary" [routerLink]="['/login']" [matMenuTriggerFor]="menu">Live Preview</a>
+              <a mat-stroked-button [routerLink]="['/components/input/button']" class="m-r-10 b-rad-20 component">
+                {{ 'Explore Components' | translate }}
+              </a>
+              <a mat-flat-button class="b-rad-20" color="primary" [routerLink]="['/login']" [matMenuTriggerFor]="menu">
+                {{ 'Live Preview' | translate }}
+              </a>
               <mat-menu #menu="matMenu" (closed)="resetIcon()">
                 @for (item of techDetails; track item) {
                   @if (item.tech_name === 'Angular') {
                     <a
-                      [matTooltip]="item.tooltip"
+                      [matTooltip]="item.tooltip | translate"
                       mat-menu-item
                       class="drp-tech-link text-muted f-w-500"
                       (click)="open(item)"
                       [target]="item.target === true ? '_blank' : '_self'"
                     >
                       <img src="{{ item.images }}" alt="img" class="img-fluid wid-30" />
-                      {{ item.tech_name }}
+                      {{ item.tech_name | translate }}
                     </a>
                   } @else {
                     <a
-                      [matTooltip]="item.tooltip"
+                      [matTooltip]="item.tooltip | translate"
                       mat-menu-item
                       class="drp-tech-link text-muted f-w-500"
                       href="{{ item.url + buyNowLinkService.queryString }}"
@@ -48,7 +54,7 @@
                         class="img-fluid wid-30"
                         [ngStyle]="{ filter: item.url === 'javascript:' ? 'grayscale(1)' : '' }"
                       />
-                      {{ item.tech_name }}
+                      {{ item.tech_name | translate }}
                     </a>
                   }
                 }
@@ -65,17 +71,17 @@
                 </div>
                 <div class="m-b-0 f-20 f-w-600">
                   4.7/5
-                  <span class="text-muted f-16 f-w-400">Ratings</span>
+                  <span class="text-muted f-16 f-w-400">{{ 'Ratings' | translate }}</span>
                 </div>
               </div>
               <div class="col-auto p-x-25">
-                <div class="m-b-10 text-muted f-16">Sales</div>
+                <div class="m-b-10 text-muted f-16">{{ 'Sales' | translate }}</div>
                 <div class="m-b-0 f-20 f-w-600">5.5K+</div>
               </div>
             </div>
             <div class="m-t-45">
               <p class="text-muted m-b-25 animate__animated animate__delay-5s animate__fadeInUp">
-                - Click Below Icon to Preview Each Tech Demos -
+                {{ '- Click Below Icon to Preview Each Tech Demos -' | translate }}
               </p>
             </div>
           } @placeholder {
@@ -90,7 +96,7 @@
           @defer (on viewport; prefetch on viewport) {
             @if (item.tech_name === 'Angular') {
               <a
-                matTooltip="{{ item.tooltip }}"
+                [matTooltip]="item.tooltip | translate"
                 (click)="open(item)"
                 [target]="item.target === true ? '_blank' : '_self'"
                 class="animate__animated animate__delay-{{ i + 1 }}s animate__fadeInUp"
@@ -99,7 +105,7 @@
               </a>
             } @else {
               <a
-                matTooltip="{{ item.tooltip }}"
+                [matTooltip]="item.tooltip | translate"
                 href="{{ item.url + buyNowLinkService.queryString }}"
                 [target]="item.target === true ? '_blank' : '_self'"
                 class="animate__animated animate__delay-{{ i + 1 }}s animate__fadeInUp"
@@ -120,8 +126,8 @@
     <div class="container title">
       <div class="row justify-content-center text-center">
         <div class="col-md-8 col-xl-6">
-          <h2 class="m-b-15 f-w-600">Available Technologies</h2>
-          <p class="m-b-0">Explore the Demos of Able Pro in multiple technologies.</p>
+          <h2 class="m-b-15 f-w-600">{{ 'Available Technologies' | translate }}</h2>
+          <p class="m-b-0">{{ 'Explore the Demos of Able Pro in multiple technologies.' | translate }}</p>
         </div>
       </div>
     </div>
@@ -132,9 +138,9 @@
             <div class="col-md-6 col-lg-4 animate__animated animate__delay-{{ i + 1 }}s animate__fadeInUp">
               <app-card [showHeader]="false">
                 <img src="{{ item.images }}" alt="img" class="img-fluid" />
-                <div class="f-20 f-w-600 m-b-15">{{ item.tech_name }}</div>
+                <div class="f-20 f-w-600 m-b-15">{{ item.tech_name | translate }}</div>
                 <p class="text-muted">
-                  {{ item.description }}
+                  {{ item.description | translate }}
                 </p>
                 <div class="tech-btn">
                   @if (item.tech_name === 'Angular') {
@@ -145,7 +151,7 @@
                       [target]="item.target === true ? '_blank' : '_self'"
                     >
                       <i class="ti ti-external-link f-16"></i>
-                      {{ 'Preview' + item.tech_name }}
+                      {{ 'Preview Technology' | translate: { tech: (item.tech_name | translate) } }}
                     </a>
                   } @else {
                     <a
@@ -155,7 +161,7 @@
                       href="{{ item.url + buyNowLinkService.queryString }}"
                     >
                       <i class="ti ti-external-link f-16"></i>
-                      {{ 'Preview ' + item.tech_name }}
+                      {{ 'Preview Technology' | translate: { tech: (item.tech_name | translate) } }}
                     </a>
                   }
                   @if (item.freeRepo === true) {
@@ -181,10 +187,14 @@
     <div class="container title">
       <div class="row justify-content-center text-center">
         <div class="col-md-8 col-xl-6">
-          <h2 class="m-b-15 f-w-600">The Complete Figma Design System to Save Hundreds of Hours</h2>
+          <h2 class="m-b-15 f-w-600">
+            {{ 'The Complete Figma Design System to Save Hundreds of Hours' | translate }}
+          </h2>
           <p class="m-b-0">
-            Optimize your workflow with 100% Auto Layout, variables, smart variants, and WCAG accessibility. Enjoy super-smart global
-            colors, typography, and effects styles + variables, crafted for seamless design efficiency!
+            {{
+              'Optimize your workflow with 100% Auto Layout, variables, smart variants, and WCAG accessibility. Enjoy super-smart global colors, typography, and effects styles + variables, crafted for seamless design efficiency!'
+                | translate
+            }}
           </p>
         </div>
       </div>
@@ -214,7 +224,7 @@
               target="_blank"
             >
               <i class="ti ti-download f-16"></i>
-              Free Figma
+              {{ 'Free Figma' | translate }}
             </a>
             <a
               mat-flat-button
@@ -224,7 +234,7 @@
               target="_blank"
             >
               <i class="ti ti-shopping-cart f-16"></i>
-              Buy Figma
+              {{ 'Buy Figma' | translate }}
             </a>
           </div>
         } @placeholder {
@@ -239,11 +249,11 @@
     <div class="container title">
       <div class="row justify-content-center text-center">
         <div class="col-md-8 col-xl-6">
-          <h2 class="m-b-15 f-w-600">Complete Combo</h2>
+          <h2 class="m-b-15 f-w-600">{{ 'Complete Combo' | translate }}</h2>
           <p class="m-b-0">
-            Able Pro caters to the needs of both developers and designers, whether they are
+            {{ 'Able Pro caters to the needs of both developers and designers, whether they are' | translate }}
             <br />
-            beginners or experts.
+            {{ 'beginners or experts.' | translate }}
           </p>
         </div>
       </div>
@@ -251,51 +261,37 @@
     <div class="container">
       <div class="row">
         @defer (on viewport; prefetch on viewport) {
-          <!-- <div class="col-md-6 col-lg-4">
-          <app-card [showHeader]="false">
-            <div class="m-b-15 f-16 f-w-600">Figma Design System</div>
-            <p class="text-muted">Check the live preview of Able Pro Figma design file. Figma file included in all licenses.</p>
-            <img src="assets/images/landing/feature-figma.png" alt="img" class="p-t-5 w-100" />
-            <a
-              mat-stroked-button
-              class="m-t-15 b-rad-20 bg-accent-300 text-accent-900"
-              href="https://www.figma.com/file/6XqmRhRmkr33w0EFD49acY/Able-Pro--v9.0-Figma-Preview?type=design&mode=design&t=0XZ5hhGAwBPr4Qlj-0"
-              target="_blank"
-            >
-              Preview Figma
-              <i class="ti ti-external-link f-18"></i>
-            </a>
-          </app-card>
-        </div> -->
           <div class="col-md-6 animate__animated animate__delay-1s animate__fadeInUp">
             <app-card [showHeader]="false" cardClass="h-100">
-              <div class="m-b-15 f-16 f-w-600">Explore Components</div>
-              <p class="text-muted">Access all components of Able Pro in one place to make your development work easier.</p>
+              <div class="m-b-15 f-16 f-w-600">{{ 'Explore Components' | translate }}</div>
+              <p class="text-muted">
+                {{ 'Access all components of Able Pro in one place to make your development work easier.' | translate }}
+              </p>
               <img src="assets/images/landing/feature-components.png" alt="img" class="p-t-5 w-100" />
               <a
                 mat-stroked-button
                 class="m-t-15 b-rad-20 bg-accent-300 text-accent-900"
-                matTooltip="View All Component"
+                [matTooltip]="'View All Component' | translate"
                 (click)="openAllComponents()"
               >
-                View All Components
+                {{ 'View All Components' | translate }}
                 <i class="ti ti-external-link f-18"></i>
               </a>
             </app-card>
           </div>
           <div class="col-md-6 animate__animated animate__delay-2s animate__fadeInUp">
             <app-card [showHeader]="false" cardClass="h-100">
-              <div class="m-b-15 f-16 f-w-600">Documentation</div>
-              <p class="text-muted">Find solutions and navigate through our helper guide with ease.</p>
+              <div class="m-b-15 f-16 f-w-600">{{ 'Documentation' | translate }}</div>
+              <p class="text-muted">{{ 'Find solutions and navigate through our helper guide with ease.' | translate }}</p>
               <img src="assets/images/landing/feature-documentation.png" alt="img" class="p-t-5 w-100" />
               <a
                 mat-stroked-button
                 class="m-t-15 b-rad-20 bg-accent-300 text-accent-900"
                 href="https://phoenixcoded.gitbook.io/able-pro"
                 target="_blank"
-                matTooltip="Documentation"
+                [matTooltip]="'Documentation' | translate"
               >
-                Check Documentation
+                {{ 'Check Documentation' | translate }}
                 <i class="ti ti-external-link f-18"></i>
               </a>
             </app-card>
@@ -311,11 +307,11 @@
   <section class="working-block">
     <div class="container title text-white">
       <div class="row justify-content-center text-center working-title">
-        <h2 class="m-b-15">Working Conceptual Apps</h2>
+        <h2 class="m-b-15">{{ 'Working Conceptual Apps' | translate }}</h2>
         <p class="m-b-0">
-          Each App is carefully crafted to achieve the best feature rich working
+          {{ 'Each App is carefully crafted to achieve the best feature rich working' | translate }}
           <br />
-          concept for your project.
+          {{ 'concept for your project.' | translate }}
         </p>
       </div>
     </div>
@@ -330,8 +326,8 @@
                   [class.active]="currentSlide === link.id"
                   class="app-link animate__animated animate__delay-{{ i + 1 }}s animate__fadeInUp"
                 >
-                  <h4 class="text-white m-b-10 f-20 f-w-500">{{ link.title }}</h4>
-                  <p class="m-b-0 text-white">{{ link.description }}</p>
+                  <h4 class="text-white m-b-10 f-20 f-w-500">{{ link.title | translate }}</h4>
+                  <p class="m-b-0 text-white">{{ link.description | translate }}</p>
                 </a>
               }
             } @placeholder {
@@ -359,15 +355,17 @@
         @defer (on viewport; prefetch on viewport) {
           <div class="col-md-8 animate__animated animate__delay-2s animate__fadeInUp">
             <h2 class="m-b-15">
-              <span class="text-primary-500">TRY</span>
-              BEFORE BUY
+              <span class="text-primary-500">{{ 'TRY' | translate }}</span>
+              {{ 'BEFORE BUY' | translate }}
             </h2>
-            <p class="mat-body m-b-0">Download the Free MIT Able Pro Dashboard Template before make your purchase decision.</p>
+            <p class="mat-body m-b-0">
+              {{ 'Download the Free MIT Able Pro Dashboard Template before make your purchase decision.' | translate }}
+            </p>
           </div>
           <div class="col-md-4 animate__animated animate__delay-3s animate__fadeInUp">
             <div class="flex align-item-center">
               <a mat-stroked-button class="b-rad-25 m-r-10" href="https://ableproadmin.com/angular/default/login" target="_blank">
-                Check Out Pro Version
+                {{ 'Check Out Pro Version' | translate }}
               </a>
               <a
                 mat-flat-button
@@ -377,7 +375,7 @@
                 target="_blank"
               >
                 <i class="ti ti-brand-github f-18"></i>
-                Free Version
+                {{ 'Free Version' | translate }}
               </a>
             </div>
           </div>
@@ -394,16 +392,16 @@
       <div class="row justify-content-center text-center">
         <div class="col-md-8 col-xl-6">
           <h2 class="m-b-15">
-            They
-            <span class="text-primary-500">love</span>
-            Able Pro, Now your turn 😍
+            {{ 'They' | translate }}
+            <span class="text-primary-500">{{ 'love' | translate }}</span>
+            {{ 'Able Pro, Now your turn 😍' | translate }}
           </h2>
           <p class="m-b-0">
-            We take pride in our Dashboard development, which has been consistently rated 4.7/5
+            {{ 'We take pride in our Dashboard development, which has been consistently rated 4.7/5' | translate }}
             <br />
-            by our satisfied customers. It brings us joy to share the positive feedback we have
+            {{ 'by our satisfied customers. It brings us joy to share the positive feedback we have' | translate }}
             <br />
-            received from our loyal clients.
+            {{ 'received from our loyal clients.' | translate }}
           </p>
         </div>
       </div>
@@ -419,10 +417,10 @@
                     <img src="{{ list.img }}" alt="user-image" class="wid-60 hei-60" />
                   </div>
                   <div class="flex-grow-1 m-l-15">
-                    <p class="m-b-5 text-wrap">{{ list.text }}</p>
+                    <p class="m-b-5 text-wrap">{{ list.text | translate }}</p>
                     <small>
                       {{ list.author }} -
-                      <span class="text-muted">{{ list.describe }}</span>
+                      <span class="text-muted">{{ list.describe | translate }}</span>
                     </small>
                   </div>
                 </div>
@@ -443,10 +441,10 @@
                     <img src="{{ list.img }}" alt="user-image" class="wid-60 hei-60" />
                   </div>
                   <div class="flex-grow-1 m-l-15">
-                    <p class="m-b-5 text-wrap">{{ list.text }}</p>
+                    <p class="m-b-5 text-wrap">{{ list.text | translate }}</p>
                     <small>
                       {{ list.author }} -
-                      <span class="text-muted">{{ list.describe }}</span>
+                      <span class="text-muted">{{ list.describe | translate }}</span>
                     </small>
                   </div>
                 </div>
@@ -463,8 +461,10 @@
     <div class="container">
       <div class="row">
         <div class="col-md-12">
-          <h2 class="m-b-10 f-w-700">Trusted By</h2>
-          <p class="companies-review text-muted">From Startups to Fortune 500 companies using our Template for their product.</p>
+          <h2 class="m-b-10 f-w-700">{{ 'Trusted By' | translate }}</h2>
+          <p class="companies-review text-muted">
+            {{ 'From Startups to Fortune 500 companies using our Template for their product.' | translate }}
+          </p>
           <div class="row companies-images">
             @defer (on viewport; prefetch on viewport) {
               @for (item of trustedBy; track item; let i = $index) {
@@ -486,11 +486,15 @@
     <div class="container footer-top">
       <div class="row">
         <div class="col-md-10">
-          <h2 class="f-w-600">Need Support?</h2>
-          <p class="mat-body">Have questions? Our expert support team is ready to help. Submit a ticket, and we’ll assist you promptly.</p>
+          <h2 class="f-w-600">{{ 'Need Support?' | translate }}</h2>
+          <p class="mat-body">
+            {{ 'Have questions? Our expert support team is ready to help. Submit a ticket, and we’ll assist you promptly.' | translate }}
+          </p>
         </div>
         <div class="col-md-2">
-          <a mat-flat-button color="primary" href="https://phoenixcoded.authordesk.app/" target="_blank">Get Support</a>
+          <a mat-flat-button color="primary" href="https://phoenixcoded.authordesk.app/" target="_blank">
+            {{ 'Get Support' | translate }}
+          </a>
         </div>
       </div>
     </div>
@@ -501,8 +505,10 @@
             <div class="col-md-4 animate__animated animate__delay-1s animate__fadeInLeft">
               <img src="assets/images/logo-dark.svg" alt="logo" class="img-fluid m-b-15" />
               <p class="m-b-25">
-                Phoenixcoded has gained the trust of over 5.5k+ customers since 2015, thanks to our commitment to delivering high-quality
-                products. Our experienced team players are responsible for managing Able Pro.
+                {{
+                  'Phoenixcoded has gained the trust of over 5.5k+ customers since 2015, thanks to our commitment to delivering high-quality products. Our experienced team players are responsible for managing Able Pro.'
+                    | translate
+                }}
               </p>
             </div>
             <div class="col-md-8">
@@ -510,13 +516,17 @@
                 @for (item of footerSection; track item; let i = $index) {
                   <div class="col-sm-4">
                     <div class="m-b-25 f-16 f-w-500 animate__animated animate__delay-{{ i + 1 }}s animate__fadeInRight">
-                      {{ item.title }}
+                      {{ item.title | translate }}
                     </div>
                     <ul class="footer-link">
                       @for (items of item.footerLink; track items; let i = $index) {
                         <li>
-                          <a [href]="items.link" target="_blank" class="animate__animated animate__delay-{{ i + 1 }}s animate__fadeInRight">
-                            {{ items.title }}
+                          <a
+                            [href]="items.link"
+                            target="_blank"
+                            class="animate__animated animate__delay-{{ i + 1 }}s animate__fadeInRight"
+                          >
+                            {{ items.title | translate }}
                           </a>
                         </li>
                       }
@@ -535,7 +545,7 @@
       <div class="flex align-item-center">
         @defer (on viewport; prefetch on viewport) {
           <div class="left-section animate__animated animate__delay-1s animate__fadeInUp">
-            © Handcrafted by Team
+            {{ '© Handcrafted by Team' | translate }}
             <a href="https://themeforest.net/user/phoenixcoded" target="_blank" class="text-primary-500">Phoenixcoded</a>
           </div>
           <div class="right-section">

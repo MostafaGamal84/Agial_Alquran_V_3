@@ -6,7 +6,7 @@ export const techData = [
     target: true,
     tooltip: 'Angular',
     description:
-      'Able Pro Angular dashboard template is a powerful tool that utilizes the Google Material component library to create stunning and intuitive user interfaces',
+      'Able Pro Angular dashboard template is a powerful tool that utilizes the Google Material component library to create stunning and intuitive user interfaces.',
     freeRepo: true
   },
   {
@@ -26,7 +26,7 @@ export const techData = [
     target: true,
     tooltip: 'Bootstrap 5',
     description:
-      ' Able Pro Bootstrap 5 - the top choice for responsive, mobile-first design, you can achieve both professional functionality and visual appeal.',
+      'Able Pro Bootstrap 5 - the top choice for responsive, mobile-first design, you can achieve both professional functionality and visual appeal.',
     freeRepo: true
   },
   {
@@ -86,7 +86,7 @@ export const techData = [
     target: true,
     tooltip: 'Vue+Laravel',
     description:
-      'Able Pro Vue with Laravel is a powerful admin dashboard template integrating Vue.js 3, Vuetify, and Laravel 10, enabling developers to build dynamic, high-performance applications efficiently',
+      'Able Pro Vue with Laravel is a powerful admin dashboard template integrating Vue.js 3, Vuetify, and Laravel 10, enabling developers to build dynamic, high-performance applications efficiently.',
     freeRepo: true
   },
   {
@@ -96,7 +96,7 @@ export const techData = [
     target: false,
     tooltip: 'Live Preview Is Not Available',
     description:
-      'Able Pro Django is a powerful dashboard template designed for developers. it offers an extensive collection of pre-built components for seamless web development.',
+      'Able Pro Django is a powerful dashboard template designed for developers. It offers an extensive collection of pre-built components for seamless web development.',
     freeRepo: true
   },
   {

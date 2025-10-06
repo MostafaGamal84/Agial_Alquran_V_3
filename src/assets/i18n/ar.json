@@ -40,7 +40,7 @@
   "Kanban": "كانبان",
   "Calender": "التقويم",
   "Customer": "العميل",
-  "Profile": "الملف الشخصي",
+  "Profile": "الملف التعريفي",
   "File Manager": "مدير الملفات",
   "Mail": "البريد",
   "E-commerce": "التجارة الإلكترونية",
@@ -203,6 +203,113 @@
   "Gender": "النوع الاجتماعي",
   "Created At": "تاريخ الإنشاء",
   "Updated At": "تاريخ التحديث",
-  "User Name": "اسم المستخدم"
-
+  "User Name": "اسم المستخدم",
+  "Explore One of the": "استكشف واحدة من",
+  "Featured Dashboard": "لوحات التحكم المميزة",
+  "Template in Themeforest": "قوالب ثيمفورست",
+  "Able Pro is the one of the Featured admin dashboard template in Envato Marketplace and used by over 5.5K+ Customer worldwide.": "يُعد Able Pro أحد قوالب لوحات التحكم الإدارية المميزة في سوق إنفاتو ويستخدمه أكثر من 5.5 ألف عميل حول العالم.",
+  "Explore Components": "استكشف المكوّنات",
+  "Live Preview": "معاينة مباشرة",
+  "Ratings": "التقييمات",
+  "Sales": "المبيعات",
+  "- Click Below Icon to Preview Each Tech Demos -": "- انقر على الأيقونات أدناه لمعاينة كل عروض التقنيات -",
+  "Available Technologies": "التقنيات المتاحة",
+  "Explore the Demos of Able Pro in multiple technologies.": "استكشف عروض Able Pro في عدة تقنيات.",
+  "Preview Technology": "معاينة {{tech}}",
+  "The Complete Figma Design System to Save Hundreds of Hours": "نظام تصميم فيغما متكامل لتوفير مئات الساعات",
+  "Optimize your workflow with 100% Auto Layout, variables, smart variants, and WCAG accessibility. Enjoy super-smart global colors, typography, and effects styles + variables, crafted for seamless design efficiency!": "حسّن سير عملك بتخطيطات تلقائية بنسبة 100% ومتغيرات ومتغيرات ذكية ومعايير إمكانية الوصول WCAG. استمتع بألوان عالمية ذكية وخطوط وتأثيرات مع متغيرات مصممة لكفاءة تصميم سلسة!",
+  "Free Figma": "فيغما مجاني",
+  "Buy Figma": "شراء فيغما",
+  "Complete Combo": "حزمة متكاملة",
+  "Able Pro caters to the needs of both developers and designers, whether they are": "يُلبي Able Pro احتياجات المطورين والمصممين على حد سواء سواء كانوا",
+  "beginners or experts.": "مبتدئين أو محترفين.",
+  "Access all components of Able Pro in one place to make your development work easier.": "احصل على جميع مكوّنات Able Pro في مكان واحد لتسهيل عملك التطويري.",
+  "View All Component": "عرض جميع المكوّنات",
+  "View All Components": "عرض كل المكوّنات",
+  "Documentation": "التوثيق",
+  "Find solutions and navigate through our helper guide with ease.": "اعثر على الحلول وتصفح دليل المساعدة لدينا بسهولة.",
+  "Check Documentation": "عرض التوثيق",
+  "Working Conceptual Apps": "تطبيقات مفاهيمية جاهزة للعمل",
+  "Each App is carefully crafted to achieve the best feature rich working": "كل تطبيق مُصمَّم بعناية لتقديم أفضل تجربة عملية غنية بالميزات",
+  "concept for your project.": "لتجربة مفاهيمية تناسب مشروعك.",
+  "Power your web apps with the conceptual chat app of Able Pro dashboard template.": "عزّز تطبيقاتك الويب بتطبيق الدردشة المفاهيمي من قالب لوحة التحكم Able Pro.",
+  "Collection, filter, product detail, add new product, and checkout pages makes your e-commerce app complete.": "صفحات التجميع والتصفية وتفاصيل المنتج وإضافة منتج جديد والدفع تجعل تطبيق التجارة الإلكترونية الخاص بك متكاملًا.",
+  "Compose message, list message (email), detailed inbox pages well suited for any conversation based web apps.": "صفحات إنشاء الرسائل وقوائم البريد وصندوق الوارد التفصيلي مثالية لأي تطبيق ويب يعتمد على المحادثات.",
+  "Detailed pages for User management like profile settings, role, account settings, social profile and more to explore.": "صفحات تفصيلية لإدارة المستخدم مثل إعدادات الملف الشخصي والصلاحيات والحساب والملف الاجتماعي والمزيد.",
+  "TRY": "جرّب",
+  "BEFORE BUY": "قبل الشراء",
+  "Download the Free MIT Able Pro Dashboard Template before make your purchase decision.": "قم بتنزيل قالب لوحة التحكم Able Pro المجاني (MIT) قبل اتخاذ قرار الشراء.",
+  "Check Out Pro Version": "اطلع على النسخة الاحترافية",
+  "Free Version": "النسخة المجانية",
+  "They": "هم",
+  "love": "يحبون",
+  "Able Pro, Now your turn 😍": "Able Pro، حان دورك الآن 😍",
+  "We take pride in our Dashboard development, which has been consistently rated 4.7/5": "نفتخر بتطوير لوحات التحكم لدينا، والتي حازت باستمرار على تقييم 4.7 من 5",
+  "by our satisfied customers. It brings us joy to share the positive feedback we have": "من عملائنا الراضين. يسعدنا مشاركة الآراء الإيجابية التي حصلنا عليها",
+  "received from our loyal clients.": "من عملائنا المخلصين.",
+  "Feature Availability": "توفر المزايا",
+  "Code Quality": "جودة الشفرة",
+  "Design Quality": "جودة التصميم",
+  "Customizability": "قابلية التخصيص",
+  "Customer Support": "دعم العملاء",
+  "“I get all what I need for my project from this template so I can focus to back end side. The template looks fantastic and the support is fast. Thank you.“": "«أحصل على كل ما أحتاجه لمشروعي من هذا القالب، لذا أستطيع التركيز على الجزء الخلفي. القالب رائع والدعم سريع. شكرًا لكم.»",
+  "“Code quality is amazing. Design is astonishing. very easy to customize .. and any developer can use it with ease.“": "«جودة الكود مذهلة. التصميم رائع. التخصيص سهل جدًا.. ويمكن لأي مطور استخدامه بسهولة.»",
+  "“Design is very good.“": "«التصميم جيد جدًا.»",
+  "“Amazing template for fast develop“": "«قالب رائع للتطوير السريع.»",
+  "“The author is very nice and solved my problem inmediately“": "«المؤلف لطيف جدًا وحل مشكلتي فورًا.»",
+  "“An amazing template, Very good design, good quality code and also very good customer support.“": "«قالب مذهل، تصميم رائع، كود عالي الجودة ودعم عملاء ممتاز أيضًا.»",
+  "“The author is very nice and solved my problem inmediately 😍“": "«المؤلف لطيف جدًا وحل مشكلتي فورًا 😍»",
+  "“Very universal admin template“": "«قالب إدارة شامل جدًا.»",
+  "“An amazing template. Very good design, good quality code and also very good customer support. 💎“": "«قالب مذهل. تصميم رائع، كود عالي الجودة ودعم عملاء ممتاز أيضًا. 💎»",
+  "“I have it running on a medium size site that is geared towards displaying stats tables and custom forms, a blog and a forum. My customers love the design and the speed in which the pages load. 😍 “": "«أشغّله على موقع متوسّط الحجم مخصص لعرض جداول الإحصائيات والنماذج المخصصة، بالإضافة إلى مدونة ومنتدى. عملائي يحبون التصميم وسرعة تحميل الصفحات. 😍»",
+  "Trusted By": "موثوق به من قبل",
+  "From Startups to Fortune 500 companies using our Template for their product.": "من الشركات الناشئة إلى شركات فورتشن 500 يعتمدون على قالبنا لمنتجاتهم.",
+  "Need Support?": "تحتاج إلى دعم؟",
+  "Have questions? Our expert support team is ready to help. Submit a ticket, and we’ll assist you promptly.": "هل لديك أسئلة؟ فريق الدعم الخبير لدينا جاهز للمساعدة. أرسل تذكرة وسنقوم بمساعدتك فورًا.",
+  "Get Support": "احصل على الدعم",
+  "Phoenixcoded has gained the trust of over 5.5k+ customers since 2015, thanks to our commitment to delivering high-quality products. Our experienced team players are responsible for managing Able Pro.": "حازت Phoenixcoded على ثقة أكثر من 5.5 آلاف عميل منذ 2015 بفضل التزامنا بتقديم منتجات عالية الجودة. فريقنا الخبير مسؤول عن إدارة Able Pro.",
+  "Company": "الشركة",
+  "Portfolio": "الأعمال",
+  "Follow Us": "تابعنا",
+  "Website": "الموقع الإلكتروني",
+  "Help & Support": "المساعدة والدعم",
+  "Feature Request": "طلب ميزة",
+  "RoadMap": "خريطة الطريق",
+  "Support": "الدعم",
+  "Discord": "ديسكورد",
+  "Useful Resources": "موارد مفيدة",
+  "Support Policy": "سياسة الدعم",
+  "Licenses Term": "شروط التراخيص",
+  "© Handcrafted by Team": "© صُنع يدويًا بواسطة فريق",
+  "Inbox": "البريد الوارد",
+  "User Management": "إدارة المستخدمين",
+  "Able Pro Angular dashboard template is a powerful tool that utilizes the Google Material component library to create stunning and intuitive user interfaces.": "قالب لوحة التحكم Able Pro Angular هو أداة قوية تستفيد من مكتبة مكونات Google Material لإنشاء واجهات مستخدم مذهلة وبديهية.",
+  "Able Pro React dashboard template is a powerful tool that utilizes the Material-UI component library to create stunning and intuitive user interfaces.": "قالب لوحة التحكم Able Pro React هو أداة قوية تستفيد من مكتبة مكونات Material-UI لإنشاء واجهات مستخدم مذهلة وبديهية.",
+  "Able Pro Bootstrap 5 - the top choice for responsive, mobile-first design, you can achieve both professional functionality and visual appeal.": "Able Pro Bootstrap 5 هو الخيار الأفضل لتصميم متجاوب يعتمد على الأجهزة المحمولة أولًا، لتجمع بين الوظائف الاحترافية والجاذبية البصرية.",
+  "Able Pro CodeIgniter version is a powerful dashboard template built specifically for developers who use the CodeIgniter PHP framework with Bootstrap.": "نسخة Able Pro CodeIgniter هي قالب لوحة تحكم قوي صُمم خصيصًا للمطورين الذين يستخدمون إطار CodeIgniter بلغة PHP مع بوتستراب.",
+  "Able Pro .NET version is a robust dashboard template designed specifically for .NET developers. Its comes with a wide range of pre-built components.": "نسخة Able Pro .NET هي قالب لوحة تحكم متين صُمم خصيصًا لمطوري .NET، وتأتي مع مجموعة واسعة من المكونات الجاهزة.",
+  "Able Pro Next Js dashboard template is a powerful tool that utilizes the Material-UI component library to create stunning and intuitive user interfaces.": "قالب لوحة التحكم Able Pro Next Js هو أداة قوية تستفيد من مكتبة مكونات Material-UI لإنشاء واجهات مستخدم مذهلة وبديهية.",
+  "Able Pro Vue stands out as a versatile and powerful - Vue with Vuetify dashboard combines modern design principles with robust functionality.": "يتميّز Able Pro Vue بكونه قالب لوحة تحكم قوي ومرن يعتمد على Vue مع Vuetify، ويمزج بين مبادئ التصميم الحديثة ووظائف متينة.",
+  "Able Pro with Tailwind CSS lets developers create sleek, professional interfaces quickly. Tailwind utility classes ensure consistent styling across all devices.": "يتيح Able Pro مع Tailwind CSS للمطورين إنشاء واجهات أنيقة واحترافية بسرعة، وتضمن أصناف Tailwind المساعدة تنسيقًا متسقًا عبر جميع الأجهزة.",
+  "Able Pro Vue with Laravel is a powerful admin dashboard template integrating Vue.js 3, Vuetify, and Laravel 10, enabling developers to build dynamic, high-performance applications efficiently.": "Able Pro Vue مع لارافيل هو قالب لوحة تحكم إداري قوي يجمع بين Vue.js 3 وVuetify وLaravel 10، مما يمكّن المطورين من بناء تطبيقات ديناميكية عالية الأداء بكفاءة.",
+  "Able Pro Django is a powerful dashboard template designed for developers. It offers an extensive collection of pre-built components for seamless web development.": "Able Pro Django هو قالب لوحة تحكم قوي صُمم للمطورين، ويوفّر مجموعة واسعة من المكوّنات الجاهزة لتطوير ويب سلس.",
+  "Able Pro Flask is a versatile dashboard solution that offers a rich set of pre-built components to simplify web development.": "Able Pro Flask هو حل لوحة تحكم مرن يوفر مجموعة غنية من المكوّنات الجاهزة لتبسيط تطوير الويب.",
+  "Able Pro Laravel with Bootstrap provides a powerful set of tools and components, crafted specifically for Laravel, to simplify and accelerate your development process.": "يقدّم Able Pro Laravel مع بوتستراب مجموعة قوية من الأدوات والمكوّنات المصممة خصيصًا للارافيل لتبسيط وتسريع عملية التطوير.",
+  "Able Pro Node.js combines flexibility and functionality with a variety of pre-built components tailored for Node.js, which make it easier to develop.": "يجمع Able Pro Node.js بين المرونة والوظائف من خلال مجموعة متنوعة من المكوّنات الجاهزة المخصّصة لـ Node.js مما يجعل التطوير أسهل.",
+  "Able Pro Svelte provides an extensive toolkit and components, allowing you to build dynamic and responsive interfaces with ease and efficiency.": "يوفر Able Pro Svelte مجموعة أدوات ومكوّنات واسعة تمكّنك من إنشاء واجهات ديناميكية ومتجاوبة بسهولة وكفاءة.",
+  "Angular": "أنجولار",
+  "React MUI": "ريأكت MUI",
+  "Bootstrap 5": "بوتستراب 5",
+  "CodeIgniter": "كودإغنيتر",
+  "ASP.net": "ASP.NET",
+  "Next js": "نكست JS",
+  "Vue": "فيو",
+  "Tailwind": "تايلويند",
+  "Vue+Laravel": "فيو + لارافيل",
+  "Django": "جانغو",
+  "Flask": "فلاسْك",
+  "Laravel Bootstrap": "لارافيل مع بوتستراب",
+  "Node Js": "نود JS",
+  "Svelte Kit": "سفيلت كِت",
+  "Live Preview Is Not Available": "المعاينة المباشرة غير متاحة"
 }
