@@ -89,7 +89,7 @@
                 <mat-option *ngFor="let n of nationalities" [value]="n.id">{{ n.name }}</mat-option>
               </mat-select>
               @if (basicInfoForm.get('nationalityId')?.touched && basicInfoForm.get('nationalityId')?.invalid) {
-                <mat-error>Nationality id is required</mat-error>
+                <mat-error>Nationality is required</mat-error>
               }
             </mat-form-field>
           </div>
@@ -100,7 +100,7 @@
                 <mat-option *ngFor="let g of governorates" [value]="g.id">{{ g.name }}</mat-option>
               </mat-select>
               @if (basicInfoForm.get('governorateId')?.touched && basicInfoForm.get('governorateId')?.invalid) {
-                <mat-error>Governorate id is required</mat-error>
+                <mat-error>Governorate is required</mat-error>
               }
             </mat-form-field>
           </div>
@@ -111,7 +111,7 @@
                 <mat-option *ngFor="let b of Branch" [value]="b.id">{{ b.label }}</mat-option>
               </mat-select>
               @if (basicInfoForm.get('branchId')?.touched && basicInfoForm.get('branchId')?.invalid) {
-                <mat-error>Branch id is required</mat-error>
+                <mat-error>Branch is required</mat-error>
               }
             </mat-form-field>
           </div>
