@@ -26,6 +26,7 @@
     "@angular/platform-browser": "20.0.5",
     "@angular/platform-browser-dynamic": "20.0.5",
     "@angular/router": "20.0.5",
+    "@fontsource-variable/cairo": "^5.2.7",
     "@iplab/ngx-file-upload": "19.0.3",
     "@narik/custom-validators": "13.0.0",
     "@ngx-translate/core": "16.0.4",

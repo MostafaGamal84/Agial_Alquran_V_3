@@ -1639,7 +1639,7 @@ ${styles}
         padding: 24px;
         background: ${PRINT_ACCENT_LIGHT};
         color: ${PRINT_TEXT_PRIMARY};
-        font-family: 'Cairo', 'Tajawal', 'Helvetica Neue', Arial, sans-serif;
+        font-family: 'Cairo Variable', 'Cairo', 'Tajawal', 'Helvetica Neue', Arial, sans-serif;
         line-height: 1.6;
       }
       .print-page {
@@ -1766,7 +1766,7 @@ ${styles}
         direction: rtl;
       }
       .row-text.ar .value {
-        font-family: 'Cairo', 'Tajawal', 'Helvetica Neue', Arial, sans-serif;
+        font-family: 'Cairo Variable', 'Cairo', 'Tajawal', 'Helvetica Neue', Arial, sans-serif;
       }
       .notes-card {
         border: 1px dashed ${PRINT_ACCENT_COLOR};
