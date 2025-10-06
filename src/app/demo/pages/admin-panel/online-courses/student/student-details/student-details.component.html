@@ -1,6 +1,6 @@
 <div class="manager-details-header" mat-dialog-title>
   <div class="flex align-item-center justify-content-between">
-    <div class="f-w-700 f-16">Student Details</div>
+    <div class="f-w-700 f-16">{{ 'Student Details' | translate }}</div>
     <button mat-icon-button class="avatar avatar-s modal-close" mat-dialog-close>
       <i class="ti ti-x f-20"></i>
     </button>
@@ -23,16 +23,16 @@
       </div>
       <div class="right-panel">
         <section class="section" *ngIf="detailEntries.length">
-          <h6 class="section-title">Personal Details</h6>
+          <h6 class="section-title">{{ 'Personal Details' | translate }}</h6>
           <hr />
 
           <div class="detail-grid">
             <div class="detail-item" *ngIf="s.branchId !== undefined">
-              <span class="label">Branch:</span>
+              <span class="label">{{ 'Branch' | translate }}:</span>
               <span>{{ getBranchLabel(s.branchId) }}</span>
             </div>
             <div class="detail-item" *ngFor="let entry of detailEntries">
-              <span class="label">{{ entry[0] | titlecase }}:</span>
+              <span class="label">{{ getLabel(entry[0]) | translate }}:</span>
               <span>{{ formatValue(entry[0], entry[1]) }}</span>
             </div>
           </div>

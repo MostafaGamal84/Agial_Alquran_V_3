@@ -2,10 +2,11 @@
 import { Component, ContentChild, ElementRef, TemplateRef, contentChild, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-card',
-  imports: [CommonModule, MatCardModule],
+  imports: [CommonModule, MatCardModule, TranslateModule],
   templateUrl: './card.component.html',
   styleUrls: ['./card.component.scss']
 })
