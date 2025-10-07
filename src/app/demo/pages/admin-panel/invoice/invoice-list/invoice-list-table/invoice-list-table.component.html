@@ -4,7 +4,7 @@
       <input
         matInput
         (keyup)="applyFilter($event)"
-        placeholder="Search...."
+        [placeholder]="'Search...' | translate"
         [value]="searchTerm"
         #input
       />
@@ -14,13 +14,13 @@
   <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
     <!-- id Column -->
     <ng-container matColumnDef="id">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-center">INVOICE ID</th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-center">{{ 'Invoice ID' | translate }}</th>
       <td mat-cell *matCellDef="let element" class="text-nowrap text-center">{{ element.id }}</td>
     </ng-container>
 
     <!-- Name Column -->
     <ng-container matColumnDef="name">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>STUDENT</th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'Student' | translate }}</th>
       <td mat-cell *matCellDef="let element" class="text-nowrap">
         {{ element.name }}
       </td>
@@ -28,48 +28,48 @@
 
     <!-- create_date Column -->
     <ng-container matColumnDef="create_date">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>CREATE DATE</th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'Create Date' | translate }}</th>
       <td mat-cell *matCellDef="let element" class="text-nowrap">{{ element.create_date }}</td>
     </ng-container>
 
     <!-- due_date Column -->
     <ng-container matColumnDef="due_date">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>DUE DATE</th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'Due Date' | translate }}</th>
       <td mat-cell *matCellDef="let element" class="text-nowrap">{{ element.due_date }}</td>
     </ng-container>
 
     <!-- qty Column -->
     <ng-container matColumnDef="qty">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>QUANTITY</th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'Quantity' | translate }}</th>
       <td mat-cell *matCellDef="let element" class="text-nowrap">{{ element.qty }}</td>
     </ng-container>
 
     <!-- status Column -->
     <ng-container matColumnDef="status">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>STATUS</th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'Status' | translate }}</th>
       <td mat-cell *matCellDef="let element" class="text-nowrap">
         @if (element.status === 'paid') {
-          <span class="user-status bg-success-500 text-white">Paid</span>
+          <span class="user-status bg-success-500 text-white">{{ 'Paid' | translate }}</span>
         } @else if (element.status === 'unpaid') {
-          <span class="user-status bg-cyan-500 text-white">Unpaid</span>
+          <span class="user-status bg-cyan-500 text-white">{{ 'Unpaid' | translate }}</span>
         } @else if (element.status === 'overdue') {
-          <span class="user-status bg-warn-500 text-white">Overdue</span>
+          <span class="user-status bg-warn-500 text-white">{{ 'Overdue' | translate }}</span>
         } @else if (element.status === 'cancelled') {
-          <span class="user-status bg-warn-500 text-white">Cancelled</span>
+          <span class="user-status bg-warn-500 text-white">{{ 'Cancelled' | translate }}</span>
         }
       </td>
     </ng-container>
 
     <!-- action Column -->
     <ng-container matColumnDef="action">
-      <th mat-header-cell *matHeaderCellDef>Action</th>
+      <th mat-header-cell *matHeaderCellDef>{{ 'Actions' | translate }}</th>
       <td mat-cell *matCellDef="let element" class="text-nowrap">
         <ul class="list-inline m-b-0">
           <li class="list-inline-item">
             <a
               href="javascript:"
               class="avatar avatar-xs bg-accent-100 hover m-r-10"
-              matTooltip="View"
+              [matTooltip]="'View' | translate"
               (click)="openPaymentDetails(element.id)"
             >
               <i class="f-20 ti ti-eye text-accent-500"></i>
@@ -80,7 +80,7 @@
               <a
                 href="javascript:"
                 class="avatar avatar-xs bg-primary-50 hover m-r-10"
-                matTooltip="Edit"
+                [matTooltip]="'Edit' | translate"
                 (click)="openPaymentEdit(element.id)"
               >
                 <i class="f-20 ti ti-edit text-primary-500"></i>
@@ -99,5 +99,8 @@
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
     <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
   </table>
-  <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of users"></mat-paginator>
+  <mat-paginator
+    [pageSizeOptions]="[5, 10, 25, 100]"
+    [attr.aria-label]="'Select page of users' | translate"
+  ></mat-paginator>
 </div>

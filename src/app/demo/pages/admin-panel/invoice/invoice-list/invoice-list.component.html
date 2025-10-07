@@ -2,7 +2,7 @@
   <div class="col-12 mb-3 text-end">
     <div class="flex gap-2 justify-content-end">
       <mat-form-field appearance="outline">
-        <mat-label>Month</mat-label>
+        <mat-label>{{ 'Month' | translate }}</mat-label>
         <input matInput [matDatepicker]="dataPicker" [formControl]="dataMonth" />
         <mat-datepicker-toggle matIconSuffix [for]="dataPicker"></mat-datepicker-toggle>
         <mat-datepicker
@@ -13,7 +13,7 @@
         ></mat-datepicker>
       </mat-form-field>
       <mat-form-field appearance="outline">
-        <mat-label>Compare Month</mat-label>
+        <mat-label>{{ 'Compare Month' | translate }}</mat-label>
         <input matInput [matDatepicker]="comparePicker" [formControl]="compareMonth" />
         <mat-datepicker-toggle matIconSuffix [for]="comparePicker"></mat-datepicker-toggle>
         <mat-datepicker
@@ -31,7 +31,7 @@
         <div class="col-md-6 col-lg-4">
           <app-card [showHeader]="false" [padding]="20" cardClass="m-b-0">
             <div class="m-b-10 flex align-item-center justify-content-between gap-1">
-              <div class="f-w-600">{{ cards.title }}</div>
+              <div class="f-w-600">{{ cards.title | translate }}</div>
               <p class="m-b-0 text-muted flex align-item-center gap-1">
                 <i class="f-14 ti ti-{{ cards.isLoss === true ? 'caret-down-filled' : 'caret-up-filled' }} {{ cards.color }}"></i>
                 {{ cards.percentage }}%
@@ -42,7 +42,7 @@
                 <div class="f-w-600 f-16 m-b-5 m-t-15">{{ cards.value }}</div>
                 <div class="flex align-item-center gap-1">
                   <div class="m-b-0 f-16 f-w-600">{{ cards.invoice }}</div>
-                  <p class="m-b-0 text-muted flex align-item-center gap-2">invoices</p>
+                  <p class="m-b-0 text-muted flex align-item-center gap-2">{{ 'Invoices' | translate }}</p>
                 </div>
               </div>
               <div class="col-6">
@@ -63,17 +63,17 @@
           </div>
           <div class="m-l-10">
             <div class="flex align-item-center">
-              <p class="m-b-0 text-white">Total Receivables</p>
+              <p class="m-b-0 text-white">{{ 'Total Receivables' | translate }}</p>
               <i class="ti ti-info-circle text-white m-l-10"></i>
             </div>
             <div class="flex align-item-center">
-              <p class="m-b-0 text-white text-sm">Current</p>
+              <p class="m-b-0 text-white text-sm">{{ 'Current' | translate }}</p>
               <p class="m-b-0 text-white m-l-10">{{ bigCard.currentReceivables }}</p>
             </div>
           </div>
         </div>
         <div class="flex">
-          <p class="m-b-0 text-white text-sm">Overdue</p>
+          <p class="m-b-0 text-white text-sm">{{ 'Overdue' | translate }}</p>
           <p class="m-b-0 text-white m-l-10">{{ bigCard.overdueReceivables }}</p>
         </div>
       </div>
@@ -94,7 +94,7 @@
         <mat-tab>
           <ng-template mat-tab-label>
             <div class="flex align-item-center justify-content-between">
-              All
+              {{ 'All' | translate }}
               <div class="wid-20 hei-20 border-50 flex align-item-center justify-content-center bg-primary-50 text-primary-500 m-l-10">
                 {{ tabCounts.all }}
               </div>
@@ -107,7 +107,7 @@
         <mat-tab>
           <ng-template mat-tab-label>
             <div class="flex align-item-center justify-content-between">
-              Paid
+              {{ 'Paid' | translate }}
               <div class="wid-20 hei-20 border-50 flex align-item-center justify-content-center bg-success-50 text-success-500 m-l-10">
                 {{ tabCounts.paid }}
               </div>
@@ -121,7 +121,7 @@
         <mat-tab>
           <ng-template mat-tab-label>
             <div class="flex align-item-center justify-content-between">
-              Unpaid
+              {{ 'Unpaid' | translate }}
               <div class="wid-20 hei-20 border-50 flex align-item-center justify-content-center bg-warning-50 text-warning-500 m-l-10">
                 {{ tabCounts.unpaid }}
               </div>
@@ -135,7 +135,7 @@
         <mat-tab>
           <ng-template mat-tab-label>
             <div class="flex align-item-center justify-content-between">
-              Overdue
+              {{ 'Overdue' | translate }}
               <div class="wid-20 hei-20 border-50 flex align-item-center justify-content-center bg-warn-50 text-warn-500 m-l-10">
                 {{ tabCounts.overdue }}
               </div>
@@ -149,7 +149,7 @@
         <mat-tab>
           <ng-template mat-tab-label>
             <div class="flex align-item-center justify-content-between">
-              Cancelled
+              {{ 'Cancelled' | translate }}
               <div class="wid-20 hei-20 border-50 flex align-item-center justify-content-center bg-warn-50 text-warn-500 m-l-10">
                 {{ tabCounts.cancelled }}
               </div>

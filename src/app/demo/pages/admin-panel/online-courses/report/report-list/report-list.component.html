@@ -1,12 +1,12 @@
 <div class="row p-t-25">
   <div class="col-12">
-    <app-card cardTitle="Circle Reports" padding="0" cardClass="sm-block">
+    <app-card [cardTitle]="'Circle Reports' | translate" padding="0" cardClass="sm-block">
       <ng-template #headerOptionsTemplate>
         <div class="table-options" *ngIf="canManageReports">
           <button mat-flat-button color="primary" [routerLink]="['/online-course/report/add']">
             <div class="flex align-item-center">
               <i class="ti ti-plus f-18 m-r-5"></i>
-              Add Report
+              {{ 'Add Report' | translate }}
             </div>
           </button>
         </div>
@@ -17,10 +17,10 @@
             <div class="row g-3 p-15">
               <div class="col-12 col-md-4">
                 <mat-form-field appearance="outline" class="w-100">
-                  <mat-label>Search</mat-label>
+                  <mat-label>{{ 'Search' | translate }}</mat-label>
                   <input
                     matInput
-                    placeholder="Search reports"
+                    [placeholder]="'Search Reports' | translate"
                     formControlName="searchTerm"
                     (keyup.enter)="onSearch()"
                   />
@@ -30,7 +30,7 @@
                     type="button"
                     (click)="clearSearch()"
                     *ngIf="filterForm.value.searchTerm"
-                    aria-label="Clear search"
+                    [attr.aria-label]="'Clear Search' | translate"
                   >
                     <mat-icon>close</mat-icon>
                   </button>
@@ -38,9 +38,9 @@
               </div>
               <div class="col-12 col-md-4">
                 <mat-form-field appearance="outline" class="w-100">
-                  <mat-label>Circle</mat-label>
+                  <mat-label>{{ 'Circle' | translate }}</mat-label>
                   <mat-select formControlName="circleId" [disabled]="isLoadingStudents">
-                    <mat-option [value]="null">All circles</mat-option>
+                    <mat-option [value]="null">{{ 'All Circles' | translate }}</mat-option>
                     <mat-option *ngFor="let circle of circles" [value]="circle.id">
                       {{ circle.name }}
                     </mat-option>
@@ -49,9 +49,9 @@
               </div>
               <div class="col-12 col-md-4">
                 <mat-form-field appearance="outline" class="w-100">
-                  <mat-label>Student</mat-label>
+                  <mat-label>{{ 'Student' | translate }}</mat-label>
                   <mat-select formControlName="studentId" [disabled]="isLoadingStudents">
-                    <mat-option [value]="null">All students</mat-option>
+                    <mat-option [value]="null">{{ 'All Students' | translate }}</mat-option>
                     <mat-option *ngFor="let student of students" [value]="student.id">
                       {{ student.name }}
                     </mat-option>
@@ -64,39 +64,39 @@
           <div class="table-responsive">
             <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
               <ng-container matColumnDef="student">
-                <th mat-header-cell *matHeaderCellDef class="p-l-25">STUDENT</th>
+                <th mat-header-cell *matHeaderCellDef class="p-l-25">{{ 'Student' | translate }}</th>
                 <td mat-cell *matCellDef="let element" class="p-l-25 text-nowrap">
                   {{ getStudentDisplay(element) }}
                 </td>
               </ng-container>
 
               <ng-container matColumnDef="circle">
-                <th mat-header-cell *matHeaderCellDef>CIRCLE</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'Circle' | translate }}</th>
                 <td mat-cell *matCellDef="let element" class="text-nowrap">
                   {{ getCircleDisplay(element) }}
                 </td>
               </ng-container>
 
               <ng-container matColumnDef="status">
-                <th mat-header-cell *matHeaderCellDef>STATUS</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'Status' | translate }}</th>
                 <td mat-cell *matCellDef="let element" class="text-nowrap">
                   {{ getStatusLabel(element.attendStatueId) }}
                 </td>
               </ng-container>
 
               <ng-container matColumnDef="creationTime">
-                <th mat-header-cell *matHeaderCellDef>DATE</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'Date' | translate }}</th>
                 <td mat-cell *matCellDef="let element" class="text-nowrap">
                   {{ formatDate(element.creationTime) }}
                 </td>
               </ng-container>
 
               <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef class="text-center">ACTIONS</th>
+                <th mat-header-cell *matHeaderCellDef class="text-center">{{ 'Actions' | translate }}</th>
                 <td mat-cell *matCellDef="let element" class="text-nowrap">
                   <div class="text-center text-nowrap">
                     <ul class="list-inline p-l-0">
-                      <li class="list-inline-item m-r-10" matTooltip="View">
+                      <li class="list-inline-item m-r-10" [matTooltip]="'View' | translate">
                         <a
                           [routerLink]="['/online-course/report/details', element.id]"
                           [state]="{ report: element }"
@@ -105,7 +105,7 @@
                           <i class="ti ti-eye f-18"></i>
                         </a>
                       </li>
-                      <li class="list-inline-item m-r-10" matTooltip="Edit" *ngIf="canManageReports">
+                      <li class="list-inline-item m-r-10" [matTooltip]="'Edit' | translate" *ngIf="canManageReports">
                         <a
                           [routerLink]="['/online-course/report/edit', element.id]"
                           [state]="{ report: element }"
@@ -122,14 +122,14 @@
               <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
               <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
               <tr class="mat-row" *matNoDataRow>
-                <td class="mat-cell" colspan="5">No reports found</td>
+                <td class="mat-cell" colspan="5">{{ 'No Reports Found' | translate }}</td>
               </tr>
             </table>
             <mat-paginator
               [length]="totalCount"
               [pageSize]="filter.maxResultCount || 10"
               [pageSizeOptions]="[5, 10, 25, 100]"
-              aria-label="Select page of reports"
+              [attr.aria-label]="'Select page of reports' | translate"
             ></mat-paginator>
           </div>
         </div>
