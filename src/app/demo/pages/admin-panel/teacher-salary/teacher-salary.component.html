@@ -9,7 +9,7 @@
     <div class="drawer-content">
       <div class="drawer-header">
         <div>
-          <h3 class="drawer-title">Invoice details</h3>
+          <h3 class="drawer-title">{{ 'Invoice Details' | translate }}</h3>
           @if (selectedInvoice?.teacherName || detailSummary?.teacherName) {
             <p class="drawer-subtitle">
               {{ selectedInvoice?.teacherName ?? detailSummary?.teacherName }}
@@ -28,22 +28,22 @@
         </div>
       } @else if (invoiceDetails || selectedInvoice) {
         <div class="drawer-section">
-          <h4>Invoice</h4>
+          <h4>{{ 'Invoice' | translate }}</h4>
           <div class="detail-grid">
             <div class="detail-item">
-              <span class="label">Month</span>
+              <span class="label">{{ 'Month' | translate }}</span>
               <span class="value">{{ formatMonth(selectedInvoice) }}</span>
             </div>
             <div class="detail-item">
-              <span class="label">Salary</span>
+              <span class="label">{{ 'Salary' | translate }}</span>
               <span class="value">{{ formatSalary(selectedInvoice) }}</span>
             </div>
             <div class="detail-item">
-              <span class="label">Status</span>
+              <span class="label">{{ 'Status' | translate }}</span>
               <span class="value">{{ getStatusLabel(selectedInvoice) }}</span>
             </div>
             <div class="detail-item">
-              <span class="label">Paid at</span>
+              <span class="label">{{ 'Paid At' | translate }}</span>
               <span class="value">
                 @if (selectedInvoice?.payedAt) {
                   {{ selectedInvoice?.payedAt | date: 'medium' }}
@@ -53,7 +53,7 @@
               </span>
             </div>
             <div class="detail-item">
-              <span class="label">Receipt</span>
+              <span class="label">{{ 'Receipt' | translate }}</span>
               <span class="value">
                 @if (selectedInvoice && getReceiptUrl(selectedInvoice)) {
                   <a
@@ -61,7 +61,7 @@
                     target="_blank"
                     rel="noopener"
                   >
-                    View receipt
+                    {{ 'View Receipt' | translate }}
                   </a>
                 } @else {
                   —
@@ -73,7 +73,7 @@
         <mat-divider></mat-divider>
         <div class="drawer-section">
           <div class="section-header">
-            <h4>Monthly summary</h4>
+            <h4>{{ 'Monthly Summary' | translate }}</h4>
           </div>
           @if (detailSummaryMetrics.length > 0) {
             <div class="summary-metrics">
@@ -85,12 +85,12 @@
               }
             </div>
           } @else {
-            <p class="empty-state">No summary data available for this invoice.</p>
+            <p class="empty-state">{{ 'No Summary Data For Invoice' | translate }}</p>
           }
         </div>
       } @else {
         <div class="drawer-empty">
-          <p>Select an invoice to view its details.</p>
+          <p>{{ 'Select Invoice Prompt' | translate }}</p>
         </div>
       }
     </div>
@@ -101,7 +101,7 @@
       <div>
         <!-- <h2 class="page-title">Teacher Salary</h2> -->
         <p class="page-subtitle">
-          Review salary invoices, update payment status, and monitor monthly performance.
+          {{ 'Teacher Salary Subtitle' | translate }}
         </p>
       </div>
       @if (canGenerateInvoices) {
@@ -113,7 +113,7 @@
           [disabled]="manualGenerationLoading"
         >
           <mat-icon>cached</mat-icon>
-          Generate monthly invoices
+          {{ 'Generate Monthly Invoices' | translate }}
         </button>
       }
     </div>
@@ -121,11 +121,11 @@
     @if (generationResult) {
       <mat-card class="generation-card">
         <div class="generation-content">
-          <div class="generation-title">Last generation summary</div>
+          <div class="generation-title">{{ 'Last Generation Summary' | translate }}</div>
           <div class="generation-stats">
-            <span><strong>{{ generationResult?.createdCount ?? 0 }}</strong> created</span>
-            <span><strong>{{ generationResult?.updatedCount ?? 0 }}</strong> updated</span>
-            <span><strong>{{ generationResult?.skippedCount ?? 0 }}</strong> skipped</span>
+            <span><strong>{{ generationResult?.createdCount ?? 0 }}</strong> {{ 'Created' | translate }}</span>
+            <span><strong>{{ generationResult?.updatedCount ?? 0 }}</strong> {{ 'Updated' | translate }}</span>
+            <span><strong>{{ generationResult?.skippedCount ?? 0 }}</strong> {{ 'Skipped' | translate }}</span>
           </div>
         </div>
       </mat-card>
@@ -134,7 +134,7 @@
     <mat-card class="filters-card">
       <div class="filters-grid">
         <mat-form-field appearance="outline">
-          <mat-label>Month</mat-label>
+          <mat-label>{{ 'Month' | translate }}</mat-label>
           <input matInput [matDatepicker]="monthPicker" [formControl]="selectedMonth" />
           <mat-datepicker-toggle matIconSuffix [for]="monthPicker"></mat-datepicker-toggle>
           <mat-datepicker
@@ -147,9 +147,9 @@
 
         @if (canManagePayments) {
           <mat-form-field appearance="outline" class="teacher-select">
-            <mat-label>Teacher</mat-label>
+            <mat-label>{{ 'Teacher' | translate }}</mat-label>
             <mat-select [formControl]="selectedTeacher" [disabled]="teacherLoading">
-              <mat-option [value]="null">All teachers</mat-option>
+              <mat-option [value]="null">{{ 'All Teachers' | translate }}</mat-option>
               @for (teacher of teachers; track teacher.id) {
                 <mat-option [value]="teacher.id">{{ teacher.fullName }}</mat-option>
               }
@@ -164,10 +164,10 @@
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="teacher-search">
-            <mat-label>Search teacher</mat-label>
+            <mat-label>{{ 'Search Teacher' | translate }}</mat-label>
             <input
               matInput
-              placeholder="Search by name or email"
+              [placeholder]="'Search by name or email' | translate"
               [formControl]="teacherSearchControl"
             />
             @if (teacherSearchControl.value) {
@@ -191,12 +191,12 @@
             [disabled]="teacherLoading"
           >
             <mat-icon>refresh</mat-icon>
-            Refresh
+            {{ 'Refresh' | translate }}
           </button>
         } @else {
           <div class="teacher-context">
             <mat-icon>person</mat-icon>
-            <span>Showing salary information for your account.</span>
+            <span>{{ 'Teacher Context Message' | translate }}</span>
           </div>
         }
 
@@ -209,7 +209,7 @@
           [disabled]="invoicesLoading || summaryLoading"
         >
           <mat-icon>refresh</mat-icon>
-          Reload
+          {{ 'Reload' | translate }}
         </button>
       </div>
     </mat-card>
@@ -222,24 +222,24 @@
       <div class="table-container">
         <table mat-table [dataSource]="dataSource" class="teacher-salary-table">
           <ng-container matColumnDef="teacher">
-            <th mat-header-cell *matHeaderCellDef>Teacher</th>
+            <th mat-header-cell *matHeaderCellDef>{{ 'Teacher' | translate }}</th>
             <td mat-cell *matCellDef="let row">
               <div class="cell-primary">{{ row.teacherName ?? '—' }}</div>
             </td>
           </ng-container>
 
           <ng-container matColumnDef="month">
-            <th mat-header-cell *matHeaderCellDef>Month</th>
+            <th mat-header-cell *matHeaderCellDef>{{ 'Month' | translate }}</th>
             <td mat-cell *matCellDef="let row">{{ getMonthDisplay(row) }}</td>
           </ng-container>
 
           <ng-container matColumnDef="salary">
-            <th mat-header-cell *matHeaderCellDef>Salary</th>
+            <th mat-header-cell *matHeaderCellDef>{{ 'Salary' | translate }}</th>
             <td mat-cell *matCellDef="let row">{{ formatSalary(row) }}</td>
           </ng-container>
 
           <ng-container matColumnDef="status">
-            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <th mat-header-cell *matHeaderCellDef>{{ 'Status' | translate }}</th>
             <td mat-cell *matCellDef="let row">
               <span
                 class="status-badge"
@@ -253,7 +253,7 @@
           </ng-container>
 
           <ng-container matColumnDef="paidAt">
-            <th mat-header-cell *matHeaderCellDef>Paid at</th>
+            <th mat-header-cell *matHeaderCellDef>{{ 'Paid At' | translate }}</th>
             <td mat-cell *matCellDef="let row">
               @if (row.payedAt) {
                 {{ row.payedAt | date: 'medium' }}
@@ -264,7 +264,7 @@
           </ng-container>
 
           <ng-container matColumnDef="receipt">
-            <th mat-header-cell *matHeaderCellDef>Receipt</th>
+            <th mat-header-cell *matHeaderCellDef>{{ 'Receipt' | translate }}</th>
             <td mat-cell *matCellDef="let row">
               @if (getReceiptUrl(row)) {
                 <a
@@ -273,7 +273,7 @@
                   rel="noopener"
                   (click)="$event.stopPropagation()"
                 >
-                  View
+                  {{ 'View' | translate }}
                 </a>
               } @else {
                 —
@@ -283,7 +283,7 @@
 
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef class="actions-header">
-              Invoice
+              {{ 'Invoice' | translate }}
             </th>
             <td mat-cell *matCellDef="let row" class="actions-cell">
               <button
@@ -291,8 +291,8 @@
                 type="button"
                 color="primary"
                 class="action-button"
-                matTooltip="Generate, open, and upload printable invoice"
-                aria-label="Generate printable invoice"
+                [matTooltip]="'Generate Invoice Tooltip' | translate"
+                [attr.aria-label]="'Generate Printable Invoice' | translate"
                 (click)="onGenerateInvoiceReceipt($event, row)"
                 (mousedown)="$event.preventDefault()"
                 [disabled]="
@@ -309,7 +309,7 @@
           </ng-container>
 
           <ng-container matColumnDef="toggle">
-            <th mat-header-cell *matHeaderCellDef class="toggle-header">Paid?</th>
+            <th mat-header-cell *matHeaderCellDef class="toggle-header">{{ 'Paid Question' | translate }}</th>
             <td mat-cell *matCellDef="let row" class="toggle-cell">
               <mat-slide-toggle
                 color="primary"
@@ -332,16 +332,16 @@
       </div>
       <mat-paginator [pageSize]="10" [pageSizeOptions]="[5, 10, 25, 50]" showFirstLastButtons></mat-paginator>
       @if (!invoicesLoading && dataSource.data.length === 0) {
-        <div class="empty-state">No invoices found for the selected filters.</div>
+        <div class="empty-state">{{ 'No Invoices Found' | translate }}</div>
       }
     </mat-card>
 
     <mat-card class="summary-card">
       <div class="summary-header">
         <div>
-          <h3>Monthly summary</h3>
+          <h3>{{ 'Monthly Summary' | translate }}</h3>
           <p class="summary-subtitle">
-            Attendance and salary overview for
+            {{ 'Monthly Summary Subtitle' | translate }}
             <strong>{{ formatSummaryMonth() }}</strong>.
           </p>
         </div>
@@ -368,7 +368,7 @@
           }
         </div>
       } @else {
-        <div class="empty-state">No summary data available for this month.</div>
+        <div class="empty-state">{{ 'No Summary Data For Month' | translate }}</div>
       }
     </mat-card>
   </mat-drawer-content>
