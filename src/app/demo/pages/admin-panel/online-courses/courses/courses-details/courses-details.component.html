@@ -42,42 +42,40 @@
               </div>
             </div>
 
-            <div class="summary-side">
-              <article class="summary-panel">
-                <header>
-                  <i class="ti ti-calendar-cog"></i>
-                  <span>Next Session</span>
-                </header>
-                <ng-container *ngIf="getSchedule(currentCourse) as schedule">
-                  <div *ngIf="schedule.length; else summaryFallbackSchedule" class="panel-meta">
-                    <span>{{ getScheduleDayLabel(schedule[0]) }}</span>
-                    <span class="separator">•</span>
-                    <span>{{ getScheduleTimeLabel(schedule[0]) || 'TBD' }}</span>
-                  </div>
-                </ng-container>
-                <ng-template #summaryFallbackSchedule>
-                  <div class="panel-meta">
-                    <span>{{ getDayLabel(currentCourse) || 'TBD' }}</span>
-                    <span class="separator" *ngIf="getFormattedStartTime(currentCourse)">•</span>
-                    <span *ngIf="getFormattedStartTime(currentCourse)">
-                      {{ getFormattedStartTime(currentCourse) }}
-                    </span>
-                  </div>
-                </ng-template>
-              </article>
-
-              <article class="summary-panel">
-                <header>
-                  <i class="ti ti-id"></i>
-                  <span>Course Reference</span>
-                </header>
-                <div class="panel-meta">
-                  <span>ID: {{ currentCourse?.id }}</span>
-                  <span class="separator" *ngIf="currentCourse?.teacherId">•</span>
-                  <span *ngIf="currentCourse?.teacherId">Instructor ID: {{ currentCourse?.teacherId }}</span>
+            <article class="summary-panel">
+              <header>
+                <i class="ti ti-calendar-cog"></i>
+                <span>Next Session</span>
+              </header>
+              <ng-container *ngIf="getSchedule(currentCourse) as schedule">
+                <div *ngIf="schedule.length; else summaryFallbackSchedule" class="panel-meta">
+                  <span>{{ getScheduleDayLabel(schedule[0]) }}</span>
+                  <span class="separator">•</span>
+                  <span>{{ getScheduleTimeLabel(schedule[0]) || 'TBD' }}</span>
                 </div>
-              </article>
-            </div>
+              </ng-container>
+              <ng-template #summaryFallbackSchedule>
+                <div class="panel-meta">
+                  <span>{{ getDayLabel(currentCourse) || 'TBD' }}</span>
+                  <span class="separator" *ngIf="getFormattedStartTime(currentCourse)">•</span>
+                  <span *ngIf="getFormattedStartTime(currentCourse)">
+                    {{ getFormattedStartTime(currentCourse) }}
+                  </span>
+                </div>
+              </ng-template>
+            </article>
+
+            <article class="summary-panel">
+              <header>
+                <i class="ti ti-id"></i>
+                <span>Course Reference</span>
+              </header>
+              <div class="panel-meta">
+                <span>ID: {{ currentCourse?.id }}</span>
+                <span class="separator" *ngIf="currentCourse?.teacherId">•</span>
+                <span *ngIf="currentCourse?.teacherId">Instructor ID: {{ currentCourse?.teacherId }}</span>
+              </div>
+            </article>
           </div>
         </section>
 
@@ -183,30 +181,48 @@
         </div>
 
         <div class="students-grid" *ngIf="students.length; else emptyStudents">
-          <article class="student-card" *ngFor="let student of students">
-            <div class="student-meta">
-              <div class="student-avatar" aria-hidden="true">
-                <span>{{ getStudentInitials(student) }}</span>
-              </div>
-              <div class="student-info">
-                <h6 class="student-name">{{ getStudentName(student) }}</h6>
-                <p class="student-id" *ngIf="getStudentIdentifier(student) as identifier">
-                  {{ identifier }}
-                </p>
-              </div>
-            </div>
-            <div class="student-actions">
-              <a
-                matTooltip="Add Report"
-                [routerLink]="['/online-course/student/report/add', student.studentId || student.id]"
-                [state]="{ circle: course }"
-                class="student-action"
-              >
-                <i class="ti ti-report"></i>
-                <span>Add report</span>
-              </a>
-            </div>
-          </article>
+          <table class="students-table">
+            <thead>
+              <tr>
+                <th scope="col">Student</th>
+                <th scope="col">Identifier</th>
+                <th scope="col" class="actions-heading">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let student of students">
+                <td>
+                  <div class="student-meta">
+                    <div class="student-avatar" aria-hidden="true">
+                      <span>{{ getStudentInitials(student) }}</span>
+                    </div>
+                    <div class="student-info">
+                      <h6 class="student-name">{{ getStudentName(student) }}</h6>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <p class="student-id" *ngIf="getStudentIdentifier(student) as identifier; else emptyIdentifier">
+                    {{ identifier }}
+                  </p>
+                  <ng-template #emptyIdentifier>
+                    <span class="student-id muted">—</span>
+                  </ng-template>
+                </td>
+                <td class="student-actions">
+                  <a
+                    matTooltip="Add Report"
+                    [routerLink]="['/online-course/student/report/add', student.studentId || student.id]"
+                    [state]="{ circle: course }"
+                    class="student-action"
+                  >
+                    <i class="ti ti-report"></i>
+                    <span>Add report</span>
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         <ng-template #emptyStudents>
