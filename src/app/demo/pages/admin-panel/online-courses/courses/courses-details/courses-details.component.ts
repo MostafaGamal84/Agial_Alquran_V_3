@@ -1,6 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { MatTableDataSource } from '@angular/material/table';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
@@ -29,8 +28,7 @@ export class CoursesDetailsComponent implements OnInit {
   private readonly toast = inject(ToastService);
 
   course?: CircleDto;
-  displayedColumns: string[] = ['fullName', 'action'];
-  dataSource = new MatTableDataSource<CircleStudentDto>();
+  students: CircleStudentDto[] = [];
   ngOnInit() {
     const course = history.state.course as CircleDto | undefined;
     if (course) {
@@ -60,7 +58,53 @@ export class CoursesDetailsComponent implements OnInit {
 
   private applyCourse(course: CircleDto): void {
     this.course = course;
-    this.dataSource.data = course.students || [];
+    this.students = course.students || [];
+  }
+
+  getStudentName(student: CircleStudentDto | null | undefined): string {
+    if (!student) {
+      return 'Unknown student';
+    }
+
+    return (
+      student.student?.fullName ||
+      student.fullName ||
+      student.student?.name ||
+      student.name ||
+      `Student #${student.studentId ?? student.id ?? '—'}`
+    );
+  }
+
+  getStudentIdentifier(student: CircleStudentDto | null | undefined): string | undefined {
+    if (!student) {
+      return undefined;
+    }
+
+    if (student.student?.email) {
+      return student.student.email;
+    }
+
+    if (student.email) {
+      return student.email;
+    }
+
+    if (student.studentId || student.id) {
+      return `ID: ${student.studentId ?? student.id}`;
+    }
+
+    return undefined;
+  }
+
+  getStudentInitials(student: CircleStudentDto | null | undefined): string {
+    const name = this.getStudentName(student);
+    const initials = name
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join('');
+
+    return initials || 'S';
   }
 
   getManagers(circle?: CircleDto): string[] {
