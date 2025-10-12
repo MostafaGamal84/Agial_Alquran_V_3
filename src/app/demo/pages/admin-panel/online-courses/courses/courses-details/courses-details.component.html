@@ -2,13 +2,12 @@
   <div class="col-12">
     <app-card cardTitle="Course Details" padding="0" cardClass="sm-block course-details-card">
       <ng-container *ngIf="course as currentCourse; else placeholderCourse">
-        <section class="course-hero">
-          <div class="hero-gradient"></div>
-          <div class="hero-content">
-            <div class="hero-main">
-              <div class="hero-label">{{ students.length ? 'Active Cohort' : 'New Cohort' }}</div>
-              <h1 class="hero-title">{{ currentCourse?.name || 'Untitled Course' }}</h1>
-              <p class="hero-subtitle" *ngIf="currentCourse?.teacher || currentCourse?.teacherName || currentCourse?.teacherId">
+        <section class="course-summary">
+          <div class="summary-grid">
+            <div class="summary-main">
+              <span class="course-status">{{ students.length ? 'Active Cohort' : 'New Cohort' }}</span>
+              <h1 class="course-title">{{ currentCourse?.name || 'Untitled Course' }}</h1>
+              <p class="course-teacher" *ngIf="currentCourse?.teacher || currentCourse?.teacherName || currentCourse?.teacherId">
                 <i class="ti ti-user"></i>
                 <span>
                   {{
@@ -18,153 +17,150 @@
                   }}
                 </span>
               </p>
-              <div class="hero-stats">
-                <div class="hero-stat">
-                  <span class="stat-value">{{ students.length }}</span>
-                  <span class="stat-label">Students</span>
+
+              <div class="metrics-grid">
+                <div class="metric-card">
+                  <span class="metric-value">{{ students.length }}</span>
+                  <span class="metric-label">Students</span>
                 </div>
                 <ng-container *ngIf="getManagers(currentCourse) as managers">
-                  <div class="hero-stat" *ngIf="managers.length">
-                    <span class="stat-value">{{ managers.length }}</span>
-                    <span class="stat-label">Managers</span>
+                  <div class="metric-card" *ngIf="managers.length">
+                    <span class="metric-value">{{ managers.length }}</span>
+                    <span class="metric-label">Managers</span>
                   </div>
                 </ng-container>
                 <ng-container *ngIf="getSchedule(currentCourse) as schedule">
-                  <div class="hero-stat" *ngIf="schedule.length">
-                    <span class="stat-value">{{ schedule.length }}</span>
-                    <span class="stat-label">Sessions / Week</span>
+                  <div class="metric-card" *ngIf="schedule.length">
+                    <span class="metric-value">{{ schedule.length }}</span>
+                    <span class="metric-label">Sessions / Week</span>
                   </div>
                 </ng-container>
-                <div class="hero-stat" *ngIf="getFormattedStartTime(currentCourse)">
-                  <span class="stat-value">{{ getFormattedStartTime(currentCourse) }}</span>
-                  <span class="stat-label">Start Time</span>
+                <div class="metric-card" *ngIf="getFormattedStartTime(currentCourse)">
+                  <span class="metric-value">{{ getFormattedStartTime(currentCourse) }}</span>
+                  <span class="metric-label">Start Time</span>
                 </div>
               </div>
             </div>
-            <div class="hero-side">
-              <div class="hero-side-card">
-                <div class="side-card-icon">
+
+            <div class="summary-side">
+              <article class="summary-panel">
+                <header>
                   <i class="ti ti-calendar-cog"></i>
-                </div>
-                <div class="side-card-content">
-                  <h6>Next Session</h6>
-                  <ng-container *ngIf="getSchedule(currentCourse) as schedule">
-                    <div *ngIf="schedule.length; else fallbackSession" class="side-card-meta">
-                      <span>{{ getScheduleDayLabel(schedule[0]) }}</span>
-                      <span class="separator">•</span>
-                      <span>{{ getScheduleTimeLabel(schedule[0]) || 'TBD' }}</span>
-                    </div>
-                  </ng-container>
-                  <ng-template #fallbackSession>
-                    <div class="side-card-meta">
-                      <span>{{ getDayLabel(currentCourse) || 'TBD' }}</span>
-                      <span class="separator" *ngIf="getFormattedStartTime(currentCourse)">•</span>
-                      <span *ngIf="getFormattedStartTime(currentCourse)">
-                        {{ getFormattedStartTime(currentCourse) }}
-                      </span>
-                    </div>
-                  </ng-template>
-                </div>
-              </div>
-              <div class="hero-side-card">
-                <div class="side-card-icon">
-                  <i class="ti ti-id"></i>
-                </div>
-                <div class="side-card-content">
-                  <h6>Course Reference</h6>
-                  <div class="side-card-meta">
-                    <span>ID: {{ currentCourse?.id }}</span>
-                    <span class="separator" *ngIf="currentCourse?.teacherId">•</span>
-                    <span *ngIf="currentCourse?.teacherId">Instructor ID: {{ currentCourse?.teacherId }}</span>
+                  <span>Next Session</span>
+                </header>
+                <ng-container *ngIf="getSchedule(currentCourse) as schedule">
+                  <div *ngIf="schedule.length; else summaryFallbackSchedule" class="panel-meta">
+                    <span>{{ getScheduleDayLabel(schedule[0]) }}</span>
+                    <span class="separator">•</span>
+                    <span>{{ getScheduleTimeLabel(schedule[0]) || 'TBD' }}</span>
                   </div>
+                </ng-container>
+                <ng-template #summaryFallbackSchedule>
+                  <div class="panel-meta">
+                    <span>{{ getDayLabel(currentCourse) || 'TBD' }}</span>
+                    <span class="separator" *ngIf="getFormattedStartTime(currentCourse)">•</span>
+                    <span *ngIf="getFormattedStartTime(currentCourse)">
+                      {{ getFormattedStartTime(currentCourse) }}
+                    </span>
+                  </div>
+                </ng-template>
+              </article>
+
+              <article class="summary-panel">
+                <header>
+                  <i class="ti ti-id"></i>
+                  <span>Course Reference</span>
+                </header>
+                <div class="panel-meta">
+                  <span>ID: {{ currentCourse?.id }}</span>
+                  <span class="separator" *ngIf="currentCourse?.teacherId">•</span>
+                  <span *ngIf="currentCourse?.teacherId">Instructor ID: {{ currentCourse?.teacherId }}</span>
                 </div>
-              </div>
+              </article>
             </div>
           </div>
         </section>
 
-        <section class="course-overview">
-          <div class="overview-grid">
-            <article class="overview-card">
-              <header class="overview-header">
-                <i class="ti ti-calendar-stats"></i>
-                <div>
-                  <h5>Weekly Rhythm</h5>
-                  <p>Keep track of every session at a glance.</p>
-                </div>
-              </header>
-              <ng-container *ngIf="getSchedule(currentCourse) as schedule">
-                <ul class="timeline" *ngIf="schedule.length; else overviewFallbackSchedule">
-                  <li class="timeline-item" *ngFor="let day of schedule">
-                    <span class="timeline-day">{{ getScheduleDayLabel(day) }}</span>
-                    <span class="timeline-time">{{ getScheduleTimeLabel(day) || 'TBD' }}</span>
-                  </li>
-                </ul>
-              </ng-container>
-              <ng-template #overviewFallbackSchedule>
-                <div class="empty-block">
-                  <p>Schedule details will appear once sessions are added.</p>
-                </div>
-              </ng-template>
-            </article>
-
-            <article class="overview-card">
-              <header class="overview-header">
-                <i class="ti ti-users"></i>
-                <div>
-                  <h5>Leadership Team</h5>
-                  <p>The people guiding this learning experience.</p>
-                </div>
-              </header>
-              <ng-container *ngIf="getManagers(currentCourse) as managers">
-                <div class="chip-collection" *ngIf="managers.length; else emptyManagers">
-                  <span class="chip" *ngFor="let manager of managers">
-                    <i class="ti ti-user-check"></i>
-                    <span>{{ manager }}</span>
-                  </span>
-                </div>
-              </ng-container>
-              <ng-template #emptyManagers>
-                <div class="empty-block">
-                  <p>No managers assigned yet.</p>
-                </div>
-              </ng-template>
-            </article>
-
-            <article class="overview-card overview-card--accent">
-              <header class="overview-header">
-                <i class="ti ti-info-square-rounded"></i>
-                <div>
-                  <h5>Course Snapshot</h5>
-                  <p>Key information for quick reference.</p>
-                </div>
-              </header>
-              <div class="snapshot-grid">
-                <div class="snapshot-item">
-                  <span class="snapshot-label">Primary Day</span>
-                  <span class="snapshot-value">{{ getDayLabel(currentCourse) || 'TBD' }}</span>
-                </div>
-                <div class="snapshot-item">
-                  <span class="snapshot-label">Start Time</span>
-                  <span class="snapshot-value">{{ getFormattedStartTime(currentCourse) || 'TBD' }}</span>
-                </div>
-                <div class="snapshot-item">
-                  <span class="snapshot-label">Teacher</span>
-                  <span class="snapshot-value">
-                    {{
-                      currentCourse?.teacher?.fullName ||
-                        currentCourse?.teacherName ||
-                        (currentCourse?.teacherId ? 'Instructor #' + currentCourse?.teacherId : 'TBD')
-                    }}
-                  </span>
-                </div>
-                <div class="snapshot-item">
-                  <span class="snapshot-label">Students</span>
-                  <span class="snapshot-value">{{ students.length }}</span>
-                </div>
+        <section class="course-details-grid">
+          <article class="detail-card">
+            <header class="detail-header">
+              <i class="ti ti-calendar-stats"></i>
+              <div>
+                <h5>Weekly Rhythm</h5>
+                <p>Track sessions organised by day.</p>
               </div>
-            </article>
-          </div>
+            </header>
+            <ng-container *ngIf="getSchedule(currentCourse) as schedule">
+              <ul class="timeline" *ngIf="schedule.length; else detailsFallbackSchedule">
+                <li class="timeline-item" *ngFor="let day of schedule">
+                  <span class="timeline-day">{{ getScheduleDayLabel(day) }}</span>
+                  <span class="timeline-time">{{ getScheduleTimeLabel(day) || 'TBD' }}</span>
+                </li>
+              </ul>
+            </ng-container>
+            <ng-template #detailsFallbackSchedule>
+              <div class="empty-block">
+                <p>Schedule details will appear once sessions are added.</p>
+              </div>
+            </ng-template>
+          </article>
+
+          <article class="detail-card">
+            <header class="detail-header">
+              <i class="ti ti-users"></i>
+              <div>
+                <h5>Leadership Team</h5>
+                <p>The people guiding this learning experience.</p>
+              </div>
+            </header>
+            <ng-container *ngIf="getManagers(currentCourse) as managers">
+              <div class="chip-collection" *ngIf="managers.length; else emptyManagers">
+                <span class="chip" *ngFor="let manager of managers">
+                  <i class="ti ti-user-check"></i>
+                  <span>{{ manager }}</span>
+                </span>
+              </div>
+            </ng-container>
+            <ng-template #emptyManagers>
+              <div class="empty-block">
+                <p>No managers assigned yet.</p>
+              </div>
+            </ng-template>
+          </article>
+
+          <article class="detail-card">
+            <header class="detail-header">
+              <i class="ti ti-info-square-rounded"></i>
+              <div>
+                <h5>Course Snapshot</h5>
+                <p>Key information for quick reference.</p>
+              </div>
+            </header>
+            <div class="snapshot-grid">
+              <div class="snapshot-item">
+                <span class="snapshot-label">Primary Day</span>
+                <span class="snapshot-value">{{ getDayLabel(currentCourse) || 'TBD' }}</span>
+              </div>
+              <div class="snapshot-item">
+                <span class="snapshot-label">Start Time</span>
+                <span class="snapshot-value">{{ getFormattedStartTime(currentCourse) || 'TBD' }}</span>
+              </div>
+              <div class="snapshot-item">
+                <span class="snapshot-label">Teacher</span>
+                <span class="snapshot-value">
+                  {{
+                    currentCourse?.teacher?.fullName ||
+                      currentCourse?.teacherName ||
+                      (currentCourse?.teacherId ? 'Instructor #' + currentCourse?.teacherId : 'TBD')
+                  }}
+                </span>
+              </div>
+              <div class="snapshot-item">
+                <span class="snapshot-label">Students</span>
+                <span class="snapshot-value">{{ students.length }}</span>
+              </div>
+            </div>
+          </article>
         </section>
       </ng-container>
 
