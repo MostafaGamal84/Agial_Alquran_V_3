@@ -18,6 +18,7 @@ import { CircleService, CircleDayDto, UpcomingCircleDto } from 'src/app/@theme/s
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { formatDayValue } from 'src/app/@theme/types/DaysEnum';
 import { formatTimeValue } from 'src/app/@theme/utils/time';
+import { TranslateService } from '@ngx-translate/core';
 
 export interface activity_Data {
   image: string;
@@ -60,6 +61,7 @@ export class OnlineDashboardComponent implements OnInit {
 
   private circleService = inject(CircleService);
   private toast = inject(ToastService);
+  private translate = inject(TranslateService);
 
   activity: string[] = ['Name', 'Qualification', 'Rating'];
   activitySource = activity_Data;
@@ -168,7 +170,7 @@ export class OnlineDashboardComponent implements OnInit {
       error: () => {
         this.upcomingLoading = false;
         this.upcomingCircles = [];
-        this.toast.error('Failed to load upcoming courses');
+        this.toast.error(this.translate.instant('Failed to load upcoming courses'));
       }
     });
   }
@@ -219,7 +221,7 @@ export class OnlineDashboardComponent implements OnInit {
     }
 
     if (circle.teacherId !== undefined && circle.teacherId !== null) {
-      return `Teacher #${circle.teacherId}`;
+      return this.translate.instant('Teacher #{{id}}', { id: circle.teacherId });
     }
 
     return '';
