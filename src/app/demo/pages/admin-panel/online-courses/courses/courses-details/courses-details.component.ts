@@ -1,14 +1,12 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { ActivatedRoute, RouterModule } from '@angular/router';
-import { MatTableDataSource } from '@angular/material/table';
+import { Router, RouterModule } from '@angular/router';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
   CircleDayDto,
   CircleDto,
   CircleManagerDto,
-  CircleStudentDto,
-  CircleService
+  CircleStudentDto
 } from 'src/app/@theme/services/circle.service';
 import { formatDayValue } from 'src/app/@theme/types/DaysEnum';
 import { formatTimeValue } from 'src/app/@theme/utils/time';
@@ -24,43 +22,75 @@ import { ToastService } from 'src/app/@theme/services/toast.service';
 })
 export class CoursesDetailsComponent implements OnInit {
 
-  private readonly route = inject(ActivatedRoute);
-  private readonly circleService = inject(CircleService);
+  private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
 
   course?: CircleDto;
-  displayedColumns: string[] = ['fullName', 'action'];
-  dataSource = new MatTableDataSource<CircleStudentDto>();
+  students: CircleStudentDto[] = [];
   ngOnInit() {
     const course = history.state.course as CircleDto | undefined;
     if (course) {
       this.applyCourse(course);
+      return;
     }
 
-    const idParam = this.route.snapshot.paramMap.get('id');
-    const circleId = idParam ? Number(idParam) : undefined;
-
-    if (circleId !== undefined && !Number.isNaN(circleId)) {
-      this.loadCourse(circleId);
-    }
-  }
-
-  private loadCourse(id: number): void {
-    this.circleService.get(id).subscribe({
-      next: (response) => {
-        if (response.isSuccess && response.data) {
-          this.applyCourse(response.data);
-        } else {
-          this.toast.error('Unable to load course details');
-        }
-      },
-      error: () => this.toast.error('Unable to load course details')
-    });
+    this.toast.error('Course details are unavailable. Please select a course from the list.');
+    this.navigateToCoursesList();
   }
 
   private applyCourse(course: CircleDto): void {
     this.course = course;
-    this.dataSource.data = course.students || [];
+    this.students = course.students || [];
+  }
+
+  private navigateToCoursesList(): void {
+    this.router.navigate(['/online-course/courses/view']).catch(() => undefined);
+  }
+
+  getStudentName(student: CircleStudentDto | null | undefined): string {
+    if (!student) {
+      return 'Unknown student';
+    }
+
+    return (
+      student.student?.fullName ||
+      student.fullName ||
+      student.student?.name ||
+      student.name ||
+      `Student #${student.studentId ?? student.id ?? '—'}`
+    );
+  }
+
+  getStudentIdentifier(student: CircleStudentDto | null | undefined): string | undefined {
+    if (!student) {
+      return undefined;
+    }
+
+    if (student.student?.email) {
+      return student.student.email;
+    }
+
+    if (student.email) {
+      return student.email;
+    }
+
+    if (student.studentId || student.id) {
+      return `ID: ${student.studentId ?? student.id}`;
+    }
+
+    return undefined;
+  }
+
+  getStudentInitials(student: CircleStudentDto | null | undefined): string {
+    const name = this.getStudentName(student);
+    const initials = name
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join('');
+
+    return initials || 'S';
   }
 
   getManagers(circle?: CircleDto): string[] {
