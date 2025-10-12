@@ -69,8 +69,6 @@ export class CoursesDetailsComponent implements OnInit {
     return (
       student.student?.fullName ||
       student.fullName ||
-      student.student?.name ||
-      student.name ||
       `Student #${student.studentId ?? student.id ?? '—'}`
     );
   }
@@ -84,9 +82,6 @@ export class CoursesDetailsComponent implements OnInit {
       return student.student.email;
     }
 
-    if (student.email) {
-      return student.email;
-    }
 
     if (student.studentId || student.id) {
       return `ID: ${student.studentId ?? student.id}`;
