@@ -45,9 +45,10 @@
     font-weight: 700;
     color: #0f172a;
     letter-spacing: -0.01em;
+    color: #fff;
   }
 
-  .course-teacher {
+  .hero-subtitle {
     display: inline-flex;
     align-items: center;
     gap: 0.6rem;
@@ -306,7 +307,7 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
+    gap: 1.25rem;
   }
 
   .section-title {
@@ -391,7 +392,7 @@
   .student-meta {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 1.2rem;
   }
 
   .student-avatar {
