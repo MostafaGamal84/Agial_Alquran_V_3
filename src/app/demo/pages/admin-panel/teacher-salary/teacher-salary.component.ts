@@ -67,6 +67,7 @@ import {
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { environment } from 'src/environments/environment';
+import { TranslateModule } from '@ngx-translate/core';
 const PRINT_ACCENT_COLOR = '#134273';
 const PRINT_ACCENT_LIGHT = '#f3f6fd';
 const PRINT_BORDER_COLOR = '#dfe6f2';
@@ -137,7 +138,8 @@ class InvoicePrintContextError extends Error {
     MatTooltipModule,
     MatTableModule,
     MatSlideToggleModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+     TranslateModule 
   ],
   templateUrl: './teacher-salary.component.html',
   styleUrls: ['./teacher-salary.component.scss'],

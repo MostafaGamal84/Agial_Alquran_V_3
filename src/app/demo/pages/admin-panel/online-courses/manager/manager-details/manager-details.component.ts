@@ -5,6 +5,7 @@ import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scrollbar';
+import { TranslateModule } from '@ngx-translate/core';
 
 interface Person {
   fullName?: string;
@@ -27,7 +28,7 @@ interface ContactEntry {
 @Component({
   selector: 'app-manager-details',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule, NgxScrollbar],
+  imports: [CommonModule, MatDialogModule, MatButtonModule, NgxScrollbar,TranslateModule],
   templateUrl: './manager-details.component.html',
   styleUrl: './manager-details.component.scss'
 })
