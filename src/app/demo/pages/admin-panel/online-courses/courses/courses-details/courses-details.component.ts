@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
+import { MatTableDataSource } from '@angular/material/table';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
@@ -27,6 +28,8 @@ export class CoursesDetailsComponent implements OnInit {
 
   course?: CircleDto;
   students: CircleStudentDto[] = [];
+  displayedColumns = ['fullName', 'action'];
+  dataSource = new MatTableDataSource<CircleStudentDto>();
   ngOnInit() {
     const course = history.state.course as CircleDto | undefined;
     if (course) {
@@ -41,6 +44,7 @@ export class CoursesDetailsComponent implements OnInit {
   private applyCourse(course: CircleDto): void {
     this.course = course;
     this.students = course.students || [];
+    this.dataSource.data = this.students;
   }
 
   private navigateToCoursesList(): void {
