@@ -4,30 +4,14 @@
       <div class="course-details">
         <ng-container *ngIf="course as currentCourse; else placeholderCourse">
           <div class="course-header">
-            <div class="course-overview">
-              <div class="course-title">
-                <h3 class="course-name">{{ currentCourse?.name || 'Untitled Course' }}</h3>
-                <div
-                  class="course-teacher"
-                  *ngIf="currentCourse?.teacher || currentCourse?.teacherName || currentCourse?.teacherId"
-                >
-                  <i class="ti ti-user"></i>
-                  <span>{{ currentCourse?.teacher?.fullName || currentCourse?.teacherName || currentCourse?.teacherId }}</span>
-                </div>
-              </div>
-              <div class="course-meta" *ngIf="getDayLabel(currentCourse) || getFormattedStartTime(currentCourse) || currentCourse?.id">
-                <div class="meta-card" *ngIf="currentCourse?.id">
-                  <span class="meta-label">Course ID</span>
-                  <span class="meta-value">#{{ currentCourse?.id }}</span>
-                </div>
-                <div class="meta-card" *ngIf="getDayLabel(currentCourse)">
-                  <span class="meta-label">Primary Day</span>
-                  <span class="meta-value">{{ getDayLabel(currentCourse) }}</span>
-                </div>
-                <div class="meta-card" *ngIf="getFormattedStartTime(currentCourse)">
-                  <span class="meta-label">Start Time</span>
-                  <span class="meta-value">{{ getFormattedStartTime(currentCourse) }}</span>
-                </div>
+            <div class="course-title">
+              <h3 class="course-name">{{ currentCourse?.name || 'Untitled Course' }}</h3>
+              <div
+                class="course-teacher"
+                *ngIf="currentCourse?.teacher || currentCourse?.teacherName || currentCourse?.teacherId"
+              >
+                <i class="ti ti-user"></i>
+                <span>{{ currentCourse?.teacher?.fullName || currentCourse?.teacherName || currentCourse?.teacherId }}</span>
               </div>
             </div>
             <div class="course-summary">
@@ -47,6 +31,10 @@
                   <span class="summary-label">Sessions / Week</span>
                 </div>
               </ng-container>
+              <div class="summary-item" *ngIf="getFormattedStartTime(currentCourse)">
+                <span class="summary-count">{{ getFormattedStartTime(currentCourse) }}</span>
+                <span class="summary-label">Start Time</span>
+              </div>
             </div>
           </div>
           <div class="course-body">
