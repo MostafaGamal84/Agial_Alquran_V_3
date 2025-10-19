@@ -1,7 +1,7 @@
 // angular import
 import { Component, OnInit, OnDestroy, Renderer2, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 // third party
 import { CarouselModule, OwlOptions } from 'ngx-owl-carousel-o';
@@ -28,6 +28,7 @@ import { RTL } from 'src/app/@theme/const';
 })
 export class LandingComponent implements OnInit, OnDestroy {
   private renderer = inject(Renderer2);
+  private router = inject(Router);
   buyNowLinkService = inject(BuyNowLinkService);
   private themeService = inject(ThemeLayoutService);
 
@@ -86,10 +87,7 @@ export class LandingComponent implements OnInit, OnDestroy {
   }
 
   openProVersion() {
-    window.open(
-      window.location.href.replace(window.location.search, '') + 'dashboard/default' + this.buyNowLinkService.queryString,
-      '_blank'
-    );
+    this.router.navigate(['/dashboard', 'default']);
   }
 
   private themeDirection(direction: string) {

@@ -74,10 +74,7 @@ export class GuestComponent {
   }
   openDashboard() {
     if (this.authenticationService.currentUserValue) {
-      window.open(
-        window.location.href.replace(window.location.href, '') + 'dashboard/default' + this.buyNowLinkService.queryString,
-        '_blank'
-      );
+      this.router.navigate(['/dashboard', 'default']);
     } else {
       this.router.navigate(['/login']);
     }

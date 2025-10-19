@@ -10,6 +10,11 @@ const routes: Routes = [
     path: '',
     children: [
       {
+        path: '',
+        redirectTo: 'default',
+        pathMatch: 'full'
+      },
+      {
         path: 'default',
         loadComponent: () => import('./default/default.component').then((c) => c.DefaultComponent),
         data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager] }
