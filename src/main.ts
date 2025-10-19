@@ -10,6 +10,7 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { BrowserModule, bootstrapApplication } from '@angular/platform-browser';
 import { GuestModule } from './app/demo/layout/front';
 import { AppComponent } from './app/app.component';
+import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 
 if (environment.production) {
   enableProdMode();
@@ -17,7 +18,10 @@ if (environment.production) {
 
 bootstrapApplication(AppComponent, {
   providers: [
+      
+
     importProvidersFrom(AppRoutingModule, SharedModule, BrowserModule, GuestModule),
+    { provide: LocationStrategy, useClass: HashLocationStrategy },
     { provide: HTTP_INTERCEPTORS, useClass: BasicAuthInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     [provideHttpClient(withInterceptorsFromDi())],
