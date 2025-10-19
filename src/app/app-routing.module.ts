@@ -1,5 +1,6 @@
 // angular import
 import { NgModule } from '@angular/core';
+import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 
 // project import
@@ -179,6 +180,7 @@ const routes: Routes = [
 
 @NgModule({
   imports: [RouterModule.forRoot(routes, { useHash: true })],
-  exports: [RouterModule]
+  exports: [RouterModule],
+  providers: [{ provide: LocationStrategy, useClass: HashLocationStrategy }]
 })
 export class AppRoutingModule {}

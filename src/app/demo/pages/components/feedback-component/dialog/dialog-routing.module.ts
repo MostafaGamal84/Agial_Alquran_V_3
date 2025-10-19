@@ -1,5 +1,6 @@
 // Angular Import
 import { NgModule } from '@angular/core';
+import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 import { DialogComponent } from './dialog.component';
 
@@ -12,6 +13,7 @@ const routes: Routes = [
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
+  providers: [{ provide: LocationStrategy, useClass: HashLocationStrategy }]
 })
 export class DialogRoutingModule {}
