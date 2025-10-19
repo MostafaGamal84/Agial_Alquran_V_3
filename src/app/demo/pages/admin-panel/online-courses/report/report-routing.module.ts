@@ -1,4 +1,5 @@
 import { NgModule } from '@angular/core';
+import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
@@ -71,6 +72,7 @@ const routes: Routes = [
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  exports: [RouterModule],
+  providers: [{ provide: LocationStrategy, useClass: HashLocationStrategy }]
 })
 export class ReportRoutingModule {}
