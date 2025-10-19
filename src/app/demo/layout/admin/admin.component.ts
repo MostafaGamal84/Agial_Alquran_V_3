@@ -24,7 +24,7 @@ import { AuthenticationService } from 'src/app/@theme/services/authentication.se
 import { UserPreferenceService } from 'src/app/@theme/services/user-preference.service';
 
 // const import
-import { MIN_WIDTH_1025PX, MAX_WIDTH_1024PX, VERTICAL, HORIZONTAL, COMPACT, RTL, LTR } from 'src/app/@theme/const';
+import { MIN_WIDTH_1025PX, MAX_WIDTH_1024PX, VERTICAL, HORIZONTAL, COMPACT, RTL, LTR, DARK } from 'src/app/@theme/const';
 
 // theme version
 import { environment } from 'src/environments/environment';
@@ -66,6 +66,7 @@ export class AdminComponent implements OnInit, AfterViewInit {
   currentLayout: string = VERTICAL;
   rtlMode: boolean = false;
   windowWidth: number = window.innerWidth;
+  isDarkMode: boolean = false;
 
   // Constructor
   constructor() {
@@ -74,6 +75,9 @@ export class AdminComponent implements OnInit, AfterViewInit {
     });
     effect(() => {
       this.themeDirection(this.themeService.directionChange());
+    });
+    effect(() => {
+      this.themeMode(this.themeService.isDarkMode());
     });
   }
 
@@ -173,6 +177,13 @@ export class AdminComponent implements OnInit, AfterViewInit {
   private updateThemeLayout(layout: string) {
     this.currentLayout = layout;
     this.manageLayout(layout);
+  }
+
+  /**
+   * Listen to theme mode changes
+   */
+  private themeMode(isDark: string) {
+    this.isDarkMode = isDark === DARK ? true : false;
   }
 
   /**
