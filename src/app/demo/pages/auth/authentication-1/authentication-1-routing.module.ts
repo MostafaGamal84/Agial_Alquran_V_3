@@ -1,6 +1,5 @@
 // angular import
 import { NgModule } from '@angular/core';
-import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 import { PendingEmailGuard } from 'src/app/@theme/helpers/pending-email.guard';
 
@@ -48,7 +47,6 @@ const routes: Routes = [
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule],
-  providers: [{ provide: LocationStrategy, useClass: HashLocationStrategy }]
+  exports: [RouterModule]
 })
 export class Authentication1RoutingModule {}

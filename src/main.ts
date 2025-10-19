@@ -2,7 +2,6 @@ import { enableProdMode, importProvidersFrom } from '@angular/core';
 
 import { environment } from './environments/environment';
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
-import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 import { BasicAuthInterceptor } from 'src/app/@theme/helpers/basic-auth.interceptor';
 import { ErrorInterceptor } from 'src/app/@theme/helpers/error.interceptor';
 import { AppRoutingModule } from './app/app-routing.module';
@@ -22,7 +21,6 @@ bootstrapApplication(AppComponent, {
     { provide: HTTP_INTERCEPTORS, useClass: BasicAuthInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     [provideHttpClient(withInterceptorsFromDi())],
-    provideAnimations(),
-    { provide: LocationStrategy, useClass: HashLocationStrategy }
+    provideAnimations()
   ]
 }).catch((err) => console.error(err));

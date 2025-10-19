@@ -18,7 +18,7 @@
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "allowedCommonJsDependencies": ["quill", "uploader", "moment", "apexcharts", "bezier-easing", "lodash", "quill-delta"],
-            "outputPath": "../OrbitsCameraProject.API/wwwroot",
+            "outputPath": "dist",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": ["zone.js"],
