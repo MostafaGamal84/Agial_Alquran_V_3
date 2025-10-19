@@ -65,19 +65,19 @@ export const menus: Navigation[] = [
       // }
     ]
   },
-  {
-    id: 'widget',
-    title: 'Widget',
-    type: 'group',
-    icon: 'icon-navigation',
-    role: [
-      UserTypesEnum.Admin.toString(),
-      UserTypesEnum.Manager.toString(),
-      UserTypesEnum.BranchLeader.toString(),
-      UserTypesEnum.Student.toString(),
-      UserTypesEnum.Teacher.toString()
-    ],
-    children: [
+  // {
+  //   id: 'widget',
+  //   title: 'Widget',
+  //   type: 'group',
+  //   icon: 'icon-navigation',
+  //   role: [
+  //     UserTypesEnum.Admin.toString(),
+  //     UserTypesEnum.Manager.toString(),
+  //     UserTypesEnum.BranchLeader.toString(),
+  //     UserTypesEnum.Student.toString(),
+  //     UserTypesEnum.Teacher.toString()
+  //   ],
+  //   children: [
       // {
       //   id: 'statistics',
       //   title: 'Statistics',
@@ -94,16 +94,16 @@ export const menus: Navigation[] = [
       //   url: '/widget/data',
       //   icon: '#custom-fatrows'
       // },
-      {
-        id: 'chart',
-        title: 'Chart',
-        type: 'item',
-        classes: 'nav-item',
-        url: '/widget/chart',
-        icon: '#custom-presentation-chart'
-      }
-    ]
-  },
+  //     {
+  //       id: 'chart',
+  //       title: 'Chart',
+  //       type: 'item',
+  //       classes: 'nav-item',
+  //       url: '/widget/chart',
+  //       icon: '#custom-presentation-chart'
+  //     }
+  //   ]
+  // },
   {
     id: 'admin',
     title: 'Admin Panel',
@@ -194,12 +194,12 @@ export const menus: Navigation[] = [
                 type: 'item',
                 url: '/online-course/manager/list'
               },
-              {
-                id: 'apply',
-                title: 'Apply',
-                type: 'item',
-                url: '/online-course/manager/apply'
-              },
+              // {
+              //   id: 'apply',
+              //   title: 'Apply',
+              //   type: 'item',
+              //   url: '/online-course/manager/apply'
+              // },
               {
                 id: 'add',
                 title: 'Add',
@@ -233,12 +233,12 @@ export const menus: Navigation[] = [
                 type: 'item',
                 url: '/online-course/teacher/list'
               },
-              {
-                id: 'apply',
-                title: 'Apply',
-                type: 'item',
-                url: '/online-course/teacher/apply'
-              },
+              // {
+              //   id: 'apply',
+              //   title: 'Apply',
+              //   type: 'item',
+              //   url: '/online-course/teacher/apply'
+              // },
               {
                 id: 'add',
                 title: 'Add',
@@ -272,12 +272,12 @@ export const menus: Navigation[] = [
                 type: 'item',
                 url: '/online-course/student/list'
               },
-              {
-                id: 'apply',
-                title: 'Apply',
-                type: 'item',
-                url: '/online-course/student/apply'
-              },
+              // {
+              //   id: 'apply',
+              //   title: 'Apply',
+              //   type: 'item',
+              //   url: '/online-course/student/apply'
+              // },
               {
                 id: 'add',
                 title: 'Add',
@@ -318,10 +318,10 @@ export const menus: Navigation[] = [
                 url: '/online-course/courses/add',
                 role: [
                   UserTypesEnum.Admin.toString(),
-                  UserTypesEnum.Manager.toString(),
+                  // UserTypesEnum.Manager.toString(),
                   UserTypesEnum.BranchLeader.toString(),
-                  UserTypesEnum.Student.toString(),
-                  UserTypesEnum.Teacher.toString()
+                  // UserTypesEnum.Student.toString(),
+                  // UserTypesEnum.Teacher.toString()
                 ]
               }
             ]
@@ -455,37 +455,37 @@ export const menus: Navigation[] = [
           UserTypesEnum.Teacher.toString()
         ],
         children: [
-          {
-            id: 'dashboard',
-            title: 'Dashboard',
-            type: 'item',
-            url: '/membership/dashboard',
-            role: [
-              UserTypesEnum.Admin.toString(),
-              UserTypesEnum.Manager.toString(),
-              UserTypesEnum.BranchLeader.toString(),
-              UserTypesEnum.Student.toString(),
-              UserTypesEnum.Teacher.toString()
-            ]
-          },
+          // {
+          //   id: 'dashboard',
+          //   title: 'Dashboard',
+          //   type: 'item',
+          //   url: '/membership/dashboard',
+          //   role: [
+          //     UserTypesEnum.Admin.toString(),
+          //     UserTypesEnum.Manager.toString(),
+          //     UserTypesEnum.BranchLeader.toString(),
+          //     UserTypesEnum.Student.toString(),
+          //     UserTypesEnum.Teacher.toString()
+          //   ]
+          // },
           {
             id: 'list',
             title: 'List',
             type: 'item',
             url: '/membership/list'
           },
-          {
-            id: 'price',
-            title: 'Pricing',
-            type: 'item',
-            url: '/membership/price'
-          },
-          {
-            id: 'setting',
-            title: 'Setting',
-            type: 'item',
-            url: '/membership/setting'
-          }
+          // {
+          //   id: 'price',
+          //   title: 'Pricing',
+          //   type: 'item',
+          //   url: '/membership/price'
+          // },
+          // {
+          //   id: 'setting',
+          //   title: 'Setting',
+          //   type: 'item',
+          //   url: '/membership/setting'
+          // }
         ]
       },
       // {
