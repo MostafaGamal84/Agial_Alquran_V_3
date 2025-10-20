@@ -23,7 +23,6 @@ export class AuthGuardChild implements CanActivateChild {
     }
 
     // User not logged in, redirect to login page
-    const encodedReturnUrl = encodeURIComponent(state.url ?? '/');
-    return this.router.parseUrl(`/login?returnUrl=${encodedReturnUrl}`);
+    return this.router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
   }
 }

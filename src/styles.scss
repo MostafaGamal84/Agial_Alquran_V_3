@@ -27,7 +27,9 @@
 @include mat.all-component-typographies(
   theme-typography("'Cairo Variable', 'Cairo', sans-serif")
 ); // theme typography
-
+@import 'swiper/css';
+@import 'swiper/css/navigation';
+@import 'swiper/css/pagination';
 // default theme
 @include mat.all-component-themes(get-light-theme($blue-theme));
 

@@ -41,8 +41,8 @@ const routes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'dashboard',
-        pathMatch: 'full'
+        loadChildren: () => import('./demo/pages/dashboard/dashboard.module').then((m) => m.DashboardModule),
+        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager] }
       },
       {
         path: 'dashboard',
@@ -127,7 +127,7 @@ const routes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'login',
+        redirectTo: '/auth/login',
         pathMatch: 'full'
       },
       {
