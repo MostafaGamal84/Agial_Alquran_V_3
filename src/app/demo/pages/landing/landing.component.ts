@@ -113,6 +113,52 @@ Our goal is to develop students holistically – religiously steadfast, morally 
 At Ajyal Al-Quran School, we aspire to set a pioneering model that blends authenticity with modernity, producing faithful, creative, and impactful students in their communities.`
   };
 
+  toolbarCta = {
+    target: 'contact',
+    label: {
+      ar: 'إنشاء إعلان',
+      en: 'Create Ad'
+    }
+  };
+
+  toolbarUser = {
+    initials: {
+      ar: 'م',
+      en: 'M'
+    }
+  };
+
+  toolbarLinks = [
+    {
+      target: 'features',
+      label: {
+        ar: 'البث المباشر',
+        en: 'Live Stream'
+      }
+    },
+    {
+      target: 'our-services',
+      label: {
+        ar: 'المعاملات',
+        en: 'Transactions'
+      }
+    },
+    {
+      target: 'packages',
+      label: {
+        ar: 'العروض',
+        en: 'Proposals'
+      }
+    },
+    {
+      target: 'contact',
+      label: {
+        ar: 'لوحة التحكم',
+        en: 'Dashboard'
+      }
+    }
+  ];
+
   // Feature section
   features: FeatureItem[] = [
     {
