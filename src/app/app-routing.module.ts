@@ -144,6 +144,11 @@ const routes: Routes = [
           import('./demo/pages/auth/authentication-1/forgot-password/forgot-password.component').then((c) => c.ForgotPasswordComponent)
       },
       {
+        path: 'reset-password',
+        loadComponent: () =>
+          import('./demo/pages/auth/authentication-1/reset-password/reset-password.component').then((c) => c.ResetPasswordComponent)
+      },
+      {
         path: 'authentication-1',
         loadChildren: () => import('./demo/pages/auth/authentication-1/authentication-1.module').then((e) => e.Authentication1Module),
         data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager] }
