@@ -78,16 +78,16 @@ export class CodeVerificationComponent implements OnInit, AfterViewInit {
         .subscribe({
           next: (res) => {
             if (res?.isSuccess) {
-              this.toast.success('Verification successful');
+              this.toast.success('تم التحقق بنجاح');
               this.router.navigate([DASHBOARD_PATH]);
             } else if (res?.errors?.length) {
               this.toast.error(res.errors[0].message);
             } else {
-              this.toast.error('Verification failed');
+              this.toast.error('فشل التحقق');
             }
           },
         error: () => {
-          this.toast.error('Verification failed');
+          this.toast.error('فشل التحقق');
         }
       });
   }
