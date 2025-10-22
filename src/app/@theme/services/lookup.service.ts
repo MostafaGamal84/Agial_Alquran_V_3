@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { AuthenticationService } from './authentication.service';
 import { UserTypesEnum } from '../types/UserTypesEnum';
@@ -50,6 +51,49 @@ export interface FilteredResultRequestDto {
 export interface PagedResultDto<T> {
   totalCount: number;
   items: T[];
+}
+
+export interface NormalizePagedResultOptions {
+  skipCount?: number | null;
+}
+
+export function normalizePagedResult<T>(
+  response: ApiResponse<PagedResultDto<T>>,
+  options: NormalizePagedResultOptions = {}
+): ApiResponse<PagedResultDto<T>> {
+  if (!response || !response.data) {
+    return response;
+  }
+
+  const rawItems = response.data.items;
+  const items = Array.isArray(rawItems) ? rawItems : [];
+
+  const skipCandidate = options.skipCount ?? 0;
+  const skipCount =
+    typeof skipCandidate === 'number' && Number.isFinite(skipCandidate)
+      ? Math.max(0, Math.trunc(skipCandidate))
+      : 0;
+
+  const fallbackTotal = skipCount + items.length;
+
+  const parsedTotal = Number(response.data.totalCount);
+  const normalizedTotal = Math.max(
+    Number.isFinite(parsedTotal) ? Math.max(0, Math.trunc(parsedTotal)) : 0,
+    fallbackTotal
+  );
+
+  if (rawItems === items && normalizedTotal === response.data.totalCount) {
+    return response;
+  }
+
+  return {
+    ...response,
+    data: {
+      ...response.data,
+      items,
+      totalCount: normalizedTotal
+    }
+  };
 }
 
 export interface NationalityDto {
@@ -114,9 +158,14 @@ export class LookupService {
       params = params.set('SortBy', filter.sortBy);
     }
 
-    return this.http.get<ApiResponse<PagedResultDto<LookUpUserDto>>>(`${environment.apiUrl}/api/UsersForGroups/GetUsersForSelects`, {
-      params
-    });
+    return this.http
+      .get<ApiResponse<PagedResultDto<LookUpUserDto>>>(
+        `${environment.apiUrl}/api/UsersForGroups/GetUsersForSelects`,
+        {
+          params
+        }
+      )
+      .pipe(map((response) => normalizePagedResult(response, { skipCount: filter.skipCount })));
   }
 
   getAllNationalities(): Observable<ApiResponse<NationalityDto[]>> {
