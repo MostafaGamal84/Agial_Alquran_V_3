@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { AuthenticationService } from './authentication.service';
 import { UserTypesEnum } from '../types/UserTypesEnum';
@@ -114,9 +115,36 @@ export class LookupService {
       params = params.set('SortBy', filter.sortBy);
     }
 
-    return this.http.get<ApiResponse<PagedResultDto<LookUpUserDto>>>(`${environment.apiUrl}/api/UsersForGroups/GetUsersForSelects`, {
-      params
-    });
+    return this.http
+      .get<ApiResponse<PagedResultDto<LookUpUserDto>>>(
+        `${environment.apiUrl}/api/UsersForGroups/GetUsersForSelects`,
+        {
+          params
+        }
+      )
+      .pipe(
+        map((response) => {
+          if (!response || !response.data) {
+            return response;
+          }
+
+          const items = Array.isArray(response.data.items) ? response.data.items : [];
+          const totalCount = response.data.totalCount || items.length;
+
+          if (items === response.data.items && totalCount === response.data.totalCount) {
+            return response;
+          }
+
+          return {
+            ...response,
+            data: {
+              ...response.data,
+              items,
+              totalCount
+            }
+          };
+        })
+      );
   }
 
   getAllNationalities(): Observable<ApiResponse<NationalityDto[]>> {
