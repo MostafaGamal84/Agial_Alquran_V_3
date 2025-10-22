@@ -302,7 +302,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
 
   private clearServerError(control: AbstractControl): void {
     const errors = control.errors;
-    if (!errors?.server) {
+    if (!errors?.['server']) {
       return;
     }
 
