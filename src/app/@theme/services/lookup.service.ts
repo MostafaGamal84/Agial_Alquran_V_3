@@ -53,6 +53,49 @@ export interface PagedResultDto<T> {
   items: T[];
 }
 
+export interface NormalizePagedResultOptions {
+  skipCount?: number | null;
+}
+
+export function normalizePagedResult<T>(
+  response: ApiResponse<PagedResultDto<T>>,
+  options: NormalizePagedResultOptions = {}
+): ApiResponse<PagedResultDto<T>> {
+  if (!response || !response.data) {
+    return response;
+  }
+
+  const rawItems = response.data.items;
+  const items = Array.isArray(rawItems) ? rawItems : [];
+
+  const skipCandidate = options.skipCount ?? 0;
+  const skipCount =
+    typeof skipCandidate === 'number' && Number.isFinite(skipCandidate)
+      ? Math.max(0, Math.trunc(skipCandidate))
+      : 0;
+
+  const fallbackTotal = skipCount + items.length;
+
+  const parsedTotal = Number(response.data.totalCount);
+  const normalizedTotal = Math.max(
+    Number.isFinite(parsedTotal) ? Math.max(0, Math.trunc(parsedTotal)) : 0,
+    fallbackTotal
+  );
+
+  if (rawItems === items && normalizedTotal === response.data.totalCount) {
+    return response;
+  }
+
+  return {
+    ...response,
+    data: {
+      ...response.data,
+      items,
+      totalCount: normalizedTotal
+    }
+  };
+}
+
 export interface NationalityDto {
   id: number;
   name: string;
@@ -122,29 +165,7 @@ export class LookupService {
           params
         }
       )
-      .pipe(
-        map((response) => {
-          if (!response || !response.data) {
-            return response;
-          }
-
-          const items = Array.isArray(response.data.items) ? response.data.items : [];
-          const totalCount = response.data.totalCount || items.length;
-
-          if (items === response.data.items && totalCount === response.data.totalCount) {
-            return response;
-          }
-
-          return {
-            ...response,
-            data: {
-              ...response.data,
-              items,
-              totalCount
-            }
-          };
-        })
-      );
+      .pipe(map((response) => normalizePagedResult(response, { skipCount: filter.skipCount })));
   }
 
   getAllNationalities(): Observable<ApiResponse<NationalityDto[]>> {

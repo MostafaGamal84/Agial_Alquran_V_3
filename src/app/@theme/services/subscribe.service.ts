@@ -1,11 +1,13 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import {
   ApiResponse,
   FilteredResultRequestDto,
-  PagedResultDto
+  PagedResultDto,
+  normalizePagedResult
 } from './lookup.service';
 
 export interface SubscribeDto {
@@ -106,10 +108,12 @@ export class SubscribeService {
     if (filter.sortBy) {
       params = params.set('SortBy', filter.sortBy);
     }
-    return this.http.get<ApiResponse<PagedResultDto<SubscribeDto>>>(
-      `${environment.apiUrl}/api/Subscribe/GetResultsByFilter`,
-      { params }
-    );
+    return this.http
+      .get<ApiResponse<PagedResultDto<SubscribeDto>>>(
+        `${environment.apiUrl}/api/Subscribe/GetResultsByFilter`,
+        { params }
+      )
+      .pipe(map((response) => normalizePagedResult(response, { skipCount: filter.skipCount })));
   }
 
   // subscribe type crud
@@ -165,10 +169,12 @@ export class SubscribeService {
     if (filter.sortBy) {
       params = params.set('SortBy', filter.sortBy);
     }
-    return this.http.get<ApiResponse<PagedResultDto<SubscribeTypeDto>>>(
-      `${environment.apiUrl}/api/Subscribe/GetTypeResultsByFilter`,
-      { params }
-    );
+    return this.http
+      .get<ApiResponse<PagedResultDto<SubscribeTypeDto>>>(
+        `${environment.apiUrl}/api/Subscribe/GetTypeResultsByFilter`,
+        { params }
+      )
+      .pipe(map((response) => normalizePagedResult(response, { skipCount: filter.skipCount })));
   }
 }
 

@@ -1,8 +1,9 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-import { ApiResponse, FilteredResultRequestDto, PagedResultDto } from './lookup.service';
+import { ApiResponse, FilteredResultRequestDto, PagedResultDto, normalizePagedResult } from './lookup.service';
 
 export enum CurrencyEnum {
   LE = 1,
@@ -175,9 +176,11 @@ export class StudentPaymentService {
     if (month) {
       params = params.set('month', month.toISOString());
     }
-    return this.http.get<ApiResponse<PagedResultDto<StudentInvoiceDto>>>(
-      `${environment.apiUrl}/api/StudentPayment/Invoices`,
-      { params }
-    );
+    return this.http
+      .get<ApiResponse<PagedResultDto<StudentInvoiceDto>>>(
+        `${environment.apiUrl}/api/StudentPayment/Invoices`,
+        { params }
+      )
+      .pipe(map((response) => normalizePagedResult(response, { skipCount: filter.skipCount })));
   }
 }
