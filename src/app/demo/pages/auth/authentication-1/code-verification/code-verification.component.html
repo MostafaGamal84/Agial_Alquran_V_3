@@ -13,10 +13,18 @@
             </a>
           </div>
           <div class="check-me m-b-10">
-            <h3 class="m-b-0">أدخل رمز التحقق</h3>
+            <h3 class="m-b-0">{{ 'AUTH.CODE_VERIFICATION.Title' | translate }}</h3>
           </div>
-          <p class="text-muted forgot-logo m-b-25">لقد أرسلنا لك الرمز عبر البريد الإلكتروني.</p>
-          <p class="text-muted forgot-logo m-b-20">أرسلنا لك الرمز على البريد jone.****&#64;company.com</p>
+          <p class="text-muted forgot-logo m-b-25">{{ 'AUTH.CODE_VERIFICATION.EmailSent' | translate }}</p>
+          @if (maskedEmail) {
+            <p class="text-muted forgot-logo m-b-20">
+              {{ 'AUTH.CODE_VERIFICATION.EmailMaskInfo' | translate: { email: maskedEmail } }}
+            </p>
+          } @else {
+            <p class="text-muted forgot-logo m-b-20">
+              {{ 'AUTH.CODE_VERIFICATION.EmailMaskFallback' | translate }}
+            </p>
+          }
           <div class="row text-center">
             <div class="col-2 g-0" *ngFor="let digit of codeDigits; let i = index">
               <mat-form-field appearance="fill" class="otp-input wid-80">
@@ -34,11 +42,15 @@
             </div>
           </div>
           <div class="grid">
-            <button mat-flat-button color="primary" class="b-rad-20 m-t-20" (click)="verify()">تأكيد</button>
+            <button mat-flat-button color="primary" class="b-rad-20 m-t-20" (click)="verify()">
+              {{ 'AUTH.CODE_VERIFICATION.Submit' | translate }}
+            </button>
           </div>
           <div class="flex m-t-20">
-            <p class="text-muted m-b-0">لم يصلك البريد الإلكتروني؟</p>
-            <a href="javascript:" class="text-primary-500 m-l-10">إعادة إرسال الرمز</a>
+            <p class="text-muted m-b-0">{{ 'AUTH.CODE_VERIFICATION.ResendPrompt' | translate }}</p>
+            <a href="javascript:" class="text-primary-500 m-l-10">
+              {{ 'AUTH.CODE_VERIFICATION.ResendLink' | translate }}
+            </a>
           </div>
         </app-card>
       </div>

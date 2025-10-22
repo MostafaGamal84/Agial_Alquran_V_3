@@ -10,6 +10,7 @@ import { ToastService } from 'src/app/@theme/services/toast.service';
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { DASHBOARD_PATH } from 'src/app/app-config';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-code-verification',
@@ -21,14 +22,20 @@ export class CodeVerificationComponent implements OnInit, AfterViewInit {
   private authService = inject(AuthenticationService);
   private router = inject(Router);
   private toast = inject(ToastService);
+  private translate = inject(TranslateService);
 
   codeDigits: string[] = Array(4).fill('');
+  maskedEmail = '';
   @ViewChildren('codeInput') codeInputs!: QueryList<ElementRef<HTMLInputElement>>;
 
   ngOnInit() {
     if (this.authService.pendingCode) {
       const digits = this.authService.pendingCode.split('');
       this.codeDigits = this.codeDigits.map((_, i) => digits[i] || '');
+    }
+    const email = this.authService.pendingEmail;
+    if (email) {
+      this.maskedEmail = this.maskEmail(email);
     }
   }
 
@@ -73,22 +80,37 @@ export class CodeVerificationComponent implements OnInit, AfterViewInit {
 
   verify() {
     const code = this.codeDigits.join('');
-      this.authService
-        .verifyCode(code, this.authService.pendingEmail ?? undefined)
-        .subscribe({
-          next: (res) => {
-            if (res?.isSuccess) {
-              this.toast.success('تم التحقق بنجاح');
-              this.router.navigate([DASHBOARD_PATH]);
-            } else if (res?.errors?.length) {
-              this.toast.error(res.errors[0].message);
-            } else {
-              this.toast.error('فشل التحقق');
-            }
-          },
+    if (code.length !== this.codeDigits.length) {
+      this.toast.error(this.translate.instant('AUTH.COMMON.Validation.CodePattern'));
+      return;
+    }
+    this.authService
+      .verifyCode(code, this.authService.pendingEmail ?? undefined)
+      .subscribe({
+        next: (res) => {
+          if (res?.isSuccess) {
+            this.toast.success(this.translate.instant('AUTH.CODE_VERIFICATION.Success'));
+            this.router.navigate([DASHBOARD_PATH]);
+          } else if (res?.errors?.length && res.errors[0].message) {
+            this.toast.error(res.errors[0].message);
+          } else {
+            this.toast.error(this.translate.instant('AUTH.CODE_VERIFICATION.Failure'));
+          }
+        },
         error: () => {
-          this.toast.error('فشل التحقق');
+          this.toast.error(this.translate.instant('AUTH.CODE_VERIFICATION.Failure'));
         }
       });
+  }
+
+  private maskEmail(email: string): string {
+    const [local = '', domain = ''] = email.split('@');
+    if (!domain) {
+      return email;
+    }
+    const visible = local.slice(0, Math.min(local.length, 4));
+    const maskedLength = Math.max(local.length - visible.length, 3);
+    const maskedLocal = `${visible}${'*'.repeat(maskedLength)}`;
+    return `${maskedLocal}@${domain}`;
   }
 }

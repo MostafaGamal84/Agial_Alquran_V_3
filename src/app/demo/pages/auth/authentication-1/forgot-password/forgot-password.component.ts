@@ -14,6 +14,7 @@ import {
   ApiResponse,
 } from 'src/app/@theme/services/authentication.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-forgot-password',
@@ -28,6 +29,7 @@ export class ForgotPasswordComponent implements OnInit {
   private toast = inject(ToastService);
   private destroyRef = inject(DestroyRef);
   authenticationService = inject(AuthenticationService);
+  private translate = inject(TranslateService);
 
   // state
   loading = false;
@@ -36,8 +38,8 @@ export class ForgotPasswordComponent implements OnInit {
   });
 
   private readonly errorMessages: Record<string, string> = {
-    '7002': 'البريد الإلكتروني غير مسجل لدينا.',
-    '7059': 'تعذر إرسال البريد الإلكتروني، يرجى المحاولة مرة أخرى.'
+    '7002': 'AUTH.FORGOT_PASSWORD.Errors.EmailNotRegistered',
+    '7059': 'AUTH.FORGOT_PASSWORD.Errors.EmailSendFailed'
   };
 
   ngOnInit(): void {
@@ -55,10 +57,10 @@ export class ForgotPasswordComponent implements OnInit {
       return this.emailControl.getError('server');
     }
     if (this.emailControl.hasError('required')) {
-      return 'البريد الإلكتروني مطلوب';
+      return this.translate.instant('AUTH.COMMON.Validation.EmailRequired');
     }
     if (this.emailControl.hasError('email')) {
-      return 'الرجاء إدخال بريد إلكتروني صالح';
+      return this.translate.instant('AUTH.COMMON.Validation.InvalidEmail');
     }
     return '';
   }
@@ -75,7 +77,8 @@ export class ForgotPasswordComponent implements OnInit {
 
     const email = (this.emailControl.value as string).trim();
     if (!email) {
-      this.setServerError(this.emailControl, 'البريد الإلكتروني مطلوب');
+      const message = this.translate.instant('AUTH.COMMON.Validation.EmailRequired');
+      this.setServerError(this.emailControl, message);
       return;
     }
 
@@ -102,24 +105,27 @@ export class ForgotPasswordComponent implements OnInit {
           } else if (res?.errors?.length) {
             this.handleErrors(res.errors);
           } else {
-            this.toast.error('تعذر معالجة الطلب. حاول مرة أخرى لاحقًا.');
+            this.toast.error(this.translate.instant('AUTH.COMMON.Errors.RequestFailed'));
           }
         },
         error: () => {
           this.loading = false;
-          this.toast.error('تعذر معالجة الطلب. حاول مرة أخرى لاحقًا.');
+          this.toast.error(this.translate.instant('AUTH.COMMON.Errors.RequestFailed'));
         }
       });
   }
 
   private handleErrors(errors: ApiError[]): void {
     if (!errors?.length) {
-      this.toast.error('حدث خطأ غير متوقع.');
+      this.toast.error(this.translate.instant('AUTH.COMMON.Errors.Unexpected'));
       return;
     }
 
     const first = errors[0];
-    const message = this.errorMessages[first.code] ?? first.message ?? 'حدث خطأ غير متوقع.';
+    const key = this.errorMessages[first.code];
+    const message = key
+      ? this.translate.instant(key)
+      : first.message ?? this.translate.instant('AUTH.COMMON.Errors.Unexpected');
 
     if (first.fieldName?.toLowerCase().includes('email')) {
       this.setServerError(this.emailControl, message);

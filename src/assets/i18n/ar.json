@@ -1,4 +1,79 @@
 {
+  "AUTH": {
+    "COMMON": {
+      "BackToLogin": "العودة لتسجيل الدخول",
+      "EmailPlaceholder": "example@domain.com",
+      "CheckSpam": "لا تنس التحقق من مجلد الرسائل غير المرغوب فيها.",
+      "Errors": {
+        "RequestFailed": "تعذر معالجة الطلب. حاول مرة أخرى لاحقًا.",
+        "Unexpected": "حدث خطأ غير متوقع.",
+        "SessionExpired": "انتهت صلاحية الجلسة، الرجاء طلب رمز جديد.",
+        "EmailMissing": "يرجى إدخال البريد الإلكتروني أولاً."
+      },
+      "Loading": {
+        "Sending": "جاري الإرسال...",
+        "Saving": "جاري الحفظ..."
+      },
+      "Validation": {
+        "EmailRequired": "البريد الإلكتروني مطلوب",
+        "InvalidEmail": "يرجى إدخال بريد إلكتروني صالح",
+        "PasswordRequired": "كلمة المرور مطلوبة",
+        "CodeRequired": "رمز التحقق مطلوب",
+        "CodePattern": "يجب أن يتكون الرمز من أربعة أرقام",
+        "NewPasswordRequired": "كلمة المرور الجديدة مطلوبة",
+        "PasswordMinLength": "يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل"
+      }
+    },
+    "LOGIN": {
+      "UsernameLabel": "أدخل اسم المستخدم",
+      "PasswordLabel": "أدخل كلمة المرور",
+      "TogglePassword": "تبديل عرض كلمة المرور",
+      "RememberMe": "تذكرني؟",
+      "ForgotPassword": "نسيت كلمة المرور",
+      "Submit": "تسجيل الدخول",
+      "NoAccount": "لا تملك حساباً؟",
+      "CreateAccount": "إنشاء حساب",
+      "Success": "تم تسجيل الدخول بنجاح",
+      "Failure": "فشل تسجيل الدخول"
+    },
+    "FORGOT_PASSWORD": {
+      "Title": "نسيت كلمة المرور",
+      "EmailLabel": "أدخل بريدك الإلكتروني",
+      "Submit": "إرسال بريد إعادة تعيين كلمة المرور",
+      "Errors": {
+        "EmailNotRegistered": "البريد الإلكتروني غير مسجل لدينا.",
+        "EmailSendFailed": "تعذر إرسال البريد الإلكتروني، يرجى المحاولة مرة أخرى."
+      }
+    },
+    "RESET_PASSWORD": {
+      "Title": "إعادة تعيين كلمة المرور",
+      "CodeLabel": "رمز التحقق",
+      "ResendAvailable": "يمكنك إعادة إرسال الرمز الآن",
+      "CodeExpires": "سينتهي الرمز خلال {{time}}",
+      "ResendButton": "إعادة إرسال الرمز",
+      "NewPasswordLabel": "كلمة المرور الجديدة",
+      "TogglePassword": "تبديل عرض كلمة المرور",
+      "Submit": "إعادة تعيين كلمة المرور",
+      "Errors": {
+        "InvalidCode": "الكود المدخل لا يطابق الكود الذي تم إرساله.",
+        "CodeExpired": "انتهت صلاحية رمز التحقق، الرجاء طلب رمز جديد.",
+        "EmailNotRegistered": "البريد الإلكتروني غير مسجل لدينا.",
+        "EmailSendFailed": "تعذر إرسال البريد الإلكتروني، يرجى المحاولة مرة أخرى.",
+        "ResetFailed": "تعذر إعادة تعيين كلمة المرور. حاول مرة أخرى لاحقًا."
+      }
+    },
+    "CODE_VERIFICATION": {
+      "Title": "أدخل رمز التحقق",
+      "EmailSent": "لقد أرسلنا لك الرمز عبر البريد الإلكتروني.",
+      "EmailMaskInfo": "أرسلنا لك الرمز على البريد {{email}}",
+      "EmailMaskFallback": "تحقق من صندوق الوارد لديك للحصول على رمز التحقق.",
+      "Submit": "تأكيد",
+      "ResendPrompt": "لم يصلك البريد الإلكتروني؟",
+      "ResendLink": "إعادة إرسال الرمز",
+      "Success": "تم التحقق بنجاح",
+      "Failure": "فشل التحقق"
+    }
+  },
   "Navigation": "التنقل",
   "Dashboard": "لوحة التحكم",
   "Default": "افتراضي",

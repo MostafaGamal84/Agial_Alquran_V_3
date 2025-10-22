@@ -12,6 +12,7 @@ import { FormBuilder, FormGroup, FormsModule, Validators } from '@angular/forms'
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ToastService } from 'src/app/@theme/services/toast.service';
+import { TranslateService } from '@ngx-translate/core';
 
 interface Roles {
   name: string;
@@ -32,6 +33,7 @@ export class LoginComponent implements OnInit {
   private router = inject(Router);
   authenticationService = inject(AuthenticationService);
   private toast = inject(ToastService);
+  private translate = inject(TranslateService);
 
   // public props
   hide = true;
@@ -81,17 +83,17 @@ export class LoginComponent implements OnInit {
             if (res.data.code) {
               this.authenticationService.pendingCode = res.data.code;
             }
-            this.toast.success('تم تسجيل الدخول بنجاح');
+            this.toast.success(this.translate.instant('AUTH.LOGIN.Success'));
             this.router.navigateByUrl(this.returnUrl);
-          } else if (res?.errors?.length) {
+          } else if (res?.errors?.length && res.errors[0].message) {
             this.toast.error(res.errors[0].message);
           } else {
-            this.toast.error('فشل تسجيل الدخول');
+            this.toast.error(this.translate.instant('AUTH.LOGIN.Failure'));
           }
         },
         error: () => {
           this.loading = false;
-          this.toast.error('فشل تسجيل الدخول');
+          this.toast.error(this.translate.instant('AUTH.LOGIN.Failure'));
         }
       });
   }
