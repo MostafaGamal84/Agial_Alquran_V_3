@@ -81,17 +81,17 @@ export class LoginComponent implements OnInit {
             if (res.data.code) {
               this.authenticationService.pendingCode = res.data.code;
             }
-            this.toast.success('Login successful');
+            this.toast.success('تم تسجيل الدخول بنجاح');
             this.router.navigateByUrl(this.returnUrl);
           } else if (res?.errors?.length) {
             this.toast.error(res.errors[0].message);
           } else {
-            this.toast.error('Login failed');
+            this.toast.error('فشل تسجيل الدخول');
           }
         },
         error: () => {
           this.loading = false;
-          this.toast.error('Login failed');
+          this.toast.error('فشل تسجيل الدخول');
         }
       });
   }

@@ -8,7 +8,7 @@
           </a>
         </div>
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="text-start">
-          <label for="email" class="f-w-500 text-start">Enter Username</label>
+          <label for="email" class="f-w-500 text-start">أدخل اسم المستخدم</label>
           <mat-form-field appearance="outline" class="w-100 m-t-5">
             <input
               type="text"
@@ -17,10 +17,10 @@
               [ngClass]="{ 'is-invalid': submitted && formValues?.['email'].errors }"
             />
             @if (submitted && formValues?.['email'].errors) {
-              <mat-hint class="text-warn-500">Email is required</mat-hint>
+              <mat-hint class="text-warn-500">البريد الإلكتروني مطلوب</mat-hint>
             }
           </mat-form-field>
-          <label for="password" class="f-w-500 text-start">Enter Your Password</label>
+          <label for="password" class="f-w-500 text-start">أدخل كلمة المرور الخاصة بك</label>
           <mat-form-field appearance="outline" class="w-100 m-t-5">
             <input
               [type]="hide ? 'password' : 'text'"
@@ -30,32 +30,32 @@
               [ngClass]="{ 'is-invalid': submitted && formValues?.['password'].errors }"
             />
             @if (submitted && formValues?.['password'].errors) {
-              <mat-hint class="text-warn-500">Password is required</mat-hint>
+              <mat-hint class="text-warn-500">كلمة المرور مطلوبة</mat-hint>
             }
             <button
               mat-icon-button
               matSuffix
               (click)="hide = !hide"
-              [attr.aria-label]="'Hide password'"
+              [attr.aria-label]="'إخفاء كلمة المرور'"
               [attr.aria-pressed]="hide"
             >
               <mat-icon>{{ hide ? 'visibility_off' : 'visibility' }}</mat-icon>
             </button>
           </mat-form-field>
           <div class="check-me">
-            <mat-checkbox class="float-start" color="primary">Remember me?</mat-checkbox>
+            <mat-checkbox class="float-start" color="primary">تذكرني؟</mat-checkbox>
             <a class="f-w-400 text-primary-500 m-b-0" [routerLink]="['/forgot-password']">
-              Forgot Password
+              نسيت كلمة المرور
             </a>
           </div>
           <div class="grid">
-            <button mat-flat-button color="primary" class="b-rad-20 m-t-15">Login</button>
+            <button mat-flat-button color="primary" class="b-rad-20 m-t-15">تسجيل الدخول</button>
           </div>
         </form>
         <div class="check-me m-t-20">
-          <div class="text-muted">Don't have an Account?</div>
+          <div class="text-muted">لا تملك حساباً؟</div>
           <a [routerLink]="['/register']" class="text-primary-500">
-            Create Account
+            إنشاء حساب
           </a>
         </div>
       </app-card>
