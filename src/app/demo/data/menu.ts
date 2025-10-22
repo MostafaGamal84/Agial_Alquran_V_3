@@ -4,18 +4,18 @@ import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 
 export const menus: Navigation[] = [
   {
-    id: 'navigation',
-    title: 'Navigation',
-    type: 'group',
-    icon: 'icon-navigation',
-    role: [
-      UserTypesEnum.Admin.toString(),
-      UserTypesEnum.Manager.toString(),
-      UserTypesEnum.BranchLeader.toString(),
-      UserTypesEnum.Student.toString(),
-      UserTypesEnum.Teacher.toString()
-    ],
-    children: [
+    // id: 'navigation',
+    // title: 'Navigation',
+    // type: 'group',
+    // icon: 'icon-navigation',
+    // role: [
+    //   UserTypesEnum.Admin.toString(),
+    //   UserTypesEnum.Manager.toString(),
+    //   UserTypesEnum.BranchLeader.toString(),
+    //   UserTypesEnum.Student.toString(),
+    //   UserTypesEnum.Teacher.toString()
+    // ],
+    // children: [
       // {
       //   id: 'Dashboard',
       //   title: 'Dashboard',
@@ -63,8 +63,8 @@ export const menus: Navigation[] = [
       //     UserTypesEnum.Teacher.toString()
       //   ]
       // }
-    ]
-  },
+    // ]
+  // },
   // {
   //   id: 'widget',
   //   title: 'Widget',
@@ -104,7 +104,7 @@ export const menus: Navigation[] = [
   //     }
   //   ]
   // },
-  {
+  // {
     id: 'admin',
     title: 'Admin Panel',
     type: 'group',
@@ -168,10 +168,6 @@ export const menus: Navigation[] = [
                 url: '/online-course/branch-manager/add',
                 role: [
                   UserTypesEnum.Admin.toString(),
-                  UserTypesEnum.Manager.toString(),
-                  UserTypesEnum.BranchLeader.toString(),
-                  UserTypesEnum.Student.toString(),
-                  UserTypesEnum.Teacher.toString()
                 ]
               }
             ]
@@ -207,10 +203,7 @@ export const menus: Navigation[] = [
                 url: '/online-course/manager/add',
                 role: [
                   UserTypesEnum.Admin.toString(),
-                  UserTypesEnum.Manager.toString(),
                   UserTypesEnum.BranchLeader.toString(),
-                  UserTypesEnum.Student.toString(),
-                  UserTypesEnum.Teacher.toString()
                 ]
               }
             ]
@@ -248,8 +241,6 @@ export const menus: Navigation[] = [
                   UserTypesEnum.Admin.toString(),
                   UserTypesEnum.Manager.toString(),
                   UserTypesEnum.BranchLeader.toString(),
-                  UserTypesEnum.Student.toString(),
-                  UserTypesEnum.Teacher.toString()
                 ]
               }
             ]
