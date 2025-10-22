@@ -61,35 +61,33 @@ export function normalizePagedResult<T>(
   response: ApiResponse<PagedResultDto<T>>,
   options: NormalizePagedResultOptions = {}
 ): ApiResponse<PagedResultDto<T>> {
-  if (!response || !response.data) {
-    return response;
-  }
-
-  const rawItems = response.data.items;
+  const rawData = response.data ?? ({ totalCount: 0, items: [] } as PagedResultDto<T>);
+  const rawItems = rawData.items;
   const items = Array.isArray(rawItems) ? rawItems : [];
 
-  const skipCandidate = options.skipCount ?? 0;
-  const skipCount =
-    typeof skipCandidate === 'number' && Number.isFinite(skipCandidate)
-      ? Math.max(0, Math.trunc(skipCandidate))
-      : 0;
+  const parseNumeric = (value: unknown): number | undefined => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  };
+
+  const dataSkipCount = (rawData as Partial<{ skipCount: number | string }>).skipCount;
+  const skipSources = [options.skipCount, dataSkipCount]
+    .map(parseNumeric)
+    .filter((value): value is number => value !== undefined);
+  const skipCandidate = skipSources.length > 0 ? skipSources[0] : 0;
+  const skipCount = Math.max(0, Math.trunc(skipCandidate));
 
   const fallbackTotal = skipCount + items.length;
 
-  const parsedTotal = Number(response.data.totalCount);
-  const normalizedTotal = Math.max(
-    Number.isFinite(parsedTotal) ? Math.max(0, Math.trunc(parsedTotal)) : 0,
-    fallbackTotal
-  );
-
-  if (rawItems === items && normalizedTotal === response.data.totalCount) {
-    return response;
-  }
+  const parsedTotal = parseNumeric((rawData as Partial<{ totalCount: number | string }>).totalCount);
+  const normalizedTotal = parsedTotal !== undefined
+    ? Math.max(Math.trunc(parsedTotal), fallbackTotal)
+    : fallbackTotal;
 
   return {
     ...response,
     data: {
-      ...response.data,
+      ...rawData,
       items,
       totalCount: normalizedTotal
     }
