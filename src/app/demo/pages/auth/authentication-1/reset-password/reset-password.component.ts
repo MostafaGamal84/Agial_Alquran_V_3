@@ -15,6 +15,7 @@ import {
   ApiResponse,
 } from 'src/app/@theme/services/authentication.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
+import { TranslateService } from '@ngx-translate/core';
 
 interface NavigationState {
   message?: string;
@@ -34,6 +35,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
   private toast = inject(ToastService);
   private destroyRef = inject(DestroyRef);
   authenticationService = inject(AuthenticationService);
+  private translate = inject(TranslateService);
 
   // state
   hidePassword = true;
@@ -54,10 +56,10 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
   });
 
   private readonly errorMessages: Record<string, string> = {
-    '7002': 'البريد الإلكتروني غير مسجل لدينا.',
-    '7014': 'الكود المدخل لا يطابق الكود الذي تم إرساله.',
-    '7062': 'انتهت صلاحية رمز التحقق، الرجاء طلب رمز جديد.',
-    '7059': 'تعذر إرسال البريد الإلكتروني، يرجى المحاولة مرة أخرى.'
+    '7002': 'AUTH.RESET_PASSWORD.Errors.EmailNotRegistered',
+    '7014': 'AUTH.RESET_PASSWORD.Errors.InvalidCode',
+    '7062': 'AUTH.RESET_PASSWORD.Errors.CodeExpired',
+    '7059': 'AUTH.RESET_PASSWORD.Errors.EmailSendFailed'
   };
 
   ngOnInit(): void {
@@ -78,7 +80,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
     }
 
     if (!this.email) {
-      this.toast.error('يرجى إدخال البريد الإلكتروني أولاً.');
+      this.toast.error(this.translate.instant('AUTH.COMMON.Errors.EmailMissing'));
       this.router.navigate(['/forgot-password']);
       return;
     }
@@ -110,10 +112,10 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
       return this.codeControl.getError('server');
     }
     if (this.codeControl.hasError('required')) {
-      return 'رمز التحقق مطلوب';
+      return this.translate.instant('AUTH.COMMON.Validation.CodeRequired');
     }
     if (this.codeControl.hasError('pattern')) {
-      return 'يجب أن يتكون الرمز من أربعة أرقام';
+      return this.translate.instant('AUTH.COMMON.Validation.CodePattern');
     }
     return '';
   }
@@ -123,10 +125,10 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
       return this.newPasswordControl.getError('server');
     }
     if (this.newPasswordControl.hasError('required')) {
-      return 'كلمة المرور الجديدة مطلوبة';
+      return this.translate.instant('AUTH.COMMON.Validation.NewPasswordRequired');
     }
     if (this.newPasswordControl.hasError('minlength')) {
-      return 'يجب أن تحتوي كلمة المرور على 8 أحرف على الأقل';
+      return this.translate.instant('AUTH.COMMON.Validation.PasswordMinLength');
     }
     return '';
   }
@@ -142,7 +144,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
     }
 
     if (!this.email) {
-      this.toast.error('انتهت صلاحية الجلسة، الرجاء طلب رمز جديد.');
+      this.toast.error(this.translate.instant('AUTH.COMMON.Errors.SessionExpired'));
       this.router.navigate(['/forgot-password']);
       return;
     }
@@ -173,12 +175,12 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
           } else if (res?.errors?.length) {
             this.handleErrors(res.errors);
           } else {
-            this.toast.error('تعذر إعادة تعيين كلمة المرور. حاول مرة أخرى لاحقًا.');
+            this.toast.error(this.translate.instant('AUTH.RESET_PASSWORD.Errors.ResetFailed'));
           }
         },
         error: () => {
           this.loading = false;
-          this.toast.error('تعذر إعادة تعيين كلمة المرور. حاول مرة أخرى لاحقًا.');
+          this.toast.error(this.translate.instant('AUTH.RESET_PASSWORD.Errors.ResetFailed'));
         }
       });
   }
@@ -209,24 +211,27 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
           } else if (res?.errors?.length) {
             this.handleErrors(res.errors);
           } else {
-            this.toast.error('تعذر إرسال الرمز. حاول مرة أخرى لاحقًا.');
+            this.toast.error(this.translate.instant('AUTH.RESET_PASSWORD.Errors.EmailSendFailed'));
           }
         },
         error: () => {
           this.resendLoading = false;
-          this.toast.error('تعذر إرسال الرمز. حاول مرة أخرى لاحقًا.');
+          this.toast.error(this.translate.instant('AUTH.RESET_PASSWORD.Errors.EmailSendFailed'));
         }
       });
   }
 
   private handleErrors(errors: ApiError[]): void {
     if (!errors?.length) {
-      this.toast.error('حدث خطأ غير متوقع.');
+      this.toast.error(this.translate.instant('AUTH.COMMON.Errors.Unexpected'));
       return;
     }
 
     const first = errors[0];
-    const message = this.errorMessages[first.code] ?? first.message ?? 'حدث خطأ غير متوقع.';
+    const key = this.errorMessages[first.code];
+    const message = key
+      ? this.translate.instant(key)
+      : first.message ?? this.translate.instant('AUTH.COMMON.Errors.Unexpected');
     const field = first.fieldName?.toLowerCase() ?? '';
 
     if (field.includes('code')) {

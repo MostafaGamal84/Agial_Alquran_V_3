@@ -8,7 +8,7 @@
           </a>
         </div>
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="text-start">
-          <label for="email" class="f-w-500 text-start">أدخل اسم المستخدم</label>
+          <label for="email" class="f-w-500 text-start">{{ 'AUTH.LOGIN.UsernameLabel' | translate }}</label>
           <mat-form-field appearance="outline" class="w-100 m-t-5">
             <input
               type="text"
@@ -17,10 +17,10 @@
               [ngClass]="{ 'is-invalid': submitted && formValues?.['email'].errors }"
             />
             @if (submitted && formValues?.['email'].errors) {
-              <mat-hint class="text-warn-500">البريد الإلكتروني مطلوب</mat-hint>
+              <mat-hint class="text-warn-500">{{ 'AUTH.COMMON.Validation.EmailRequired' | translate }}</mat-hint>
             }
           </mat-form-field>
-          <label for="password" class="f-w-500 text-start">أدخل كلمة المرور الخاصة بك</label>
+          <label for="password" class="f-w-500 text-start">{{ 'AUTH.LOGIN.PasswordLabel' | translate }}</label>
           <mat-form-field appearance="outline" class="w-100 m-t-5">
             <input
               [type]="hide ? 'password' : 'text'"
@@ -30,32 +30,34 @@
               [ngClass]="{ 'is-invalid': submitted && formValues?.['password'].errors }"
             />
             @if (submitted && formValues?.['password'].errors) {
-              <mat-hint class="text-warn-500">كلمة المرور مطلوبة</mat-hint>
+              <mat-hint class="text-warn-500">{{ 'AUTH.COMMON.Validation.PasswordRequired' | translate }}</mat-hint>
             }
             <button
               mat-icon-button
               matSuffix
               (click)="hide = !hide"
-              [attr.aria-label]="'إخفاء كلمة المرور'"
+              [attr.aria-label]="('AUTH.LOGIN.TogglePassword' | translate)"
               [attr.aria-pressed]="hide"
             >
               <mat-icon>{{ hide ? 'visibility_off' : 'visibility' }}</mat-icon>
             </button>
           </mat-form-field>
           <div class="check-me">
-            <mat-checkbox class="float-start" color="primary">تذكرني؟</mat-checkbox>
+            <mat-checkbox class="float-start" color="primary">{{ 'AUTH.LOGIN.RememberMe' | translate }}</mat-checkbox>
             <a class="f-w-400 text-primary-500 m-b-0" [routerLink]="['/forgot-password']">
-              نسيت كلمة المرور
+              {{ 'AUTH.LOGIN.ForgotPassword' | translate }}
             </a>
           </div>
           <div class="grid">
-            <button mat-flat-button color="primary" class="b-rad-20 m-t-15">تسجيل الدخول</button>
+            <button mat-flat-button color="primary" class="b-rad-20 m-t-15">
+              {{ 'AUTH.LOGIN.Submit' | translate }}
+            </button>
           </div>
         </form>
         <div class="check-me m-t-20">
-          <div class="text-muted">لا تملك حساباً؟</div>
+          <div class="text-muted">{{ 'AUTH.LOGIN.NoAccount' | translate }}</div>
           <a [routerLink]="['/register']" class="text-primary-500">
-            إنشاء حساب
+            {{ 'AUTH.LOGIN.CreateAccount' | translate }}
           </a>
         </div>
       </app-card>

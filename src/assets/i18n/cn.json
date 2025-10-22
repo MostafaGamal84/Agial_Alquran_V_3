@@ -1,4 +1,79 @@
 {
+  "AUTH": {
+    "COMMON": {
+      "BackToLogin": "Back to login",
+      "EmailPlaceholder": "example@domain.com",
+      "CheckSpam": "Don't forget to check your spam folder.",
+      "Errors": {
+        "RequestFailed": "Unable to process the request. Please try again later.",
+        "Unexpected": "An unexpected error occurred.",
+        "SessionExpired": "Your session has expired. Please request a new code.",
+        "EmailMissing": "Please enter your email first."
+      },
+      "Loading": {
+        "Sending": "Sending...",
+        "Saving": "Saving..."
+      },
+      "Validation": {
+        "EmailRequired": "Email is required",
+        "InvalidEmail": "Please enter a valid email address",
+        "PasswordRequired": "Password is required",
+        "CodeRequired": "Verification code is required",
+        "CodePattern": "The code must be four digits",
+        "NewPasswordRequired": "New password is required",
+        "PasswordMinLength": "Password must be at least 8 characters"
+      }
+    },
+    "LOGIN": {
+      "UsernameLabel": "Enter your username",
+      "PasswordLabel": "Enter your password",
+      "TogglePassword": "Toggle password visibility",
+      "RememberMe": "Remember me?",
+      "ForgotPassword": "Forgot password",
+      "Submit": "Sign in",
+      "NoAccount": "Don't have an account?",
+      "CreateAccount": "Create account",
+      "Success": "Logged in successfully",
+      "Failure": "Login failed"
+    },
+    "FORGOT_PASSWORD": {
+      "Title": "Forgot password",
+      "EmailLabel": "Enter your email address",
+      "Submit": "Send password reset email",
+      "Errors": {
+        "EmailNotRegistered": "This email address is not registered with us.",
+        "EmailSendFailed": "We couldn't send the email. Please try again."
+      }
+    },
+    "RESET_PASSWORD": {
+      "Title": "Reset password",
+      "CodeLabel": "Verification code",
+      "ResendAvailable": "You can resend the code now",
+      "CodeExpires": "The code will expire in {{time}}",
+      "ResendButton": "Resend code",
+      "NewPasswordLabel": "New password",
+      "TogglePassword": "Toggle password visibility",
+      "Submit": "Reset password",
+      "Errors": {
+        "InvalidCode": "The code you entered does not match the one we sent.",
+        "CodeExpired": "The verification code has expired. Please request a new one.",
+        "EmailNotRegistered": "This email address is not registered with us.",
+        "EmailSendFailed": "We couldn't send the email. Please try again.",
+        "ResetFailed": "We couldn't reset your password. Please try again later."
+      }
+    },
+    "CODE_VERIFICATION": {
+      "Title": "Enter verification code",
+      "EmailSent": "We have sent the code to your email.",
+      "EmailMaskInfo": "We sent the code to {{email}}",
+      "EmailMaskFallback": "Check your inbox for the verification code.",
+      "Submit": "Confirm",
+      "ResendPrompt": "Didn't receive the email?",
+      "ResendLink": "Resend code",
+      "Success": "Verified successfully",
+      "Failure": "Verification failed"
+    }
+  },
   "Navigation": "導航",
   "Dashboard": "儀表板",
   "Default": "默認",

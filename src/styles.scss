@@ -20,12 +20,20 @@
 @import 'scss/fonts/material.css';
 @import 'scss/fonts/tabler-icons.min.css';
 
+@font-face {
+  font-family: 'Amiri Quran';
+  src: url('assets/fonts/AmiriQuran-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 // theme setup
 @import './app/@theme/styles/theme-palette-colors.scss';
 @import './app/@theme/styles/theme-dark-palette-colors.scss';
 @import './app/@theme/styles/theme.scss';
 @include mat.all-component-typographies(
-  theme-typography("'Cairo Variable', 'Cairo', sans-serif")
+  theme-typography("'Amiri Quran', 'Cairo Variable', 'Cairo', sans-serif")
 ); // theme typography
 @import 'swiper/css';
 @import 'swiper/css/navigation';
