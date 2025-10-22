@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { AuthenticationService } from './authentication.service';
 import { UserTypesEnum } from '../types/UserTypesEnum';
@@ -50,6 +51,47 @@ export interface FilteredResultRequestDto {
 export interface PagedResultDto<T> {
   totalCount: number;
   items: T[];
+}
+
+export interface NormalizePagedResultOptions {
+  skipCount?: number | null;
+}
+
+export function normalizePagedResult<T>(
+  response: ApiResponse<PagedResultDto<T>>,
+  options: NormalizePagedResultOptions = {}
+): ApiResponse<PagedResultDto<T>> {
+  const rawData = response.data ?? ({ totalCount: 0, items: [] } as PagedResultDto<T>);
+  const rawItems = rawData.items;
+  const items = Array.isArray(rawItems) ? rawItems : [];
+
+  const parseNumeric = (value: unknown): number | undefined => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  };
+
+  const dataSkipCount = (rawData as Partial<{ skipCount: number | string }>).skipCount;
+  const skipSources = [options.skipCount, dataSkipCount]
+    .map(parseNumeric)
+    .filter((value): value is number => value !== undefined);
+  const skipCandidate = skipSources.length > 0 ? skipSources[0] : 0;
+  const skipCount = Math.max(0, Math.trunc(skipCandidate));
+
+  const fallbackTotal = skipCount + items.length;
+
+  const parsedTotal = parseNumeric((rawData as Partial<{ totalCount: number | string }>).totalCount);
+  const normalizedTotal = parsedTotal !== undefined
+    ? Math.max(Math.trunc(parsedTotal), fallbackTotal)
+    : fallbackTotal;
+
+  return {
+    ...response,
+    data: {
+      ...rawData,
+      items,
+      totalCount: normalizedTotal
+    }
+  };
 }
 
 export interface NationalityDto {
@@ -114,9 +156,14 @@ export class LookupService {
       params = params.set('SortBy', filter.sortBy);
     }
 
-    return this.http.get<ApiResponse<PagedResultDto<LookUpUserDto>>>(`${environment.apiUrl}/api/UsersForGroups/GetUsersForSelects`, {
-      params
-    });
+    return this.http
+      .get<ApiResponse<PagedResultDto<LookUpUserDto>>>(
+        `${environment.apiUrl}/api/UsersForGroups/GetUsersForSelects`,
+        {
+          params
+        }
+      )
+      .pipe(map((response) => normalizePagedResult(response, { skipCount: filter.skipCount })));
   }
 
   getAllNationalities(): Observable<ApiResponse<NationalityDto[]>> {
