@@ -11,10 +11,10 @@ export class BuyNowLinkService {
     const ispValue = urlValue.get('isp');
 
     if (ispValue === '1') {
-      this.buyNowLink = 'https://1.envato.market/XYAZnb';
+      this.buyNowLink = 'https://ajyal-alquran.com/';
       this.queryString = '?isp=1';
     } else {
-      this.buyNowLink = 'https://1.envato.market/zNkqj6';
+      this.buyNowLink = 'https://ajyal-alquran.com/';
       this.queryString = '';
     }
   }

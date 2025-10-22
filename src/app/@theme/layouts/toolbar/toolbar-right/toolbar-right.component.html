@@ -13,7 +13,7 @@
       </svg>
     </a>
   </button>
-  <button mat-button (click)="headerBlur(); drawer.toggle()" aria-label="mode" class="header-item" [ngClass]="{ on: headerBlur }">
+  <!-- <button mat-button (click)="headerBlur(); drawer.toggle()" aria-label="mode" class="header-item" [ngClass]="{ on: headerBlur }">
     <a class="pc-head-link">
       <svg class="pc-icon">
         <use xlink:href="assets/fonts/custom-icon.svg#custom-flash"></use>
@@ -26,7 +26,7 @@
         <use xlink:href="assets/fonts/custom-icon.svg#custom-notification"></use>
       </svg>
     </a>
-  </button>
+  </button> -->
   <button mat-button [matMenuTriggerFor]="user" aria-label="mode" class="header-item">
     <a class="pc-head-link">
       <img src="assets/images/user/avatar-2.png" alt="user-image" class="user-avatar" />
@@ -36,15 +36,15 @@
     <button mat-menu-item>
       <div class="mat-body" (click)="useLanguage('en')">English (uk)</div>
     </button>
-    <button mat-menu-item>
+    <!-- <button mat-menu-item>
       <div class="mat-body" (click)="useLanguage('fr')">français</div>
     </button>
     <button mat-menu-item>
       <div class="mat-body" (click)="useLanguage('ro')">Română</div>
     </button>
     <button mat-menu-item>
-      <div class="mat-body" (click)="useLanguage('cn')">中国人</div>
-    </button>
+      <div class="mat-body" (click)="useLanguage('cn')">中国人</div> -->
+    <!-- </button> -->
     <button mat-menu-item>
       <div class="mat-body" (click)="useLanguage('ar')">العربية</div>
     </button>
@@ -56,24 +56,24 @@
         <span>My Account</span>
       </div>
     </button>
-    <button mat-menu-item [routerLink]="['/application/profile/account/settings']">
+    <!-- <button mat-menu-item [routerLink]="['/application/profile/account/settings']">
       <div class="dropdown-item">
         <i class="ti ti-settings"></i>
         <span>Settings</span>
       </div>
-    </button>
-    <button mat-menu-item [routerLink]="['/contact-us']">
+    </button> -->
+    <!-- <button mat-menu-item [routerLink]="['/contact-us']">
       <div class="dropdown-item">
         <i class="ti ti-headset"></i>
         <span>Support</span>
       </div>
-    </button>
-    <button mat-menu-item [routerLink]="['/application/profile/account/settings']">
+    </button> -->
+    <!-- <button mat-menu-item [routerLink]="['/application/profile/account/settings']">
       <div class="dropdown-item">
         <i class="ti ti-lock"></i>
         <span>Lock Screen</span>
       </div>
-    </button>
+    </button> -->
     <button mat-menu-item (click)="logout()">
       <div class="dropdown-item">
         <i class="ti ti-power"></i>
@@ -81,14 +81,14 @@
       </div>
     </button>
   </mat-menu>
-  <mat-drawer #drawer position="end" class="notification-status sidenav" mode="over">
+  <!-- <mat-drawer #drawer position="end" class="notification-status sidenav" mode="over">
     <div class="drawer-header">
       <div class="f-16 f-w-600">What’s new announcement?</div>
       <button type="button" mat-icon-button class="close-drawer" (click)="headerBlur(); drawer.toggle()">
         <mat-icon>close</mat-icon>
       </button>
-    </div>
-    <app-scrollbar [customStyle]="{ height: 'calc(100vh - 88px)', position: 'relative' }">
+    </div> -->
+    <!-- <app-scrollbar [customStyle]="{ height: 'calc(100vh - 88px)', position: 'relative' }">
       <div class="drawer-body">
         <div class="m-b-10 mat-body f-w-500">Today</div>
         <app-card [showHeader]="false" padding="16" cardClass="m-b-15">
@@ -144,8 +144,8 @@
         }
       </div>
     </app-scrollbar>
-  </mat-drawer>
-  <mat-menu #Notification="matMenu" xPosition="before" class="dropdown-notification">
+  </mat-drawer> -->
+  <!-- <mat-menu #Notification="matMenu" xPosition="before" class="dropdown-notification">
     <div class="dropdown-header flex align-item-center justify-content-between">
       <div class="f-w-600 f-16">Notification</div>
       <a href="javascript:" class="mat-body text-primary-500">Mark all read</a>
@@ -204,7 +204,7 @@
         </app-card>
       </div>
     </app-scrollbar>
-  </mat-menu>
+  </mat-menu> -->
   <mat-menu #user="matMenu" xPosition="before" class="dropdown-user-profile">
     <div class="dropdown-header flex align-item-center justify-content-between">
       <div class="user-title f-16 f-w-600">Profile</div>
@@ -220,7 +220,7 @@
             <p class="mat-caption">{{ this.authenticationService.currentUserValue?.user.email }}</p>
           </div>
         </div>
-        <mat-divider class="m-y-15"></mat-divider>
+        <!-- <mat-divider class="m-y-15"></mat-divider>
         <app-card [showHeader]="false" padding="16">
           <div class="flex align-item-center justify-content-between">
             <div class="m-b-0 flex-inline align-item-center f-16 f-w-600">
@@ -231,7 +231,7 @@
             </div>
             <mat-slide-toggle color="primary" (click)="$event.stopPropagation()"></mat-slide-toggle>
           </div>
-        </app-card>
+        </app-card> -->
         <div class="m-b-15 mat-body f-w-500">Manage</div>
         <a href="javascript:" class="dropdown-item text-muted" [routerLink]="['/application/profile/account/settings']">
           <svg class="pc-icon m-r-10">
@@ -239,20 +239,20 @@
           </svg>
           <div class="m-b-0 mat-body">Settings</div>
         </a>
-        <a href="javascript:" class="dropdown-item text-muted">
+        <!-- <a href="javascript:" class="dropdown-item text-muted">
           <svg class="pc-icon m-r-10">
             <use xlink:href="assets/fonts/custom-icon.svg#custom-share-bold"></use>
           </svg>
           <div class="m-b-0 mat-body">Share</div>
-        </a>
+        </a> -->
         <a href="javascript:" class="dropdown-item text-muted" [routerLink]="['/application/profile/account/password']">
           <svg class="pc-icon m-r-10">
             <use xlink:href="assets/fonts/custom-icon.svg#custom-lock-outline"></use>
           </svg>
           <div class="m-b-0 mat-body">Change Password</div>
         </a>
-        <mat-divider class="m-b-15 m-t-15"></mat-divider>
-        <div class="m-b-15 mat-body f-w-500">Team</div>
+        <!-- <mat-divider class="m-b-15 m-t-15"></mat-divider> -->
+        <!-- <div class="m-b-15 mat-body f-w-500">Team</div>
         <a href="javascript:" class="dropdown-item text-muted justify-content-between">
           <span class="flex">
             <svg class="pc-icon m-r-10">
@@ -302,8 +302,8 @@
               </svg>
             </span>
           </div>
-        </a>
-        <mat-divider class="m-b-15 m-t-15"></mat-divider>
+        </a> -->
+        <!-- <mat-divider class="m-b-15 m-t-15"></mat-divider> -->
         <div class="grid m-b-15">
           <button mat-flat-button color="primary" class="user-logout" (click)="logout()">
             <div class="flex-inline align-item-center">
@@ -314,7 +314,7 @@
             </div>
           </button>
         </div>
-        <app-card cardClass="m-b-0 user-account-card" [showHeader]="false" padding="16">
+        <!-- <app-card cardClass="m-b-0 user-account-card" [showHeader]="false" padding="16">
           <div class="user-group">
             <img src="assets/images/user/avatar-1.png" alt="user-image" class="avatar" />
             <img src="assets/images/user/avatar-2.png" alt="user-image" class="avatar" />
@@ -335,7 +335,7 @@
               Upgrade to Business
             </div>
           </a>
-        </app-card>
+        </app-card> -->
       </div>
     </app-scrollbar>
   </mat-menu>
