@@ -132,7 +132,7 @@ export class ForgotPasswordComponent implements OnInit {
 
   private clearServerError(control: AbstractControl): void {
     const errors = control.errors;
-    if (!errors?.server) {
+    if (!errors?.['server']) {
       return;
     }
 

@@ -43,7 +43,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
   email: string | null = null;
 
   private readonly countdownDuration = 5 * 60; // 5 minutes in seconds
-  private countdownIntervalId: ReturnType<typeof setInterval> | null = null;
+private countdownIntervalId: any;
   remainingSeconds = 0;
   countdownLabel = '05:00';
 
@@ -295,7 +295,7 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
 
   private clearServerError(control: AbstractControl): void {
     const errors = control.errors;
-    if (!errors?.server) {
+    if (!errors?.['server']) {
       return;
     }
 
