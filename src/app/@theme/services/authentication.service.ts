@@ -11,11 +11,18 @@ import { User } from '../types/user';
 import { UserTypesEnum } from '../types/UserTypesEnum';
 
 // ------------ API DTOs ------------
-interface ApiError {
+export interface ApiError {
   fieldName: string;
   code: string;
   message: string;
   fieldLang: string | null;
+}
+
+export interface ApiResponse<T> {
+  isSuccess: boolean;
+  errors: ApiError[];
+  data: T | null;
+  message?: string | null;
 }
 
 interface LoginData {
@@ -24,11 +31,7 @@ interface LoginData {
   passwordIsCorrect: boolean;
 }
 
-interface LoginResponse {
-  isSuccess: boolean;
-  errors: ApiError[];
-  data: LoginData | null;
-}
+type LoginResponse = ApiResponse<LoginData>;
 
 interface VerifyCodeData {
   token: string;
@@ -37,10 +40,12 @@ interface VerifyCodeData {
   role: number | string | null; // can come as number or string from backend
 }
 
-interface VerifyCodeResponse {
-  isSuccess: boolean;
-  errors: ApiError[];
-  data: VerifyCodeData | null;
+type VerifyCodeResponse = ApiResponse<VerifyCodeData>;
+
+interface ResetPasswordPayload {
+  email: string;
+  newPassword: string;
+  code: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -163,6 +168,22 @@ export class AuthenticationService {
           }
         })
       );
+  }
+
+  forgetPassword(email: string): Observable<ApiResponse<string>> {
+    return this.http
+      .post<ApiResponse<string>>(`${environment.apiUrl}/api/Account/ForgetPassword`, { email })
+      .pipe(
+        tap((res) => {
+          if (res.isSuccess) {
+            this.pendingEmail = email;
+          }
+        })
+      );
+  }
+
+  resetPassword(payload: ResetPasswordPayload): Observable<ApiResponse<string>> {
+    return this.http.post<ApiResponse<string>>(`${environment.apiUrl}/api/Account/ResetPassword`, payload);
   }
 
   // ------- Session ops -------
