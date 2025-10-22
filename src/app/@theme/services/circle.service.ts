@@ -1,12 +1,14 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import {
   ApiResponse,
   FilteredResultRequestDto,
   LookUpUserDto,
-  PagedResultDto
+  PagedResultDto,
+  normalizePagedResult
 } from './lookup.service';
 import { DayValue, DaysEnum } from '../types/DaysEnum';
 import { TimeSpanDto } from '../utils/time';
@@ -161,10 +163,12 @@ export class CircleService {
       params = params.set('teacherId', teacherId.toString());
     }
 
-    return this.http.get<ApiResponse<PagedResultDto<CircleDto>>>(
-      `${environment.apiUrl}/api/Circle/GetResultsByFilter`,
-      { params }
-    );
+    return this.http
+      .get<ApiResponse<PagedResultDto<CircleDto>>>(
+        `${environment.apiUrl}/api/Circle/GetResultsByFilter`,
+        { params }
+      )
+      .pipe(map((response) => normalizePagedResult(response, { skipCount: filter.skipCount })));
   }
 
   getUpcoming(

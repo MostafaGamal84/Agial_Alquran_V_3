@@ -1,8 +1,9 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
-import { ApiResponse, FilteredResultRequestDto, PagedResultDto } from './lookup.service';
+import { ApiResponse, FilteredResultRequestDto, PagedResultDto, normalizePagedResult } from './lookup.service';
 
 export interface ViewStudentSubscribeReDto {
   id: number;
@@ -60,10 +61,12 @@ export class StudentSubscribeService {
     if (studentId !== undefined) {
       params = params.set('studentId', studentId.toString());
     }
-    return this.http.get<ApiResponse<PagedResultDto<ViewStudentSubscribeReDto>>>(
-      `${environment.apiUrl}/api/StudentSubscrib/GetStudents`,
-      { params }
-    );
+    return this.http
+      .get<ApiResponse<PagedResultDto<ViewStudentSubscribeReDto>>>(
+        `${environment.apiUrl}/api/StudentSubscrib/GetStudents`,
+        { params }
+      )
+      .pipe(map((response) => normalizePagedResult(response, { skipCount: filter.skipCount })));
   }
 
   getStudentSubscribesWithPayment(
@@ -98,10 +101,12 @@ export class StudentSubscribeService {
       params = params.set('SortBy', filter.sortBy);
     }
     params = params.set('studentId', studentId.toString());
-    return this.http.get<ApiResponse<PagedResultDto<ViewStudentSubscribeReDto>>>(
-      `${environment.apiUrl}/api/StudentSubscrib/GetStudentSubscribesWithPayment`,
-      { params }
-    );
+    return this.http
+      .get<ApiResponse<PagedResultDto<ViewStudentSubscribeReDto>>>(
+        `${environment.apiUrl}/api/StudentSubscrib/GetStudentSubscribesWithPayment`,
+        { params }
+      )
+      .pipe(map((response) => normalizePagedResult(response, { skipCount: filter.skipCount })));
   }
 
   create(model: AddStudentSubscribeDto): Observable<ApiResponse<boolean>> {
