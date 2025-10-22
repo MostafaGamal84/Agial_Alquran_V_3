@@ -22,6 +22,7 @@ export interface ApiResponse<T> {
   isSuccess: boolean;
   errors: ApiError[];
   data: T | null;
+  message?: string | null;
 }
 
 interface LoginData {

@@ -5,17 +5,19 @@ import { AbstractControl, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { take } from 'rxjs/operators';
+import { Subscription, timer } from 'rxjs';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
-import { AuthenticationService, ApiError } from 'src/app/@theme/services/authentication.service';
+import {
+  AuthenticationService,
+  ApiError,
+  ApiResponse,
+} from 'src/app/@theme/services/authentication.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
-
-const DEFAULT_CONFIRMATION_MESSAGE = 'تم ارسال الكود الى بريدك، الرجاء التحقق من رسائل البريد';
 
 interface NavigationState {
   message?: string;
-  code?: string;
 }
 
 @Component({
@@ -38,12 +40,11 @@ export class ResetPasswordComponent implements OnInit, OnDestroy {
   loading = false;
   resendLoading = false;
   canResend = false;
-  confirmationMessage = DEFAULT_CONFIRMATION_MESSAGE;
-  otpPreview: string | null = null;
+  confirmationMessage = '';
   email: string | null = null;
 
   private readonly countdownDuration = 5 * 60; // 5 minutes in seconds
-private countdownIntervalId: any;
+  private countdownSub: Subscription | null = null;
   remainingSeconds = 0;
   countdownLabel = '05:00';
 
@@ -67,16 +68,8 @@ private countdownIntervalId: any;
     if (state?.message) {
       this.confirmationMessage = state.message;
     }
-    if (state?.code) {
-      this.otpPreview = state.code;
-      this.resetForm.patchValue({ code: state.code });
-      this.authenticationService.pendingCode = state.code;
-    } else if (this.authenticationService.pendingCode) {
-      this.otpPreview = this.authenticationService.pendingCode;
-      this.resetForm.patchValue({ code: this.authenticationService.pendingCode });
-    } else {
-      this.authenticationService.pendingCode = null;
-    }
+
+    this.authenticationService.pendingCode = null;
 
     const queryEmail = this.route.snapshot.queryParamMap.get('email');
     this.email = queryEmail ?? this.authenticationService.pendingEmail ?? null;
@@ -168,11 +161,15 @@ private countdownIntervalId: any;
         next: (res) => {
           this.loading = false;
           if (res?.isSuccess) {
-            const message = res.data ?? DEFAULT_CONFIRMATION_MESSAGE;
-            this.toast.success(message);
+            const message = this.extractConfirmationMessage(res);
+            if (message) {
+              this.toast.success(message);
+              this.router.navigate(['/login'], { state: { message } });
+            } else {
+              this.router.navigate(['/login']);
+            }
             this.authenticationService.pendingEmail = null;
             this.authenticationService.pendingCode = null;
-            this.router.navigate(['/login'], { state: { message } });
           } else if (res?.errors?.length) {
             this.handleErrors(res.errors);
           } else {
@@ -199,14 +196,15 @@ private countdownIntervalId: any;
         next: (res) => {
           this.resendLoading = false;
           if (res?.isSuccess) {
-            const { message, code } = this.normalizeResponse(res.data);
-            this.confirmationMessage = message;
-            this.otpPreview = code;
-            if (code) {
-              this.resetForm.patchValue({ code });
+            const message = this.extractConfirmationMessage(res);
+            if (message) {
+              this.confirmationMessage = message;
+              this.toast.success(message);
             }
-            this.authenticationService.pendingCode = code ?? null;
-            this.toast.success(message);
+            this.authenticationService.pendingCode = null;
+            this.resetForm.patchValue({ code: '' });
+            this.codeControl.markAsPristine();
+            this.codeControl.markAsUntouched();
             this.startCountdown();
           } else if (res?.errors?.length) {
             this.handleErrors(res.errors);
@@ -259,20 +257,27 @@ private countdownIntervalId: any;
     this.updateCountdownLabel();
     this.canResend = false;
 
-    this.countdownIntervalId = window.setInterval(() => {
-      this.remainingSeconds = Math.max(this.remainingSeconds - 1, 0);
-      this.updateCountdownLabel();
-      if (this.remainingSeconds === 0) {
-        this.canResend = true;
-        this.stopCountdown();
-      }
-    }, 1000);
+    this.countdownSub = timer(0, 1000)
+      .pipe(take(this.countdownDuration + 1))
+      .subscribe({
+        next: (elapsed) => {
+          const remaining = this.countdownDuration - elapsed;
+          this.remainingSeconds = remaining > 0 ? remaining : 0;
+          this.updateCountdownLabel();
+          if (this.remainingSeconds === 0) {
+            this.canResend = true;
+          }
+        },
+        complete: () => {
+          this.countdownSub = null;
+        }
+      });
   }
 
   private stopCountdown(): void {
-    if (this.countdownIntervalId) {
-      clearInterval(this.countdownIntervalId);
-      this.countdownIntervalId = null;
+    if (this.countdownSub) {
+      this.countdownSub.unsubscribe();
+      this.countdownSub = null;
     }
   }
 
@@ -284,18 +289,20 @@ private countdownIntervalId: any;
     this.countdownLabel = `${minutes}:${seconds}`;
   }
 
-  private normalizeResponse(data: string | null): { message: string; code: string | null } {
-    const trimmed = data?.toString().trim() ?? '';
-    if (trimmed && /^\d{4}$/.test(trimmed)) {
-      return { message: DEFAULT_CONFIRMATION_MESSAGE, code: trimmed };
+  private extractConfirmationMessage(response: ApiResponse<string>): string | null {
+    const messageFromResponse = response.message?.toString().trim() ?? '';
+    const data = response.data?.toString().trim() ?? '';
+
+    if (data && !/^\d{4}$/.test(data)) {
+      return data;
     }
 
-    return { message: trimmed || DEFAULT_CONFIRMATION_MESSAGE, code: null };
+    return messageFromResponse || null;
   }
 
   private clearServerError(control: AbstractControl): void {
     const errors = control.errors;
-    if (!errors?.['server']) {
+    if (!errors?.server) {
       return;
     }
 

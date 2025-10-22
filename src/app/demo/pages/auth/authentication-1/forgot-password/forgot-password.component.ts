@@ -2,16 +2,18 @@
 import { CommonModule } from '@angular/common';
 import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { AbstractControl, FormBuilder, Validators } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { NavigationExtras, Router, RouterModule } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { take } from 'rxjs/operators';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
-import { AuthenticationService, ApiError } from 'src/app/@theme/services/authentication.service';
+import {
+  AuthenticationService,
+  ApiError,
+  ApiResponse,
+} from 'src/app/@theme/services/authentication.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
-
-const DEFAULT_CONFIRMATION_MESSAGE = 'تم ارسال الكود الى بريدك، الرجاء التحقق من رسائل البريد';
 
 @Component({
   selector: 'app-forgot-password',
@@ -85,13 +87,18 @@ export class ForgotPasswordComponent implements OnInit {
         next: (res) => {
           this.loading = false;
           if (res?.isSuccess) {
-            const { message, code } = this.normalizeResponse(res.data);
-            this.authenticationService.pendingCode = code ?? null;
-            this.toast.success(message);
-            this.router.navigate(['/reset-password'], {
-              queryParams: { email },
-              state: { message, code }
-            });
+            const message = this.extractConfirmationMessage(res);
+            this.authenticationService.pendingCode = null;
+            if (message) {
+              this.toast.success(message);
+            }
+
+            const extras: NavigationExtras = { queryParams: { email } };
+            if (message) {
+              extras.state = { message };
+            }
+
+            this.router.navigate(['/reset-password'], extras);
           } else if (res?.errors?.length) {
             this.handleErrors(res.errors);
           } else {
@@ -121,18 +128,20 @@ export class ForgotPasswordComponent implements OnInit {
     this.toast.error(message);
   }
 
-  private normalizeResponse(data: string | null): { message: string; code: string | null } {
-    const trimmed = data?.toString().trim() ?? '';
-    if (trimmed && /^\d{4}$/.test(trimmed)) {
-      return { message: DEFAULT_CONFIRMATION_MESSAGE, code: trimmed };
+  private extractConfirmationMessage(response: ApiResponse<string>): string | null {
+    const messageFromResponse = response.message?.toString().trim() ?? '';
+    const data = response.data?.toString().trim() ?? '';
+
+    if (data && !/^\d{4}$/.test(data)) {
+      return data;
     }
 
-    return { message: trimmed || DEFAULT_CONFIRMATION_MESSAGE, code: null };
+    return messageFromResponse || null;
   }
 
   private clearServerError(control: AbstractControl): void {
     const errors = control.errors;
-    if (!errors?.['server']) {
+    if (!errors?.server) {
       return;
     }
 
