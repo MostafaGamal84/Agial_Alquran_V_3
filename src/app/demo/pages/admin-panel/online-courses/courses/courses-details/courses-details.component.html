@@ -3,9 +3,9 @@
     <app-card cardTitle="Course Details" padding="0" cardClass="sm-block">
       <div class="p-10">
         <h5 class="m-b-10">{{ course?.name }}</h5>
-        <div class="course-details-grid" *ngIf="course as currentCourse">
+        <div class="course-details-table" *ngIf="course as currentCourse">
           <div
-            class="course-detail-item"
+            class="course-detail-row"
             *ngIf="course?.teacher || course?.teacherName || course?.teacherId"
           >
             <span class="course-detail-label">Teacher</span>
@@ -15,25 +15,27 @@
           </div>
 
           <ng-container *ngIf="getSchedule(currentCourse) as schedule">
-            <div class="course-detail-item course-detail-item--full" *ngIf="schedule.length">
+            <div class="course-detail-row" *ngIf="schedule.length">
               <span class="course-detail-label">Schedule</span>
-              <ul class="course-detail-list">
-                <li *ngFor="let day of schedule" class="schedule-item">
-                  <span class="schedule-day">{{ getScheduleDayLabel(day) }}</span>
-                  <ng-container *ngIf="getScheduleTimeLabel(day) as time">
-                    <span class="schedule-separator">•</span>
-                    <span class="schedule-time">{{ time }}</span>
-                  </ng-container>
-                </li>
-              </ul>
+              <div class="course-detail-value">
+                <ul class="course-detail-list">
+                  <li *ngFor="let day of schedule" class="schedule-item">
+                    <span class="schedule-day">{{ getScheduleDayLabel(day) }}</span>
+                    <ng-container *ngIf="getScheduleTimeLabel(day) as time">
+                      <span class="schedule-separator">•</span>
+                      <span class="schedule-time">{{ time }}</span>
+                    </ng-container>
+                  </li>
+                </ul>
+              </div>
             </div>
 
             <ng-container *ngIf="!schedule.length">
-              <div class="course-detail-item" *ngIf="getDayLabel(currentCourse)">
+              <div class="course-detail-row" *ngIf="getDayLabel(currentCourse)">
                 <span class="course-detail-label">Day</span>
                 <span class="course-detail-value">{{ getDayLabel(currentCourse) }}</span>
               </div>
-              <div class="course-detail-item" *ngIf="getFormattedStartTime(currentCourse)">
+              <div class="course-detail-row" *ngIf="getFormattedStartTime(currentCourse)">
                 <span class="course-detail-label">Start Time</span>
                 <span class="course-detail-value">{{ getFormattedStartTime(currentCourse) }}</span>
               </div>
@@ -41,13 +43,15 @@
           </ng-container>
 
           <ng-container *ngIf="getManagers(currentCourse) as managers">
-            <div class="course-detail-item course-detail-item--full" *ngIf="managers.length">
+            <div class="course-detail-row" *ngIf="managers.length">
               <span class="course-detail-label">Managers</span>
-              <ul class="course-detail-list">
-                <li *ngFor="let manager of managers" class="schedule-item">
-                  <span class="schedule-day">{{ manager }}</span>
-                </li>
-              </ul>
+              <div class="course-detail-value">
+                <ul class="course-detail-list">
+                  <li *ngFor="let manager of managers" class="schedule-item">
+                    <span class="schedule-day">{{ manager }}</span>
+                  </li>
+                </ul>
+              </div>
             </div>
           </ng-container>
         </div>
