@@ -48,6 +48,12 @@ interface ResetPasswordPayload {
   code: string;
 }
 
+export interface ChangePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthenticationService {
   // DI
@@ -184,6 +190,10 @@ export class AuthenticationService {
 
   resetPassword(payload: ResetPasswordPayload): Observable<ApiResponse<string>> {
     return this.http.post<ApiResponse<string>>(`${environment.apiUrl}/api/Account/ResetPassword`, payload);
+  }
+
+  changePassword(payload: ChangePasswordPayload): Observable<ApiResponse<string>> {
+    return this.http.post<ApiResponse<string>>(`${environment.apiUrl}/api/Account/ChangePassword`, payload);
   }
 
   // ------- Session ops -------
