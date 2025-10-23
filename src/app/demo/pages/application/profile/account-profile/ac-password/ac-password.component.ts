@@ -53,7 +53,7 @@ export class AcPasswordComponent {
     }
   ];
 
-  private readonly passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  private readonly passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
   private readonly genericErrorMessage = 'Unable to change password. Please try again.';
 
   readonly changePasswordForm = this.fb.group({
