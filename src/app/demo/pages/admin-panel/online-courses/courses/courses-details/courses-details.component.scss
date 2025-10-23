@@ -1,1 +1,68 @@
-/* Styles for course details */
+.course-details-table {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.course-detail-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1rem 1.5rem;
+}
+
+.course-detail-label {
+  flex: 0 0 180px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent-600);
+  text-transform: none;
+  line-height: 1.4;
+}
+
+.course-detail-value {
+  flex: 1 1 240px;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.5;
+  min-width: 200px;
+}
+
+.course-detail-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+}
+
+.course-detail-list .schedule-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.course-detail-list .schedule-day {
+  font-weight: 500;
+}
+
+.course-detail-list .schedule-separator {
+  opacity: 0.6;
+}
+
+.course-detail-list .schedule-time {
+  font-weight: 500;
+}
+
+@media (max-width: 576px) {
+  .course-detail-label,
+  .course-detail-value {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .course-detail-row {
+    gap: 0.5rem 0;
+  }
+}
