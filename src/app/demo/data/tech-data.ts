@@ -11,7 +11,7 @@ export const techData = [
   },
   {
     tech_name: 'React MUI',
-    url: 'https://ableproadmin.com/react/dashboard/default',
+    url: 'https://ajyal-alquran.com/react/dashboard/default',
     images: 'assets/images/landing/tech-react.svg',
     target: true,
     tooltip: 'React MUI',
@@ -21,7 +21,7 @@ export const techData = [
   },
   {
     tech_name: 'Bootstrap 5',
-    url: 'https://ableproadmin.com/dashboard/index.html',
+    url: 'https://ajyal-alquran.com/dashboard/index.html',
     images: 'assets/images/landing/tech-bootstrap.svg',
     target: true,
     tooltip: 'Bootstrap 5',
@@ -31,7 +31,7 @@ export const techData = [
   },
   {
     tech_name: 'CodeIgniter',
-    url: 'https://ableproadmin.com/codeigniter/default/public/dashboard-default',
+    url: 'https://ajyal-alquran.com/codeigniter/default/public/dashboard-default',
     images: 'assets/images/landing/tech-codeigniter.svg',
     target: true,
     tooltip: 'CodeIgniter',
@@ -61,7 +61,7 @@ export const techData = [
   },
   {
     tech_name: 'Vue',
-    url: 'https://ableproadmin.com/vue/dashboard/default',
+    url: 'https://ajyal-alquran.com/vue/dashboard/default',
     images: 'assets/images/landing/tech-vuetify.svg',
     target: true,
     tooltip: 'Vue',
@@ -71,7 +71,7 @@ export const techData = [
   },
   {
     tech_name: 'Tailwind',
-    url: 'https://ableproadmin.com/tailwind/dashboard/index.html',
+    url: 'https://ajyal-alquran.com/tailwind/dashboard/index.html',
     images: 'assets/images/landing/tech-tailwind.svg',
     target: true,
     tooltip: 'Tailwind',
