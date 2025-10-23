@@ -1,110 +1,171 @@
 <div class="row m-t-25">
   <div class="col-12">
-    <app-card cardTitle="General Settings">
-      <div class="row">
-        <div class="col-sm-6 m-b-15">
-          <label for="name" class="f-w-500">
-            Username
-            <span class="text-warn-500">*</span>
-          </label>
-          <mat-form-field appearance="outline" class="w-100 m-t-5">
-            <input type="text" matInput placeholder="Name" value="Ashoka_Tano_16" />
-            <mat-hint>Your Profile URL: https://pc.com/Ashoka_Tano_16</mat-hint>
-          </mat-form-field>
+    <app-card cardTitle="My Profile">
+      <mat-progress-bar *ngIf="isLoadingProfile" mode="indeterminate"></mat-progress-bar>
+
+      @if (profileError && !isLoadingProfile) {
+        <div class="mat-caption text-warn-500 m-b-15">{{ profileError }}</div>
+      }
+
+      <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="profile-form">
+        <div class="row">
+          <div class="col-md-6 m-b-15">
+            <label class="f-w-500" for="fullName">
+              Full Name
+              <span class="text-warn-500">*</span>
+            </label>
+            <mat-form-field appearance="outline" class="w-100 m-t-5">
+              <input
+                id="fullName"
+                type="text"
+                matInput
+                placeholder="Enter full name"
+                formControlName="fullName"
+              />
+              @if (profileForm.get('fullName')?.touched && profileForm.get('fullName')?.hasError('required')) {
+                <mat-error>Full name is required.</mat-error>
+              }
+              @if (profileForm.get('fullName')?.touched && profileForm.get('fullName')?.hasError('maxlength')) {
+                <mat-error>Maximum 150 characters allowed.</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <div class="col-md-6 m-b-15">
+            <label class="f-w-500" for="email">
+              Email
+              <span class="text-warn-500">*</span>
+            </label>
+            <mat-form-field appearance="outline" class="w-100 m-t-5">
+              <input id="email" type="email" matInput placeholder="Enter email" formControlName="email" />
+              @if (profileForm.get('email')?.touched && profileForm.get('email')?.hasError('required')) {
+                <mat-error>Email is required.</mat-error>
+              }
+              @if (profileForm.get('email')?.touched && profileForm.get('email')?.hasError('email')) {
+                <mat-error>Enter a valid email address.</mat-error>
+              }
+              @if (profileForm.get('email')?.touched && profileForm.get('email')?.hasError('maxlength')) {
+                <mat-error>Maximum 150 characters allowed.</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <div class="col-md-6 m-b-15">
+            <label class="f-w-500" for="mobile">
+              Mobile Number
+              <span class="text-warn-500">*</span>
+            </label>
+            <mat-form-field appearance="outline" class="w-100 m-t-5">
+              <input
+                id="mobile"
+                type="tel"
+                matInput
+                placeholder="Enter mobile number"
+                formControlName="mobile"
+              />
+              @if (profileForm.get('mobile')?.touched && profileForm.get('mobile')?.hasError('required')) {
+                <mat-error>Mobile number is required.</mat-error>
+              }
+              @if (profileForm.get('mobile')?.touched && profileForm.get('mobile')?.hasError('maxlength')) {
+                <mat-error>Maximum 25 characters allowed.</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <div class="col-md-6 m-b-15">
+            <label class="f-w-500" for="secondMobile">Secondary Mobile</label>
+            <mat-form-field appearance="outline" class="w-100 m-t-5">
+              <input
+                id="secondMobile"
+                type="tel"
+                matInput
+                placeholder="Enter secondary mobile"
+                formControlName="secondMobile"
+              />
+              @if (profileForm.get('secondMobile')?.touched && profileForm.get('secondMobile')?.hasError('maxlength')) {
+                <mat-error>Maximum 25 characters allowed.</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <div class="col-md-4 m-b-15">
+            <label class="f-w-500" for="nationalityId">
+              Nationality
+              <span class="text-warn-500">*</span>
+            </label>
+            <mat-form-field appearance="outline" class="w-100 m-t-5">
+              <mat-select id="nationalityId" placeholder="Select nationality" formControlName="nationalityId">
+                @for (nation of nationalities; track nation.id) {
+                  <mat-option [value]="nation.id">{{ nation.name }}</mat-option>
+                }
+              </mat-select>
+              @if (profileForm.get('nationalityId')?.touched && profileForm.get('nationalityId')?.hasError('required')) {
+                <mat-error>Nationality is required.</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <div class="col-md-4 m-b-15">
+            <label class="f-w-500" for="governorateId">
+              Governorate
+              <span class="text-warn-500">*</span>
+            </label>
+            <mat-form-field appearance="outline" class="w-100 m-t-5">
+              <mat-select id="governorateId" placeholder="Select governorate" formControlName="governorateId">
+                @for (gov of governorates; track gov.id) {
+                  <mat-option [value]="gov.id">{{ gov.name }}</mat-option>
+                }
+              </mat-select>
+              @if (profileForm.get('governorateId')?.touched && profileForm.get('governorateId')?.hasError('required')) {
+                <mat-error>Governorate is required.</mat-error>
+              }
+            </mat-form-field>
+          </div>
+
+          <div class="col-md-4 m-b-15">
+            <label class="f-w-500" for="branchId">
+              Branch
+              <span class="text-warn-500">*</span>
+            </label>
+            <mat-form-field appearance="outline" class="w-100 m-t-5">
+              <mat-select id="branchId" placeholder="Select branch" formControlName="branchId">
+                @for (branch of branches; track branch.id) {
+                  <mat-option [value]="branch.id">{{ branch.label }}</mat-option>
+                }
+              </mat-select>
+              @if (profileForm.get('branchId')?.touched && profileForm.get('branchId')?.hasError('required')) {
+                <mat-error>Branch is required.</mat-error>
+              }
+            </mat-form-field>
+          </div>
         </div>
-        <div class="col-sm-6 m-b-15">
-          <label for="name" class="f-w-500">
-            Account Email
-            <span class="text-warn-500">*</span>
-          </label>
-          <mat-form-field appearance="outline" class="w-100 m-t-5">
-            <input type="text" matInput placeholder="Name" value="demo@sample.com" />
-          </mat-form-field>
+
+        <div class="text-end m-t-25">
+          <button
+            type="button"
+            mat-stroked-button
+            class="m-r-10"
+            (click)="onReset()"
+            [disabled]="isSaving || isLoadingProfile"
+          >
+            Reset
+          </button>
+          <button
+            type="submit"
+            mat-flat-button
+            color="primary"
+            [disabled]="
+              profileForm.invalid || profileForm.pristine || isSaving || isLoadingProfile
+            "
+          >
+            @if (isSaving) {
+              Saving...
+            } @else {
+              Save Changes
+            }
+          </button>
         </div>
-        <div class="col-sm-6">
-          <label for="phone" class="f-w-500">Language</label>
-          <mat-form-field appearance="outline" class="w-100 m-t-5">
-            <mat-select [(ngModel)]="selectedOption">
-              <mat-option value="1">India</mat-option>
-              <mat-option value="2">Washington</mat-option>
-              <mat-option value="3">Africa</mat-option>
-              <mat-option value="3">New York</mat-option>
-              <mat-option value="3">Malaysia</mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-        <div class="col-sm-6">
-          <label for="phone" class="f-w-500">Sign in Using</label>
-          <mat-form-field appearance="outline" class="w-100 m-t-5">
-            <mat-select [(ngModel)]="selectedPassword">
-              <mat-option value="1">Password</mat-option>
-              <mat-option value="2">Face Recognition</mat-option>
-              <mat-option value="3">Thumb Impression</mat-option>
-              <mat-option value="3">Key</mat-option>
-              <mat-option value="3">Pin</mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-      </div>
-    </app-card>
-  </div>
-  <div class="col-lg-6">
-    <app-card cardTitle="Advance Settings">
-      <ul class="list-group list-group-flush">
-        @for (task of advance_setting; track task) {
-          <li class="list-group-item p-x-0 {{ task.space }}">
-            <div class="flex align-item-center justify-content-between">
-              <div>
-                <div class="m-b-5">{{ task.title }}</div>
-                <div class="text-muted mat-caption">{{ task.text }}</div>
-              </div>
-              <mat-slide-toggle color="primary" checked></mat-slide-toggle>
-            </div>
-          </li>
-        }
-      </ul>
-    </app-card>
-  </div>
-  <div class="col-lg-6">
-    <app-card cardTitle="Recognized Devices">
-      <ul class="list-group list-group-flush">
-        @for (task of device; track task) {
-          <li class="list-group-item adv-setting {{ task.space }}">
-            <div class="flex align-item-center justify-content-between">
-              <div>
-                <div>{{ task.title }}</div>
-                <div class="text-muted mat-caption">{{ task.text }}</div>
-              </div>
-              <div>
-                <div class="{{ task.status_type }} block-inline m-r-10">
-                  <i class="fas fa-circle f-10 m-r-10"></i>
-                  {{ task.status }}
-                </div>
-                <a href="javascript:" class="text-warn-500">
-                  <i class="ti ti-circle-minus"></i>
-                </a>
-              </div>
-            </div>
-          </li>
-        }
-      </ul>
-    </app-card>
-  </div>
-  <div class="col-12">
-    <app-card cardTitle="Active Sessions">
-      <ul class="list-group list-group-flush">
-        @for (task of sessions; track task) {
-          <li class="list-group-item adv-setting {{ task.space }}">
-            <div class="flex align-item-center justify-content-between">
-              <div class="m-r-10">
-                <div class="f-16 f-w-600">{{ task.title }}</div>
-                <div class="text-muted">{{ task.text }}</div>
-              </div>
-              <button mat-button color="warn">Logout</button>
-            </div>
-          </li>
-        }
-      </ul>
+      </form>
     </app-card>
   </div>
 </div>
