@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 
 export interface CreateUserDto {
@@ -45,6 +46,28 @@ export interface ApiResponse<T> {
   errors: ApiError[];
   data: T;
   message?: string;
+  messageCode?: number;
+}
+
+export interface ProfileDto {
+  id: number;
+  fullName: string;
+  email: string;
+  mobile: string | null;
+  secondMobile: string | null;
+  nationalityId: number | null;
+  governorateId: number | null;
+  branchId: number | null;
+}
+
+export interface UpdateProfileDto {
+  fullName?: string | null;
+  email?: string | null;
+  mobile?: string | null;
+  secondMobile?: string | null;
+  nationalityId?: number | null;
+  governorateId?: number | null;
+  branchId?: number | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -68,5 +91,24 @@ export class UserService {
       `${environment.apiUrl}/api/User/DisableUser`,
       { params }
     );
+  }
+
+  getProfile(): Observable<ApiResponse<ProfileDto>> {
+    const profileUrl = `${environment.apiUrl}/api/User/Profile`;
+    const legacyProfileUrl = `${environment.apiUrl}/api/User/GetProfile`;
+
+    return this.http.get<ApiResponse<ProfileDto>>(profileUrl).pipe(
+      catchError((error) => {
+        const status = error?.status as number | undefined;
+        if (status === 404 || status === 405) {
+          return this.http.get<ApiResponse<ProfileDto>>(legacyProfileUrl);
+        }
+        return throwError(() => error);
+      })
+    );
+  }
+
+  updateProfile(model: UpdateProfileDto): Observable<ApiResponse<boolean>> {
+    return this.http.put<ApiResponse<boolean>>(`${environment.apiUrl}/api/User/Profile`, model);
   }
 }
