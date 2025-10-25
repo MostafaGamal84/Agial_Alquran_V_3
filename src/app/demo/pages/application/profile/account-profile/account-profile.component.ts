@@ -26,41 +26,43 @@ export class AccountProfileComponent implements OnInit {
   constructor() {
     this.navLinks = [
       {
-        label: 'Profile',
-        link: '/application/profile/account/profile',
-        icon: 'ti ti-user',
-        index: 0
-      },
-      {
-        label: 'Personal Details',
-        link: '/application/profile/account/personal',
-        icon: 'ti ti-file-text',
-        index: 1
-      },
-      {
         label: 'My Account',
         link: '/application/profile/account/account',
         icon: 'ti ti-id',
-        index: 2
-      },
+        index: 0
+      }, 
       {
         label: 'Change Password',
         link: '/application/profile/account/password',
         icon: 'ti ti-lock',
-        index: 3
+        index: 1
       },
-      {
-        label: 'Role',
-        link: '/application/profile/account/role',
-        icon: 'ti ti-users',
-        index: 4
-      },
-      {
-        label: 'Settings',
-        link: '/application/profile/account/settings',
-        icon: 'ti ti-settings',
-        index: 5
-      }
+      // {
+      //   label: 'Profile',
+      //   link: '/application/profile/account/profile',
+      //   icon: 'ti ti-user',
+      //   index: 0
+      // },
+      // {
+      //   label: 'Personal Details',
+      //   link: '/application/profile/account/personal',
+      //   icon: 'ti ti-file-text',
+      //   index: 1
+      // },
+      
+     
+      // {
+      //   label: 'Role',
+      //   link: '/application/profile/account/role',
+      //   icon: 'ti ti-users',
+      //   index: 4
+      // },
+      // {
+      //   label: 'Settings',
+      //   link: '/application/profile/account/settings',
+      //   icon: 'ti ti-settings',
+      //   index: 5
+      // }
     ];
   }
 
