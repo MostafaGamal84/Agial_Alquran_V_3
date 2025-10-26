@@ -19,6 +19,7 @@ import { ToastService } from 'src/app/@theme/services/toast.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { DAY_OPTIONS, DayValue, coerceDayValue } from 'src/app/@theme/types/DaysEnum';
+import { ProfileDto, UserService } from 'src/app/@theme/services/user.service';
 
 import { timeStringToTimeSpanString } from 'src/app/@theme/utils/time';
 import { Subject, takeUntil } from 'rxjs';
@@ -50,11 +51,13 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
   private circle = inject(CircleService);
   private toast = inject(ToastService);
   private auth = inject(AuthenticationService);
+  private userService = inject(UserService);
   private destroy$ = new Subject<void>();
   private readonly userFilter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
 
   private currentManagerId: number | null = null;
   private lastLoadedManagerId: number | null = null;
+  private managerFallback: LookUpUserDto | null = null;
 
   circleForm!: FormGroup;
   teachers: LookUpUserDto[] = [];
@@ -86,6 +89,10 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
 
     if (this.currentManagerId !== null) {
       this.applyManagerSelection(managersControl, this.currentManagerId, true);
+    }
+
+    if (this.isManager) {
+      this.resolveManagerFromProfile();
     }
 
     this.lookup
@@ -125,8 +132,6 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
       this.loadTeachers(initialManagerId);
     }
   }
-
-
 
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -181,20 +186,42 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
   }
 
   private ensureCurrentManagerPresence(list: LookUpUserDto[]): LookUpUserDto[] {
-    if (!this.isManager || this.currentManagerId === null) {
+    if (!Array.isArray(list)) {
+      list = [];
+    }
+
+    if (!this.isManager) {
       return list;
     }
 
-    const exists = list.some((manager) => manager?.id === this.currentManagerId);
+    const managerId = this.currentManagerId ?? this.managerFallback?.id ?? null;
+    if (managerId === null) {
+      return list;
+    }
+
+    const exists = list.some((manager) => manager?.id === managerId);
     if (exists) {
       return list;
     }
 
+    const fallback = this.managerFallback ?? this.buildManagerFallback(managerId);
+    if (!fallback) {
+      return list;
+    }
+
+    return [...list, fallback];
+  }
+
+  private buildManagerFallback(managerId: number): LookUpUserDto | null {
     const current = this.auth.currentUserValue;
-    const fallback: LookUpUserDto = {
-      id: this.currentManagerId,
-      fullName: current?.user?.name ?? '',
-      email: current?.user?.email ?? '',
+    if (!current) {
+      return null;
+    }
+
+    return {
+      id: managerId,
+      fullName: current.user?.name ?? '',
+      email: current.user?.email ?? '',
       mobile: '',
       secondMobile: '',
       nationality: '',
@@ -203,8 +230,6 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
       governorateId: 0,
       branchId: 0
     };
-
-    return [...list, fallback];
   }
 
   private tryResolveManagerIdentity(list: LookUpUserDto[]): number | null {
@@ -266,6 +291,55 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
     if (triggerLoad && this.lastLoadedManagerId !== managerId) {
       this.loadTeachers(managerId);
     }
+  }
+
+  private resolveManagerFromProfile(): void {
+    this.userService
+      .getProfile()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((res) => {
+        if (!res.isSuccess || !res.data) {
+          return;
+        }
+
+        const managerLookup = this.mapProfileToLookup(res.data);
+        if (!managerLookup) {
+          return;
+        }
+
+        this.managerFallback = managerLookup;
+        this.currentManagerId = managerLookup.id;
+
+        this.managers = this.ensureCurrentManagerPresence(this.managers);
+
+        const managersControl = this.circleForm.get('managers');
+        const shouldTriggerLoad = this.lastLoadedManagerId !== this.currentManagerId;
+        this.applyManagerSelection(managersControl, this.currentManagerId, shouldTriggerLoad);
+      });
+  }
+
+  private mapProfileToLookup(profile: ProfileDto | null | undefined): LookUpUserDto | null {
+    if (!profile) {
+      return null;
+    }
+
+    const parsedId = Number(profile.id);
+    if (!Number.isFinite(parsedId) || parsedId <= 0) {
+      return null;
+    }
+
+    return {
+      id: parsedId,
+      fullName: profile.fullName ?? '',
+      email: profile.email ?? '',
+      mobile: profile.mobile ?? '',
+      secondMobile: profile.secondMobile ?? '',
+      nationality: '',
+      nationalityId: profile.nationalityId ?? 0,
+      governorate: '',
+      governorateId: profile.governorateId ?? 0,
+      branchId: profile.branchId ?? 0
+    } as LookUpUserDto;
   }
 
   private loadTeachers(managerId: number | null): void {

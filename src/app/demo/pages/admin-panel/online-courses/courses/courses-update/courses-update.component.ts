@@ -24,6 +24,7 @@ import { AuthenticationService } from 'src/app/@theme/services/authentication.se
 import { DAY_OPTIONS, DayValue, coerceDayValue } from 'src/app/@theme/types/DaysEnum';
 import { formatTimeValue, timeStringToTimeSpanString } from 'src/app/@theme/utils/time';
 import { Subject, takeUntil } from 'rxjs';
+import { ProfileDto, UserService } from 'src/app/@theme/services/user.service';
 
 interface CircleScheduleFormValue {
   dayId: DayValue | null;
@@ -50,6 +51,7 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
   private toast = inject(ToastService);
   private route = inject(ActivatedRoute);
   private auth = inject(AuthenticationService);
+  private userService = inject(UserService);
   private destroy$ = new Subject<void>();
   private readonly userFilter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
 
@@ -61,6 +63,7 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
   isManager = false;
   private currentManagerId: number | null = null;
   private lastLoadedManagerId: number | null = null;
+  private managerFallback: LookUpUserDto | null = null;
   days = DAY_OPTIONS;
 
   ngOnInit(): void {
@@ -85,6 +88,10 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
 
     if (this.currentManagerId !== null) {
       this.applyManagerSelection(managersControl, this.currentManagerId);
+    }
+
+    if (this.isManager) {
+      this.resolveManagerFromProfile();
     }
 
     managersControl
@@ -382,20 +389,42 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
   }
 
   private ensureCurrentManagerPresence(list: LookUpUserDto[]): LookUpUserDto[] {
-    if (!this.isManager || this.currentManagerId === null) {
+    if (!Array.isArray(list)) {
+      list = [];
+    }
+
+    if (!this.isManager) {
       return list;
     }
 
-    const exists = list.some((manager) => manager?.id === this.currentManagerId);
+    const managerId = this.currentManagerId ?? this.managerFallback?.id ?? null;
+    if (managerId === null) {
+      return list;
+    }
+
+    const exists = list.some((manager) => manager?.id === managerId);
     if (exists) {
       return list;
     }
 
+    const fallback = this.managerFallback ?? this.buildManagerFallback(managerId);
+    if (!fallback) {
+      return list;
+    }
+
+    return [...list, fallback];
+  }
+
+  private buildManagerFallback(managerId: number): LookUpUserDto | null {
     const current = this.auth.currentUserValue;
-    const fallback: LookUpUserDto = {
-      id: this.currentManagerId,
-      fullName: current?.user?.name ?? '',
-      email: current?.user?.email ?? '',
+    if (!current) {
+      return null;
+    }
+
+    return {
+      id: managerId,
+      fullName: current.user?.name ?? '',
+      email: current.user?.email ?? '',
       mobile: '',
       secondMobile: '',
       nationality: '',
@@ -404,8 +433,6 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
       governorateId: 0,
       branchId: 0
     };
-
-    return [...list, fallback];
   }
 
   private tryResolveManagerIdentity(list: LookUpUserDto[]): number | null {
@@ -459,6 +486,74 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
     if (this.isManager) {
       control.disable({ emitEvent: false });
     }
+  }
+
+  private resolveManagerFromProfile(): void {
+    this.userService
+      .getProfile()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((res) => {
+        if (!res.isSuccess || !res.data) {
+          return;
+        }
+
+        const managerLookup = this.mapProfileToLookup(res.data);
+        if (!managerLookup) {
+          return;
+        }
+
+        this.managerFallback = managerLookup;
+        this.currentManagerId = managerLookup.id;
+
+        this.managers = this.ensureCurrentManagerPresence(this.managers);
+
+        const managersControl = this.circleForm.get('managers');
+        this.applyManagerSelection(managersControl, this.currentManagerId);
+
+        const currentTeacherId = this.circleForm.get('teacherId')?.value as number | null;
+        const selectedStudents = this.circleForm.get('studentsIds')?.value as number[] | null;
+        const normalizedStudents = Array.isArray(selectedStudents) ? selectedStudents : [];
+        const fallbackTeacher =
+          typeof currentTeacherId === 'number'
+            ? this.teachers.find((teacher) => teacher.id === currentTeacherId) ?? null
+            : null;
+        const fallbackStudents = this.students.filter((student) =>
+          normalizedStudents.includes(student.id)
+        );
+        if (this.lastLoadedManagerId !== this.currentManagerId) {
+          this.loadTeachers(
+            this.currentManagerId,
+            typeof currentTeacherId === 'number' ? currentTeacherId : null,
+            normalizedStudents,
+            fallbackTeacher,
+            fallbackStudents
+          );
+        }
+      });
+  }
+
+  private mapProfileToLookup(profile: ProfileDto | null | undefined): LookUpUserDto | null {
+    if (!profile) {
+      return null;
+    }
+
+    const parsedId = Number(profile.id);
+    if (!Number.isFinite(parsedId) || parsedId <= 0) {
+      return null;
+    }
+
+    return {
+      id: parsedId,
+      fullName: profile.fullName ?? '',
+      email: profile.email ?? '',
+      mobile: profile.mobile ?? '',
+      secondMobile: profile.secondMobile ?? '',
+      nationality: '',
+      nationalityId: profile.nationalityId ?? 0,
+      governorate: '',
+      governorateId: profile.governorateId ?? 0,
+      branchId: profile.branchId ?? 0
+    } as LookUpUserDto;
   }
 
   private mergeUnique(primary: LookUpUserDto[], fallback: LookUpUserDto[]): LookUpUserDto[] {
