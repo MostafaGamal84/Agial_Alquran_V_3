@@ -138,6 +138,7 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+
   get daysArray(): FormArray<FormGroup> {
     return this.circleForm.get('days') as FormArray<FormGroup>;
   }
