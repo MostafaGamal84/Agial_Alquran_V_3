@@ -118,10 +118,6 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
 
   get daysArray(): FormArray<FormGroup> {
     return this.circleForm.get('days') as FormArray<FormGroup>;
