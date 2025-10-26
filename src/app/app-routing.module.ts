@@ -18,7 +18,7 @@ const routes: Routes = [
     children: [
       {
         path: '',
-        loadComponent: () => import('./demo/pages/landing/landing.component').then((c) => c.LandingComponent)
+        loadChildren: () => import('./demo/pages/admin-panel/online-courses/online-courses.module').then((m) => m.OnlineCoursesModule),
       },
       {
         path: 'landing',
