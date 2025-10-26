@@ -17,6 +17,7 @@ import {
 } from 'src/app/@theme/services/circle.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
+import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { DAY_OPTIONS, DayValue, coerceDayValue } from 'src/app/@theme/types/DaysEnum';
 
 import { timeStringToTimeSpanString } from 'src/app/@theme/utils/time';
@@ -48,31 +49,48 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
   private lookup = inject(LookupService);
   private circle = inject(CircleService);
   private toast = inject(ToastService);
+  private auth = inject(AuthenticationService);
   private destroy$ = new Subject<void>();
   private readonly userFilter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
+
+  private currentManagerId: number | null = null;
 
   circleForm!: FormGroup;
   teachers: LookUpUserDto[] = [];
   managers: LookUpUserDto[] = [];
   students: LookUpUserDto[] = [];
   days = DAY_OPTIONS;
+  isManager = false;
 
   ngOnInit(): void {
+    this.isManager = this.auth.getRole() === UserTypesEnum.Manager;
+    this.currentManagerId = this.isManager ? this.resolveCurrentManagerId() : null;
+
     this.circleForm = this.fb.group({
       name: ['', Validators.required],
       teacherId: [{ value: null, disabled: true }, Validators.required],
       days: this.fb.array([this.createDayGroup()]),
-      managers: [[]],
+      managers: [
+        {
+          value: this.currentManagerId !== null ? [this.currentManagerId] : [],
+          disabled: this.isManager && this.currentManagerId !== null
+        }
+      ],
       studentsIds: [{ value: [], disabled: true }]
     });
     const teacherControl = this.circleForm.get('teacherId');
     const managersControl = this.circleForm.get('managers');
 
+    this.managers = this.ensureCurrentManagerPresence([]);
+
     this.lookup
       .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Manager))
       .pipe(takeUntil(this.destroy$))
       .subscribe((res) => {
-        if (res.isSuccess) this.managers = res.data.items;
+        if (res.isSuccess) {
+          const fetched = res.data.items ?? [];
+          this.managers = this.ensureCurrentManagerPresence(fetched);
+        }
       });
 
     managersControl
@@ -88,6 +106,16 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
         const resolvedTeacherId = typeof teacherId === 'number' ? teacherId : null;
         this.loadStudents(resolvedTeacherId);
       });
+
+    const initialManagerId = this.resolvePrimaryId(managersControl?.value as number[] | null);
+    if (initialManagerId !== null) {
+      this.loadTeachers(initialManagerId);
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   ngOnDestroy(): void {
@@ -132,6 +160,40 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
 
     const candidate = Number(ids[0]);
     return Number.isFinite(candidate) ? candidate : null;
+  }
+
+  private resolveCurrentManagerId(): number | null {
+    const current = this.auth.currentUserValue;
+    const id = current?.user?.id;
+    const parsed = Number(id);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  }
+
+  private ensureCurrentManagerPresence(list: LookUpUserDto[]): LookUpUserDto[] {
+    if (!this.isManager || this.currentManagerId === null) {
+      return list;
+    }
+
+    const exists = list.some((manager) => manager?.id === this.currentManagerId);
+    if (exists) {
+      return list;
+    }
+
+    const current = this.auth.currentUserValue;
+    const fallback: LookUpUserDto = {
+      id: this.currentManagerId,
+      fullName: current?.user?.name ?? '',
+      email: current?.user?.email ?? '',
+      mobile: '',
+      secondMobile: '',
+      nationality: '',
+      nationalityId: 0,
+      governorate: '',
+      governorateId: 0,
+      branchId: 0
+    };
+
+    return [...list, fallback];
   }
 
   private loadTeachers(managerId: number | null): void {

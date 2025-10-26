@@ -59,19 +59,28 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
   students: LookUpUserDto[] = [];
   id!: number;
   isManager = false;
+  private currentManagerId: number | null = null;
   days = DAY_OPTIONS;
 
   ngOnInit(): void {
     this.isManager = this.auth.getRole() === UserTypesEnum.Manager;
+    this.currentManagerId = this.isManager ? this.resolveCurrentManagerId() : null;
     this.circleForm = this.fb.group({
       name: ['', Validators.required],
       teacherId: [{ value: null, disabled: true }, Validators.required],
       days: this.fb.array([this.createDayGroup()]),
-      managers: [{ value: [], disabled: this.isManager }],
+      managers: [
+        {
+          value: this.currentManagerId !== null ? [this.currentManagerId] : [],
+          disabled: this.isManager && this.currentManagerId !== null
+        }
+      ],
       studentsIds: [{ value: [], disabled: true }]
     });
     const teacherControl = this.circleForm.get('teacherId');
     const managersControl = this.circleForm.get('managers');
+
+    this.managers = this.ensureCurrentManagerPresence([]);
 
     managersControl
       ?.valueChanges.pipe(takeUntil(this.destroy$))
@@ -95,10 +104,15 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
       .subscribe((res) => {
         if (res.isSuccess) {
           const existing = new Map(this.managers.map((m) => [m.id, m]));
-          res.data.items.forEach((m) => existing.set(m.id, m));
-          this.managers = Array.from(existing.values());
+          (res.data.items ?? []).forEach((m) => existing.set(m.id, m));
+          this.managers = this.ensureCurrentManagerPresence(Array.from(existing.values()));
         }
       });
+    const initialManagerId = this.resolvePrimaryId(managersControl?.value as number[] | null);
+    if (initialManagerId !== null) {
+      this.loadTeachers(initialManagerId);
+    }
+
     if (course) {
       this.initializeFromCourse(course);
       if (this.requiresSupplementalData(course)) {
@@ -175,13 +189,18 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
     if (courseManagers.length) {
       const existingManagers = new Map(this.managers.map((manager) => [manager.id, manager]));
       courseManagers.forEach((manager) => existingManagers.set(manager.id, manager));
-      this.managers = Array.from(existingManagers.values());
+      this.managers = this.ensureCurrentManagerPresence(Array.from(existingManagers.values()));
+    } else {
+      this.managers = this.ensureCurrentManagerPresence(this.managers);
     }
 
     const managerIds =
       course.managers
         ?.map((m: CircleManagerDto | number) => (typeof m === 'number' ? m : m.managerId))
         .filter((id): id is number => id !== undefined && id !== null) ?? [];
+
+    const effectiveManagerIds =
+      this.isManager && this.currentManagerId !== null ? [this.currentManagerId] : managerIds;
 
     const studentIds = this.extractStudentIds(course);
     const courseStudents = this.mapStudentsToLookups(course);
@@ -194,12 +213,12 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
     const fallbackTeacher = course.teacher ?? null;
 
     this.circleForm.patchValue({ name: course.name ?? '' }, { emitEvent: false });
-    this.circleForm.get('managers')?.setValue(managerIds, { emitEvent: false });
+    this.circleForm.get('managers')?.setValue(effectiveManagerIds, { emitEvent: false });
 
     const schedule = this.extractSchedule(course);
     this.setDays(schedule);
 
-    const primaryManagerId = this.resolvePrimaryId(managerIds);
+    const primaryManagerId = this.resolvePrimaryId(effectiveManagerIds);
     const teacherId = typeof course.teacherId === 'number' ? course.teacherId : null;
 
     this.loadTeachers(primaryManagerId, teacherId, studentIds, fallbackTeacher, courseStudents);
@@ -330,6 +349,40 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
 
     const candidate = Number(ids[0]);
     return Number.isFinite(candidate) ? candidate : null;
+  }
+
+  private resolveCurrentManagerId(): number | null {
+    const current = this.auth.currentUserValue;
+    const id = current?.user?.id;
+    const parsed = Number(id);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  }
+
+  private ensureCurrentManagerPresence(list: LookUpUserDto[]): LookUpUserDto[] {
+    if (!this.isManager || this.currentManagerId === null) {
+      return list;
+    }
+
+    const exists = list.some((manager) => manager?.id === this.currentManagerId);
+    if (exists) {
+      return list;
+    }
+
+    const current = this.auth.currentUserValue;
+    const fallback: LookUpUserDto = {
+      id: this.currentManagerId,
+      fullName: current?.user?.name ?? '',
+      email: current?.user?.email ?? '',
+      mobile: '',
+      secondMobile: '',
+      nationality: '',
+      nationalityId: 0,
+      governorate: '',
+      governorateId: 0,
+      branchId: 0
+    };
+
+    return [...list, fallback];
   }
 
   private mergeUnique(primary: LookUpUserDto[], fallback: LookUpUserDto[]): LookUpUserDto[] {
