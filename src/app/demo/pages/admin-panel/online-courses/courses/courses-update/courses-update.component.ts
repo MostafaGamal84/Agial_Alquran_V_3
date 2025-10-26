@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -23,6 +23,7 @@ import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { DAY_OPTIONS, DayValue, coerceDayValue } from 'src/app/@theme/types/DaysEnum';
 import { formatTimeValue, timeStringToTimeSpanString } from 'src/app/@theme/utils/time';
+import { Subject, takeUntil } from 'rxjs';
 
 interface CircleScheduleFormValue {
   dayId: DayValue | null;
@@ -42,13 +43,15 @@ interface CircleFormValue {
   templateUrl: './courses-update.component.html',
   styleUrl: './courses-update.component.scss'
 })
-export class CoursesUpdateComponent implements OnInit {
+export class CoursesUpdateComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private lookup = inject(LookupService);
   private circle = inject(CircleService);
   private toast = inject(ToastService);
   private route = inject(ActivatedRoute);
   private auth = inject(AuthenticationService);
+  private destroy$ = new Subject<void>();
+  private readonly userFilter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
 
   circleForm!: FormGroup;
   teachers: LookUpUserDto[] = [];
@@ -56,160 +59,90 @@ export class CoursesUpdateComponent implements OnInit {
   students: LookUpUserDto[] = [];
   id!: number;
   isManager = false;
+  private currentManagerId: number | null = null;
   days = DAY_OPTIONS;
 
   ngOnInit(): void {
     this.isManager = this.auth.getRole() === UserTypesEnum.Manager;
+    this.currentManagerId = this.isManager ? this.resolveCurrentManagerId() : null;
     this.circleForm = this.fb.group({
       name: ['', Validators.required],
-      teacherId: [null, Validators.required],
+      teacherId: [{ value: null, disabled: true }, Validators.required],
       days: this.fb.array([this.createDayGroup()]),
-      managers: [{ value: [], disabled: this.isManager }],
-      studentsIds: [[]]
+      managers: [
+        {
+          value: this.currentManagerId !== null ? [this.currentManagerId] : [],
+          disabled: this.isManager && this.currentManagerId !== null
+        }
+      ],
+      studentsIds: [{ value: [], disabled: true }]
     });
-    const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
+    const teacherControl = this.circleForm.get('teacherId');
+    const managersControl = this.circleForm.get('managers');
+
+    this.managers = this.ensureCurrentManagerPresence([]);
+
+    managersControl
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((managerIds: number[] | null) => {
+        const managerId = this.resolvePrimaryId(managerIds);
+        this.loadTeachers(managerId);
+      });
+
+    teacherControl
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((teacherId: number | null) => {
+        const resolvedTeacherId = typeof teacherId === 'number' ? teacherId : null;
+        this.loadStudents(resolvedTeacherId);
+      });
 
     const course = history.state.course as CircleDto | undefined;
-    if (course?.managers?.length) {
-      this.managers = course.managers.map((m: CircleManagerDto) =>
-        m.manager ? (m.manager as LookUpUserDto) : (m as unknown as LookUpUserDto)
-      );
-    }
-    if (course?.students?.length) {
-      this.students = course.students.map((s: CircleStudentDto) =>
-        (s as CircleStudentDto).student
-          ? ((s as CircleStudentDto).student as LookUpUserDto)
-          : (s as unknown as LookUpUserDto)
-      );
-    }
 
     this.lookup
-      .getUsersForSelects(filter, Number(UserTypesEnum.Teacher))
-      .subscribe((res) => {
-        if (res.isSuccess) this.teachers = res.data.items;
-      });
-    this.lookup
-      .getUsersForSelects(filter, Number(UserTypesEnum.Manager))
+      .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Manager))
+      .pipe(takeUntil(this.destroy$))
       .subscribe((res) => {
         if (res.isSuccess) {
           const existing = new Map(this.managers.map((m) => [m.id, m]));
-          res.data.items.forEach((m) => existing.set(m.id, m));
-          this.managers = Array.from(existing.values());
+          (res.data.items ?? []).forEach((m) => existing.set(m.id, m));
+          this.managers = this.ensureCurrentManagerPresence(Array.from(existing.values()));
         }
       });
-    this.lookup
-      .getUsersForSelects(filter, Number(UserTypesEnum.Student))
-      .subscribe((res) => {
-        if (res.isSuccess) {
-          const existing = new Map(this.students.map((s) => [s.id, s]));
-          res.data.items.forEach((s) => existing.set(s.id, s));
-          this.students = Array.from(existing.values());
-        }
-      });
+    const initialManagerId = this.resolvePrimaryId(managersControl?.value as number[] | null);
+    if (initialManagerId !== null) {
+      this.loadTeachers(initialManagerId);
+    }
 
     if (course) {
-      this.id = course.id;
-      const studentIds =
-        course.students
-          ?.map((s: CircleStudentDto) => s.id ?? s.studentId ?? s.student?.id)
-          .filter((id): id is number => id !== undefined) ?? [];
-      const schedule = this.extractSchedule(course);
-      this.circleForm.patchValue({
-        name: course.name ?? '',
-        teacherId: course.teacherId ?? null,
-        studentsIds: studentIds
-      });
-      this.circleForm
-        .get('managers')
-        ?.setValue(
-          course.managers?.map((m: CircleManagerDto | number) =>
-            typeof m === 'number' ? m : m.managerId
-          ) ?? [],
-          { emitEvent: false }
-        );
-      this.setDays(schedule);
-      const hasDayValue = schedule.some((entry) => entry.dayId !== null && entry.dayId !== undefined);
-      const hasTimeValue = schedule.some((entry) =>
-        typeof entry.startTime === 'string' ? entry.startTime.trim().length > 0 : false
-      );
-
-      if (!studentIds.length || !hasDayValue || !hasTimeValue) {
-        this.circle.get(this.id).subscribe((res) => {
-          if (res.isSuccess) {
-            const fetchedStudents =
-              res.data.students
-                ?.map((s: CircleStudentDto) =>
-                  s.id ?? s.studentId ?? s.student?.id
-                )
-                .filter((id): id is number => id !== undefined) ?? [];
-            this.circleForm.patchValue({ studentsIds: fetchedStudents });
-            this.circleForm
-              .get('managers')
-              ?.setValue(
-                res.data.managers?.map((m: CircleManagerDto | number) =>
-                  typeof m === 'number' ? m : m.managerId
-                ) ?? [],
-                { emitEvent: false }
-              );
-            const fetchedSchedule = this.extractSchedule(res.data);
-            this.setDays(fetchedSchedule);
-            if (res.data.students?.length) {
-              const courseStudents = res.data.students.map(
-                (s: CircleStudentDto) =>
-                  (s as CircleStudentDto).student
-                    ? ((s as CircleStudentDto).student as LookUpUserDto)
-                    : (s as unknown as LookUpUserDto)
-
-              );
-              const existing = new Map(this.students.map((st) => [st.id, st]));
-              courseStudents.forEach((st) => existing.set(st.id, st));
-              this.students = Array.from(existing.values());
+      this.initializeFromCourse(course);
+      if (this.requiresSupplementalData(course)) {
+        this.circle
+          .get(course.id)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe((res) => {
+            if (res.isSuccess) {
+              this.initializeFromCourse(res.data);
             }
-          }
-        });
+          });
       }
     } else {
       this.id = Number(this.route.snapshot.paramMap.get('id'));
       if (this.id) {
-        this.circle.get(this.id).subscribe((res) => {
-          if (res.isSuccess) {
-            const fetchedStudents =
-              res.data.students
-                ?.map((s: CircleStudentDto) =>
-                  s.id ?? s.studentId ?? s.student?.id
-                )
-                .filter((id): id is number => id !== undefined) ?? [];
-            this.circleForm.patchValue({
-              name: res.data.name ?? '',
-              teacherId: res.data.teacherId ?? null,
-              studentsIds: fetchedStudents
-            });
-            this.circleForm
-              .get('managers')
-              ?.setValue(
-                res.data.managers
-                  ? res.data.managers.map((m: CircleManagerDto | number) =>
-                      typeof m === 'number' ? m : m.managerId
-                    )
-                  : [],
-                { emitEvent: false }
-              );
-            const fetchedSchedule = this.extractSchedule(res.data);
-            this.setDays(fetchedSchedule);
-            if (res.data.students?.length) {
-              const courseStudents = res.data.students.map((s: CircleStudentDto) =>
-                (s as CircleStudentDto).student
-                  ? ((s as CircleStudentDto).student as LookUpUserDto)
-                  : (s as unknown as LookUpUserDto)
-              );
-              const existing = new Map(this.students.map((st) => [st.id, st]));
-              courseStudents.forEach((st) => existing.set(st.id, st));
-              this.students = Array.from(existing.values());
+        this.circle
+          .get(this.id)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe((res) => {
+            if (res.isSuccess) {
+              this.initializeFromCourse(res.data);
             }
-          }
-        });
+          });
       }
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   get daysArray(): FormArray<FormGroup> {
@@ -240,6 +173,249 @@ export class CoursesUpdateComponent implements OnInit {
 
   trackByIndex(index: number): number {
     return index;
+  }
+
+  private initializeFromCourse(course: CircleDto | null | undefined): void {
+    if (!course) {
+      return;
+    }
+
+    this.id = course.id;
+
+    const courseManagers =
+      course.managers?.map((m: CircleManagerDto) =>
+        m.manager ? (m.manager as LookUpUserDto) : (m as unknown as LookUpUserDto)
+      ) ?? [];
+    if (courseManagers.length) {
+      const existingManagers = new Map(this.managers.map((manager) => [manager.id, manager]));
+      courseManagers.forEach((manager) => existingManagers.set(manager.id, manager));
+      this.managers = this.ensureCurrentManagerPresence(Array.from(existingManagers.values()));
+    } else {
+      this.managers = this.ensureCurrentManagerPresence(this.managers);
+    }
+
+    const managerIds =
+      course.managers
+        ?.map((m: CircleManagerDto | number) => (typeof m === 'number' ? m : m.managerId))
+        .filter((id): id is number => id !== undefined && id !== null) ?? [];
+
+    const effectiveManagerIds =
+      this.isManager && this.currentManagerId !== null ? [this.currentManagerId] : managerIds;
+
+    const studentIds = this.extractStudentIds(course);
+    const courseStudents = this.mapStudentsToLookups(course);
+    if (courseStudents.length) {
+      const existingStudents = new Map(this.students.map((student) => [student.id, student]));
+      courseStudents.forEach((student) => existingStudents.set(student.id, student));
+      this.students = Array.from(existingStudents.values());
+    }
+
+    const fallbackTeacher = course.teacher ?? null;
+
+    this.circleForm.patchValue({ name: course.name ?? '' }, { emitEvent: false });
+    this.circleForm.get('managers')?.setValue(effectiveManagerIds, { emitEvent: false });
+
+    const schedule = this.extractSchedule(course);
+    this.setDays(schedule);
+
+    const primaryManagerId = this.resolvePrimaryId(effectiveManagerIds);
+    const teacherId = typeof course.teacherId === 'number' ? course.teacherId : null;
+
+    this.loadTeachers(primaryManagerId, teacherId, studentIds, fallbackTeacher, courseStudents);
+
+    if (primaryManagerId === null && teacherId !== null) {
+      this.loadStudents(teacherId, studentIds, courseStudents);
+    }
+  }
+
+  private requiresSupplementalData(course: CircleDto | null | undefined): boolean {
+    if (!course) {
+      return false;
+    }
+
+    const studentIds = this.extractStudentIds(course);
+    if (!studentIds.length) {
+      return true;
+    }
+
+    const schedule = this.extractSchedule(course);
+    const hasDayValue = schedule.some((entry) => entry.dayId !== null && entry.dayId !== undefined);
+    const hasTimeValue = schedule.some((entry) =>
+      typeof entry.startTime === 'string' ? entry.startTime.trim().length > 0 : false
+    );
+
+    return !hasDayValue || !hasTimeValue;
+  }
+
+  private loadTeachers(
+    managerId: number | null,
+    selectedTeacherId: number | null = null,
+    selectedStudents: number[] = [],
+    fallbackTeacher?: LookUpUserDto | null,
+    fallbackStudents: LookUpUserDto[] = []
+  ): void {
+    const teacherControl = this.circleForm.get('teacherId');
+    const studentsControl = this.circleForm.get('studentsIds');
+
+    const normalizedSelectedStudents = Array.isArray(selectedStudents) ? selectedStudents : [];
+    const fallbackStudentLookups = Array.isArray(fallbackStudents) ? fallbackStudents : [];
+    const fallbackTeacherList =
+      fallbackTeacher && typeof fallbackTeacher.id === 'number' ? [fallbackTeacher] : [];
+
+    this.teachers = this.mergeUnique([], fallbackTeacherList);
+    teacherControl?.reset(selectedTeacherId ?? null, { emitEvent: false });
+    teacherControl?.disable({ emitEvent: false });
+
+    this.students = this.mergeUnique([], fallbackStudentLookups);
+    const initialStudentSelection = normalizedSelectedStudents.filter((id) =>
+      this.students.some((student) => student.id === id)
+    );
+    studentsControl?.reset(initialStudentSelection, { emitEvent: false });
+    studentsControl?.disable({ emitEvent: false });
+
+    if (!managerId) {
+      return;
+    }
+
+    this.lookup
+      .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Teacher), managerId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          if (res.isSuccess) {
+            const fetchedTeachers = res.data.items ?? [];
+            this.teachers = this.mergeUnique(fetchedTeachers, fallbackTeacherList);
+            teacherControl?.enable({ emitEvent: false });
+
+            if (selectedTeacherId !== null) {
+              teacherControl?.setValue(selectedTeacherId, { emitEvent: false });
+              this.loadStudents(selectedTeacherId, normalizedSelectedStudents, fallbackStudentLookups);
+            }
+          }
+        },
+        error: () => {
+          teacherControl?.disable({ emitEvent: false });
+        }
+      });
+  }
+
+  private loadStudents(
+    teacherId: number | null,
+    selectedStudents: number[] = [],
+    fallbackStudents: LookUpUserDto[] = []
+  ): void {
+    const studentsControl = this.circleForm.get('studentsIds');
+
+    const normalizedSelection = Array.isArray(selectedStudents) ? selectedStudents : [];
+    const fallbackList = Array.isArray(fallbackStudents) ? fallbackStudents : [];
+
+    this.students = this.mergeUnique([], fallbackList);
+    const initialSelection = normalizedSelection.filter((id) =>
+      this.students.some((student) => student.id === id)
+    );
+    studentsControl?.reset(initialSelection, { emitEvent: false });
+    studentsControl?.disable({ emitEvent: false });
+
+    if (teacherId === null) {
+      return;
+    }
+
+    this.lookup
+      .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Student), 0, teacherId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          if (res.isSuccess) {
+            const fetchedStudents = res.data.items ?? [];
+            this.students = this.mergeUnique(fetchedStudents, fallbackList);
+            studentsControl?.enable({ emitEvent: false });
+
+            const filteredSelection = normalizedSelection.filter((id) =>
+              this.students.some((student) => student.id === id)
+            );
+            studentsControl?.setValue(filteredSelection, { emitEvent: false });
+          }
+        },
+        error: () => {
+          studentsControl?.disable({ emitEvent: false });
+        }
+      });
+  }
+
+  private resolvePrimaryId(ids: number[] | null | undefined): number | null {
+    if (!Array.isArray(ids) || !ids.length) {
+      return null;
+    }
+
+    const candidate = Number(ids[0]);
+    return Number.isFinite(candidate) ? candidate : null;
+  }
+
+  private resolveCurrentManagerId(): number | null {
+    const current = this.auth.currentUserValue;
+    const id = current?.user?.id;
+    const parsed = Number(id);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  }
+
+  private ensureCurrentManagerPresence(list: LookUpUserDto[]): LookUpUserDto[] {
+    if (!this.isManager || this.currentManagerId === null) {
+      return list;
+    }
+
+    const exists = list.some((manager) => manager?.id === this.currentManagerId);
+    if (exists) {
+      return list;
+    }
+
+    const current = this.auth.currentUserValue;
+    const fallback: LookUpUserDto = {
+      id: this.currentManagerId,
+      fullName: current?.user?.name ?? '',
+      email: current?.user?.email ?? '',
+      mobile: '',
+      secondMobile: '',
+      nationality: '',
+      nationalityId: 0,
+      governorate: '',
+      governorateId: 0,
+      branchId: 0
+    };
+
+    return [...list, fallback];
+  }
+
+  private mergeUnique(primary: LookUpUserDto[], fallback: LookUpUserDto[]): LookUpUserDto[] {
+    const map = new Map<number, LookUpUserDto>();
+    primary
+      .filter((item): item is LookUpUserDto => Boolean(item) && typeof item.id === 'number')
+      .forEach((item) => map.set(item.id, item));
+    fallback
+      .filter((item): item is LookUpUserDto => Boolean(item) && typeof item.id === 'number')
+      .forEach((item) => map.set(item.id, item));
+    return Array.from(map.values());
+  }
+
+  private extractStudentIds(circle: CircleDto | null | undefined): number[] {
+    return (
+      circle?.students
+        ?.map((s: CircleStudentDto) => s.id ?? s.studentId ?? s.student?.id)
+        .filter((id): id is number => id !== undefined && id !== null) ?? []
+    );
+  }
+
+  private mapStudentsToLookups(circle: CircleDto | null | undefined): LookUpUserDto[] {
+    if (!circle?.students?.length) {
+      return [];
+    }
+
+    return circle.students
+      .map((s: CircleStudentDto) =>
+        (s as CircleStudentDto).student
+          ? ((s as CircleStudentDto).student as LookUpUserDto)
+          : (s as unknown as LookUpUserDto)
+      )
+      .filter((student): student is LookUpUserDto => Boolean(student) && typeof student.id === 'number');
   }
 
   private createDayGroup(initial?: Partial<CircleScheduleFormValue>): FormGroup {
