@@ -1,7 +1,7 @@
 // angular imports
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -54,6 +54,7 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
   private readonly userFilter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
 
   private currentManagerId: number | null = null;
+  private lastLoadedManagerId: number | null = null;
 
   circleForm!: FormGroup;
   teachers: LookUpUserDto[] = [];
@@ -73,7 +74,7 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
       managers: [
         {
           value: this.currentManagerId !== null ? [this.currentManagerId] : [],
-          disabled: this.isManager && this.currentManagerId !== null
+          disabled: false
         }
       ],
       studentsIds: [{ value: [], disabled: true }]
@@ -83,13 +84,25 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
 
     this.managers = this.ensureCurrentManagerPresence([]);
 
+    if (this.currentManagerId !== null) {
+      this.applyManagerSelection(managersControl, this.currentManagerId, true);
+    }
+
     this.lookup
       .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Manager))
       .pipe(takeUntil(this.destroy$))
       .subscribe((res) => {
         if (res.isSuccess) {
           const fetched = res.data.items ?? [];
+          const detectedId = this.tryResolveManagerIdentity(fetched);
+          if (detectedId !== null) {
+            this.currentManagerId = detectedId;
+          }
           this.managers = this.ensureCurrentManagerPresence(fetched);
+          if (this.currentManagerId !== null) {
+            const shouldTriggerLoad = this.lastLoadedManagerId !== this.currentManagerId;
+            this.applyManagerSelection(managersControl, this.currentManagerId, shouldTriggerLoad);
+          }
         }
       });
 
@@ -108,9 +121,14 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
       });
 
     const initialManagerId = this.resolvePrimaryId(managersControl?.value as number[] | null);
-    if (initialManagerId !== null) {
+    if (initialManagerId !== null && this.lastLoadedManagerId !== initialManagerId) {
       this.loadTeachers(initialManagerId);
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   ngOnDestroy(): void {
@@ -192,9 +210,72 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
     return [...list, fallback];
   }
 
+  private tryResolveManagerIdentity(list: LookUpUserDto[]): number | null {
+    if (!this.isManager) {
+      return this.currentManagerId;
+    }
+
+    if (this.currentManagerId !== null) {
+      const exists = list.some((manager) => manager?.id === this.currentManagerId);
+      if (exists) {
+        return this.currentManagerId;
+      }
+    }
+
+    const current = this.auth.currentUserValue;
+    const email = this.normalizeIdentity(current?.user?.email);
+    if (email) {
+      const match = list.find((manager) => this.normalizeIdentity(manager?.email) === email);
+      if (match?.id) {
+        return match.id;
+      }
+    }
+
+    const name = this.normalizeIdentity(current?.user?.name);
+    if (name) {
+      const match = list.find((manager) => this.normalizeIdentity(manager?.fullName) === name);
+      if (match?.id) {
+        return match.id;
+      }
+    }
+
+    return this.currentManagerId;
+  }
+
+  private normalizeIdentity(value: string | null | undefined): string | null {
+    if (typeof value !== 'string') {
+      return null;
+    }
+
+    const normalized = value.trim().toLowerCase();
+    return normalized.length ? normalized : null;
+  }
+
+  private applyManagerSelection(
+    control: AbstractControl | null,
+    managerId: number | null,
+    triggerLoad = false
+  ): void {
+    if (!control || managerId === null) {
+      return;
+    }
+
+    control.setValue([managerId], { emitEvent: false });
+
+    if (this.isManager) {
+      control.disable({ emitEvent: false });
+    }
+
+    if (triggerLoad && this.lastLoadedManagerId !== managerId) {
+      this.loadTeachers(managerId);
+    }
+  }
+
   private loadTeachers(managerId: number | null): void {
     const teacherControl = this.circleForm.get('teacherId');
     const studentsControl = this.circleForm.get('studentsIds');
+
+    this.lastLoadedManagerId = managerId ?? null;
 
     this.teachers = [];
     teacherControl?.reset(null, { emitEvent: false });
@@ -311,10 +392,13 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
 
     this.daysArray.at(0).reset({ dayId: null, startTime: '' });
 
+    const managersControl = this.circleForm.get('managers');
+    const managerSelection = this.isManager && this.currentManagerId !== null ? [this.currentManagerId] : [];
+
     this.circleForm.reset({
       name: '',
       teacherId: null,
-      managers: [],
+      managers: managerSelection,
       studentsIds: [],
       days: this.daysArray.value
     });
@@ -323,6 +407,12 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
     this.students = [];
     this.circleForm.get('teacherId')?.disable({ emitEvent: false });
     this.circleForm.get('studentsIds')?.disable({ emitEvent: false });
+
+    if (this.isManager) {
+      managersControl?.disable({ emitEvent: false });
+      this.lastLoadedManagerId = null;
+      this.applyManagerSelection(managersControl, this.currentManagerId, true);
+    }
 
     this.circleForm.markAsPristine();
     this.circleForm.markAsUntouched();

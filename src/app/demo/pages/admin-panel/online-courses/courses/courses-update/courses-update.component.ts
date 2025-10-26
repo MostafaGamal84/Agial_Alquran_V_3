@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -60,6 +60,7 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
   id!: number;
   isManager = false;
   private currentManagerId: number | null = null;
+  private lastLoadedManagerId: number | null = null;
   days = DAY_OPTIONS;
 
   ngOnInit(): void {
@@ -72,7 +73,7 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
       managers: [
         {
           value: this.currentManagerId !== null ? [this.currentManagerId] : [],
-          disabled: this.isManager && this.currentManagerId !== null
+          disabled: false
         }
       ],
       studentsIds: [{ value: [], disabled: true }]
@@ -81,6 +82,10 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
     const managersControl = this.circleForm.get('managers');
 
     this.managers = this.ensureCurrentManagerPresence([]);
+
+    if (this.currentManagerId !== null) {
+      this.applyManagerSelection(managersControl, this.currentManagerId);
+    }
 
     managersControl
       ?.valueChanges.pipe(takeUntil(this.destroy$))
@@ -104,12 +109,21 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
       .subscribe((res) => {
         if (res.isSuccess) {
           const existing = new Map(this.managers.map((m) => [m.id, m]));
-          (res.data.items ?? []).forEach((m) => existing.set(m.id, m));
-          this.managers = this.ensureCurrentManagerPresence(Array.from(existing.values()));
+          const fetched = res.data.items ?? [];
+          fetched.forEach((m) => existing.set(m.id, m));
+          const mergedManagers = Array.from(existing.values());
+          const detectedId = this.tryResolveManagerIdentity(mergedManagers);
+          if (detectedId !== null) {
+            this.currentManagerId = detectedId;
+          }
+          this.managers = this.ensureCurrentManagerPresence(mergedManagers);
+          if (this.currentManagerId !== null) {
+            this.applyManagerSelection(managersControl, this.currentManagerId);
+          }
         }
       });
     const initialManagerId = this.resolvePrimaryId(managersControl?.value as number[] | null);
-    if (initialManagerId !== null) {
+    if (initialManagerId !== null && this.lastLoadedManagerId !== initialManagerId) {
       this.loadTeachers(initialManagerId);
     }
 
@@ -194,6 +208,13 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
       this.managers = this.ensureCurrentManagerPresence(this.managers);
     }
 
+    const managersControl = this.circleForm.get('managers');
+    const detectedManagerId = this.tryResolveManagerIdentity(this.managers);
+    if (detectedManagerId !== null) {
+      this.currentManagerId = detectedManagerId;
+      this.applyManagerSelection(managersControl, this.currentManagerId);
+    }
+
     const managerIds =
       course.managers
         ?.map((m: CircleManagerDto | number) => (typeof m === 'number' ? m : m.managerId))
@@ -256,6 +277,8 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
   ): void {
     const teacherControl = this.circleForm.get('teacherId');
     const studentsControl = this.circleForm.get('studentsIds');
+
+    this.lastLoadedManagerId = managerId ?? null;
 
     const normalizedSelectedStudents = Array.isArray(selectedStudents) ? selectedStudents : [];
     const fallbackStudentLookups = Array.isArray(fallbackStudents) ? fallbackStudents : [];
@@ -383,6 +406,59 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
     };
 
     return [...list, fallback];
+  }
+
+  private tryResolveManagerIdentity(list: LookUpUserDto[]): number | null {
+    if (!this.isManager) {
+      return this.currentManagerId;
+    }
+
+    if (this.currentManagerId !== null) {
+      const exists = list.some((manager) => manager?.id === this.currentManagerId);
+      if (exists) {
+        return this.currentManagerId;
+      }
+    }
+
+    const current = this.auth.currentUserValue;
+    const email = this.normalizeIdentity(current?.user?.email);
+    if (email) {
+      const match = list.find((manager) => this.normalizeIdentity(manager?.email) === email);
+      if (match?.id) {
+        return match.id;
+      }
+    }
+
+    const name = this.normalizeIdentity(current?.user?.name);
+    if (name) {
+      const match = list.find((manager) => this.normalizeIdentity(manager?.fullName) === name);
+      if (match?.id) {
+        return match.id;
+      }
+    }
+
+    return this.currentManagerId;
+  }
+
+  private normalizeIdentity(value: string | null | undefined): string | null {
+    if (typeof value !== 'string') {
+      return null;
+    }
+
+    const normalized = value.trim().toLowerCase();
+    return normalized.length ? normalized : null;
+  }
+
+  private applyManagerSelection(control: AbstractControl | null, managerId: number | null): void {
+    if (!control || managerId === null) {
+      return;
+    }
+
+    control.setValue([managerId], { emitEvent: false });
+
+    if (this.isManager) {
+      control.disable({ emitEvent: false });
+    }
   }
 
   private mergeUnique(primary: LookUpUserDto[], fallback: LookUpUserDto[]): LookUpUserDto[] {
