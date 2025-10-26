@@ -1,7 +1,7 @@
 // angular imports
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -17,9 +17,11 @@ import {
 } from 'src/app/@theme/services/circle.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
+import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { DAY_OPTIONS, DayValue, coerceDayValue } from 'src/app/@theme/types/DaysEnum';
 
 import { timeStringToTimeSpanString } from 'src/app/@theme/utils/time';
+import { Subject, takeUntil } from 'rxjs';
 
 
 interface CircleScheduleFormValue {
@@ -42,43 +44,91 @@ interface CircleFormValue {
   templateUrl: './courses-add.component.html',
   styleUrl: './courses-add.component.scss'
 })
-export class CoursesAddComponent implements OnInit {
+export class CoursesAddComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private lookup = inject(LookupService);
   private circle = inject(CircleService);
   private toast = inject(ToastService);
+  private auth = inject(AuthenticationService);
+  private destroy$ = new Subject<void>();
+  private readonly userFilter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
+
+  private currentManagerId: number | null = null;
+  private lastLoadedManagerId: number | null = null;
 
   circleForm!: FormGroup;
   teachers: LookUpUserDto[] = [];
   managers: LookUpUserDto[] = [];
   students: LookUpUserDto[] = [];
   days = DAY_OPTIONS;
+  isManager = false;
 
   ngOnInit(): void {
+    this.isManager = this.auth.getRole() === UserTypesEnum.Manager;
+    this.currentManagerId = this.isManager ? this.resolveCurrentManagerId() : null;
+
     this.circleForm = this.fb.group({
       name: ['', Validators.required],
-      teacherId: [null, Validators.required],
+      teacherId: [{ value: null, disabled: true }, Validators.required],
       days: this.fb.array([this.createDayGroup()]),
-      managers: [[]],
-      studentsIds: [[]]
+      managers: [
+        {
+          value: this.currentManagerId !== null ? [this.currentManagerId] : [],
+          disabled: false
+        }
+      ],
+      studentsIds: [{ value: [], disabled: true }]
     });
+    const teacherControl = this.circleForm.get('teacherId');
+    const managersControl = this.circleForm.get('managers');
 
-    const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
+    this.managers = this.ensureCurrentManagerPresence([]);
+
+    if (this.currentManagerId !== null) {
+      this.applyManagerSelection(managersControl, this.currentManagerId, true);
+    }
+
     this.lookup
-      .getUsersForSelects(filter, Number(UserTypesEnum.Teacher))
+      .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Manager))
+      .pipe(takeUntil(this.destroy$))
       .subscribe((res) => {
-        if (res.isSuccess) this.teachers = res.data.items;
+        if (res.isSuccess) {
+          const fetched = res.data.items ?? [];
+          const detectedId = this.tryResolveManagerIdentity(fetched);
+          if (detectedId !== null) {
+            this.currentManagerId = detectedId;
+          }
+          this.managers = this.ensureCurrentManagerPresence(fetched);
+          if (this.currentManagerId !== null) {
+            const shouldTriggerLoad = this.lastLoadedManagerId !== this.currentManagerId;
+            this.applyManagerSelection(managersControl, this.currentManagerId, shouldTriggerLoad);
+          }
+        }
       });
-    this.lookup
-      .getUsersForSelects(filter, Number(UserTypesEnum.Manager))
-      .subscribe((res) => {
-        if (res.isSuccess) this.managers = res.data.items;
+
+    managersControl
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((managerIds: number[] | null) => {
+        const managerId = this.resolvePrimaryId(managerIds);
+        this.loadTeachers(managerId);
       });
-    this.lookup
-      .getUsersForSelects(filter, Number(UserTypesEnum.Student))
-      .subscribe((res) => {
-        if (res.isSuccess) this.students = res.data.items;
+
+    teacherControl
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((teacherId: number | null) => {
+        const resolvedTeacherId = typeof teacherId === 'number' ? teacherId : null;
+        this.loadStudents(resolvedTeacherId);
       });
+
+    const initialManagerId = this.resolvePrimaryId(managersControl?.value as number[] | null);
+    if (initialManagerId !== null && this.lastLoadedManagerId !== initialManagerId) {
+      this.loadTeachers(initialManagerId);
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   get daysArray(): FormArray<FormGroup> {
@@ -109,6 +159,171 @@ export class CoursesAddComponent implements OnInit {
 
   trackByIndex(index: number): number {
     return index;
+  }
+
+  private resolvePrimaryId(ids: number[] | null | undefined): number | null {
+    if (!Array.isArray(ids) || !ids.length) {
+      return null;
+    }
+
+    const candidate = Number(ids[0]);
+    return Number.isFinite(candidate) ? candidate : null;
+  }
+
+  private resolveCurrentManagerId(): number | null {
+    const current = this.auth.currentUserValue;
+    const id = current?.user?.id;
+    const parsed = Number(id);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  }
+
+  private ensureCurrentManagerPresence(list: LookUpUserDto[]): LookUpUserDto[] {
+    if (!this.isManager || this.currentManagerId === null) {
+      return list;
+    }
+
+    const exists = list.some((manager) => manager?.id === this.currentManagerId);
+    if (exists) {
+      return list;
+    }
+
+    const current = this.auth.currentUserValue;
+    const fallback: LookUpUserDto = {
+      id: this.currentManagerId,
+      fullName: current?.user?.name ?? '',
+      email: current?.user?.email ?? '',
+      mobile: '',
+      secondMobile: '',
+      nationality: '',
+      nationalityId: 0,
+      governorate: '',
+      governorateId: 0,
+      branchId: 0
+    };
+
+    return [...list, fallback];
+  }
+
+  private tryResolveManagerIdentity(list: LookUpUserDto[]): number | null {
+    if (!this.isManager) {
+      return this.currentManagerId;
+    }
+
+    if (this.currentManagerId !== null) {
+      const exists = list.some((manager) => manager?.id === this.currentManagerId);
+      if (exists) {
+        return this.currentManagerId;
+      }
+    }
+
+    const current = this.auth.currentUserValue;
+    const email = this.normalizeIdentity(current?.user?.email);
+    if (email) {
+      const match = list.find((manager) => this.normalizeIdentity(manager?.email) === email);
+      if (match?.id) {
+        return match.id;
+      }
+    }
+
+    const name = this.normalizeIdentity(current?.user?.name);
+    if (name) {
+      const match = list.find((manager) => this.normalizeIdentity(manager?.fullName) === name);
+      if (match?.id) {
+        return match.id;
+      }
+    }
+
+    return this.currentManagerId;
+  }
+
+  private normalizeIdentity(value: string | null | undefined): string | null {
+    if (typeof value !== 'string') {
+      return null;
+    }
+
+    const normalized = value.trim().toLowerCase();
+    return normalized.length ? normalized : null;
+  }
+
+  private applyManagerSelection(
+    control: AbstractControl | null,
+    managerId: number | null,
+    triggerLoad = false
+  ): void {
+    if (!control || managerId === null) {
+      return;
+    }
+
+    control.setValue([managerId], { emitEvent: false });
+
+    if (this.isManager) {
+      control.disable({ emitEvent: false });
+    }
+
+    if (triggerLoad && this.lastLoadedManagerId !== managerId) {
+      this.loadTeachers(managerId);
+    }
+  }
+
+  private loadTeachers(managerId: number | null): void {
+    const teacherControl = this.circleForm.get('teacherId');
+    const studentsControl = this.circleForm.get('studentsIds');
+
+    this.lastLoadedManagerId = managerId ?? null;
+
+    this.teachers = [];
+    teacherControl?.reset(null, { emitEvent: false });
+    teacherControl?.disable({ emitEvent: false });
+
+    this.students = [];
+    studentsControl?.reset([], { emitEvent: false });
+    studentsControl?.disable({ emitEvent: false });
+
+    if (!managerId) {
+      return;
+    }
+
+    this.lookup
+      .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Teacher), managerId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          if (res.isSuccess) {
+            this.teachers = res.data.items;
+            teacherControl?.enable({ emitEvent: false });
+          }
+        },
+        error: () => {
+          teacherControl?.disable({ emitEvent: false });
+        }
+      });
+  }
+
+  private loadStudents(teacherId: number | null, selectedStudents: number[] = []): void {
+    const studentsControl = this.circleForm.get('studentsIds');
+
+    this.students = [];
+    studentsControl?.reset(selectedStudents, { emitEvent: false });
+    studentsControl?.disable({ emitEvent: false });
+
+    if (!teacherId) {
+      return;
+    }
+
+    this.lookup
+      .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Student), 0, teacherId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          if (res.isSuccess) {
+            this.students = res.data.items;
+            studentsControl?.enable({ emitEvent: false });
+          }
+        },
+        error: () => {
+          studentsControl?.disable({ emitEvent: false });
+        }
+      });
   }
 
   private createDayGroup(initial?: Partial<CircleScheduleFormValue>): FormGroup {
@@ -171,13 +386,27 @@ export class CoursesAddComponent implements OnInit {
 
     this.daysArray.at(0).reset({ dayId: null, startTime: '' });
 
+    const managersControl = this.circleForm.get('managers');
+    const managerSelection = this.isManager && this.currentManagerId !== null ? [this.currentManagerId] : [];
+
     this.circleForm.reset({
       name: '',
       teacherId: null,
-      managers: [],
+      managers: managerSelection,
       studentsIds: [],
       days: this.daysArray.value
     });
+
+    this.teachers = [];
+    this.students = [];
+    this.circleForm.get('teacherId')?.disable({ emitEvent: false });
+    this.circleForm.get('studentsIds')?.disable({ emitEvent: false });
+
+    if (this.isManager) {
+      managersControl?.disable({ emitEvent: false });
+      this.lastLoadedManagerId = null;
+      this.applyManagerSelection(managersControl, this.currentManagerId, true);
+    }
 
     this.circleForm.markAsPristine();
     this.circleForm.markAsUntouched();
