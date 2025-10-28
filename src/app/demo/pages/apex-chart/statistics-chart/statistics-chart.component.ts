@@ -9,7 +9,7 @@ import { ThemeLayoutService } from 'src/app/@theme/services/theme-layout.service
 import { DARK, LIGHT } from 'src/app/@theme/const';
 
 // apexChart
-import { NgApexchartsModule, ApexOptions } from 'ng-apexcharts';
+import { NgApexchartsModule, ApexAxisChartSeries, ApexOptions } from 'ng-apexcharts';
 
 @Component({
   selector: 'app-statistics-chart',
@@ -25,6 +25,22 @@ export class StatisticsChartComponent implements OnInit {
   selectType: string = 'today';
   chartColors = ['#faad14', '#4680ff'];
   readonly height = input.required<number>();
+  readonly chartTitle = input<string>('Statistics');
+  readonly chartSubtitle = input<string | null | undefined>('Revenue and Sales');
+  readonly showRangeSelector = input<boolean>(true);
+  readonly series = input<ApexAxisChartSeries[] | undefined>();
+  readonly categories = input<string[] | undefined>();
+
+  private readonly defaultSeries: ApexAxisChartSeries[] = [
+    {
+      name: 'Revenue',
+      data: [200, 320, 320, 275, 275, 400, 400, 300, 440, 320, 320, 275, 275, 400, 300, 440]
+    },
+    {
+      name: 'Sales',
+      data: [200, 250, 240, 300, 340, 320, 320, 400, 350, 250, 240, 300, 340, 320, 400, 350]
+    }
+  ];
 
   // constructor
   constructor() {
@@ -34,10 +50,36 @@ export class StatisticsChartComponent implements OnInit {
     effect(() => {
       this.isDarkTheme(this.themeService.isDarkMode());
     });
+    effect(() => {
+      if (!this.chartOptions) {
+        return;
+      }
+      const providedSeries = this.series();
+      const series = providedSeries && providedSeries.length ? providedSeries : this.defaultSeries;
+      this.chartOptions = { ...this.chartOptions, series };
+    });
+    effect(() => {
+      if (!this.chartOptions) {
+        return;
+      }
+      const providedCategories = this.categories();
+      const xaxis = { ...(this.chartOptions.xaxis ?? {}) };
+
+      if (providedCategories && providedCategories.length) {
+        xaxis.categories = providedCategories;
+      } else {
+        delete xaxis.categories;
+      }
+
+      this.chartOptions = { ...this.chartOptions, xaxis };
+    });
   }
 
   // life cycle hook
   ngOnInit() {
+    const initialSeries = this.series();
+    const initialCategories = this.categories();
+
     this.chartOptions = {
       chart: {
         type: 'area',
@@ -82,16 +124,19 @@ export class StatisticsChartComponent implements OnInit {
         strokeDashArray: 4,
         borderColor: '#f5f5f5'
       },
-      series: [
-        {
-          name: 'Revenue',
-          data: [200, 320, 320, 275, 275, 400, 400, 300, 440, 320, 320, 275, 275, 400, 300, 440]
-        },
-        {
-          name: 'Sales',
-          data: [200, 250, 240, 300, 340, 320, 320, 400, 350, 250, 240, 300, 340, 320, 400, 350]
-        }
-      ],
+      series:
+        initialSeries && initialSeries.length
+          ? initialSeries
+          : [
+              {
+                name: 'Revenue',
+                data: [200, 320, 320, 275, 275, 400, 400, 300, 440, 320, 320, 275, 275, 400, 300, 440]
+              },
+              {
+                name: 'Sales',
+                data: [200, 250, 240, 300, 340, 320, 320, 400, 350, 250, 240, 300, 340, 320, 400, 350]
+              }
+            ],
       xaxis: {
         tooltip: {
           enabled: false
@@ -104,7 +149,10 @@ export class StatisticsChartComponent implements OnInit {
         },
         axisTicks: {
           show: false
-        }
+        },
+        ...(initialCategories && initialCategories.length
+          ? { categories: initialCategories }
+          : {})
       }
     };
   }
@@ -158,6 +206,10 @@ export class StatisticsChartComponent implements OnInit {
 
   // public methods
   onOptionSelected() {
+    if (!this.showRangeSelector() || (this.series()?.length ?? 0) > 0) {
+      return;
+    }
+
     switch (this.selectType) {
       case 'today':
         this.chartOptions.series = [
