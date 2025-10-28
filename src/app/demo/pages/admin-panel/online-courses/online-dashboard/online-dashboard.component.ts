@@ -1,56 +1,62 @@
 // angular import
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import type { ApexAxisChartSeries } from 'ng-apexcharts';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { StatisticsChartComponent } from '../../../apex-chart/statistics-chart/statistics-chart.component';
-import { InvitesGoalChartComponent } from './invites-goal-chart/invites-goal-chart.component';
-import { CourseReportBarChartComponent } from './course-report-bar-chart/course-report-bar-chart.component';
-import { TotalRevenueLineChartComponent } from './total-revenue-line-chart/total-revenue-line-chart.component';
-import { StudentStatesChartComponent } from './student-states-chart/student-states-chart.component';
-import { ActivityLineChartComponent } from './activity-line-chart/activity-line-chart.component';
-import { activityData } from 'src/app/fake-data/activity_data';
-import { VisitorsBarChartComponent } from './visitors-bar-chart/visitors-bar-chart.component';
-import { EarningCoursesLineChartComponent } from './earning-courses-line-chart/earning-courses-line-chart.component';
-import { courseStatesData } from 'src/app/fake-data/courseStates_data';
 import { CircleService, CircleDayDto, UpcomingCircleDto } from 'src/app/@theme/services/circle.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { formatDayValue } from 'src/app/@theme/types/DaysEnum';
 import { formatTimeValue } from 'src/app/@theme/utils/time';
 import { TranslateService } from '@ngx-translate/core';
+import {
+  DashboardOverviewDto,
+  DashboardOverviewMetricsDto,
+  DashboardOverviewMonthlyRevenuePointDto,
+  DashboardOverviewProjectOverviewDto,
+  DashboardOverviewService,
+  DashboardOverviewTransactionDto
+} from 'src/app/@theme/services/dashboard-overview.service';
 
-export interface activity_Data {
-  image: string;
-  name: string;
-  qualification: string;
-  rating: string;
+interface DashboardSummaryCard {
+  key: string;
+  icon: string;
+  background: string;
+  title: string;
+  value: string;
+  percentage?: string | null;
+  percentageClass?: string;
 }
 
-export interface courseStates_data {
-  name: string;
-  teacher: string;
-  rating: number;
-  earning: string;
-  sale: string;
+interface DashboardRoleMetricEntry {
+  key: string;
+  label: string;
+  value: string;
 }
 
-const activity_Data = activityData;
-const courseStates_data = courseStatesData;
+interface DashboardOverviewListEntry {
+  key: string;
+  label: string;
+  value: string;
+}
+
+interface DashboardTransactionView {
+  key: string;
+  student: string;
+  amount: string;
+  date: string;
+  status: string;
+  statusClass: string;
+}
 
 @Component({
   selector: 'app-online-dashboard',
   imports: [
     SharedModule,
     CommonModule,
-    StatisticsChartComponent,
-    InvitesGoalChartComponent,
-    CourseReportBarChartComponent,
-    TotalRevenueLineChartComponent,
-    StudentStatesChartComponent,
-    ActivityLineChartComponent,
-    VisitorsBarChartComponent,
-    EarningCoursesLineChartComponent
+    StatisticsChartComponent
   ],
   templateUrl: './online-dashboard.component.html',
   styleUrl: './online-dashboard.component.scss'
@@ -62,95 +68,552 @@ export class OnlineDashboardComponent implements OnInit {
   private circleService = inject(CircleService);
   private toast = inject(ToastService);
   private translate = inject(TranslateService);
+  private dashboardOverview = inject(DashboardOverviewService);
 
-  activity: string[] = ['Name', 'Qualification', 'Rating'];
-  activitySource = activity_Data;
+  overviewLoading = false;
+  overviewLoaded = false;
+  overviewError: string | null = null;
+  overviewRoleLabel: string | null = null;
+  overviewRangeDescription: string | null = null;
 
-  courseStates: string[] = ['Name', 'Teacher', 'Rating', 'Earning', 'Sale', 'Action'];
-  courseSource = courseStates_data;
+  summaryCards: DashboardSummaryCard[] = [];
+  roleMetricEntries: DashboardRoleMetricEntry[] = [];
+  projectOverviewEntries: DashboardOverviewListEntry[] = [];
+  transactionsView: DashboardTransactionView[] = [];
+
+  monthlyRevenueSeries?: ApexAxisChartSeries[];
+  monthlyRevenueCategories?: string[];
+  monthlyRevenueHasData = false;
 
   upcomingCircles: UpcomingCircleDto[] = [];
   upcomingLoading = false;
-
-  // public methods
-  dashboard_summary = [
-    {
-      icon: '#custom-profile-2user-outline',
-      background: 'bg-primary-50 text-primary-500',
-      title: 'New Students',
-      value: '400+',
-      percentage: '30.6%',
-      color: 'text-success'
-    },
-    {
-      icon: '#book',
-      background: 'bg-warning-50 text-warning-500',
-      title: 'Total Course',
-      value: '520+',
-      percentage: '30.6%',
-      color: 'text-warning-500'
-    },
-    {
-      icon: '#custom-eye',
-      background: 'bg-success-50 text-success-500',
-      title: 'New Visitor',
-      value: '800+',
-      percentage: '30.6%',
-      color: 'text-success-500'
-    },
-    {
-      icon: '#custom-card',
-      background: 'bg-warn-50 text-warn-500',
-      title: 'Total sale',
-      value: '1065',
-      percentage: '30.6%',
-      color: 'text-warn-500'
-    }
-  ];
-
-  queriesList = [
-    {
-      image: 'assets/images/user/avatar-2.png',
-      title: 'Python $ Data Manage'
-    },
-    {
-      image: 'assets/images/user/avatar-1.png',
-      title: 'Website Error'
-    },
-    {
-      image: 'assets/images/user/avatar-3.png',
-      title: 'How to Illustrate'
-    },
-    {
-      image: 'assets/images/user/avatar-4.jpg',
-      title: 'PHP Learning'
-    }
-  ];
-
-  notificationList = [
-    {
-      image: 'assets/images/user/avatar-1.png',
-      title: 'Report Successfully',
-      time: 'Today | 9:00 AM'
-    },
-    {
-      image: 'assets/images/user/avatar-5.jpg',
-      title: 'Reminder: Test time',
-      time: 'Yesterday | 6:30 PM'
-    },
-    {
-      image: 'assets/images/user/avatar-3.png',
-      title: 'Send course pdf',
-      time: '05 Feb | 3:45 PM'
-    },
-    {
-      image: 'assets/images/user/avatar-2.png',
-      title: 'Report Successfully',
-      time: '05 Feb | 4:00 PM'
-    }
-  ];
   ngOnInit(): void {
+    this.loadDashboardOverview();
     this.loadUpcomingCircles();
+  }
+
+  loadDashboardOverview(): void {
+    this.overviewLoading = true;
+    this.overviewError = null;
+
+    this.dashboardOverview.getOverview().subscribe({
+      next: (response) => {
+        this.overviewLoading = false;
+
+        if (!response?.isSuccess) {
+          this.overviewLoaded = false;
+          this.resetOverviewData();
+          const message = this.extractFirstError(response?.errors) || this.translate.instant('Failed to load dashboard overview');
+          this.overviewError = message;
+          if (message) {
+            this.toast.error(message);
+          }
+          return;
+        }
+
+        this.overviewLoaded = true;
+        this.applyOverviewData(response.data);
+      },
+      error: () => {
+        this.overviewLoading = false;
+        this.overviewLoaded = false;
+        this.resetOverviewData();
+        const message = this.translate.instant('Failed to load dashboard overview');
+        this.overviewError = message;
+        this.toast.error(message);
+      }
+    });
+  }
+
+  private resetOverviewData(): void {
+    this.summaryCards = [];
+    this.roleMetricEntries = [];
+    this.projectOverviewEntries = [];
+    this.transactionsView = [];
+    this.monthlyRevenueSeries = undefined;
+    this.monthlyRevenueCategories = undefined;
+    this.monthlyRevenueHasData = false;
+    this.overviewRoleLabel = null;
+    this.overviewRangeDescription = null;
+  }
+
+  private applyOverviewData(data?: DashboardOverviewDto | null): void {
+    if (!data) {
+      this.resetOverviewData();
+      return;
+    }
+
+    this.overviewRoleLabel = this.formatRole(data.role);
+    this.overviewRangeDescription = this.buildRangeDescription(data.rangeStart, data.rangeEnd, data.rangeLabel);
+
+    this.summaryCards = this.buildSummaryCards(data.metrics);
+    this.roleMetricEntries = this.buildRoleMetricEntries(data.metrics);
+
+    const charts = data.charts;
+    this.projectOverviewEntries = this.buildProjectOverviewEntries(charts?.projectOverview);
+    this.transactionsView = this.buildTransactionsView(charts?.transactions);
+    this.buildMonthlyRevenueChart(charts?.monthlyRevenue);
+  }
+
+  private buildSummaryCards(metrics?: DashboardOverviewMetricsDto | null): DashboardSummaryCard[] {
+    const definitions = [
+      {
+        key: 'earnings',
+        title: 'All Earnings',
+        icon: '#custom-card',
+        background: 'bg-warn-50 text-warn-500',
+        defaultTrendClass: 'text-success-500',
+        valueType: 'currency' as const,
+        percentKey: 'earningsPercentChange',
+        currencyKeys: ['earningsCurrencyCode', 'currencyCode']
+      },
+      {
+        key: 'newStudents',
+        title: 'New Students',
+        icon: '#custom-profile-2user-outline',
+        background: 'bg-primary-50 text-primary-500',
+        defaultTrendClass: 'text-success-500',
+        valueType: 'number' as const,
+        percentKey: 'newStudentsPercentChange'
+      },
+      {
+        key: 'circleReports',
+        title: 'Circle Reports',
+        icon: '#custom-eye',
+        background: 'bg-success-50 text-success-500',
+        defaultTrendClass: 'text-success-500',
+        valueType: 'number' as const,
+        percentKey: 'circleReportsPercentChange'
+      },
+      {
+        key: 'netIncome',
+        title: 'Net Income',
+        icon: '#book',
+        background: 'bg-warning-50 text-warning-500',
+        defaultTrendClass: 'text-success-500',
+        valueType: 'currency' as const,
+        percentKey: 'netIncomePercentChange',
+        currencyKeys: ['netIncomeCurrencyCode', 'currencyCode']
+      }
+    ];
+
+    return definitions.map((definition) => {
+      const rawValue = metrics ? metrics[definition.key] : undefined;
+      const currencyCode = this.pickCurrencyCode(metrics, definition.currencyKeys);
+      const value = this.formatMetricValue(rawValue, definition.valueType, currencyCode);
+      const percentKey = definition.percentKey;
+      const percentSource = percentKey ? metrics?.[percentKey as keyof DashboardOverviewMetricsDto] : undefined;
+      const percentValue = this.extractPercentageValue(percentSource);
+      const percentageClass = percentValue
+        ? this.resolvePercentageClass(percentSource, definition.defaultTrendClass)
+        : undefined;
+
+      return {
+        key: definition.key,
+        icon: definition.icon,
+        background: definition.background,
+        title: definition.title,
+        value,
+        percentage: percentValue,
+        percentageClass
+      } satisfies DashboardSummaryCard;
+    });
+  }
+
+  private buildRoleMetricEntries(metrics?: DashboardOverviewMetricsDto | null): DashboardRoleMetricEntry[] {
+    const definitions = [
+      { key: 'branchManagersCount', label: 'Branch Managers' },
+      { key: 'supervisorsCount', label: 'Supervisors' },
+      { key: 'teachersCount', label: 'Teachers' },
+      { key: 'studentsCount', label: 'Students' },
+      { key: 'circlesCount', label: 'Circles' },
+      { key: 'reportsCount', label: 'Reports' }
+    ];
+
+    return definitions
+      .map((definition) => {
+        const numericValue = this.coerceNumber(metrics ? metrics[definition.key] : undefined);
+        if (numericValue === null) {
+          return null;
+        }
+
+        return {
+          key: definition.key,
+          label: definition.label,
+          value: this.formatNumber(numericValue)
+        } satisfies DashboardRoleMetricEntry;
+      })
+      .filter((entry): entry is DashboardRoleMetricEntry => !!entry);
+  }
+
+  private buildProjectOverviewEntries(projectOverview?: DashboardOverviewProjectOverviewDto | null): DashboardOverviewListEntry[] {
+    const definitions = [
+      { key: 'totalCircles', label: 'Total Circles' },
+      { key: 'activeCircles', label: 'Active Circles' },
+      { key: 'teachers', label: 'Teachers' },
+      { key: 'students', label: 'Students' },
+      { key: 'reports', label: 'Reports' }
+    ];
+
+    return definitions
+      .map((definition) => {
+        const numericValue = this.coerceNumber(projectOverview ? projectOverview[definition.key] : undefined);
+        if (numericValue === null) {
+          return null;
+        }
+
+        return {
+          key: definition.key,
+          label: definition.label,
+          value: this.formatNumber(numericValue)
+        } satisfies DashboardOverviewListEntry;
+      })
+      .filter((entry): entry is DashboardOverviewListEntry => !!entry);
+  }
+
+  private buildTransactionsView(transactions?: DashboardOverviewTransactionDto[] | null): DashboardTransactionView[] {
+    if (!Array.isArray(transactions)) {
+      return [];
+    }
+
+    return transactions.map((transaction, index) => {
+      const keySource = transaction?.id ?? index;
+      const key = typeof keySource === 'string' ? keySource : String(keySource ?? index);
+      const amountValue = this.coerceNumber(transaction?.amount);
+      const currencyCode = typeof transaction?.currency === 'string' ? transaction.currency : undefined;
+      const amount = this.formatCurrency(amountValue, currencyCode ?? undefined);
+      const date = this.formatTransactionDate(transaction?.date);
+      const status = this.formatTransactionStatus(transaction?.status);
+
+      return {
+        key,
+        student: this.formatTransactionStudent(transaction?.student, transaction?.id, index),
+        amount,
+        date,
+        status,
+        statusClass: this.getStatusClass(status)
+      } satisfies DashboardTransactionView;
+    });
+  }
+
+  private buildMonthlyRevenueChart(monthlyRevenue?: DashboardOverviewMonthlyRevenuePointDto[] | null): void {
+    const points = Array.isArray(monthlyRevenue) ? monthlyRevenue : [];
+    const categories = points.map((point) => {
+      const month = point?.month;
+      return typeof month === 'string' ? month.trim() : '';
+    });
+
+    const seriesDefinitions = [
+      { key: 'earnings', name: 'Earnings' },
+      { key: 'teacherPayout', name: 'Teacher Payout' },
+      { key: 'managerPayout', name: 'Manager Payout' },
+      { key: 'netIncome', name: 'Net Income' }
+    ] as const;
+
+    const series: ApexAxisChartSeries[] = [];
+
+    for (const definition of seriesDefinitions) {
+      const hasValue = points.some((point) => this.coerceNumber(point?.[definition.key]) !== null);
+      if (!hasValue) {
+        continue;
+      }
+
+      const data = points.map((point) => this.coerceNumber(point?.[definition.key]) ?? 0);
+
+      series.push({
+        name: definition.name,
+        data
+      });
+    }
+
+    this.monthlyRevenueSeries = series.length ? series : undefined;
+    this.monthlyRevenueCategories = categories.some((category) => !!category) ? categories : undefined;
+    this.monthlyRevenueHasData = series.length > 0;
+  }
+
+  private extractFirstError(errors: unknown): string | null {
+    if (!Array.isArray(errors)) {
+      return null;
+    }
+
+    for (const error of errors) {
+      if (error && typeof error === 'object' && 'message' in error) {
+        const message = (error as { message?: unknown }).message;
+        if (typeof message === 'string' && message.trim()) {
+          return message.trim();
+        }
+      }
+    }
+
+    return null;
+  }
+
+  private pickCurrencyCode(
+    metrics?: DashboardOverviewMetricsDto | null,
+    candidateKeys: (keyof DashboardOverviewMetricsDto | string)[] = []
+  ): string | undefined {
+    if (!metrics) {
+      return undefined;
+    }
+
+    for (const key of candidateKeys) {
+      const value = metrics[key as keyof DashboardOverviewMetricsDto];
+      if (typeof value === 'string' && value.trim()) {
+        return value.trim();
+      }
+    }
+
+    const fallback = metrics.currencyCode;
+    if (typeof fallback === 'string' && fallback.trim()) {
+      return fallback.trim();
+    }
+
+    return undefined;
+  }
+
+  private formatMetricValue(
+    value: unknown,
+    valueType: 'currency' | 'number',
+    currencyCode?: string | null
+  ): string {
+    if (typeof value === 'string' && value.trim()) {
+      return value.trim();
+    }
+
+    const numericValue = this.coerceNumber(value);
+
+    if (numericValue === null) {
+      return '—';
+    }
+
+    return valueType === 'currency'
+      ? this.formatCurrency(numericValue, currencyCode ?? undefined)
+      : this.formatNumber(numericValue);
+  }
+
+  private extractPercentageValue(value: unknown): string | null {
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      return trimmed ? trimmed : null;
+    }
+
+    const numericValue = this.coerceNumber(value);
+    if (numericValue === null) {
+      return null;
+    }
+
+    const sign = numericValue > 0 ? '+' : numericValue < 0 ? '-' : '';
+    const absolute = Math.abs(numericValue);
+    const fixed = absolute >= 100 ? absolute.toFixed(0) : absolute.toFixed(1);
+    return `${sign}${fixed}%`;
+  }
+
+  private resolvePercentageClass(value: unknown, defaultClass: string): string {
+    if (typeof value === 'number') {
+      if (value > 0) {
+        return 'text-success-500';
+      }
+      if (value < 0) {
+        return 'text-warn-500';
+      }
+      return 'text-muted';
+    }
+
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (!trimmed) {
+        return defaultClass;
+      }
+      if (/^-/.test(trimmed)) {
+        return 'text-warn-500';
+      }
+      if (/^[+-]?0+(?:\.0+)?%?$/.test(trimmed)) {
+        return 'text-muted';
+      }
+      return 'text-success-500';
+    }
+
+    return defaultClass;
+  }
+
+  private coerceNumber(value: unknown): number | null {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value;
+    }
+
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (!trimmed) {
+        return null;
+      }
+
+      const parsed = Number(trimmed);
+      if (Number.isFinite(parsed)) {
+        return parsed;
+      }
+    }
+
+    return null;
+  }
+
+  private formatCurrency(value: number | null, currencyCode?: string): string {
+    if (value === null) {
+      return '—';
+    }
+
+    if (currencyCode) {
+      try {
+        return new Intl.NumberFormat(undefined, {
+          style: 'currency',
+          currency: currencyCode,
+          maximumFractionDigits: 2,
+          minimumFractionDigits: value % 1 === 0 ? 0 : 2
+        }).format(value);
+      } catch {
+        // Fallback to decimal formatting if the currency code is invalid.
+      }
+    }
+
+    const options: Intl.NumberFormatOptions = {
+      minimumFractionDigits: value % 1 === 0 ? 0 : 2,
+      maximumFractionDigits: value % 1 === 0 ? 0 : 2
+    };
+
+    return new Intl.NumberFormat(undefined, options).format(value);
+  }
+
+  private formatNumber(value: number): string {
+    const hasFraction = Math.abs(value % 1) > 0;
+    const options: Intl.NumberFormatOptions = {
+      maximumFractionDigits: hasFraction ? 2 : 0,
+      minimumFractionDigits: hasFraction ? 0 : 0
+    };
+
+    return new Intl.NumberFormat(undefined, options).format(value);
+  }
+
+  private buildRangeDescription(
+    rangeStart?: string | null,
+    rangeEnd?: string | null,
+    rangeLabel?: string | null
+  ): string | null {
+    const parts: string[] = [];
+
+    if (typeof rangeLabel === 'string' && rangeLabel.trim()) {
+      parts.push(rangeLabel.trim());
+    }
+
+    const start = this.formatDateOnly(rangeStart);
+    const end = this.formatDateOnly(rangeEnd);
+    const rangeParts = [start, end].filter((part): part is string => !!part);
+
+    if (rangeParts.length) {
+      parts.push(rangeParts.join(' – '));
+    }
+
+    if (!parts.length) {
+      return null;
+    }
+
+    return parts.join(' · ');
+  }
+
+  private formatDateOnly(value?: string | null): string | null {
+    if (!value) {
+      return null;
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return null;
+    }
+
+    return new Intl.DateTimeFormat(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit'
+    }).format(date);
+  }
+
+  private formatTransactionDate(value?: string | null): string {
+    if (!value) {
+      return '—';
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return '—';
+    }
+
+    return new Intl.DateTimeFormat(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
+  }
+
+  private formatTransactionStatus(value?: string | null): string {
+    if (typeof value === 'string' && value.trim()) {
+      return this.toTitleCase(value.trim());
+    }
+
+    return 'Pending';
+  }
+
+  private formatTransactionStudent(value: unknown, id: unknown, index: number): string {
+    if (typeof value === 'string' && value.trim()) {
+      return value.trim();
+    }
+
+    if (typeof id === 'number' || typeof id === 'string') {
+      return this.translate.instant('Student #{{id}}', { id });
+    }
+
+    return this.translate.instant('Student #{{id}}', { id: index + 1 });
+  }
+
+  private getStatusClass(status: string): string {
+    const normalized = status.trim().toLowerCase();
+
+    if (normalized === 'paid') {
+      return 'badge bg-light-success text-success-500';
+    }
+
+    if (normalized === 'pending') {
+      return 'badge bg-light-warning text-warning-500';
+    }
+
+    return 'badge bg-light-secondary text-muted';
+  }
+
+  private toTitleCase(value: string): string {
+    return value
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((segment) => !!segment)
+      .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+      .join(' ');
+  }
+
+  private formatRole(role?: string | null): string | null {
+    if (typeof role !== 'string') {
+      return null;
+    }
+
+    const trimmed = role.trim();
+    if (!trimmed) {
+      return null;
+    }
+
+    const spaced = trimmed
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .replace(/_/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    return this.toTitleCase(spaced);
   }
 
   loadUpcomingCircles(take = 4): void {
