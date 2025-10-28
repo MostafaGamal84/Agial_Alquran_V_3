@@ -81,7 +81,7 @@ export class OnlineDashboardComponent implements OnInit {
   projectOverviewEntries: DashboardOverviewListEntry[] = [];
   transactionsView: DashboardTransactionView[] = [];
 
-  monthlyRevenueSeries?: ApexAxisChartSeries[];
+  monthlyRevenueSeries?: ApexAxisChartSeries;
   monthlyRevenueCategories?: string[];
   monthlyRevenueHasData = false;
 
@@ -310,7 +310,7 @@ export class OnlineDashboardComponent implements OnInit {
       { key: 'netIncome', name: 'Net Income' }
     ] as const;
 
-    const series: ApexAxisChartSeries[] = [];
+    const series: ApexAxisChartSeries = [];
 
     for (const definition of seriesDefinitions) {
       const hasValue = points.some((point) => this.coerceNumber(point?.[definition.key]) !== null);

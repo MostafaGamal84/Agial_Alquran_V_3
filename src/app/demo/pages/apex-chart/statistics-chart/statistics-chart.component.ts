@@ -28,10 +28,10 @@ export class StatisticsChartComponent implements OnInit {
   readonly chartTitle = input<string>('Statistics');
   readonly chartSubtitle = input<string | null | undefined>('Revenue and Sales');
   readonly showRangeSelector = input<boolean>(true);
-  readonly series = input<ApexAxisChartSeries[] | undefined>();
+  readonly series = input<ApexAxisChartSeries | undefined>();
   readonly categories = input<string[] | undefined>();
 
-  private readonly defaultSeries: ApexAxisChartSeries[] = [
+  private readonly defaultSeries: ApexAxisChartSeries = [
     {
       name: 'Revenue',
       data: [200, 320, 320, 275, 275, 400, 400, 300, 440, 320, 320, 275, 275, 400, 300, 440]
