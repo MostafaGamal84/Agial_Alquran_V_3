@@ -76,22 +76,37 @@
                         </a>
                       </li>
                       <li class="list-inline-item m-r-10" [matTooltip]="'Delete' | translate">
-                        <a href="javascript:" class="avatar avatar-xs text-muted">
+                        <button
+                          type="button"
+                          class="avatar avatar-xs text-muted"
+                          (click)="confirmDisable(element)"
+                          [disabled]="isProcessing(element.id)"
+                        >
                           <i class="ti ti-trash f-18"></i>
-                        </a>
+                        </button>
                       </li>
                     </ul>
                     <ng-template #inactiveIcons>
                       <ul class="list-inline p-l-0">
-                        <li class="list-inline-item m-r-10" [matTooltip]="'Accept' | translate" (click)="changeStatus(element, true)">
-                          <a href="javascript:" class="avatar avatar-xs bg-success-50 text-success-500">
+                        <li class="list-inline-item m-r-10" [matTooltip]="'Accept' | translate">
+                          <button
+                            type="button"
+                            class="avatar avatar-xs bg-success-50 text-success-500"
+                            (click)="changeStatus(element, true)"
+                            [disabled]="isProcessing(element.id)"
+                          >
                             <i class="ti ti-check f-20"></i>
-                          </a>
+                          </button>
                         </li>
-                        <li class="list-inline-item m-r-10" [matTooltip]="'Reject' | translate" (click)="changeStatus(element, false)">
-                          <a href="javascript:" class="avatar avatar-xs bg-warn-50 text-warn-500">
+                        <li class="list-inline-item m-r-10" [matTooltip]="'Reject' | translate">
+                          <button
+                            type="button"
+                            class="avatar avatar-xs bg-warn-50 text-warn-500"
+                            (click)="changeStatus(element, false)"
+                            [disabled]="isProcessing(element.id)"
+                          >
                             <i class="ti ti-x f-20"></i>
-                          </a>
+                          </button>
                         </li>
                       </ul>
                     </ng-template>
