@@ -10,6 +10,29 @@ import {
   normalizePagedResult
 } from './lookup.service';
 
+export enum SubscribeTypeCategory {
+  Unknown = 0,
+  Foreign = 1,
+  Arab = 2,
+  Egyptian = 3
+}
+
+export function getSubscribeTypeCategoryTranslationKey(
+  type: SubscribeTypeCategory | null | undefined
+): string {
+  const category = type ?? SubscribeTypeCategory.Unknown;
+  switch (category) {
+    case SubscribeTypeCategory.Foreign:
+      return 'Foreign';
+    case SubscribeTypeCategory.Arab:
+      return 'Arab';
+    case SubscribeTypeCategory.Egyptian:
+      return 'Egyptian';
+    default:
+      return 'Unknown';
+  }
+}
+
 export interface SubscribeDto {
   id: number;
   name?: string;
@@ -39,12 +62,16 @@ export interface SubscribeTypeDto {
   name?: string;
   forignPricePerHour?: number;
   arabPricePerHour?: number;
+  egyptPricePerHour?: number;
+  type?: SubscribeTypeCategory | null;
 }
 
 export interface CreateSubscribeTypeDto {
   name?: string;
   forignPricePerHour?: number;
   arabPricePerHour?: number;
+  egyptPricePerHour?: number;
+  type?: SubscribeTypeCategory | null;
 }
 
 export interface UpdateSubscribeTypeDto extends CreateSubscribeTypeDto {

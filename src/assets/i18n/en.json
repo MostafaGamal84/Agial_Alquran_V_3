@@ -409,5 +409,18 @@
   "Paid Question": "Paid?",
   "No Invoices Found": "No invoices found for the selected filters.",
   "Monthly Summary Subtitle": "Attendance and salary overview for",
-  "No Summary Data For Month": "No summary data available for this month."
+  "No Summary Data For Month": "No summary data available for this month.",
+  "Audience Category": "Audience Category",
+  "Egyptian Price": "Egyptian Price",
+  "Egyptian Price Per Hour": "Egyptian Price Per Hour",
+  "Unknown": "Unknown",
+  "Foreign": "Foreign",
+  "Arab": "Arab",
+  "Egyptian": "Egyptian",
+  "Foreign price is required when selected as the default category": "Foreign price is required when selected as the default category.",
+  "Foreign price per hour must be zero or greater": "Foreign price per hour must be zero or greater.",
+  "Arab price is required when selected as the default category": "Arab price is required when selected as the default category.",
+  "Arab price per hour must be zero or greater": "Arab price per hour must be zero or greater.",
+  "Egyptian price is required when selected as the default category": "Egyptian price is required when selected as the default category.",
+  "Egyptian price per hour must be zero or greater": "Egyptian price per hour must be zero or greater."
 }

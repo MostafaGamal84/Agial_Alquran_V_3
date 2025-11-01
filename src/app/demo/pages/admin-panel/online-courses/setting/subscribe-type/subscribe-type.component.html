@@ -31,10 +31,22 @@
                   {{ element.name }}
                 </td>
               </ng-container>
+              <ng-container matColumnDef="type">
+                <th mat-header-cell *matHeaderCellDef>{{ 'Audience Category' | translate }}</th>
+                <td mat-cell *matCellDef="let element" class="text-nowrap">
+                  {{ resolveCategoryLabel(element.type) }}
+                </td>
+              </ng-container>
               <ng-container matColumnDef="arabPricePerHour">
                 <th mat-header-cell *matHeaderCellDef>{{ 'Arab Price' | translate }}</th>
                 <td mat-cell *matCellDef="let element" class="text-nowrap">
                   {{ element.arabPricePerHour }}
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="egyptPricePerHour">
+                <th mat-header-cell *matHeaderCellDef>{{ 'Egyptian Price' | translate }}</th>
+                <td mat-cell *matCellDef="let element" class="text-nowrap">
+                  {{ element.egyptPricePerHour }}
                 </td>
               </ng-container>
               <ng-container matColumnDef="forignPricePerHour">
@@ -69,7 +81,7 @@
               <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
               <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
               <tr class="mat-row" *matNoDataRow>
-                <td class="mat-cell" colspan="4">
+                <td class="mat-cell" colspan="6">
                   {{ 'No data matching the filter' | translate: { value: input.value } }}
                 </td>
               </tr>
