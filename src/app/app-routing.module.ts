@@ -14,6 +14,66 @@ import { UserTypesEnum } from './@theme/types/UserTypesEnum';
 const routes: Routes = [
   {
     path: '',
+    redirectTo: 'login',
+    pathMatch: 'full'
+  },
+  {
+    path: '',
+    component: EmptyComponent,
+    children: [
+      {
+        path: '',
+        redirectTo: 'login',
+        pathMatch: 'full'
+      },
+      {
+        path: 'login',
+        loadComponent: () => import('./demo/pages/auth/authentication-1/login/login.component').then((c) => c.LoginComponent)
+      },
+      {
+        path: 'register',
+        loadComponent: () => import('./demo/pages/auth/authentication-1/register/register.component').then((c) => c.RegisterComponent)
+      },
+      {
+        path: 'forgot-password',
+        loadComponent: () =>
+          import('./demo/pages/auth/authentication-1/forgot-password/forgot-password.component').then((c) => c.ForgotPasswordComponent)
+      },
+      {
+        path: 'reset-password',
+        loadComponent: () =>
+          import('./demo/pages/auth/authentication-1/reset-password/reset-password.component').then((c) => c.ResetPasswordComponent)
+      },
+      {
+        path: 'authentication-1',
+        loadChildren: () => import('./demo/pages/auth/authentication-1/authentication-1.module').then((e) => e.Authentication1Module),
+        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager] }
+      },
+      {
+        path: 'authentication-2',
+        canActivateChild: [AuthGuardChild],
+        loadChildren: () => import('./demo/pages/auth/authentication-2/authentication-2.module').then((e) => e.Authentication2Module),
+        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager] }
+      },
+      {
+        path: 'authentication-3',
+        canActivateChild: [AuthGuardChild],
+        loadComponent: () =>
+          import('./demo/pages/auth/authentication-3/authentication-three.component').then((c) => c.AuthenticationThreeComponent),
+        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager] }
+      },
+      {
+        path: 'maintenance',
+        loadChildren: () => import('./demo/pages/maintenance/maintenance.module').then((m) => m.MaintenanceModule)
+      },
+      {
+        path: 'unauthorized',
+        loadComponent: () => import('./demo/pages/maintenance/error-401/error-401.component').then((c) => c.Error401Component)
+      }
+    ]
+  },
+  {
+    path: '',
     component: GuestComponent,
     children: [
       {
@@ -118,61 +178,6 @@ const routes: Routes = [
         path: 'sample-page',
         loadComponent: () => import('./demo/pages/other/sample-page/sample-page.component').then((c) => c.SamplePageComponent),
         data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager] }
-      }
-    ]
-  },
-  {
-    path: '',
-    component: EmptyComponent,
-    children: [
-      {
-        path: '',
-        redirectTo: '/auth/login',
-        pathMatch: 'full'
-      },
-      {
-        path: 'login',
-        loadComponent: () => import('./demo/pages/auth/authentication-1/login/login.component').then((c) => c.LoginComponent)
-      },
-      {
-        path: 'register',
-        loadComponent: () => import('./demo/pages/auth/authentication-1/register/register.component').then((c) => c.RegisterComponent)
-      },
-      {
-        path: 'forgot-password',
-        loadComponent: () =>
-          import('./demo/pages/auth/authentication-1/forgot-password/forgot-password.component').then((c) => c.ForgotPasswordComponent)
-      },
-      {
-        path: 'reset-password',
-        loadComponent: () =>
-          import('./demo/pages/auth/authentication-1/reset-password/reset-password.component').then((c) => c.ResetPasswordComponent)
-      },
-      {
-        path: 'authentication-1',
-        loadChildren: () => import('./demo/pages/auth/authentication-1/authentication-1.module').then((e) => e.Authentication1Module),
-        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager] }
-      },
-      {
-        path: 'authentication-2',
-        canActivateChild: [AuthGuardChild],
-        loadChildren: () => import('./demo/pages/auth/authentication-2/authentication-2.module').then((e) => e.Authentication2Module),
-        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager] }
-      },
-      {
-        path: 'authentication-3',
-        canActivateChild: [AuthGuardChild],
-        loadComponent: () =>
-          import('./demo/pages/auth/authentication-3/authentication-three.component').then((c) => c.AuthenticationThreeComponent),
-        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager] }
-      },
-      {
-        path: 'maintenance',
-        loadChildren: () => import('./demo/pages/maintenance/maintenance.module').then((m) => m.MaintenanceModule)
-      },
-      {
-        path: 'unauthorized',
-        loadComponent: () => import('./demo/pages/maintenance/error-401/error-401.component').then((c) => c.Error401Component)
       }
     ]
   },
