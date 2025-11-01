@@ -5,13 +5,22 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
-import { FilteredResultRequestDto, LookupService, LookupDto } from 'src/app/@theme/services/lookup.service';
+import {
+  FilteredResultRequestDto,
+  LookupService,
+  SubscribeLookupDto
+} from 'src/app/@theme/services/lookup.service';
 import {
   SubscribeService,
   SubscribeTypeDto,
   getSubscribeTypeCategoryTranslationKey
 } from 'src/app/@theme/services/subscribe.service';
 import { StudentSubscribeService, AddStudentSubscribeDto } from 'src/app/@theme/services/student-subscribe.service';
+import {
+  SubscribeAudience,
+  getSubscribeAudienceTranslationKey,
+  resolveSubscribePricing
+} from 'src/app/@theme/services/subscribe-audience';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { TranslateService } from '@ngx-translate/core';
 
@@ -45,7 +54,10 @@ export class StudentSubscribeDialogComponent implements OnInit {
   });
 
   types: SubscribeTypeDto[] = [];
-  subscribes: LookupDto[] = [];
+  subscribes: SubscribeLookupDto[] = [];
+  selectedCurrencyCode: string | null = null;
+  selectedAmount: number | null = null;
+  pricingError: string | null = null;
 
   ngOnInit(): void {
     const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
@@ -59,6 +71,7 @@ export class StudentSubscribeDialogComponent implements OnInit {
 
     this.form.get('subscribeTypeId')?.valueChanges.subscribe((typeId) => {
       this.form.patchValue({ subscribeId: null }, { emitEvent: false });
+      this.resetPricingDetails();
       if (typeId) {
         this.lookupService.getSubscribesByTypeId(typeId).subscribe((res) => {
           if (res.isSuccess && res.data) {
@@ -71,6 +84,10 @@ export class StudentSubscribeDialogComponent implements OnInit {
         this.subscribes = [];
       }
     });
+
+    this.form.get('subscribeId')?.valueChanges.subscribe((subscribeId) => {
+      this.updatePricingDetails(subscribeId);
+    });
   }
 
   submit(): void {
@@ -78,9 +95,18 @@ export class StudentSubscribeDialogComponent implements OnInit {
     if (!subscribeId) {
       return;
     }
+    const selected = this.subscribes.find((item) => item.id === subscribeId);
+    const pricing = selected ? resolveSubscribePricing(selected) : null;
+
+    if (!selected || !pricing) {
+      this.toast.error(this.translate.instant('Unsupported subscription audience'));
+      return;
+    }
+
     const model: AddStudentSubscribeDto = {
       studentId: this.data?.studentId,
-      studentSubscribeId: subscribeId
+      studentSubscribeId: subscribeId,
+      subscribeFor: selected.subscribeFor ?? null
     };
     this.studentSubscribeService.create(model).subscribe({
       next: (res) => {
@@ -97,5 +123,51 @@ export class StudentSubscribeDialogComponent implements OnInit {
 
   resolveCategoryLabel(type: SubscribeTypeDto['type']): string {
     return this.translate.instant(getSubscribeTypeCategoryTranslationKey(type));
+  }
+
+  resolveAudienceLabel(audience: SubscribeAudience | null | undefined): string {
+    return this.translate.instant(getSubscribeAudienceTranslationKey(audience ?? null));
+  }
+
+  getPricing(option: SubscribeLookupDto) {
+    return resolveSubscribePricing(option);
+  }
+
+  formatAmount(amount: number | null): string {
+    if (amount === null || amount === undefined) {
+      return this.translate.instant('Subscription price unavailable');
+    }
+
+    return new Intl.NumberFormat(undefined, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    }).format(amount);
+  }
+
+  private updatePricingDetails(subscribeId: number | null | undefined): void {
+    if (!subscribeId) {
+      this.resetPricingDetails();
+      return;
+    }
+
+    const selected = this.subscribes.find((item) => item.id === subscribeId);
+    const pricing = selected ? resolveSubscribePricing(selected) : null;
+
+    if (!selected || !pricing) {
+      this.selectedCurrencyCode = null;
+      this.selectedAmount = null;
+      this.pricingError = this.translate.instant('Unsupported subscription audience');
+      return;
+    }
+
+    this.selectedCurrencyCode = pricing.currencyCode;
+    this.selectedAmount = pricing.amount ?? null;
+    this.pricingError = null;
+  }
+
+  private resetPricingDetails(): void {
+    this.selectedCurrencyCode = null;
+    this.selectedAmount = null;
+    this.pricingError = null;
   }
 }

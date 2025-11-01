@@ -40,6 +40,16 @@
         </mat-select>
       </mat-form-field>
     </div>
+    <div class="col-md-6">
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>{{ 'Subscribe For' | translate }}</mat-label>
+        <mat-select formControlName="subscribeFor">
+          <mat-option *ngFor="let option of audienceOptions" [value]="option.value">
+            {{ resolveAudienceLabel(option.value) }} ({{ option.currencyCode }})
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
     <div class="col-12">
       <button mat-flat-button color="primary" type="submit">{{ 'Save' | translate }}</button>
     </div>
