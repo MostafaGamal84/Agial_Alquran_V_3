@@ -18,6 +18,7 @@ import {
 } from 'src/app/@theme/services/lookup.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
+import { isEgyptianNationality } from 'src/app/@theme/utils/nationality.utils';
 
 type ProfileFormValue = {
   fullName: string;
@@ -49,6 +50,7 @@ export class AcAccountComponent implements OnInit {
 
   nationalities: NationalityDto[] = [];
   governorates: GovernorateDto[] = [];
+  isGovernorateRequired = false;
   branches = [
     { id: BranchesEnum.Mens, label: 'الرجال' },
     { id: BranchesEnum.Women, label: 'النساء' }
@@ -69,9 +71,14 @@ export class AcAccountComponent implements OnInit {
       mobile: ['', [Validators.required, Validators.maxLength(25)]],
       secondMobile: ['', [Validators.maxLength(25)]],
       nationalityId: [null, Validators.required],
-      governorateId: [null, Validators.required],
+      governorateId: [null],
       branchId: [null, Validators.required]
     });
+
+    this.profileForm
+      .get('nationalityId')
+      ?.valueChanges.pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((nationalityId) => this.applyGovernorateRequirement(nationalityId));
   }
 
   private loadLookups(): void {
@@ -82,6 +89,7 @@ export class AcAccountComponent implements OnInit {
         next: (res) => {
           if (res.isSuccess && Array.isArray(res.data)) {
             this.nationalities = res.data;
+            this.applyGovernorateRequirement(this.profileForm.get('nationalityId')?.value);
           }
         },
         error: (err) => {
@@ -202,6 +210,7 @@ export class AcAccountComponent implements OnInit {
       },
       { emitEvent: false }
     );
+    this.applyGovernorateRequirement(profile.nationalityId ?? null);
     this.profileForm.markAsPristine();
     this.profileForm.markAsUntouched();
   }
@@ -218,6 +227,24 @@ export class AcAccountComponent implements OnInit {
     };
 
     return payload;
+  }
+
+  private applyGovernorateRequirement(nationalityId: number | null): void {
+    const governorateControl = this.profileForm.get('governorateId');
+    if (!governorateControl) {
+      return;
+    }
+
+    const nationality = this.nationalities.find((n) => n.id === Number(nationalityId)) ?? null;
+    this.isGovernorateRequired = isEgyptianNationality(nationality);
+
+    if (this.isGovernorateRequired) {
+      governorateControl.setValidators([Validators.required]);
+    } else {
+      governorateControl.clearValidators();
+    }
+
+    governorateControl.updateValueAndValidity({ emitEvent: false });
   }
 
   private resolveResponseMessage(

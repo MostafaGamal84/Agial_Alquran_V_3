@@ -149,6 +149,9 @@ placeholder="+1"
                 <mat-select formControlName="governorateId" placeholder="Select governorate">
                   <mat-option *ngFor="let g of governorates" [value]="g.id">{{ g.name }}</mat-option>
                 </mat-select>
+                <mat-error *ngIf="registerForm.get('governorateId')?.hasError('required')">
+                  {{ 'EgyptGovernorateRequiredMessage' | translate }}
+                </mat-error>
               </mat-form-field>
             </div>
             <div class="col-12">

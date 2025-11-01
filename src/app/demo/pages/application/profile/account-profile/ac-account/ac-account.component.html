@@ -108,7 +108,9 @@
           <div class="col-md-4 m-b-15">
             <label class="f-w-500" for="governorateId">
               Governorate
-              <span class="text-warn-500">*</span>
+              @if (isGovernorateRequired) {
+                <span class="text-warn-500">*</span>
+              }
             </label>
             <mat-form-field appearance="outline" class="w-100 m-t-5">
               <mat-select id="governorateId" placeholder="Select governorate" formControlName="governorateId">
@@ -117,7 +119,7 @@
                 }
               </mat-select>
               @if (profileForm.get('governorateId')?.touched && profileForm.get('governorateId')?.hasError('required')) {
-                <mat-error>Governorate is required.</mat-error>
+                <mat-error>{{ 'EgyptGovernorateRequiredMessage' | translate }}</mat-error>
               }
             </mat-form-field>
           </div>

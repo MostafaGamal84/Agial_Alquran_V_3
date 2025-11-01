@@ -14,6 +14,7 @@ import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 import { LookupService, NationalityDto, GovernorateDto } from 'src/app/@theme/services/lookup.service';
 import { CountryService, Country } from 'src/app/@theme/services/country.service';
+import { isEgyptianNationality } from 'src/app/@theme/utils/nationality.utils';
 
 @Component({
   selector: 'app-register',
@@ -72,13 +73,18 @@ export class RegisterComponent implements OnInit {
       confirmPassword: ['', Validators.required],
       userTypeId: [null, Validators.required],
       nationalityId: [null, Validators.required],
-      governorateId: [null, Validators.required],
+      governorateId: [null],
       branchId: [null, Validators.required]
     });
+
+    this.registerForm
+      .get('nationalityId')
+      ?.valueChanges.subscribe((nationalityId) => this.applyGovernorateRequirement(nationalityId));
 
     this.lookupService.getAllNationalities().subscribe((res) => {
       if (res.isSuccess) {
         this.nationalities = res.data;
+        this.applyGovernorateRequirement(this.registerForm.get('nationalityId')?.value);
       }
     });
 
@@ -91,6 +97,22 @@ export class RegisterComponent implements OnInit {
     this.countryService.getCountries().subscribe((data) => {
       this.countries = data;
     });
+  }
+
+  private applyGovernorateRequirement(nationalityId: number | null): void {
+    const governorateControl = this.registerForm.get('governorateId');
+    if (!governorateControl) {
+      return;
+    }
+
+    const nationality = this.nationalities.find((n) => n.id === Number(nationalityId)) ?? null;
+    if (isEgyptianNationality(nationality)) {
+      governorateControl.setValidators([Validators.required]);
+    } else {
+      governorateControl.clearValidators();
+    }
+
+    governorateControl.updateValueAndValidity({ emitEvent: false });
   }
 
   get form() {
