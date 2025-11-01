@@ -21,6 +21,7 @@ import { CircleService, CircleDto } from 'src/app/@theme/services/circle.service
 import { CountryService, Country } from 'src/app/@theme/services/country.service';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
+import { isEgyptianNationality } from 'src/app/@theme/utils/nationality.utils';
 
 @Component({
   selector: 'app-user-edit',
@@ -89,7 +90,7 @@ export class UserEditComponent implements OnInit {
       secondMobileCountryDialCode: [''],
       secondMobile: [''],
       nationalityId: [null, Validators.required],
-      governorateId: [null, Validators.required],
+      governorateId: [null],
       branchId: [null, Validators.required],
       teacherIds: [[]],
       teacherId: [null],
@@ -100,9 +101,14 @@ export class UserEditComponent implements OnInit {
       circleId: [null]
     });
 
+    this.basicInfoForm
+      .get('nationalityId')
+      ?.valueChanges.subscribe((nationalityId) => this.applyGovernorateRequirement(nationalityId));
+
     this.lookupService.getAllNationalities().subscribe((res) => {
       if (res.isSuccess) {
         this.nationalities = res.data;
+        this.applyGovernorateRequirement(this.basicInfoForm.get('nationalityId')?.value);
       }
     });
 
@@ -125,6 +131,8 @@ export class UserEditComponent implements OnInit {
         governorateId: this.currentUser.governorateId,
         branchId: this.currentUser.branchId
       });
+
+      this.applyGovernorateRequirement(this.currentUser.nationalityId);
 
       if (this.isManager || this.isTeacher || this.isStudent) {
         if (this.isManager) {
@@ -477,6 +485,22 @@ export class UserEditComponent implements OnInit {
       }
     }
     return null;
+  }
+
+  private applyGovernorateRequirement(nationalityId: number | null): void {
+    const governorateControl = this.basicInfoForm.get('governorateId');
+    if (!governorateControl) {
+      return;
+    }
+
+    const nationality = this.nationalities.find((n) => n.id === Number(nationalityId)) ?? null;
+    if (isEgyptianNationality(nationality)) {
+      governorateControl.setValidators([Validators.required]);
+    } else {
+      governorateControl.clearValidators();
+    }
+
+    governorateControl.updateValueAndValidity({ emitEvent: false });
   }
 
   onSubmit() {

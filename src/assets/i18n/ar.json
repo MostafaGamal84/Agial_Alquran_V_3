@@ -233,6 +233,7 @@
   "Full name is required": "الاسم الكامل مطلوب",
   "Governorate": "المحافظة",
   "Governorate is required": "يجب اختيار المحافظة",
+  "EgyptGovernorateRequiredMessage": "يجب اختيار المحافظة عند اختيار الجنسية المصرية",
   "Inform us about your enterprise": "أخبرنا عن مؤسستك",
   "It makes no difference what the price is, it all makes senses to us.": "لا فرق في السعر بالنسبة لنا، فكل شيء منطقي لدينا.",
   "Joining Date": "تاريخ الانضمام",

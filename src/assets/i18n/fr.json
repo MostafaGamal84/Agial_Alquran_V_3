@@ -292,6 +292,8 @@
   "Email": "Email",
   "Mobile": "Mobile",
   "Nationality": "Nationality",
+  "Governorate": "Governorate",
+  "EgyptGovernorateRequiredMessage": "Governorate is required when Egyptian nationality is selected",
   "Actions": "Actions",
   "View": "View",
   "Edit": "Edit",

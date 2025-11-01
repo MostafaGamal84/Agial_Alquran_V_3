@@ -103,7 +103,7 @@
                 <mat-option *ngFor="let g of governorates" [value]="g.id">{{ g.name }}</mat-option>
               </mat-select>
               @if (basicInfoForm.get('governorateId')?.touched && basicInfoForm.get('governorateId')?.invalid) {
-                <mat-error>Governorate id is required</mat-error>
+                <mat-error>{{ 'EgyptGovernorateRequiredMessage' | translate }}</mat-error>
               }
             </mat-form-field>
           </div>
