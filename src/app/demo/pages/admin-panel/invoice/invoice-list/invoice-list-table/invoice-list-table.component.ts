@@ -54,6 +54,7 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
   @Input() month?: string;
   @Input() compareMonth?: string;
   @Input() search = '';
+  @Input() nationalityId: number | null = null;
   @Output() countChange = new EventEmitter<number>();
   private studentPaymentService = inject(StudentPaymentService);
   private dialog = inject(MatDialog);
@@ -84,7 +85,7 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['tab'] || changes['month'] || changes['compareMonth']) {
+    if (changes['tab'] || changes['month'] || changes['compareMonth'] || changes['nationalityId']) {
       this.loadData();
     }
     if (changes['search'] && !changes['search'].firstChange) {
@@ -156,7 +157,8 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
             undefined,
             undefined,
             undefined,
-            monthDate
+            monthDate,
+            this.nationalityId ?? undefined
           )
         );
         requests.push(
@@ -168,7 +170,8 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
             undefined,
             undefined,
             undefined,
-            monthDate
+            monthDate,
+            this.nationalityId ?? undefined
           )
         );
       }
@@ -182,7 +185,8 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
             undefined,
             undefined,
             undefined,
-            compareMonthDate
+            compareMonthDate,
+            this.nationalityId ?? undefined
           )
         );
         requests.push(
@@ -194,7 +198,8 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
             undefined,
             undefined,
             undefined,
-            compareMonthDate
+            compareMonthDate,
+            this.nationalityId ?? undefined
           )
         );
       }
@@ -222,7 +227,8 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
             undefined,
             undefined,
             undefined,
-            monthDate
+            monthDate,
+            this.nationalityId ?? undefined
           )
         );
       }
@@ -236,7 +242,8 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
             undefined,
             undefined,
             undefined,
-            compareMonthDate
+            compareMonthDate,
+            this.nationalityId ?? undefined
           )
         );
       }

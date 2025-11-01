@@ -17,9 +17,27 @@
       <div class="p-b-15">
         <div class="table-containe table-reponsive">
           <div class="table-search p-t-15 p-x-15">
-            <mat-form-field appearance="outline" class="w-100">
-              <input matInput (keyup)="applyFilter($event)" [placeholder]="'Search...' | translate" #input />
-            </mat-form-field>
+            <div class="row g-3">
+              <div class="col-12 col-md-6">
+                <mat-form-field appearance="outline" class="w-100">
+                  <input matInput (keyup)="applyFilter($event)" [placeholder]="'Search...' | translate" #input />
+                </mat-form-field>
+              </div>
+              <div class="col-12 col-md-6">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>{{ 'Nationality' | translate }}</mat-label>
+                  <mat-select
+                    [value]="selectedNationalityId ?? null"
+                    (selectionChange)="onNationalityChange($event.value)"
+                  >
+                    <mat-option [value]="null">{{ 'All Nationalities' | translate }}</mat-option>
+                    <mat-option *ngFor="let nationality of nationalities" [value]="nationality.id">
+                      {{ nationality.name }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+            </div>
           </div>
           <div class="table-responsive">
             <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">

@@ -138,7 +138,8 @@ export class StudentPaymentService {
     createdTo?: Date,
     dueFrom?: Date,
     dueTo?: Date,
-    month?: Date
+    month?: Date,
+    nationalityId?: number | null
   ): Observable<ApiResponse<PagedResultDto<StudentInvoiceDto>>> {
     let params = new HttpParams();
     if (filter.skipCount !== undefined) {
@@ -175,6 +176,9 @@ export class StudentPaymentService {
     }
     if (month) {
       params = params.set('month', month.toISOString());
+    }
+    if (nationalityId && nationalityId > 0) {
+      params = params.set('nationalityId', nationalityId.toString());
     }
     return this.http
       .get<ApiResponse<PagedResultDto<StudentInvoiceDto>>>(

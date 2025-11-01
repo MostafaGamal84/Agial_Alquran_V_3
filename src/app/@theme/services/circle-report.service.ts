@@ -70,7 +70,12 @@ export class CircleReportService {
 
   getAll(
     filter: FilteredResultRequestDto,
-    options?: { circleId?: number | null; studentId?: number | null; teacherId?: number | null }
+    options?: {
+      circleId?: number | null;
+      studentId?: number | null;
+      teacherId?: number | null;
+      nationalityId?: number | null;
+    }
   ): Observable<ApiResponse<PagedResultDto<CircleReportListDto>>> {
     let params = new HttpParams();
 
@@ -109,6 +114,9 @@ export class CircleReportService {
     }
     if (options?.teacherId !== undefined && options?.teacherId !== null) {
       params = params.set('teacherId', options.teacherId.toString());
+    }
+    if (options?.nationalityId && options?.nationalityId > 0) {
+      params = params.set('nationalityId', options.nationalityId.toString());
     }
 
     return this.http

@@ -15,6 +15,7 @@ import {
   LookupService,
   LookUpUserDto,
   FilteredResultRequestDto,
+  NationalityDto
 } from 'src/app/@theme/services/lookup.service';
 import { UserService } from 'src/app/@theme/services/user.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
@@ -40,6 +41,8 @@ export class StudentListComponent implements OnInit, AfterViewInit {
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
   showInactive = false;
+  nationalities: NationalityDto[] = [];
+  selectedNationalityId: number | null = null;
   private pendingStudentIds = new Set<number>();
 
   // paginator
@@ -68,7 +71,18 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
   }
 
   ngOnInit() {
+    this.loadNationalities();
     this.loadStudents();
+  }
+
+  private loadNationalities(): void {
+    this.lookupService.getAllNationalities().subscribe((res) => {
+      if (res.isSuccess && Array.isArray(res.data)) {
+        this.nationalities = res.data;
+      } else {
+        this.nationalities = [];
+      }
+    });
   }
 
   private loadStudents() {
@@ -78,7 +92,8 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
         Number(UserTypesEnum.Student),
         0,
         0,
-        0
+        0,
+        this.selectedNationalityId ?? undefined
       )
       .subscribe((res) => {
         if (res.isSuccess && res.data?.items) {
@@ -89,6 +104,13 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
           this.totalCount = 0;
         }
       });
+  }
+
+  onNationalityChange(value: number | null): void {
+    this.selectedNationalityId = value && value > 0 ? value : null;
+    this.filter.skipCount = 0;
+    this.paginator().firstPage();
+    this.loadStudents();
   }
 
   studentDetails(student: LookUpUserDto): void {

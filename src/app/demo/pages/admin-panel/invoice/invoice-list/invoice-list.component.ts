@@ -17,6 +17,7 @@ import {
   StudentPaymentService,
   PaymentDashboardDto
 } from 'src/app/@theme/services/student-payment.service';
+import { LookupService, NationalityDto } from 'src/app/@theme/services/lookup.service';
 
 const moment = _rollupMoment || _moment;
 
@@ -62,6 +63,7 @@ interface WidgetCard {
 })
 export class InvoiceListComponent implements OnInit {
   private studentPaymentService = inject(StudentPaymentService);
+  private lookupService = inject(LookupService);
   private route = inject(ActivatedRoute);
   dataMonth = new FormControl<Moment>(
     moment().startOf('month').utc(true)
@@ -82,13 +84,26 @@ export class InvoiceListComponent implements OnInit {
     cancelled: 0
   };
   searchTerm = '';
+  nationalities: NationalityDto[] = [];
+  selectedNationalityId: number | null = null;
 
   ngOnInit(): void {
     this.searchTerm = this.route.snapshot.queryParamMap.get('search') ?? '';
     this.route.queryParamMap.subscribe((params) => {
       this.searchTerm = params.get('search') ?? '';
     });
+    this.loadNationalities();
     this.loadDashboard();
+  }
+
+  private loadNationalities(): void {
+    this.lookupService.getAllNationalities().subscribe((res) => {
+      if (res.isSuccess && Array.isArray(res.data)) {
+        this.nationalities = res.data;
+      } else {
+        this.nationalities = [];
+      }
+    });
   }
 
   setDataMonthAndYear(
@@ -185,5 +200,10 @@ export class InvoiceListComponent implements OnInit {
       isLoss,
       color: isLoss ? 'text-warn-500' : 'text-success-500'
     };
+  }
+
+  onNationalityChange(value: number | null): void {
+    this.selectedNationalityId = value && value > 0 ? value : null;
+    this.tabCounts = { all: 0, paid: 0, unpaid: 0, overdue: 0, cancelled: 0 };
   }
 }
