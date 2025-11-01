@@ -128,7 +128,8 @@ export class LookupService {
     userTypeId: number,
     managerId = 0,
     teacherId = 0,
-    branchId = 0
+    branchId = 0,
+    nationalityId?: number | null
   ): Observable<ApiResponse<PagedResultDto<LookUpUserDto>>> {
     const role = this.auth.getRole();
     const effectiveBranchId = role === UserTypesEnum.Admin ? 0 : branchId;
@@ -162,6 +163,10 @@ export class LookupService {
     }
     if (filter.sortBy) {
       params = params.set('SortBy', filter.sortBy);
+    }
+
+    if (nationalityId && nationalityId > 0) {
+      params = params.set('nationalityId', nationalityId.toString());
     }
 
     return this.http

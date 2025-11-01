@@ -1,6 +1,6 @@
 <div class="row">
   <div class="col-12 mb-3 text-end">
-    <div class="flex gap-2 justify-content-end">
+    <div class="flex gap-2 justify-content-end flex-wrap">
       <mat-form-field appearance="outline">
         <mat-label>{{ 'Month' | translate }}</mat-label>
         <input matInput [matDatepicker]="dataPicker" [formControl]="dataMonth" />
@@ -22,6 +22,18 @@
           (monthSelected)="setCompareMonthAndYear($event, comparePicker)"
           panelClass="example-month-picker"
         ></mat-datepicker>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'Nationality' | translate }}</mat-label>
+        <mat-select
+          [value]="selectedNationalityId ?? null"
+          (selectionChange)="onNationalityChange($event.value)"
+        >
+          <mat-option [value]="null">{{ 'All Nationalities' | translate }}</mat-option>
+          <mat-option *ngFor="let nationality of nationalities" [value]="nationality.id">
+            {{ nationality.name }}
+          </mat-option>
+        </mat-select>
       </mat-form-field>
     </div>
   </div>
@@ -101,7 +113,12 @@
             </div>
           </ng-template>
           <div class="p-y-20">
-            <app-invoice-list-table [month]="dataMonth.value?.format('YYYY-MM')" [search]="searchTerm" (countChange)="onTableCount('all', $event)" />
+            <app-invoice-list-table
+              [month]="dataMonth.value?.format('YYYY-MM')"
+              [search]="searchTerm"
+              [nationalityId]="selectedNationalityId"
+              (countChange)="onTableCount('all', $event)"
+            />
           </div>
         </mat-tab>
         <mat-tab>
@@ -114,7 +131,13 @@
             </div>
           </ng-template>
           <div class="p-y-20">
-            <app-invoice-list-table tab="paid" [month]="dataMonth.value?.format('YYYY-MM')" [search]="searchTerm" (countChange)="onTableCount('paid', $event)" />
+            <app-invoice-list-table
+              tab="paid"
+              [month]="dataMonth.value?.format('YYYY-MM')"
+              [search]="searchTerm"
+              [nationalityId]="selectedNationalityId"
+              (countChange)="onTableCount('paid', $event)"
+            />
 
           </div>
         </mat-tab>
@@ -128,7 +151,13 @@
             </div>
           </ng-template>
           <div class="p-y-20">
-            <app-invoice-list-table tab="unpaid" [month]="dataMonth.value?.format('YYYY-MM')" [search]="searchTerm" (countChange)="onTableCount('unpaid', $event)" />
+            <app-invoice-list-table
+              tab="unpaid"
+              [month]="dataMonth.value?.format('YYYY-MM')"
+              [search]="searchTerm"
+              [nationalityId]="selectedNationalityId"
+              (countChange)="onTableCount('unpaid', $event)"
+            />
 
           </div>
         </mat-tab>
@@ -142,7 +171,13 @@
             </div>
           </ng-template>
           <div class="p-y-20">
-            <app-invoice-list-table tab="overdue" [month]="dataMonth.value?.format('YYYY-MM')" [search]="searchTerm" (countChange)="onTableCount('overdue', $event)" />
+            <app-invoice-list-table
+              tab="overdue"
+              [month]="dataMonth.value?.format('YYYY-MM')"
+              [search]="searchTerm"
+              [nationalityId]="selectedNationalityId"
+              (countChange)="onTableCount('overdue', $event)"
+            />
 
           </div>
         </mat-tab>
@@ -156,7 +191,13 @@
             </div>
           </ng-template>
           <div class="p-y-20">
-            <app-invoice-list-table tab="cancelled" [month]="dataMonth.value?.format('YYYY-MM')" [search]="searchTerm" (countChange)="onTableCount('cancelled', $event)" />
+            <app-invoice-list-table
+              tab="cancelled"
+              [month]="dataMonth.value?.format('YYYY-MM')"
+              [search]="searchTerm"
+              [nationalityId]="selectedNationalityId"
+              (countChange)="onTableCount('cancelled', $event)"
+            />
 
           </div>
         </mat-tab>

@@ -31,7 +31,8 @@ export class StudentSubscribeService {
 
   getStudents(
     filter: FilteredResultRequestDto,
-    studentId?: number
+    studentId?: number,
+    nationalityId?: number | null
   ): Observable<ApiResponse<PagedResultDto<ViewStudentSubscribeReDto>>> {
     let params = new HttpParams();
     if (filter.skipCount !== undefined) {
@@ -63,6 +64,9 @@ export class StudentSubscribeService {
     if (studentId !== undefined) {
       params = params.set('studentId', studentId.toString());
     }
+    if (nationalityId && nationalityId > 0) {
+      params = params.set('nationalityId', nationalityId.toString());
+    }
     return this.http
       .get<ApiResponse<PagedResultDto<ViewStudentSubscribeReDto>>>(
         `${environment.apiUrl}/api/StudentSubscrib/GetStudents`,
@@ -73,7 +77,8 @@ export class StudentSubscribeService {
 
   getStudentSubscribesWithPayment(
     filter: FilteredResultRequestDto,
-    studentId: number
+    studentId: number,
+    nationalityId?: number | null
   ): Observable<ApiResponse<PagedResultDto<ViewStudentSubscribeReDto>>> {
     let params = new HttpParams();
     if (filter.skipCount !== undefined) {
@@ -103,6 +108,9 @@ export class StudentSubscribeService {
       params = params.set('SortBy', filter.sortBy);
     }
     params = params.set('studentId', studentId.toString());
+    if (nationalityId && nationalityId > 0) {
+      params = params.set('nationalityId', nationalityId.toString());
+    }
     return this.http
       .get<ApiResponse<PagedResultDto<ViewStudentSubscribeReDto>>>(
         `${environment.apiUrl}/api/StudentSubscrib/GetStudentSubscribesWithPayment`,

@@ -15,7 +15,8 @@ import { CircleDto, CircleService, CircleStudentDto } from 'src/app/@theme/servi
 import {
   FilteredResultRequestDto,
   LookupService,
-  LookUpUserDto
+  LookUpUserDto,
+  NationalityDto
 } from 'src/app/@theme/services/lookup.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
@@ -49,7 +50,8 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
   filterForm: FormGroup = this.fb.group({
     searchTerm: [''],
     circleId: [null],
-    studentId: [null]
+    studentId: [null],
+    nationalityId: [null]
   });
 
   displayedColumns: string[] = ['student', 'circle', 'status', 'creationTime', 'actions'];
@@ -60,6 +62,7 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
   circles: CircleDto[] = [];
   students: StudentOption[] = [];
   private allStudents: StudentOption[] = [];
+  nationalities: NationalityDto[] = [];
 
   isLoading = false;
   isLoadingStudents = false;
@@ -68,6 +71,7 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private selectedCircleId?: number;
   private selectedStudentId?: number;
+  private selectedNationalityId?: number | null;
   private readonly teacherId?: number;
 
   role = this.auth.getRole();
@@ -83,6 +87,7 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadCircles();
+    this.loadNationalities();
     this.loadAllStudents();
     this.loadReports();
 
@@ -100,6 +105,11 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
       .get('studentId')
       ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe(() => this.applyFilters());
+
+    this.filterForm
+      .get('nationalityId')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((nationalityId) => this.onNationalityChange(nationalityId));
   }
 
   ngAfterViewInit(): void {
@@ -127,17 +137,33 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
       });
   }
 
+  private loadNationalities(): void {
+    this.lookupService.getAllNationalities().subscribe((res) => {
+      if (res.isSuccess && Array.isArray(res.data)) {
+        this.nationalities = res.data;
+      } else {
+        this.nationalities = [];
+      }
+    });
+  }
+
   private loadAllStudents(searchTerm?: string): void {
     this.isLoadingStudents = true;
     this.lookupService
       .getUsersForSelects(
         { skipCount: 0, maxResultCount: 100, searchTerm: searchTerm?.trim() || undefined },
-        Number(UserTypesEnum.Student)
+        Number(UserTypesEnum.Student),
+        0,
+        0,
+        0,
+        this.selectedNationalityId ?? undefined
       )
       .subscribe({
         next: (res) => {
           if (res.isSuccess && res.data?.items) {
-            const mapped = res.data.items.map((s) => this.mapLookupToStudentOption(s));
+            const mapped = res.data.items
+              .filter((s) => this.matchesSelectedNationality(s.nationalityId))
+              .map((s) => this.mapLookupToStudentOption(s));
             this.allStudents = mapped;
             if (!this.selectedCircleId) {
               this.students = [...mapped];
@@ -178,6 +204,11 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
         next: (res) => {
           if (res.isSuccess && res.data?.students) {
             const mapped = res.data.students
+              .filter((student) =>
+                this.matchesSelectedNationality(
+                  (student.student as LookUpUserDto | undefined)?.nationalityId
+                )
+              )
               .map((s) => this.mapCircleStudentToOption(s))
               .filter((s): s is StudentOption => !!s);
             const unique = new Map(mapped.map((s) => [s.id, s]));
@@ -225,6 +256,26 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loadReports();
   }
 
+  private onNationalityChange(nationalityId: number | null): void {
+    this.selectedNationalityId = nationalityId && nationalityId > 0 ? nationalityId : null;
+    this.filterForm.patchValue({ studentId: null }, { emitEvent: false });
+    this.students = [];
+    this.loadAllStudents();
+    const circleId = this.selectedCircleId ?? null;
+    if (circleId !== null) {
+      this.onCircleChange(circleId);
+    } else {
+      this.applyFilters();
+    }
+  }
+
+  private matchesSelectedNationality(nationalityId?: number | null): boolean {
+    if (!this.selectedNationalityId || this.selectedNationalityId <= 0) {
+      return true;
+    }
+    return nationalityId === this.selectedNationalityId;
+  }
+
   onSearch(): void {
     const term = (this.filterForm.value.searchTerm || '').toString().trim();
     this.filter.searchTerm = term.length ? term : undefined;
@@ -244,7 +295,8 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
       .getAll(this.filter, {
         circleId: this.selectedCircleId,
         studentId: this.selectedStudentId,
-        teacherId: this.teacherId
+        teacherId: this.teacherId,
+        nationalityId: this.selectedNationalityId ?? undefined
       })
       .subscribe({
         next: (res) => {

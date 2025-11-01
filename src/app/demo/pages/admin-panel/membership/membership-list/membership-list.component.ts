@@ -10,8 +10,15 @@ import { MatDialog } from '@angular/material/dialog';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
-import { StudentSubscribeService, ViewStudentSubscribeReDto } from 'src/app/@theme/services/student-subscribe.service';
-import { FilteredResultRequestDto } from 'src/app/@theme/services/lookup.service';
+import {
+  StudentSubscribeService,
+  ViewStudentSubscribeReDto
+} from 'src/app/@theme/services/student-subscribe.service';
+import {
+  FilteredResultRequestDto,
+  LookupService,
+  NationalityDto
+} from 'src/app/@theme/services/lookup.service';
 import { StudentPaymentService } from 'src/app/@theme/services/student-payment.service';
 import { PaymentDetailsComponent } from '../payment-details/payment-details.component';
 import { StudentSubscribeDialogComponent } from './student-subscribe-dialog/student-subscribe-dialog.component';
@@ -24,6 +31,7 @@ import { StudentSubscribeDialogComponent } from './student-subscribe-dialog/stud
 })
 export class MembershipListComponent implements AfterViewInit, OnInit {
   private service = inject(StudentSubscribeService);
+  private lookupService = inject(LookupService);
   private paymentService = inject(StudentPaymentService);
   private dialog = inject(MatDialog);
 
@@ -31,16 +39,29 @@ export class MembershipListComponent implements AfterViewInit, OnInit {
   dataSource = new MatTableDataSource<ViewStudentSubscribeReDto>();
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
+  nationalities: NationalityDto[] = [];
+  selectedNationalityId: number | null = null;
 
   // paginator
   readonly paginator = viewChild.required(MatPaginator); // if Angular ≥17
 
   ngOnInit() {
+    this.loadNationalities();
     this.load();
   }
 
+  private loadNationalities(): void {
+    this.lookupService.getAllNationalities().subscribe((res) => {
+      if (res.isSuccess && Array.isArray(res.data)) {
+        this.nationalities = res.data;
+      } else {
+        this.nationalities = [];
+      }
+    });
+  }
+
   private load() {
-    this.service.getStudents(this.filter).subscribe((res) => {
+    this.service.getStudents(this.filter, undefined, this.selectedNationalityId ?? undefined).subscribe((res) => {
       if (res.isSuccess && res.data?.items) {
         this.dataSource.data = res.data.items;
         this.totalCount = res.data.totalCount;
@@ -55,6 +76,13 @@ export class MembershipListComponent implements AfterViewInit, OnInit {
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     this.filter.searchTerm = filterValue.trim().toLowerCase();
+    this.filter.skipCount = 0;
+    this.paginator().firstPage();
+    this.load();
+  }
+
+  onNationalityChange(value: number | null): void {
+    this.selectedNationalityId = value && value > 0 ? value : null;
     this.filter.skipCount = 0;
     this.paginator().firstPage();
     this.load();

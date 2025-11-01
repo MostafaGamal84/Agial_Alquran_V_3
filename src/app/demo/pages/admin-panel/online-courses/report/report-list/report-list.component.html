@@ -15,7 +15,7 @@
         <div class="table-containe table-reponsive">
           <form [formGroup]="filterForm" class="filter-form" (ngSubmit)="onSearch()">
             <div class="row g-3 p-15">
-              <div class="col-12 col-md-4">
+              <div class="col-12 col-md-6 col-xl-3">
                 <mat-form-field appearance="outline" class="w-100">
                   <mat-label>{{ 'Search' | translate }}</mat-label>
                   <input
@@ -36,7 +36,7 @@
                   </button>
                 </mat-form-field>
               </div>
-              <div class="col-12 col-md-4">
+              <div class="col-12 col-md-6 col-xl-3">
                 <mat-form-field appearance="outline" class="w-100">
                   <mat-label>{{ 'Circle' | translate }}</mat-label>
                   <mat-select formControlName="circleId" [disabled]="isLoadingStudents">
@@ -47,13 +47,24 @@
                   </mat-select>
                 </mat-form-field>
               </div>
-              <div class="col-12 col-md-4">
+              <div class="col-12 col-md-6 col-xl-3">
                 <mat-form-field appearance="outline" class="w-100">
                   <mat-label>{{ 'Student' | translate }}</mat-label>
                   <mat-select formControlName="studentId" [disabled]="isLoadingStudents">
                     <mat-option [value]="null">{{ 'All Students' | translate }}</mat-option>
                     <mat-option *ngFor="let student of students" [value]="student.id">
                       {{ student.name }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+              <div class="col-12 col-md-6 col-xl-3">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>{{ 'Nationality' | translate }}</mat-label>
+                  <mat-select formControlName="nationalityId">
+                    <mat-option [value]="null">{{ 'All Nationalities' | translate }}</mat-option>
+                    <mat-option *ngFor="let nationality of nationalities" [value]="nationality.id">
+                      {{ nationality.name }}
                     </mat-option>
                   </mat-select>
                 </mat-form-field>
