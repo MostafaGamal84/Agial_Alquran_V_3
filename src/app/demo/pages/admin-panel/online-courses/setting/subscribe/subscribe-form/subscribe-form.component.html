@@ -34,7 +34,9 @@
       <mat-form-field appearance="outline" class="w-100">
         <mat-label>{{ 'Subscribe Type' | translate }}</mat-label>
         <mat-select formControlName="subscribeTypeId">
-          <mat-option *ngFor="let t of types" [value]="t.id">{{ t.name }}</mat-option>
+          <mat-option *ngFor="let t of types" [value]="t.id">
+            {{ t.name }} ({{ resolveCategoryLabel(t.type) }})
+          </mat-option>
         </mat-select>
       </mat-form-field>
     </div>

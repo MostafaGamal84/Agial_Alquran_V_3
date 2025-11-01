@@ -6,9 +6,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { FilteredResultRequestDto, LookupService, LookupDto } from 'src/app/@theme/services/lookup.service';
-import { SubscribeService, SubscribeTypeDto } from 'src/app/@theme/services/subscribe.service';
+import {
+  SubscribeService,
+  SubscribeTypeDto,
+  getSubscribeTypeCategoryTranslationKey
+} from 'src/app/@theme/services/subscribe.service';
 import { StudentSubscribeService, AddStudentSubscribeDto } from 'src/app/@theme/services/student-subscribe.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-student-subscribe-dialog',
@@ -32,6 +37,7 @@ export class StudentSubscribeDialogComponent implements OnInit {
   private toast = inject(ToastService);
   private dialogRef = inject(MatDialogRef<StudentSubscribeDialogComponent>);
   private data = inject<{ studentId: number }>(MAT_DIALOG_DATA);
+  private translate = inject(TranslateService);
 
   form = this.fb.group({
     subscribeTypeId: [null as number | null, Validators.required],
@@ -87,5 +93,9 @@ export class StudentSubscribeDialogComponent implements OnInit {
       },
       error: () => this.toast.error('Error updating subscribe')
     });
+  }
+
+  resolveCategoryLabel(type: SubscribeTypeDto['type']): string {
+    return this.translate.instant(getSubscribeTypeCategoryTranslationKey(type));
   }
 }

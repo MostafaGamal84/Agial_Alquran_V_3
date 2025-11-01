@@ -7,7 +7,8 @@ import {
   SubscribeService,
   CreateSubscribeTypeDto,
   UpdateSubscribeTypeDto,
-  SubscribeTypeDto
+  SubscribeTypeDto,
+  SubscribeTypeCategory
 } from 'src/app/@theme/services/subscribe.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 
@@ -26,11 +27,19 @@ export class SubscribeTypeFormComponent implements OnInit {
   form = this.fb.group({
     id: [0 as number | null],
     name: ['', Validators.required],
-    forignPricePerHour: [null as number | null],
-    arabPricePerHour: [null as number | null]
+    forignPricePerHour: [null as number | null, Validators.min(0)],
+    arabPricePerHour: [null as number | null, Validators.min(0)],
+    egyptPricePerHour: [null as number | null, Validators.min(0)],
+    type: [null as SubscribeTypeCategory | null]
   });
 
   isEdit = false;
+  readonly typeOptions = [
+    { value: SubscribeTypeCategory.Unknown, label: 'Unknown' },
+    { value: SubscribeTypeCategory.Foreign, label: 'Foreign' },
+    { value: SubscribeTypeCategory.Arab, label: 'Arab' },
+    { value: SubscribeTypeCategory.Egyptian, label: 'Egyptian' }
+  ];
 
   ngOnInit() {
     const data = history.state?.item as SubscribeTypeDto | undefined;
@@ -42,12 +51,24 @@ export class SubscribeTypeFormComponent implements OnInit {
 
         forignPricePerHour: data.forignPricePerHour ?? null,
         arabPricePerHour: data.arabPricePerHour ?? null,
+        egyptPricePerHour: data.egyptPricePerHour ?? null,
+        type: data.type ?? null
       });
 
     }
+
+    this.form
+      .get('type')
+      ?.valueChanges.subscribe(() => this.updatePrimaryRateValidators());
+    this.updatePrimaryRateValidators();
   }
 
   submit() {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      this.updatePrimaryRateValidators();
+      return;
+    }
     const model = this.form.value as CreateSubscribeTypeDto | UpdateSubscribeTypeDto;
     if (this.isEdit) {
       this.service.updateType(model as UpdateSubscribeTypeDto).subscribe({
@@ -66,5 +87,32 @@ export class SubscribeTypeFormComponent implements OnInit {
         error: () => this.toast.error('Error saving subscribe type')
       });
     }
+  }
+
+  private updatePrimaryRateValidators(): void {
+    const type = this.form.get('type')?.value;
+    const foreignControl = this.form.get('forignPricePerHour');
+    const arabControl = this.form.get('arabPricePerHour');
+    const egyptControl = this.form.get('egyptPricePerHour');
+
+    const baseValidators = [Validators.min(0)];
+
+    foreignControl?.setValidators([
+      ...baseValidators,
+      ...(type === SubscribeTypeCategory.Foreign ? [Validators.required] : [])
+    ]);
+    foreignControl?.updateValueAndValidity({ emitEvent: false });
+
+    arabControl?.setValidators([
+      ...baseValidators,
+      ...(type === SubscribeTypeCategory.Arab ? [Validators.required] : [])
+    ]);
+    arabControl?.updateValueAndValidity({ emitEvent: false });
+
+    egyptControl?.setValidators([
+      ...baseValidators,
+      ...(type === SubscribeTypeCategory.Egyptian ? [Validators.required] : [])
+    ]);
+    egyptControl?.updateValueAndValidity({ emitEvent: false });
   }
 }
