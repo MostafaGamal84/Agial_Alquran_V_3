@@ -7,7 +7,12 @@ import { MatButton } from '@angular/material/button';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
-import { SubscribeService, SubscribeTypeDto } from 'src/app/@theme/services/subscribe.service';
+import {
+  SubscribeService,
+  SubscribeTypeDto,
+  getSubscribeTypeCategoryTranslationKey
+} from 'src/app/@theme/services/subscribe.service';
+import type { SubscribeTypeCategory } from 'src/app/@theme/services/subscribe.service';
 import { FilteredResultRequestDto } from 'src/app/@theme/services/lookup.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 
@@ -23,7 +28,14 @@ export class SubscribeTypeComponent implements OnInit, AfterViewInit {
   private toast = inject(ToastService);
   private translate = inject(TranslateService);
 
-  displayedColumns: string[] = ['name', 'arabPricePerHour', 'forignPricePerHour', 'action'];
+  displayedColumns: string[] = [
+    'name',
+    'type',
+    'arabPricePerHour',
+    'egyptPricePerHour',
+    'forignPricePerHour',
+    'action'
+  ];
   dataSource = new MatTableDataSource<SubscribeTypeDto>();
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
@@ -75,6 +87,10 @@ export class SubscribeTypeComponent implements OnInit, AfterViewInit {
         });
       }
     });
+  }
+
+  resolveCategoryLabel(type: SubscribeTypeCategory | null | undefined): string {
+    return this.translate.instant(getSubscribeTypeCategoryTranslationKey(type));
   }
 }
 

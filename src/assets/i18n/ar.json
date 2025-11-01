@@ -521,5 +521,18 @@
   "Paid Question": "مدفوع؟",
   "No Invoices Found": "لا توجد فواتير للمرشحات المحددة.",
   "Monthly Summary Subtitle": "نظرة عامة على الحضور والرواتب لـ",
-  "No Summary Data For Month": "لا توجد بيانات ملخص لهذا الشهر."
+  "No Summary Data For Month": "لا توجد بيانات ملخص لهذا الشهر.",
+  "Audience Category": "فئة المستهدف",
+  "Egyptian Price": "السعر المصري",
+  "Egyptian Price Per Hour": "السعر المصري للساعة",
+  "Unknown": "غير محدد",
+  "Foreign": "أجنبي",
+  "Arab": "عربي",
+  "Egyptian": "مصري",
+  "Foreign price is required when selected as the default category": "السعر الأجنبي مطلوب عند اختياره كفئة افتراضية.",
+  "Foreign price per hour must be zero or greater": "يجب أن يكون السعر الأجنبي للساعة صفراً أو أكثر.",
+  "Arab price is required when selected as the default category": "السعر العربي مطلوب عند اختياره كفئة افتراضية.",
+  "Arab price per hour must be zero or greater": "يجب أن يكون السعر العربي للساعة صفراً أو أكثر.",
+  "Egyptian price is required when selected as the default category": "السعر المصري مطلوب عند اختياره كفئة افتراضية.",
+  "Egyptian price per hour must be zero or greater": "يجب أن يكون السعر المصري للساعة صفراً أو أكثر."
 }
