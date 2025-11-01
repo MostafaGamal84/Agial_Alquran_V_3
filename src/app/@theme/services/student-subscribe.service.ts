@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
+import { SubscribeAudience } from './subscribe-audience';
 import { ApiResponse, FilteredResultRequestDto, PagedResultDto, normalizePagedResult } from './lookup.service';
 
 export interface ViewStudentSubscribeReDto {
@@ -21,6 +22,7 @@ export interface ViewStudentSubscribeReDto {
 export interface AddStudentSubscribeDto {
   studentId?: number;
   studentSubscribeId?: number;
+  subscribeFor?: SubscribeAudience | null;
 }
 
 @Injectable({ providedIn: 'root' })

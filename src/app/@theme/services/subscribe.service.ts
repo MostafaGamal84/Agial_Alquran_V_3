@@ -9,6 +9,7 @@ import {
   PagedResultDto,
   normalizePagedResult
 } from './lookup.service';
+import { SubscribeAudience } from './subscribe-audience';
 
 export enum SubscribeTypeCategory {
   Unknown = 0,
@@ -42,6 +43,7 @@ export interface SubscribeDto {
   minutes?: number;
   subscribeTypeId?: number;
   subscribeType?: SubscribeTypeDto;
+  subscribeFor?: SubscribeAudience | null;
 }
 
 export interface CreateSubscribeDto {
@@ -51,6 +53,7 @@ export interface CreateSubscribeDto {
   usdprice?: number;
   minutes?: number;
   subscribeTypeId?: number;
+  subscribeFor?: SubscribeAudience | null;
 }
 
 export interface UpdateSubscribeDto extends CreateSubscribeDto {
