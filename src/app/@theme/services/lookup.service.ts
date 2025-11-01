@@ -5,6 +5,7 @@ import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { AuthenticationService } from './authentication.service';
 import { UserTypesEnum } from '../types/UserTypesEnum';
+import { SubscribeAudience } from './subscribe-audience';
 
 export interface LookUpUserDto {
   id: number;
@@ -110,6 +111,13 @@ export interface LookupDto {
   name: string;
 }
 
+export interface SubscribeLookupDto extends LookupDto {
+  subscribeFor?: SubscribeAudience | null;
+  leprice?: number | null;
+  sarprice?: number | null;
+  usdprice?: number | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class LookupService {
   private http = inject(HttpClient);
@@ -174,12 +182,12 @@ export class LookupService {
     return this.http.get<ApiResponse<GovernorateDto[]>>(`${environment.apiUrl}/api/LookUp/GetAllGovernorate`);
   }
 
-  getSubscribesByTypeId(id?: number | null): Observable<ApiResponse<LookupDto[]>> {
+  getSubscribesByTypeId(id?: number | null): Observable<ApiResponse<SubscribeLookupDto[]>> {
     let params = new HttpParams();
     if (id !== undefined && id !== null) {
       params = params.set('id', id.toString());
     }
-    return this.http.get<ApiResponse<LookupDto[]>>(
+    return this.http.get<ApiResponse<SubscribeLookupDto[]>>(
       `${environment.apiUrl}/api/LookUp/GetAllSubscribesByTypeId`,
       { params }
     );

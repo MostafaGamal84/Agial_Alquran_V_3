@@ -12,6 +12,12 @@ import {
   SubscribeDto,
   getSubscribeTypeCategoryTranslationKey
 } from 'src/app/@theme/services/subscribe.service';
+import {
+  SUBSCRIBE_AUDIENCE_OPTIONS,
+  SubscribeAudience,
+  SubscribeAudienceOption,
+  getSubscribeAudienceTranslationKey
+} from 'src/app/@theme/services/subscribe-audience';
 import { FilteredResultRequestDto } from 'src/app/@theme/services/lookup.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { TranslateService } from '@ngx-translate/core';
@@ -36,11 +42,13 @@ export class SubscribeFormComponent implements OnInit {
     sarprice: [null as number | null],
     usdprice: [null as number | null],
     minutes: [null as number | null],
-    subscribeTypeId: [null as number | null]
+    subscribeTypeId: [null as number | null],
+    subscribeFor: [null as SubscribeAudience | null, Validators.required]
   });
 
   isEdit = false;
   types: SubscribeTypeDto[] = [];
+  audienceOptions: readonly SubscribeAudienceOption[] = SUBSCRIBE_AUDIENCE_OPTIONS;
 
   ngOnInit() {
     const data = history.state?.item as SubscribeDto | undefined;
@@ -54,6 +62,7 @@ export class SubscribeFormComponent implements OnInit {
         usdprice: data.usdprice ?? null,
         minutes: data.minutes ?? null,
         subscribeTypeId: data.subscribeTypeId ?? data.subscribeType?.id ?? null,
+        subscribeFor: data.subscribeFor ?? null,
       });
 
     }
@@ -93,5 +102,9 @@ export class SubscribeFormComponent implements OnInit {
 
   resolveCategoryLabel(type: SubscribeTypeDto['type']): string {
     return this.translate.instant(getSubscribeTypeCategoryTranslationKey(type));
+  }
+
+  resolveAudienceLabel(audience: SubscribeAudience | null): string {
+    return this.translate.instant(getSubscribeAudienceTranslationKey(audience));
   }
 }
