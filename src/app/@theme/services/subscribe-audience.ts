@@ -35,6 +35,8 @@ export interface SubscribePricingSource {
   leprice?: number | null;
   sarprice?: number | null;
   usdprice?: number | null;
+  currencyCode?: string | null;
+  price?: number | null;
 }
 
 export interface SubscribePricingResult {
@@ -45,6 +47,15 @@ export interface SubscribePricingResult {
 export function resolveSubscribePricing(
   source: SubscribePricingSource
 ): SubscribePricingResult | null {
+  const explicitCurrency = (source.currencyCode ?? '').toString().trim();
+  if (explicitCurrency) {
+    const amount = source.price ?? null;
+    return {
+      currencyCode: explicitCurrency,
+      amount
+    };
+  }
+
   const audience = source.subscribeFor ?? null;
   const currencyCode = getSubscribeAudienceCurrencyCode(audience);
 

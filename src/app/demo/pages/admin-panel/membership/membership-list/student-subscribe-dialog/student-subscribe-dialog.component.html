@@ -11,7 +11,16 @@
 
   <mat-form-field appearance="outline" class="w-100">
     <mat-label>Subscribe</mat-label>
-    <mat-select formControlName="subscribeId">
+    <mat-select
+      formControlName="subscribeId"
+      [disabled]="isLoadingSubscriptions || !hasAvailableSubscriptions"
+    >
+      <mat-option *ngIf="isLoadingSubscriptions" disabled>
+        Loading subscriptions…
+      </mat-option>
+      <mat-option *ngIf="!isLoadingSubscriptions && subscribes.length === 0" disabled>
+        No subscriptions available
+      </mat-option>
       <mat-option [value]="s.id" *ngFor="let s of subscribes">
         <div class="d-flex flex-column">
           <span>{{ s.name }}</span>
@@ -27,6 +36,19 @@
       </mat-option>
     </mat-select>
   </mat-form-field>
+  <div class="m-t-10 text-muted" *ngIf="studentNationality">
+    <strong>Student Nationality:</strong> {{ studentNationality }}
+  </div>
+  <div class="m-t-10 text-muted" *ngIf="currentSubscription">
+    <strong>Current Subscription:</strong>
+    {{ currentSubscription.name }}
+    <ng-container *ngIf="currentSubscription.status">
+      — {{ currentSubscription.status }}
+    </ng-container>
+    <ng-container *ngIf="currentSubscription.expiresAt">
+      ({{ currentSubscription.expiresAt | date: 'mediumDate' }})
+    </ng-container>
+  </div>
   <div class="m-t-10" *ngIf="selectedCurrencyCode && !pricingError">
     <strong>{{ 'Price' | translate }}:</strong>
     {{ formatAmount(selectedAmount) }} {{ selectedCurrencyCode }}
@@ -34,10 +56,18 @@
   <div class="m-t-10 text-warn" *ngIf="pricingError">
     {{ pricingError }}
   </div>
+  <div class="m-t-10 text-warn" *ngIf="availabilityMessage">
+    {{ availabilityMessage }}
+  </div>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
   <button mat-button mat-dialog-close>Cancel</button>
-  <button mat-flat-button color="primary" (click)="submit()" [disabled]="form.invalid || pricingError">
+  <button
+    mat-flat-button
+    color="primary"
+    (click)="submit()"
+    [disabled]="form.invalid || pricingError || !hasAvailableSubscriptions || isLoadingSubscriptions"
+  >
     Save
   </button>
 </mat-dialog-actions>

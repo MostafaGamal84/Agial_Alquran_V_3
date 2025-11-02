@@ -5,17 +5,18 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
-import {
-  FilteredResultRequestDto,
-  LookupService,
-  SubscribeLookupDto
-} from 'src/app/@theme/services/lookup.service';
+import { FilteredResultRequestDto, SubscribeLookupDto } from 'src/app/@theme/services/lookup.service';
 import {
   SubscribeService,
   SubscribeTypeDto,
   getSubscribeTypeCategoryTranslationKey
 } from 'src/app/@theme/services/subscribe.service';
-import { StudentSubscribeService, AddStudentSubscribeDto } from 'src/app/@theme/services/student-subscribe.service';
+import {
+  StudentSubscribeService,
+  AddStudentSubscribeDto,
+  StudentAvailableSubscriptionsResponseDto,
+  StudentSubscriptionSummaryDto
+} from 'src/app/@theme/services/student-subscribe.service';
 import {
   SubscribeAudience,
   getSubscribeAudienceTranslationKey,
@@ -41,7 +42,6 @@ import { TranslateService } from '@ngx-translate/core';
 export class StudentSubscribeDialogComponent implements OnInit {
   private fb = inject(FormBuilder);
   private subscribeService = inject(SubscribeService);
-  private lookupService = inject(LookupService);
   private studentSubscribeService = inject(StudentSubscribeService);
   private toast = inject(ToastService);
   private dialogRef = inject(MatDialogRef<StudentSubscribeDialogComponent>);
@@ -58,6 +58,10 @@ export class StudentSubscribeDialogComponent implements OnInit {
   selectedCurrencyCode: string | null = null;
   selectedAmount: number | null = null;
   pricingError: string | null = null;
+  studentNationality: string | null = null;
+  currentSubscription: StudentSubscriptionSummaryDto | null = null;
+  availabilityMessage: string | null = null;
+  isLoadingSubscriptions = false;
 
   ngOnInit(): void {
     const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
@@ -69,20 +73,13 @@ export class StudentSubscribeDialogComponent implements OnInit {
       }
     });
 
+    this.availabilityMessage = this.translate.instant('Select a subscription type to view available plans.');
+    this.loadInitialAvailabilityContext();
+
     this.form.get('subscribeTypeId')?.valueChanges.subscribe((typeId) => {
       this.form.patchValue({ subscribeId: null }, { emitEvent: false });
       this.resetPricingDetails();
-      if (typeId) {
-        this.lookupService.getSubscribesByTypeId(typeId).subscribe((res) => {
-          if (res.isSuccess && res.data) {
-            this.subscribes = res.data;
-          } else {
-            this.subscribes = [];
-          }
-        });
-      } else {
-        this.subscribes = [];
-      }
+      this.fetchAvailableSubscriptions(typeId);
     });
 
     this.form.get('subscribeId')?.valueChanges.subscribe((subscribeId) => {
@@ -92,7 +89,7 @@ export class StudentSubscribeDialogComponent implements OnInit {
 
   submit(): void {
     const subscribeId = this.form.value.subscribeId;
-    if (!subscribeId) {
+    if (!subscribeId || !this.hasAvailableSubscriptions) {
       return;
     }
     const selected = this.subscribes.find((item) => item.id === subscribeId);
@@ -169,5 +166,125 @@ export class StudentSubscribeDialogComponent implements OnInit {
     this.selectedCurrencyCode = null;
     this.selectedAmount = null;
     this.pricingError = null;
+  }
+
+  get hasAvailableSubscriptions(): boolean {
+    return this.subscribes.length > 0;
+  }
+
+  private loadInitialAvailabilityContext(): void {
+    const studentId = this.data?.studentId;
+    if (!studentId) {
+      return;
+    }
+
+    this.isLoadingSubscriptions = true;
+    this.studentSubscribeService
+      .getAvailableSubscriptions(studentId, { includeCurrent: true })
+      .subscribe({
+        next: (res) => {
+          if (res.isSuccess) {
+            this.applyAvailabilityResponse(res.data ?? null, false);
+          }
+        },
+        error: () => {
+          this.availabilityMessage = this.translate.instant('Unable to load available subscriptions.');
+          this.isLoadingSubscriptions = false;
+        },
+        complete: () => {
+          this.isLoadingSubscriptions = false;
+        }
+      });
+  }
+
+  private fetchAvailableSubscriptions(typeId: number | null | undefined): void {
+    const studentId = this.data?.studentId;
+
+    if (!studentId) {
+      this.subscribes = [];
+      return;
+    }
+
+    if (!typeId) {
+      this.subscribes = [];
+      this.availabilityMessage = this.translate.instant('Select a subscription type to view available plans.');
+      return;
+    }
+
+    this.isLoadingSubscriptions = true;
+    this.availabilityMessage = null;
+    this.subscribes = [];
+
+    this.studentSubscribeService
+      .getAvailableSubscriptions(studentId, {
+        includeCurrent: true,
+        subscribeTypeId: typeId
+      })
+      .subscribe({
+        next: (res) => {
+          if (res.isSuccess) {
+            this.applyAvailabilityResponse(res.data ?? null, true);
+          } else {
+            this.handleUnavailableResponse();
+          }
+        },
+        error: () => {
+          this.handleUnavailableResponse(
+            this.translate.instant('Unable to load available subscriptions.')
+          );
+          this.isLoadingSubscriptions = false;
+        },
+        complete: () => {
+          this.isLoadingSubscriptions = false;
+        }
+      });
+  }
+
+  private applyAvailabilityResponse(
+    response: StudentAvailableSubscriptionsResponseDto | null,
+    updateOptions: boolean
+  ): void {
+    this.studentNationality = response?.nationality ?? null;
+    this.currentSubscription = response?.currentSubscription ?? null;
+
+    if (updateOptions) {
+      this.availabilityMessage = response?.message ?? null;
+    } else if (response?.message) {
+      this.availabilityMessage = response.message;
+    }
+
+    if (!updateOptions) {
+      return;
+    }
+
+    const available = Array.isArray(response?.availableSubscriptions)
+      ? response!.availableSubscriptions
+      : [];
+
+    this.subscribes = available;
+
+    if (this.subscribes.length === 0 && !this.availabilityMessage) {
+      this.availabilityMessage = this.translate.instant(
+        'No compatible subscriptions were found for this student.'
+      );
+    }
+
+    const currentId = this.currentSubscription?.id ?? null;
+    if (currentId && this.subscribes.some((item) => item.id === currentId)) {
+      this.form.patchValue({ subscribeId: currentId }, { emitEvent: false });
+      this.updatePricingDetails(currentId);
+    } else {
+      this.form.patchValue({ subscribeId: null }, { emitEvent: false });
+      this.resetPricingDetails();
+    }
+  }
+
+  private handleUnavailableResponse(message?: string): void {
+    this.subscribes = [];
+    this.resetPricingDetails();
+    this.availabilityMessage =
+      message ??
+      this.availabilityMessage ??
+      this.translate.instant('No compatible subscriptions were found for this student.');
   }
 }
