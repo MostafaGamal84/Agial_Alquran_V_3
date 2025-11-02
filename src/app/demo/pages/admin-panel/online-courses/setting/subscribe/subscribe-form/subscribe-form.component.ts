@@ -18,7 +18,11 @@ import {
   SubscribeAudienceOption,
   getSubscribeAudienceTranslationKey
 } from 'src/app/@theme/services/subscribe-audience';
-import { FilteredResultRequestDto } from 'src/app/@theme/services/lookup.service';
+import {
+  FilteredResultRequestDto,
+  LookupService,
+  NationalityDto
+} from 'src/app/@theme/services/lookup.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { TranslateService } from '@ngx-translate/core';
 
@@ -34,6 +38,7 @@ export class SubscribeFormComponent implements OnInit {
   private router = inject(Router);
   private toast = inject(ToastService);
   private translate = inject(TranslateService);
+  private lookupService = inject(LookupService);
 
   form = this.fb.group({
     id: [0 as number | null],
@@ -49,6 +54,10 @@ export class SubscribeFormComponent implements OnInit {
   isEdit = false;
   types: SubscribeTypeDto[] = [];
   audienceOptions: readonly SubscribeAudienceOption[] = SUBSCRIBE_AUDIENCE_OPTIONS;
+  nationalities: NationalityDto[] = [];
+  selectedNationalityId: number | null = null;
+  isLoadingTypes = false;
+  typeAvailabilityMessage: string | null = null;
 
   ngOnInit() {
     const data = history.state?.item as SubscribeDto | undefined;
@@ -66,17 +75,8 @@ export class SubscribeFormComponent implements OnInit {
       });
 
     }
-    const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
-    this.service.getAllTypes(filter).subscribe({
-      next: (res) => {
-        if (res.isSuccess && res.data?.items) {
-          this.types = res.data.items;
-        } else {
-          this.types = [];
-        }
-      },
-      error: () => this.toast.error('Error loading subscribe types')
-    });
+    this.loadNationalities();
+    this.loadSubscribeTypes();
   }
 
   submit() {
@@ -106,5 +106,67 @@ export class SubscribeFormComponent implements OnInit {
 
   resolveAudienceLabel(audience: SubscribeAudience | null): string {
     return this.translate.instant(getSubscribeAudienceTranslationKey(audience));
+  }
+
+  onNationalityChange(nationalityId: number | null): void {
+    this.selectedNationalityId = nationalityId && nationalityId > 0 ? nationalityId : null;
+    this.loadSubscribeTypes();
+  }
+
+  private loadNationalities(): void {
+    this.lookupService.getAllNationalities().subscribe({
+      next: (res) => {
+        if (res.isSuccess && Array.isArray(res.data)) {
+          this.nationalities = res.data;
+        } else {
+          this.nationalities = [];
+        }
+      },
+      error: () => {
+        this.nationalities = [];
+      }
+    });
+  }
+
+  private loadSubscribeTypes(): void {
+    const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
+    if (this.selectedNationalityId) {
+      filter.nationalityId = this.selectedNationalityId;
+    }
+
+    this.isLoadingTypes = true;
+    this.typeAvailabilityMessage = null;
+
+    this.service.getAllTypes(filter).subscribe({
+      next: (res) => {
+        if (res.isSuccess && res.data?.items) {
+          this.types = res.data.items;
+        } else {
+          this.types = [];
+        }
+
+        const selectedTypeId = this.form.get('subscribeTypeId')?.value;
+        if (selectedTypeId && !this.types.some((type) => type.id === selectedTypeId)) {
+          this.form.patchValue({ subscribeTypeId: null });
+        }
+
+        if (this.types.length === 0) {
+          this.typeAvailabilityMessage = this.selectedNationalityId
+            ? this.translate.instant('No subscribe types are available for the selected nationality.')
+            : this.translate.instant('No subscribe types are currently available.');
+        } else {
+          this.typeAvailabilityMessage = null;
+        }
+      },
+      error: () => {
+        this.types = [];
+        this.typeAvailabilityMessage = this.translate.instant('Unable to load subscribe types.');
+        this.toast.error(this.translate.instant('Error loading subscribe types'));
+        this.isLoadingTypes = false;
+      },
+      complete: () => {
+        this.isLoadingTypes = false;
+      }
+    });
   }
 }

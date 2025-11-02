@@ -172,37 +172,29 @@ export class SubscribeService {
   getAllTypes(
     filter: FilteredResultRequestDto
   ): Observable<ApiResponse<PagedResultDto<SubscribeTypeDto>>> {
-    let params = new HttpParams();
-    if (filter.skipCount !== undefined) {
-      params = params.set('SkipCount', filter.skipCount.toString());
-    }
-    if (filter.maxResultCount !== undefined) {
-      params = params.set('MaxResultCount', filter.maxResultCount.toString());
-    }
-    const searchWord = filter.searchWord ?? filter.searchTerm;
+    const payload: Record<string, unknown> = {};
 
-    if (filter.searchTerm) {
-      params = params.set('SearchTerm', filter.searchTerm);
-    }
-    if (searchWord) {
-      params = params.set('SearchWord', searchWord);
-    }
-    if (filter.filter) {
-      params = params.set('Filter', filter.filter);
-    }
-    if (filter.lang) {
-      params = params.set('Lang', filter.lang);
-    }
-    if (filter.sortingDirection) {
-      params = params.set('SortingDirection', filter.sortingDirection);
-    }
-    if (filter.sortBy) {
-      params = params.set('SortBy', filter.sortBy);
-    }
+    const assignValue = <T>(key: string, value: T | undefined | null) => {
+      if (value !== undefined && value !== null) {
+        payload[key] = value;
+      }
+    };
+
+    assignValue('skipCount', filter.skipCount);
+    assignValue('maxResultCount', filter.maxResultCount);
+    assignValue('searchTerm', filter.searchTerm);
+    assignValue('searchWord', filter.searchWord ?? filter.searchTerm);
+    assignValue('filter', filter.filter);
+    assignValue('lang', filter.lang);
+    assignValue('sortingDirection', filter.sortingDirection);
+    assignValue('sortBy', filter.sortBy);
+    assignValue('studentId', filter.studentId);
+    assignValue('nationalityId', filter.nationalityId);
+
     return this.http
-      .get<ApiResponse<PagedResultDto<SubscribeTypeDto>>>(
+      .post<ApiResponse<PagedResultDto<SubscribeTypeDto>>>(
         `${environment.apiUrl}/api/Subscribe/GetTypeResultsByFilter`,
-        { params }
+        payload
       )
       .pipe(map((response) => normalizePagedResult(response, { skipCount: filter.skipCount })));
   }

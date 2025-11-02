@@ -2,12 +2,24 @@
 <mat-dialog-content [formGroup]="form">
   <mat-form-field appearance="outline" class="w-100">
     <mat-label>Subscribe Type</mat-label>
-    <mat-select formControlName="subscribeTypeId">
+    <mat-select
+      formControlName="subscribeTypeId"
+      [disabled]="isLoadingTypes || types.length === 0"
+    >
+      <mat-option *ngIf="isLoadingTypes" disabled>
+        {{ 'Loading subscribe types…' | translate }}
+      </mat-option>
+      <mat-option *ngIf="!isLoadingTypes && types.length === 0" disabled>
+        {{ 'No subscribe types available' | translate }}
+      </mat-option>
       <mat-option [value]="type.id" *ngFor="let type of types">
         {{ type.name }} ({{ resolveCategoryLabel(type.type) }})
       </mat-option>
     </mat-select>
   </mat-form-field>
+  <div class="m-t-10 text-warn" *ngIf="typeAvailabilityMessage">
+    {{ typeAvailabilityMessage }}
+  </div>
 
   <mat-form-field appearance="outline" class="w-100">
     <mat-label>Subscribe</mat-label>
