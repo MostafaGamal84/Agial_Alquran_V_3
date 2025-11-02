@@ -23,6 +23,20 @@
               />
             </mat-form-field>
           </div>
+          <div class="table-filters p-x-15">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>{{ 'Filter by nationality' | translate }}</mat-label>
+              <mat-select
+                [value]="selectedNationalityId"
+                (selectionChange)="onNationalityChange($event)"
+              >
+                <mat-option [value]="null">{{ 'All nationalities' | translate }}</mat-option>
+                <mat-option *ngFor="let nationality of nationalities" [value]="nationality.id">
+                  {{ nationality.name }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
           <div class="table-responsive">
             <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
               <ng-container matColumnDef="name">
@@ -82,7 +96,10 @@
               <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
               <tr class="mat-row" *matNoDataRow>
                 <td class="mat-cell" colspan="6">
-                  {{ 'No data matching the filter' | translate: { value: input.value } }}
+                  {{
+                    noResultsMessage ||
+                      ('No data matching the filter' | translate: { value: input.value })
+                  }}
                 </td>
               </tr>
             </table>

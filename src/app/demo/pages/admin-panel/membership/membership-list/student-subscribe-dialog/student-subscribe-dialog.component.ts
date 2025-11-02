@@ -64,18 +64,11 @@ export class StudentSubscribeDialogComponent implements OnInit {
   pricingError: string | null = null;
   availabilityMessage: string | null = null;
   isLoadingSubscriptions = false;
+  isLoadingTypes = false;
+  typeAvailabilityMessage: string | null = null;
 
   ngOnInit(): void {
-    const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
-    this.subscribeService.getAllTypes(filter).subscribe((res) => {
-      if (res.isSuccess && res.data?.items) {
-        this.types = res.data.items;
-      } else {
-        this.types = [];
-      }
-    });
-
-    this.availabilityMessage = this.translate.instant('Select a subscription type to view available plans.');
+    this.loadSubscribeTypes();
 
     this.form.get('subscribeTypeId')?.valueChanges.subscribe((typeId) => {
       this.form.patchValue({ subscribeId: null }, { emitEvent: false });
@@ -85,6 +78,53 @@ export class StudentSubscribeDialogComponent implements OnInit {
 
     this.form.get('subscribeId')?.valueChanges.subscribe((subscribeId) => {
       this.updatePricingDetails(subscribeId);
+    });
+  }
+
+  private loadSubscribeTypes(): void {
+    const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
+    const studentId = this.data?.studentId ?? null;
+    if (studentId) {
+      filter.studentId = studentId;
+    }
+
+    this.isLoadingTypes = true;
+    this.typeAvailabilityMessage = null;
+
+    this.subscribeService.getAllTypes(filter).subscribe({
+      next: (res) => {
+        if (res.isSuccess && res.data?.items) {
+          this.types = res.data.items;
+        } else {
+          this.types = [];
+        }
+
+        const selectedTypeId = this.form.get('subscribeTypeId')?.value;
+        if (selectedTypeId && !this.types.some((type) => type.id === selectedTypeId)) {
+          this.form.patchValue({ subscribeTypeId: null }, { emitEvent: false });
+        }
+
+        if (this.types.length === 0) {
+          this.typeAvailabilityMessage = this.translate.instant(
+            "No subscription types are available for this student's nationality."
+          );
+          this.availabilityMessage = this.typeAvailabilityMessage;
+        } else {
+          this.typeAvailabilityMessage = null;
+          this.availabilityMessage = this.translate.instant(
+            'Select a subscription type to view available plans.'
+          );
+        }
+      },
+      error: () => {
+        this.types = [];
+        this.typeAvailabilityMessage = this.translate.instant('Unable to load subscription types.');
+        this.availabilityMessage = this.translate.instant('Unable to load available subscriptions.');
+        this.isLoadingTypes = false;
+      },
+      complete: () => {
+        this.isLoadingTypes = false;
+      }
     });
   }
 

@@ -4,6 +4,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatDialog, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
 import { MatButton } from '@angular/material/button';
+import { MatSelectChange } from '@angular/material/select';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -13,7 +14,11 @@ import {
   getSubscribeTypeCategoryTranslationKey
 } from 'src/app/@theme/services/subscribe.service';
 import type { SubscribeTypeCategory } from 'src/app/@theme/services/subscribe.service';
-import { FilteredResultRequestDto } from 'src/app/@theme/services/lookup.service';
+import {
+  FilteredResultRequestDto,
+  LookupService,
+  NationalityDto
+} from 'src/app/@theme/services/lookup.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 
 @Component({
@@ -27,6 +32,7 @@ export class SubscribeTypeComponent implements OnInit, AfterViewInit {
   private dialog = inject(MatDialog);
   private toast = inject(ToastService);
   private translate = inject(TranslateService);
+  private lookupService = inject(LookupService);
 
   displayedColumns: string[] = [
     'name',
@@ -39,21 +45,47 @@ export class SubscribeTypeComponent implements OnInit, AfterViewInit {
   dataSource = new MatTableDataSource<SubscribeTypeDto>();
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
+  nationalities: NationalityDto[] = [];
+  selectedNationalityId: number | null = null;
+  noResultsMessage: string | null = null;
+  isLoading = false;
 
   readonly paginator = viewChild.required(MatPaginator);
 
   ngOnInit() {
+    this.loadNationalities();
     this.load();
   }
 
   private load() {
-    this.service.getAllTypes(this.filter).subscribe((res) => {
-      if (res.isSuccess && res.data?.items) {
-        this.dataSource.data = res.data.items;
-        this.totalCount = res.data.totalCount;
-      } else {
+    this.isLoading = true;
+    this.noResultsMessage = null;
+
+    this.service.getAllTypes(this.filter).subscribe({
+      next: (res) => {
+        if (res.isSuccess && res.data?.items) {
+          this.dataSource.data = res.data.items;
+          this.totalCount = res.data.totalCount;
+        } else {
+          this.dataSource.data = [];
+          this.totalCount = 0;
+        }
+
+        if (this.dataSource.data.length === 0) {
+          this.noResultsMessage = this.resolveNoResultsMessage();
+        } else {
+          this.noResultsMessage = null;
+        }
+      },
+      error: () => {
         this.dataSource.data = [];
         this.totalCount = 0;
+        this.noResultsMessage = this.translate.instant('Unable to load subscribe types.');
+        this.toast.error(this.translate.instant('Error loading subscribe types'));
+        this.isLoading = false;
+      },
+      complete: () => {
+        this.isLoading = false;
       }
     });
   }
@@ -66,12 +98,48 @@ export class SubscribeTypeComponent implements OnInit, AfterViewInit {
     this.load();
   }
 
+  onNationalityChange(event: MatSelectChange) {
+    const nationalityId = Number(event.value ?? 0);
+    this.selectedNationalityId = Number.isFinite(nationalityId) && nationalityId > 0 ? nationalityId : null;
+    this.filter.nationalityId = this.selectedNationalityId ?? undefined;
+    this.filter.skipCount = 0;
+    this.paginator().firstPage();
+    this.load();
+  }
+
   ngAfterViewInit() {
     this.paginator().page.subscribe(() => {
       this.filter.skipCount = this.paginator().pageIndex * this.paginator().pageSize;
       this.filter.maxResultCount = this.paginator().pageSize;
       this.load();
     });
+  }
+
+  private loadNationalities(): void {
+    this.lookupService.getAllNationalities().subscribe({
+      next: (res) => {
+        if (res.isSuccess && Array.isArray(res.data)) {
+          this.nationalities = res.data;
+        } else {
+          this.nationalities = [];
+        }
+      },
+      error: () => {
+        this.nationalities = [];
+      }
+    });
+  }
+
+  private resolveNoResultsMessage(): string {
+    if (this.filter.nationalityId) {
+      return this.translate.instant('No subscribe types are available for the selected nationality.');
+    }
+
+    if (this.filter.searchTerm) {
+      return this.translate.instant('No subscribe types match your search criteria.');
+    }
+
+    return this.translate.instant('No subscribe types are currently available.');
   }
 
   delete(id: number) {

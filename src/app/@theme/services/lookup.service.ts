@@ -47,6 +47,8 @@ export interface FilteredResultRequestDto {
   sortingDirection?: string;
   sortBy?: string;
   maxResultCount?: number;
+  studentId?: number;
+  nationalityId?: number;
 }
 
 export interface PagedResultDto<T> {

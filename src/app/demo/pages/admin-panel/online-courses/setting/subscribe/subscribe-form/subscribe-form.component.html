@@ -32,8 +32,31 @@
     </div>
     <div class="col-md-6">
       <mat-form-field appearance="outline" class="w-100">
+        <mat-label>{{ 'Filter by nationality' | translate }}</mat-label>
+        <mat-select
+          [value]="selectedNationalityId"
+          (selectionChange)="onNationalityChange($event.value)"
+        >
+          <mat-option [value]="null">{{ 'All nationalities' | translate }}</mat-option>
+          <mat-option *ngFor="let nationality of nationalities" [value]="nationality.id">
+            {{ nationality.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div class="col-md-6">
+      <mat-form-field appearance="outline" class="w-100">
         <mat-label>{{ 'Subscribe Type' | translate }}</mat-label>
-        <mat-select formControlName="subscribeTypeId">
+        <mat-select
+          formControlName="subscribeTypeId"
+          [disabled]="isLoadingTypes || types.length === 0"
+        >
+          <mat-option *ngIf="isLoadingTypes" disabled>
+            {{ 'Loading subscribe types…' | translate }}
+          </mat-option>
+          <mat-option *ngIf="!isLoadingTypes && types.length === 0" disabled>
+            {{ 'No subscribe types available' | translate }}
+          </mat-option>
           <mat-option *ngFor="let t of types" [value]="t.id">
             {{ t.name }} ({{ resolveCategoryLabel(t.type) }})
           </mat-option>
@@ -49,6 +72,9 @@
           </mat-option>
         </mat-select>
       </mat-form-field>
+    </div>
+    <div class="col-12 text-warn" *ngIf="typeAvailabilityMessage">
+      {{ typeAvailabilityMessage }}
     </div>
     <div class="col-12">
       <button mat-flat-button color="primary" type="submit">{{ 'Save' | translate }}</button>
