@@ -36,19 +36,6 @@
       </mat-option>
     </mat-select>
   </mat-form-field>
-  <div class="m-t-10 text-muted" *ngIf="studentNationality">
-    <strong>Student Nationality:</strong> {{ studentNationality }}
-  </div>
-  <div class="m-t-10 text-muted" *ngIf="currentSubscription">
-    <strong>Current Subscription:</strong>
-    {{ currentSubscription.name }}
-    <ng-container *ngIf="currentSubscription.status">
-      — {{ currentSubscription.status }}
-    </ng-container>
-    <ng-container *ngIf="currentSubscription.expiresAt">
-      ({{ currentSubscription.expiresAt | date: 'mediumDate' }})
-    </ng-container>
-  </div>
   <div class="m-t-10" *ngIf="selectedCurrencyCode && !pricingError">
     <strong>{{ 'Price' | translate }}:</strong>
     {{ formatAmount(selectedAmount) }} {{ selectedCurrencyCode }}
