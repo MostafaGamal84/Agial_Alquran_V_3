@@ -192,10 +192,16 @@ export class LookupService {
     return this.http.get<ApiResponse<GovernorateDto[]>>(`${environment.apiUrl}/api/LookUp/GetAllGovernorate`);
   }
 
-  getSubscribesByTypeId(id?: number | null): Observable<ApiResponse<SubscribeLookupDto[]>> {
+  getSubscribesByTypeId(
+    id?: number | null,
+    studentId?: number | null
+  ): Observable<ApiResponse<SubscribeLookupDto[]>> {
     let params = new HttpParams();
     if (id !== undefined && id !== null) {
       params = params.set('id', id.toString());
+    }
+    if (studentId !== undefined && studentId !== null && studentId > 0) {
+      params = params.set('studentId', studentId.toString());
     }
     return this.http.get<ApiResponse<SubscribeLookupDto[]>>(
       `${environment.apiUrl}/api/LookUp/GetAllSubscribesByTypeId`,

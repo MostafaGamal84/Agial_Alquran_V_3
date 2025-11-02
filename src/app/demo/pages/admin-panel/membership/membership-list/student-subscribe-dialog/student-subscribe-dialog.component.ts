@@ -5,7 +5,12 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
-import { FilteredResultRequestDto, SubscribeLookupDto } from 'src/app/@theme/services/lookup.service';
+import {
+  ApiResponse,
+  FilteredResultRequestDto,
+  LookupService,
+  SubscribeLookupDto
+} from 'src/app/@theme/services/lookup.service';
 import {
   SubscribeService,
   SubscribeTypeDto,
@@ -43,6 +48,7 @@ export class StudentSubscribeDialogComponent implements OnInit {
   private fb = inject(FormBuilder);
   private subscribeService = inject(SubscribeService);
   private studentSubscribeService = inject(StudentSubscribeService);
+  private lookupService = inject(LookupService);
   private toast = inject(ToastService);
   private dialogRef = inject(MatDialogRef<StudentSubscribeDialogComponent>);
   private data = inject<{ studentId: number }>(MAT_DIALOG_DATA);
@@ -223,7 +229,9 @@ export class StudentSubscribeDialogComponent implements OnInit {
       .subscribe({
         next: (res) => {
           if (res.isSuccess) {
-            this.applyAvailabilityResponse(res.data ?? null, true);
+            const availability = res.data ?? null;
+            this.applyAvailabilityResponse(availability, false);
+            this.loadSubscriptionOptions(typeId, studentId, availability);
           } else {
             this.handleUnavailableResponse();
           }
@@ -232,17 +240,14 @@ export class StudentSubscribeDialogComponent implements OnInit {
           this.handleUnavailableResponse(
             this.translate.instant('Unable to load available subscriptions.')
           );
-          this.isLoadingSubscriptions = false;
-        },
-        complete: () => {
-          this.isLoadingSubscriptions = false;
         }
       });
   }
 
   private applyAvailabilityResponse(
     response: StudentAvailableSubscriptionsResponseDto | null,
-    updateOptions: boolean
+    updateOptions: boolean,
+    subscribeOptions?: SubscribeLookupDto[] | null
   ): void {
     this.studentNationality = response?.nationality ?? null;
     this.currentSubscription = response?.currentSubscription ?? null;
@@ -257,9 +262,11 @@ export class StudentSubscribeDialogComponent implements OnInit {
       return;
     }
 
-    const available = Array.isArray(response?.availableSubscriptions)
-      ? response!.availableSubscriptions
-      : [];
+    const available = Array.isArray(subscribeOptions)
+      ? subscribeOptions
+      : Array.isArray(response?.availableSubscriptions)
+        ? response!.availableSubscriptions
+        : [];
 
     this.subscribes = available;
 
@@ -286,5 +293,51 @@ export class StudentSubscribeDialogComponent implements OnInit {
       message ??
       this.availabilityMessage ??
       this.translate.instant('No compatible subscriptions were found for this student.');
+    this.isLoadingSubscriptions = false;
+  }
+
+  private loadSubscriptionOptions(
+    typeId: number,
+    studentId: number,
+    availability: StudentAvailableSubscriptionsResponseDto | null
+  ): void {
+    this.lookupService.getSubscribesByTypeId(typeId, studentId).subscribe({
+      next: (lookupRes) => {
+        if (lookupRes.isSuccess) {
+          const options = this.extractSubscriptionOptions(lookupRes);
+          this.applyAvailabilityResponse(availability, true, options);
+        } else {
+          this.handleUnavailableResponse();
+        }
+      },
+      error: () => {
+        this.handleUnavailableResponse(
+          this.translate.instant('Unable to load available subscriptions.')
+        );
+      },
+      complete: () => {
+        this.isLoadingSubscriptions = false;
+      }
+    });
+  }
+
+  private extractSubscriptionOptions(
+    response: ApiResponse<SubscribeLookupDto[]>
+  ): SubscribeLookupDto[] {
+    const rawData = response?.data as unknown;
+
+    if (Array.isArray(rawData)) {
+      return rawData;
+    }
+
+    if (
+      rawData &&
+      typeof rawData === 'object' &&
+      Array.isArray((rawData as { result?: unknown }).result)
+    ) {
+      return (rawData as { result: SubscribeLookupDto[] }).result;
+    }
+
+    return [];
   }
 }
