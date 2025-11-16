@@ -5,14 +5,17 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
+import { finalize } from 'rxjs/operators';
 import {
   ApiResponse,
   FilteredResultRequestDto,
   LookupService,
+  NationalityDto,
   SubscribeLookupDto
 } from 'src/app/@theme/services/lookup.service';
 import {
   SubscribeService,
+  SubscribeTypeCategory,
   SubscribeTypeDto
 } from 'src/app/@theme/services/subscribe.service';
 import {
@@ -20,6 +23,7 @@ import {
   AddStudentSubscribeDto
 } from 'src/app/@theme/services/student-subscribe.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
+import { isArabNationality, isEgyptianNationality } from 'src/app/@theme/utils/nationality.utils';
 
 @Component({
   selector: 'app-student-subscribe-dialog',
@@ -42,7 +46,7 @@ export class StudentSubscribeDialogComponent implements OnInit {
   private lookupService = inject(LookupService);
   private toast = inject(ToastService);
   private dialogRef = inject(MatDialogRef<StudentSubscribeDialogComponent>);
-  private data = inject<{ studentId: number }>(MAT_DIALOG_DATA);
+  private data = inject<{ studentId: number; residentId?: number | null }>(MAT_DIALOG_DATA);
 
   form = this.fb.group({
     subscribeTypeId: [null as number | null],
@@ -51,9 +55,10 @@ export class StudentSubscribeDialogComponent implements OnInit {
 
   types: SubscribeTypeDto[] = [];
   subscribes: SubscribeLookupDto[] = [];
+  private typeCategoryFilter: SubscribeTypeCategory | null = null;
 
   ngOnInit(): void {
-    this.loadSubscribeTypes();
+    this.prepareResidencyFilter();
     this.loadSubscribes();
 
     this.form.get('subscribeTypeId')?.valueChanges.subscribe((typeId) => {
@@ -62,12 +67,34 @@ export class StudentSubscribeDialogComponent implements OnInit {
     });
   }
 
+  private prepareResidencyFilter(): void {
+    const residentId = this.data?.residentId ?? null;
+    if (!residentId) {
+      this.loadSubscribeTypes();
+      return;
+    }
+
+    this.lookupService
+      .getAllNationalities()
+      .pipe(finalize(() => this.loadSubscribeTypes()))
+      .subscribe({
+        next: (res) => {
+          const nationalities = res.isSuccess && Array.isArray(res.data) ? res.data : [];
+          this.typeCategoryFilter = this.resolveTypeCategory(nationalities, residentId);
+        },
+        error: () => {
+          this.typeCategoryFilter = null;
+        }
+      });
+  }
+
   private loadSubscribeTypes(): void {
     const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
 
     this.subscribeService.getAllTypes(filter).subscribe({
       next: (res) => {
-        this.types = res.isSuccess && res.data?.items ? res.data.items : [];
+        const fetchedTypes = res.isSuccess && res.data?.items ? res.data.items : [];
+        this.types = this.applyResidencyFilterToTypes(fetchedTypes);
       },
       error: () => {
         this.types = [];
@@ -99,7 +126,8 @@ export class StudentSubscribeDialogComponent implements OnInit {
   }
 
   private loadSubscribes(typeId: number | null = null): void {
-    this.lookupService.getSubscribesByTypeId(typeId ?? undefined).subscribe({
+    const studentId = this.data?.studentId ?? null;
+    this.lookupService.getSubscribesByTypeId(typeId ?? undefined, studentId ?? undefined).subscribe({
       next: (lookupRes) => {
         const options = this.extractSubscriptionOptions(lookupRes);
         this.subscribes = options;
@@ -133,5 +161,34 @@ export class StudentSubscribeDialogComponent implements OnInit {
       tryCoerceArray(responseItems) ||
       []
     );
+  }
+
+  private resolveTypeCategory(
+    nationalities: NationalityDto[],
+    residentId: number
+  ): SubscribeTypeCategory | null {
+    const nationality = nationalities.find((item) => item.id === residentId);
+    if (!nationality) {
+      return null;
+    }
+    if (isEgyptianNationality(nationality)) {
+      return SubscribeTypeCategory.Egyptian;
+    }
+    if (isArabNationality(nationality)) {
+      return SubscribeTypeCategory.Arab;
+    }
+    return SubscribeTypeCategory.Foreign;
+  }
+
+  private applyResidencyFilterToTypes(types: SubscribeTypeDto[]): SubscribeTypeDto[] {
+    if (!this.typeCategoryFilter) {
+      return types;
+    }
+    return types.filter((type) => {
+      if (type.group === null || type.group === undefined) {
+        return true;
+      }
+      return type.group === this.typeCategoryFilter;
+    });
   }
 }

@@ -16,6 +16,7 @@ export interface ViewStudentSubscribeReDto {
   studentName?: string | null;
   studentMobile?: string | null;
   resident?: string | null;
+  residentId?: number | null;
   payStatus?: boolean | null;
   isCancelled?: boolean | null;
   plan?: string | null;

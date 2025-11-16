@@ -124,7 +124,7 @@ export class MembershipListComponent implements AfterViewInit, OnInit {
       return;
     }
     const dialogRef = this.dialog.open(StudentSubscribeDialogComponent, {
-      data: { studentId: student.studentId }
+      data: { studentId: student.studentId, residentId: student.residentId ?? null }
     });
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
