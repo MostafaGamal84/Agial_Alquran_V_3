@@ -159,8 +159,8 @@ export class StudentSubscribeDialogComponent implements OnInit {
     });
   }
 
-  resolveCategoryLabel(type: SubscribeTypeDto['type']): string {
-    return this.translate.instant(getSubscribeTypeCategoryTranslationKey(type));
+  resolveCategoryLabel(group: SubscribeTypeDto['group']): string {
+    return this.translate.instant(getSubscribeTypeCategoryTranslationKey(group));
   }
 
   resolveAudienceLabel(audience: SubscribeAudience | null | undefined): string {

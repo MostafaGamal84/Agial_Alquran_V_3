@@ -34,14 +34,7 @@ export class SubscribeTypeComponent implements OnInit, AfterViewInit {
   private translate = inject(TranslateService);
   private lookupService = inject(LookupService);
 
-  displayedColumns: string[] = [
-    'name',
-    'type',
-    'arabPricePerHour',
-    'egyptPricePerHour',
-    'forignPricePerHour',
-    'action'
-  ];
+  displayedColumns: string[] = ['name', 'group', 'hourPrice', 'action'];
   dataSource = new MatTableDataSource<SubscribeTypeDto>();
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
@@ -157,8 +150,8 @@ export class SubscribeTypeComponent implements OnInit, AfterViewInit {
     });
   }
 
-  resolveCategoryLabel(type: SubscribeTypeCategory | null | undefined): string {
-    return this.translate.instant(getSubscribeTypeCategoryTranslationKey(type));
+  resolveCategoryLabel(group: SubscribeTypeCategory | null | undefined): string {
+    return this.translate.instant(getSubscribeTypeCategoryTranslationKey(group));
   }
 }
 

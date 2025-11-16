@@ -90,6 +90,7 @@ export class UserEditComponent implements OnInit {
       secondMobileCountryDialCode: [''],
       secondMobile: [''],
       nationalityId: [null, Validators.required],
+      residentId: [null, Validators.required],
       governorateId: [null],
       branchId: [null, Validators.required],
       teacherIds: [[]],
@@ -128,6 +129,7 @@ export class UserEditComponent implements OnInit {
         mobile: clean(this.currentUser.mobile),
         secondMobile: this.currentUser.secondMobile ? clean(this.currentUser.secondMobile) : '',
         nationalityId: this.currentUser.nationalityId,
+        residentId: this.currentUser.residentId ?? null,
         governorateId: this.currentUser.governorateId,
         branchId: this.currentUser.branchId
       });
@@ -160,6 +162,7 @@ export class UserEditComponent implements OnInit {
               secondMobile: '',
               nationality: '',
               nationalityId: 0,
+              residentId: 0,
               governorate: '',
               governorateId: 0,
               branchId: 0
@@ -185,6 +188,7 @@ export class UserEditComponent implements OnInit {
               secondMobile: '',
               nationality: '',
               nationalityId: 0,
+              residentId: 0,
               governorate: '',
               governorateId: 0,
               branchId: 0
@@ -208,6 +212,7 @@ export class UserEditComponent implements OnInit {
               secondMobile: '',
               nationality: '',
               nationalityId: 0,
+              residentId: 0,
               governorate: '',
               governorateId: 0,
               branchId: 0
@@ -515,6 +520,7 @@ export class UserEditComponent implements OnInit {
         mobile: `${formValue.mobileCountryDialCode}${clean(formValue.mobile)}`,
         secondMobile: formValue.secondMobile ? `${formValue.secondMobileCountryDialCode}${clean(formValue.secondMobile)}` : undefined,
         nationalityId: formValue.nationalityId,
+        residentId: formValue.residentId,
         governorateId: formValue.governorateId,
         branchId: formValue.branchId,
         managerId: this.isTeacher || this.isStudent ? formValue.managerId : undefined,
