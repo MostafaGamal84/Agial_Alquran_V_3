@@ -86,11 +86,41 @@ export function coerceSubscribeAudience(value: unknown): SubscribeAudience | nul
   return null;
 }
 
+const AUDIENCE_CURRENCY_CODES: Record<SubscribeAudience, readonly string[]> = {
+  [SubscribeAudience.Egyptian]: ['EGP', 'LE', 'L.E', 'جنيه', 'ج.م', 'جنيه مصري'],
+  [SubscribeAudience.Gulf]: ['SAR', 'ر.س', 'ريال', 'ريال سعودي'],
+  [SubscribeAudience.NonArab]: ['USD', 'US$', 'دولار', 'دولار أمريكي', 'دولار امريكي']
+};
+
+const CURRENCY_AUDIENCE_MAP = new Map<string, SubscribeAudience>(
+  Object.entries(AUDIENCE_CURRENCY_CODES).flatMap(([audienceKey, codes]) => {
+    const audience = Number(audienceKey) as SubscribeAudience;
+    return codes
+      .map((code) => normalizeCurrencyCode(code))
+      .filter((code): code is string => Boolean(code))
+      .map((code) => [code, audience] as const);
+  })
+);
+
 const PRICE_ORDER: ReadonlyArray<{ field: keyof SubscribePricingSource; audience: SubscribeAudience }> = [
   { field: 'leprice', audience: SubscribeAudience.Egyptian },
   { field: 'sarprice', audience: SubscribeAudience.Gulf },
   { field: 'usdprice', audience: SubscribeAudience.NonArab }
 ];
+
+function normalizeCurrencyCode(value: unknown): string {
+  if (value === null || value === undefined) {
+    return '';
+  }
+
+  return value
+    .toString()
+    .trim()
+    .toUpperCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[\s_.-]+/g, '');
+}
 
 function coerceAmount(value: unknown): number | null {
   if (typeof value === 'number' && Number.isFinite(value)) {
@@ -113,6 +143,11 @@ export function inferSubscribeAudience(source: SubscribePricingSource): Subscrib
     return normalized;
   }
 
+  const currencyAudience = inferAudienceFromCurrency(source?.currencyCode);
+  if (currencyAudience !== null) {
+    return currencyAudience;
+  }
+
   const populatedFields = PRICE_ORDER.filter(({ field }) => coerceAmount(source?.[field]) !== null);
 
   if (populatedFields.length === 1) {
@@ -129,6 +164,15 @@ export function inferSubscribeAudience(source: SubscribePricingSource): Subscrib
   }
 
   return null;
+}
+
+function inferAudienceFromCurrency(code: unknown): SubscribeAudience | null {
+  const normalizedCode = normalizeCurrencyCode(code);
+  if (!normalizedCode) {
+    return null;
+  }
+
+  return CURRENCY_AUDIENCE_MAP.get(normalizedCode) ?? null;
 }
 
 export function getSubscribeAudienceTranslationKey(
