@@ -138,11 +138,6 @@ function coerceAmount(value: unknown): number | null {
 }
 
 export function inferSubscribeAudience(source: SubscribePricingSource): SubscribeAudience | null {
-  const normalized = coerceSubscribeAudience(source?.subscribeFor);
-  if (normalized !== null) {
-    return normalized;
-  }
-
   const currencyAudience = inferAudienceFromCurrency(source?.currencyCode);
   if (currencyAudience !== null) {
     return currencyAudience;
@@ -192,7 +187,6 @@ export function getSubscribeAudienceCurrencyCode(
 }
 
 export interface SubscribePricingSource {
-  subscribeFor?: SubscribeAudience | string | number | null;
   leprice?: number | null;
   sarprice?: number | null;
   usdprice?: number | null;

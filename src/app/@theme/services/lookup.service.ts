@@ -5,7 +5,6 @@ import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { AuthenticationService } from './authentication.service';
 import { UserTypesEnum } from '../types/UserTypesEnum';
-import { SubscribeAudience } from './subscribe-audience';
 import { ResidencyGroupFilter, hasActiveResidencyGroup } from '../types/residency-group';
 
 export interface LookUpUserDto {
@@ -118,7 +117,6 @@ export interface LookupDto {
 }
 
 export interface SubscribeLookupDto extends LookupDto {
-  subscribeFor?: SubscribeAudience | string | number | null;
   leprice?: number | null;
   sarprice?: number | null;
   usdprice?: number | null;
