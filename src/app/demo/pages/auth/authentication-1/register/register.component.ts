@@ -73,6 +73,7 @@ export class RegisterComponent implements OnInit {
       confirmPassword: ['', Validators.required],
       userTypeId: [null, Validators.required],
       nationalityId: [null, Validators.required],
+      residentId: [null, Validators.required],
       governorateId: [null],
       branchId: [null, Validators.required]
     });
@@ -165,6 +166,7 @@ export class RegisterComponent implements OnInit {
       passwordHash: formValue.passwordHash,
       userTypeId: Number(formValue.userTypeId),
       nationalityId: formValue.nationalityId,
+      residentId: formValue.residentId,
       governorateId: formValue.governorateId,
       branchId: formValue.branchId
     };

@@ -144,6 +144,14 @@ placeholder="+1"
               </mat-form-field>
             </div>
             <div class="col-12">
+              <label class="f-w-500">Place of residence</label>
+              <mat-form-field appearance="outline" class="w-100 m-t-5">
+                <mat-select formControlName="residentId" placeholder="Select place of residence">
+                  <mat-option *ngFor="let n of nationalities" [value]="n.id">{{ n.name }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+            <div class="col-12">
               <label class="f-w-500">Governorate</label>
               <mat-form-field appearance="outline" class="w-100 m-t-5">
                 <mat-select formControlName="governorateId" placeholder="Select governorate">

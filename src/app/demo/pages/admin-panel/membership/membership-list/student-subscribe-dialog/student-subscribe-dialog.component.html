@@ -13,7 +13,7 @@
         {{ 'No subscribe types available' | translate }}
       </mat-option>
       <mat-option [value]="type.id" *ngFor="let type of types">
-        {{ type.name }} ({{ resolveCategoryLabel(type.type) }})
+        {{ type.name }} ({{ resolveCategoryLabel(type.group) }})
       </mat-option>
     </mat-select>
   </mat-form-field>

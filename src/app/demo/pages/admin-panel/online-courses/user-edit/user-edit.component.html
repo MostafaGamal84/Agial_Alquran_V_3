@@ -85,6 +85,17 @@
           </div>
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100 m-b-10">
+              <mat-label>Place of residence</mat-label>
+              <mat-select formControlName="residentId" placeholder="Select place of residence" appOpenSelectOnType>
+                <mat-option *ngFor="let n of nationalities" [value]="n.id">{{ n.name }}</mat-option>
+              </mat-select>
+              @if (basicInfoForm.get('residentId')?.touched && basicInfoForm.get('residentId')?.invalid) {
+                <mat-error>Place of residence is required</mat-error>
+              }
+            </mat-form-field>
+          </div>
+          <div class="col-md-6">
+            <mat-form-field appearance="outline" class="w-100 m-b-10">
               <mat-label>Governorate</mat-label>
               <mat-select formControlName="governorateId" placeholder="Select Governorate" appOpenSelectOnType>
                 <mat-option *ngFor="let g of governorates" [value]="g.id">{{ g.name }}</mat-option>

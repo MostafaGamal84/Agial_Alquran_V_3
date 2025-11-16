@@ -12,6 +12,7 @@ export interface CreateUserDto {
   passwordHash?: string;
   userTypeId?: number;
   nationalityId?: number;
+  residentId?: number;
   governorateId?: number;
   branchId?: number;
 }
@@ -23,6 +24,7 @@ export interface UpdateUserDto {
   mobile?: string;
   secondMobile?: string;
   nationalityId?: number;
+  residentId?: number;
   governorateId?: number;
   branchId?: number;
   managerId?: number;
@@ -56,6 +58,7 @@ export interface ProfileDto {
   mobile: string | null;
   secondMobile: string | null;
   nationalityId: number | null;
+  residentId: number | null;
   governorateId: number | null;
   branchId: number | null;
 }
@@ -66,6 +69,7 @@ export interface UpdateProfileDto {
   mobile?: string | null;
   secondMobile?: string | null;
   nationalityId?: number | null;
+  residentId?: number | null;
   governorateId?: number | null;
   branchId?: number | null;
 }

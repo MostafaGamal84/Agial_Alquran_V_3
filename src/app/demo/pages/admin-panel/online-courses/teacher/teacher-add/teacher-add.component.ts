@@ -60,6 +60,7 @@ export class TeacherAddComponent implements OnInit {
       secondMobile: [''],
       passwordHash: ['', [Validators.required, Validators.minLength(6)]],
       nationalityId: [null, Validators.required],
+      residentId: [null, Validators.required],
       governorateId: [null],
       branchId: [null, Validators.required]
     });
@@ -129,6 +130,7 @@ export class TeacherAddComponent implements OnInit {
           : undefined,
         passwordHash: formValue.passwordHash,
         nationalityId: formValue.nationalityId,
+        residentId: formValue.residentId,
         governorateId: formValue.governorateId,
         branchId: formValue.branchId,
         userTypeId: Number(UserTypesEnum.Teacher),

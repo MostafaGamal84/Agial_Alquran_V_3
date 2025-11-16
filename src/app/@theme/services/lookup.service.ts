@@ -15,6 +15,8 @@ export interface LookUpUserDto {
   secondMobile: string;
   nationality: string;
   nationalityId: number;
+  resident?: string;
+  residentId?: number;
   governorate: string;
   governorateId: number;
   branchId: number;

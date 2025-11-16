@@ -26,6 +26,7 @@ type ProfileFormValue = {
   mobile: string;
   secondMobile: string;
   nationalityId: number | null;
+  residentId: number | null;
   governorateId: number | null;
   branchId: number | null;
 };
@@ -71,6 +72,7 @@ export class AcAccountComponent implements OnInit {
       mobile: ['', [Validators.required, Validators.maxLength(25)]],
       secondMobile: ['', [Validators.maxLength(25)]],
       nationalityId: [null, Validators.required],
+      residentId: [null, Validators.required],
       governorateId: [null],
       branchId: [null, Validators.required]
     });
@@ -205,6 +207,7 @@ export class AcAccountComponent implements OnInit {
         mobile: profile.mobile ?? '',
         secondMobile: profile.secondMobile ?? '',
         nationalityId: profile.nationalityId ?? null,
+        residentId: profile.residentId ?? null,
         governorateId: profile.governorateId ?? null,
         branchId: profile.branchId ?? null
       },
@@ -222,6 +225,7 @@ export class AcAccountComponent implements OnInit {
       mobile: value.mobile?.trim() ?? '',
       secondMobile: value.secondMobile?.trim() || '',
       nationalityId: value.nationalityId !== null ? Number(value.nationalityId) : null,
+      residentId: value.residentId !== null ? Number(value.residentId) : null,
       governorateId: value.governorateId !== null ? Number(value.governorateId) : null,
       branchId: value.branchId !== null ? Number(value.branchId) : null
     };

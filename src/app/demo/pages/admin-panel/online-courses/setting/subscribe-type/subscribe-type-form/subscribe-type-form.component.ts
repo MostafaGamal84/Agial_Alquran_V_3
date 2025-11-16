@@ -27,14 +27,12 @@ export class SubscribeTypeFormComponent implements OnInit {
   form = this.fb.group({
     id: [0 as number | null],
     name: ['', Validators.required],
-    forignPricePerHour: [null as number | null, Validators.min(0)],
-    arabPricePerHour: [null as number | null, Validators.min(0)],
-    egyptPricePerHour: [null as number | null, Validators.min(0)],
-    type: [null as SubscribeTypeCategory | null]
+    hourPrice: [null as number | null, [Validators.required, Validators.min(0)]],
+    group: [null as SubscribeTypeCategory | null, Validators.required]
   });
 
   isEdit = false;
-  readonly typeOptions = [
+  readonly groupOptions = [
     { value: SubscribeTypeCategory.Unknown, label: 'Unknown' },
     { value: SubscribeTypeCategory.Foreign, label: 'Foreign' },
     { value: SubscribeTypeCategory.Arab, label: 'Arab' },
@@ -49,24 +47,16 @@ export class SubscribeTypeFormComponent implements OnInit {
         id: data.id,
         name: data.name ?? '',
 
-        forignPricePerHour: data.forignPricePerHour ?? null,
-        arabPricePerHour: data.arabPricePerHour ?? null,
-        egyptPricePerHour: data.egyptPricePerHour ?? null,
-        type: data.type ?? null
+        hourPrice: data.hourPrice ?? null,
+        group: data.group ?? null
       });
 
     }
-
-    this.form
-      .get('type')
-      ?.valueChanges.subscribe(() => this.updatePrimaryRateValidators());
-    this.updatePrimaryRateValidators();
   }
 
   submit() {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
-      this.updatePrimaryRateValidators();
       return;
     }
     const model = this.form.value as CreateSubscribeTypeDto | UpdateSubscribeTypeDto;
@@ -87,32 +77,5 @@ export class SubscribeTypeFormComponent implements OnInit {
         error: () => this.toast.error('Error saving subscribe type')
       });
     }
-  }
-
-  private updatePrimaryRateValidators(): void {
-    const type = this.form.get('type')?.value;
-    const foreignControl = this.form.get('forignPricePerHour');
-    const arabControl = this.form.get('arabPricePerHour');
-    const egyptControl = this.form.get('egyptPricePerHour');
-
-    const baseValidators = [Validators.min(0)];
-
-    foreignControl?.setValidators([
-      ...baseValidators,
-      ...(type === SubscribeTypeCategory.Foreign ? [Validators.required] : [])
-    ]);
-    foreignControl?.updateValueAndValidity({ emitEvent: false });
-
-    arabControl?.setValidators([
-      ...baseValidators,
-      ...(type === SubscribeTypeCategory.Arab ? [Validators.required] : [])
-    ]);
-    arabControl?.updateValueAndValidity({ emitEvent: false });
-
-    egyptControl?.setValidators([
-      ...baseValidators,
-      ...(type === SubscribeTypeCategory.Egyptian ? [Validators.required] : [])
-    ]);
-    egyptControl?.updateValueAndValidity({ emitEvent: false });
   }
 }

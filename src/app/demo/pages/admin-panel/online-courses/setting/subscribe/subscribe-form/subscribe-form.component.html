@@ -58,17 +58,7 @@
             {{ 'No subscribe types available' | translate }}
           </mat-option>
           <mat-option *ngFor="let t of types" [value]="t.id">
-            {{ t.name }} ({{ resolveCategoryLabel(t.type) }})
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-    </div>
-    <div class="col-md-6">
-      <mat-form-field appearance="outline" class="w-100">
-        <mat-label>{{ 'Subscribe For' | translate }}</mat-label>
-        <mat-select formControlName="subscribeFor">
-          <mat-option *ngFor="let option of audienceOptions" [value]="option.value">
-            {{ resolveAudienceLabel(option.value) }} ({{ option.currencyCode }})
+            {{ t.name }} ({{ resolveCategoryLabel(t.group) }})
           </mat-option>
         </mat-select>
       </mat-form-field>

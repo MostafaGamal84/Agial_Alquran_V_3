@@ -8,45 +8,21 @@
     </div>
     <div class="col-md-6">
       <mat-form-field appearance="outline" class="w-100">
-        <mat-label>{{ 'Foreign Price Per Hour' | translate }}</mat-label>
-        <input matInput type="number" formControlName="forignPricePerHour" />
-        <mat-error *ngIf="form.get('forignPricePerHour')?.hasError('required')">
-          {{ 'Foreign price is required when selected as the default category' | translate }}
+        <mat-label>{{ 'Hour Price' | translate }}</mat-label>
+        <input matInput type="number" formControlName="hourPrice" />
+        <mat-error *ngIf="form.get('hourPrice')?.hasError('required')">
+          {{ 'Hour price is required' | translate }}
         </mat-error>
-        <mat-error *ngIf="form.get('forignPricePerHour')?.hasError('min')">
-          {{ 'Foreign price per hour must be zero or greater' | translate }}
-        </mat-error>
-      </mat-form-field>
-    </div>
-    <div class="col-md-6">
-      <mat-form-field appearance="outline" class="w-100">
-        <mat-label>{{ 'Arab Price Per Hour' | translate }}</mat-label>
-        <input matInput type="number" formControlName="arabPricePerHour" />
-        <mat-error *ngIf="form.get('arabPricePerHour')?.hasError('required')">
-          {{ 'Arab price is required when selected as the default category' | translate }}
-        </mat-error>
-        <mat-error *ngIf="form.get('arabPricePerHour')?.hasError('min')">
-          {{ 'Arab price per hour must be zero or greater' | translate }}
-        </mat-error>
-      </mat-form-field>
-    </div>
-    <div class="col-md-6">
-      <mat-form-field appearance="outline" class="w-100">
-        <mat-label>{{ 'Egyptian Price Per Hour' | translate }}</mat-label>
-        <input matInput type="number" formControlName="egyptPricePerHour" />
-        <mat-error *ngIf="form.get('egyptPricePerHour')?.hasError('required')">
-          {{ 'Egyptian price is required when selected as the default category' | translate }}
-        </mat-error>
-        <mat-error *ngIf="form.get('egyptPricePerHour')?.hasError('min')">
-          {{ 'Egyptian price per hour must be zero or greater' | translate }}
+        <mat-error *ngIf="form.get('hourPrice')?.hasError('min')">
+          {{ 'Hour price must be zero or greater' | translate }}
         </mat-error>
       </mat-form-field>
     </div>
     <div class="col-md-6">
       <mat-form-field appearance="outline" class="w-100">
         <mat-label>{{ 'Audience Category' | translate }}</mat-label>
-        <mat-select formControlName="type">
-          <mat-option *ngFor="let option of typeOptions" [value]="option.value">
+        <mat-select formControlName="group">
+          <mat-option *ngFor="let option of groupOptions" [value]="option.value">
             {{ option.label | translate }}
           </mat-option>
         </mat-select>

@@ -53,7 +53,6 @@ export interface CreateSubscribeDto {
   usdprice?: number;
   minutes?: number;
   subscribeTypeId?: number;
-  subscribeFor?: SubscribeAudience | null;
 }
 
 export interface UpdateSubscribeDto extends CreateSubscribeDto {
@@ -63,18 +62,14 @@ export interface UpdateSubscribeDto extends CreateSubscribeDto {
 export interface SubscribeTypeDto {
   id: number;
   name?: string;
-  forignPricePerHour?: number;
-  arabPricePerHour?: number;
-  egyptPricePerHour?: number;
-  type?: SubscribeTypeCategory | null;
+  hourPrice?: number;
+  group?: SubscribeTypeCategory | null;
 }
 
 export interface CreateSubscribeTypeDto {
   name?: string;
-  forignPricePerHour?: number;
-  arabPricePerHour?: number;
-  egyptPricePerHour?: number;
-  type?: SubscribeTypeCategory | null;
+  hourPrice?: number;
+  group?: SubscribeTypeCategory | null;
 }
 
 export interface UpdateSubscribeTypeDto extends CreateSubscribeTypeDto {
