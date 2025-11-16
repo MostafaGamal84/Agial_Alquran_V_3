@@ -52,18 +52,80 @@ export function coerceSubscribeAudience(value: unknown): SubscribeAudience | nul
     switch (normalized) {
       case 'egyptian':
       case 'egyptians':
+      case 'المصري':
+      case 'المصريين':
+      case 'مصري':
+      case 'مصريون':
+      case 'مصريين':
         return SubscribeAudience.Egyptian;
       case 'gulf':
       case 'gulfcountries':
+      case 'الخليج':
+      case 'الخليجي':
+      case 'الخليجيين':
+      case 'خليجي':
+      case 'خليجيون':
+      case 'خليجيين':
         return SubscribeAudience.Gulf;
       case 'nonarab':
       case 'nonarabs':
       case 'nonarabic':
       case 'nonarabian':
+      case 'غيرالعرب':
+      case 'غيرعرب':
+      case 'اجنبي':
+      case 'اجانب':
+      case 'الاجنبي':
+      case 'الاجانب':
         return SubscribeAudience.NonArab;
       default:
         return null;
     }
+  }
+
+  return null;
+}
+
+const PRICE_ORDER: ReadonlyArray<{ field: keyof SubscribePricingSource; audience: SubscribeAudience }> = [
+  { field: 'leprice', audience: SubscribeAudience.Egyptian },
+  { field: 'sarprice', audience: SubscribeAudience.Gulf },
+  { field: 'usdprice', audience: SubscribeAudience.NonArab }
+];
+
+function coerceAmount(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+
+  return null;
+}
+
+export function inferSubscribeAudience(source: SubscribePricingSource): SubscribeAudience | null {
+  const normalized = coerceSubscribeAudience(source?.subscribeFor);
+  if (normalized !== null) {
+    return normalized;
+  }
+
+  const populatedFields = PRICE_ORDER.filter(({ field }) => coerceAmount(source?.[field]) !== null);
+
+  if (populatedFields.length === 1) {
+    return populatedFields[0].audience;
+  }
+
+  const positiveAmount = populatedFields.find(({ field }) => {
+    const amount = coerceAmount(source?.[field]);
+    return typeof amount === 'number' && amount > 0;
+  });
+
+  if (positiveAmount) {
+    return positiveAmount.audience;
   }
 
   return null;
@@ -111,7 +173,7 @@ export function resolveSubscribePricing(
     };
   }
 
-  const audience = coerceSubscribeAudience(source.subscribeFor);
+  const audience = inferSubscribeAudience(source);
   const currencyCode = getSubscribeAudienceCurrencyCode(audience);
 
   if (!currencyCode) {
