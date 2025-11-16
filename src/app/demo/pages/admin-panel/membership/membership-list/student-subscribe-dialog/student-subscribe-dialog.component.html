@@ -37,7 +37,7 @@
         <div class="d-flex flex-column">
           <span>{{ s.name }}</span>
           <small class="text-muted">
-            {{ resolveAudienceLabel(s.subscribeFor) }}
+            {{ resolveAudienceLabel(s) }}
             <ng-container *ngIf="getPricing(s) as pricing">
               <ng-container *ngIf="pricing; else unsupportedOption">
                 — {{ formatAmount(pricing.amount) }} {{ pricing.currencyCode }}
