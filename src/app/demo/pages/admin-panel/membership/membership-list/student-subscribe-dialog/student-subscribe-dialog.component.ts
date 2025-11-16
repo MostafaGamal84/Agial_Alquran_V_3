@@ -130,10 +130,9 @@ export class StudentSubscribeDialogComponent implements OnInit {
       return;
     }
     const selected = this.subscribes.find((item) => item.id === subscribeId);
-    const pricing = selected ? resolveSubscribePricing(selected) : null;
 
-    if (!selected || !pricing) {
-      this.toast.error(this.translate.instant('Unsupported subscription audience'));
+    if (!selected) {
+      this.toast.error(this.translate.instant('Unable to determine subscription details.'));
       return;
     }
 
@@ -191,10 +190,15 @@ export class StudentSubscribeDialogComponent implements OnInit {
     const selected = this.subscribes.find((item) => item.id === subscribeId);
     const pricing = selected ? resolveSubscribePricing(selected) : null;
 
-    if (!selected || !pricing) {
+    if (!selected) {
+      this.resetPricingDetails();
+      return;
+    }
+
+    if (!pricing) {
       this.selectedCurrencyCode = null;
       this.selectedAmount = null;
-      this.pricingError = this.translate.instant('Unsupported subscription audience');
+      this.pricingError = this.translate.instant('Subscription price unavailable');
       return;
     }
 
@@ -242,6 +246,8 @@ export class StudentSubscribeDialogComponent implements OnInit {
             this.availabilityMessage = this.translate.instant(
               'No compatible subscriptions were found for this student.'
             );
+          } else {
+            this.availabilityMessage = null;
           }
         } else {
           this.availabilityMessage = this.translate.instant(
@@ -264,20 +270,25 @@ export class StudentSubscribeDialogComponent implements OnInit {
   private extractSubscriptionOptions(
     response: ApiResponse<SubscribeLookupDto[]>
   ): SubscribeLookupDto[] {
+    const tryCoerceArray = (value: unknown): SubscribeLookupDto[] | null => {
+      return Array.isArray(value) ? value : null;
+    };
+
     const rawData = response?.data as unknown;
+    const nestedData = (rawData as { data?: unknown })?.data;
+    const rawResult = (rawData as { result?: unknown })?.result;
+    const rawItems = (rawData as { items?: unknown })?.items;
+    const responseResult = (response as unknown as { result?: unknown })?.result;
+    const responseItems = (responseResult as { items?: unknown })?.items;
 
-    if (Array.isArray(rawData)) {
-      return rawData;
-    }
-
-    if (
-      rawData &&
-      typeof rawData === 'object' &&
-      Array.isArray((rawData as { result?: unknown }).result)
-    ) {
-      return (rawData as { result: SubscribeLookupDto[] }).result;
-    }
-
-    return [];
+    return (
+      tryCoerceArray(rawData) ||
+      tryCoerceArray(nestedData) ||
+      tryCoerceArray(rawResult) ||
+      tryCoerceArray(rawItems) ||
+      tryCoerceArray(responseResult) ||
+      tryCoerceArray(responseItems) ||
+      []
+    );
   }
 }
