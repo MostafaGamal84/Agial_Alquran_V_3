@@ -20,11 +20,7 @@ import {
   StudentSubscribeService,
   AddStudentSubscribeDto
 } from 'src/app/@theme/services/student-subscribe.service';
-import {
-  SubscribeAudience,
-  getSubscribeAudienceTranslationKey,
-  resolveSubscribePricing
-} from 'src/app/@theme/services/subscribe-audience';
+import { getSubscribeAudienceTranslationKey, inferSubscribeAudience, resolveSubscribePricing } from 'src/app/@theme/services/subscribe-audience';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { TranslateService } from '@ngx-translate/core';
 
@@ -141,10 +137,17 @@ export class StudentSubscribeDialogComponent implements OnInit {
       return;
     }
 
+    const inferredAudience = inferSubscribeAudience(selected);
+
+    if (!inferredAudience) {
+      this.toast.error(this.translate.instant('Unsupported subscription audience'));
+      return;
+    }
+
     const model: AddStudentSubscribeDto = {
       studentId: this.data?.studentId,
       studentSubscribeId: subscribeId,
-      subscribeFor: selected.subscribeFor ?? null
+      subscribeFor: inferredAudience
     };
     this.studentSubscribeService.create(model).subscribe({
       next: (res) => {
@@ -163,8 +166,13 @@ export class StudentSubscribeDialogComponent implements OnInit {
     return this.translate.instant(getSubscribeTypeCategoryTranslationKey(group));
   }
 
-  resolveAudienceLabel(audience: SubscribeAudience | null | undefined): string {
-    return this.translate.instant(getSubscribeAudienceTranslationKey(audience ?? null));
+  resolveAudienceLabel(option: SubscribeLookupDto | null | undefined): string {
+    if (!option) {
+      return this.translate.instant(getSubscribeAudienceTranslationKey(null));
+    }
+
+    const audience = inferSubscribeAudience(option);
+    return this.translate.instant(getSubscribeAudienceTranslationKey(audience));
   }
 
   getPricing(option: SubscribeLookupDto) {
