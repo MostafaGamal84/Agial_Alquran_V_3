@@ -240,9 +240,10 @@ export class StudentSubscribeDialogComponent implements OnInit {
       next: (lookupRes) => {
         if (lookupRes.isSuccess) {
           const options = this.extractSubscriptionOptions(lookupRes);
-          this.subscribes = options;
+          const supportedOptions = options.filter((option) => resolveSubscribePricing(option));
+          this.subscribes = supportedOptions;
 
-          if (options.length === 0) {
+          if (supportedOptions.length === 0) {
             this.availabilityMessage = this.translate.instant(
               'No compatible subscriptions were found for this student.'
             );
