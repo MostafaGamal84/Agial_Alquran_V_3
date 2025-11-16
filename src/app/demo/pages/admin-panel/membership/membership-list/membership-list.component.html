@@ -5,12 +5,12 @@
         <div class="table-containe table-reponsive">
           <div class="table-search p-t-15 p-x-15">
             <div class="row g-3">
-              <div class="col-12 col-md-6">
+              <div class="col-12 col-md-4">
                 <mat-form-field appearance="outline" class="w-100">
                   <input matInput (keyup)="applyFilter($event)" [placeholder]="'Search...' | translate" #input />
                 </mat-form-field>
               </div>
-              <div class="col-12 col-md-6">
+              <div class="col-12 col-md-4">
                 <mat-form-field appearance="outline" class="w-100">
                   <mat-label>{{ 'Nationality' | translate }}</mat-label>
                   <mat-select
@@ -20,6 +20,19 @@
                     <mat-option [value]="null">{{ 'All Nationalities' | translate }}</mat-option>
                     <mat-option *ngFor="let nationality of nationalities" [value]="nationality.id">
                       {{ nationality.name }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+              <div class="col-12 col-md-4">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>{{ 'Residency Group' | translate }}</mat-label>
+                  <mat-select
+                    [value]="selectedResidencyGroup"
+                    (selectionChange)="onResidencyGroupChange($event.value)"
+                  >
+                    <mat-option *ngFor="let option of residencyGroupOptions" [value]="option.value">
+                      {{ option.translationKey | translate }}
                     </mat-option>
                   </mat-select>
                 </mat-form-field>

@@ -22,6 +22,7 @@ import {
 import { StudentPaymentService } from 'src/app/@theme/services/student-payment.service';
 import { PaymentDetailsComponent } from '../payment-details/payment-details.component';
 import { StudentSubscribeDialogComponent } from './student-subscribe-dialog/student-subscribe-dialog.component';
+import { RESIDENCY_GROUP_OPTIONS, ResidencyGroupFilter } from 'src/app/@theme/types/residency-group';
 
 @Component({
   selector: 'app-membership-list',
@@ -41,6 +42,8 @@ export class MembershipListComponent implements AfterViewInit, OnInit {
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
   nationalities: NationalityDto[] = [];
   selectedNationalityId: number | null = null;
+  residencyGroupOptions = RESIDENCY_GROUP_OPTIONS;
+  selectedResidencyGroup: ResidencyGroupFilter = 'all';
 
   // paginator
   readonly paginator = viewChild.required(MatPaginator); // if Angular ≥17
@@ -61,6 +64,7 @@ export class MembershipListComponent implements AfterViewInit, OnInit {
   }
 
   private load() {
+    this.filter.residentGroup = this.selectedResidencyGroup;
     this.service.getStudents(this.filter, undefined, this.selectedNationalityId ?? undefined).subscribe((res) => {
       if (res.isSuccess && res.data?.items) {
         this.dataSource.data = res.data.items;
@@ -83,6 +87,13 @@ export class MembershipListComponent implements AfterViewInit, OnInit {
 
   onNationalityChange(value: number | null): void {
     this.selectedNationalityId = value && value > 0 ? value : null;
+    this.filter.skipCount = 0;
+    this.paginator().firstPage();
+    this.load();
+  }
+
+  onResidencyGroupChange(value: ResidencyGroupFilter | null): void {
+    this.selectedResidencyGroup = value ?? 'all';
     this.filter.skipCount = 0;
     this.paginator().firstPage();
     this.load();

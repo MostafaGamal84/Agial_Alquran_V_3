@@ -18,6 +18,7 @@ import {
   PaymentDashboardDto
 } from 'src/app/@theme/services/student-payment.service';
 import { LookupService, NationalityDto } from 'src/app/@theme/services/lookup.service';
+import { RESIDENCY_GROUP_OPTIONS, ResidencyGroupFilter } from 'src/app/@theme/types/residency-group';
 
 const moment = _rollupMoment || _moment;
 
@@ -86,6 +87,8 @@ export class InvoiceListComponent implements OnInit {
   searchTerm = '';
   nationalities: NationalityDto[] = [];
   selectedNationalityId: number | null = null;
+  residencyGroupOptions = RESIDENCY_GROUP_OPTIONS;
+  selectedResidencyGroup: ResidencyGroupFilter = 'all';
 
   ngOnInit(): void {
     this.searchTerm = this.route.snapshot.queryParamMap.get('search') ?? '';
@@ -204,6 +207,11 @@ export class InvoiceListComponent implements OnInit {
 
   onNationalityChange(value: number | null): void {
     this.selectedNationalityId = value && value > 0 ? value : null;
+    this.tabCounts = { all: 0, paid: 0, unpaid: 0, overdue: 0, cancelled: 0 };
+  }
+
+  onResidencyGroupChange(value: ResidencyGroupFilter | null): void {
+    this.selectedResidencyGroup = value ?? 'all';
     this.tabCounts = { all: 0, paid: 0, unpaid: 0, overdue: 0, cancelled: 0 };
   }
 }

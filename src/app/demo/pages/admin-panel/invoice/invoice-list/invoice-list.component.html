@@ -35,6 +35,17 @@
           </mat-option>
         </mat-select>
       </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>{{ 'Residency Group' | translate }}</mat-label>
+        <mat-select
+          [value]="selectedResidencyGroup"
+          (selectionChange)="onResidencyGroupChange($event.value)"
+        >
+          <mat-option *ngFor="let option of residencyGroupOptions" [value]="option.value">
+            {{ option.translationKey | translate }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
     </div>
   </div>
   <div class="col-xxl-8">
@@ -117,6 +128,7 @@
               [month]="dataMonth.value?.format('YYYY-MM')"
               [search]="searchTerm"
               [nationalityId]="selectedNationalityId"
+              [residentGroup]="selectedResidencyGroup"
               (countChange)="onTableCount('all', $event)"
             />
           </div>
@@ -136,6 +148,7 @@
               [month]="dataMonth.value?.format('YYYY-MM')"
               [search]="searchTerm"
               [nationalityId]="selectedNationalityId"
+              [residentGroup]="selectedResidencyGroup"
               (countChange)="onTableCount('paid', $event)"
             />
 
@@ -156,6 +169,7 @@
               [month]="dataMonth.value?.format('YYYY-MM')"
               [search]="searchTerm"
               [nationalityId]="selectedNationalityId"
+              [residentGroup]="selectedResidencyGroup"
               (countChange)="onTableCount('unpaid', $event)"
             />
 
@@ -176,6 +190,7 @@
               [month]="dataMonth.value?.format('YYYY-MM')"
               [search]="searchTerm"
               [nationalityId]="selectedNationalityId"
+              [residentGroup]="selectedResidencyGroup"
               (countChange)="onTableCount('overdue', $event)"
             />
 
@@ -196,6 +211,7 @@
               [month]="dataMonth.value?.format('YYYY-MM')"
               [search]="searchTerm"
               [nationalityId]="selectedNationalityId"
+              [residentGroup]="selectedResidencyGroup"
               (countChange)="onTableCount('cancelled', $event)"
             />
 

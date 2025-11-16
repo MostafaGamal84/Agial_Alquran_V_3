@@ -69,6 +69,16 @@
                   </mat-select>
                 </mat-form-field>
               </div>
+              <div class="col-12 col-md-6 col-xl-3">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>{{ 'Residency Group' | translate }}</mat-label>
+                  <mat-select formControlName="residentGroup">
+                    <mat-option *ngFor="let option of residencyGroupOptions" [value]="option.value">
+                      {{ option.translationKey | translate }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
             </div>
           </form>
           <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>

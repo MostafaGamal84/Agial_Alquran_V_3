@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { ApiResponse, FilteredResultRequestDto, PagedResultDto, normalizePagedResult } from './lookup.service';
+import { ResidencyGroupFilter } from '../types/residency-group';
 
 export interface CircleReportAddDto {
   id?: number;
@@ -75,6 +76,7 @@ export class CircleReportService {
       studentId?: number | null;
       teacherId?: number | null;
       nationalityId?: number | null;
+      residentGroup?: ResidencyGroupFilter | null;
     }
   ): Observable<ApiResponse<PagedResultDto<CircleReportListDto>>> {
     let params = new HttpParams();
@@ -117,6 +119,9 @@ export class CircleReportService {
     }
     if (options?.nationalityId && options?.nationalityId > 0) {
       params = params.set('nationalityId', options.nationalityId.toString());
+    }
+    if (options?.residentGroup && options.residentGroup !== 'all') {
+      params = params.set('residentGroup', options.residentGroup);
     }
 
     return this.http
