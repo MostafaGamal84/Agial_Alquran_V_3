@@ -22,6 +22,8 @@ import { ToastService } from 'src/app/@theme/services/toast.service';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { AttendStatusEnum } from 'src/app/@theme/types/AttendStatusEnum';
+import { RESIDENCY_GROUP_OPTIONS, ResidencyGroupFilter } from 'src/app/@theme/types/residency-group';
+import { matchesResidencyGroup } from 'src/app/@theme/utils/nationality.utils';
 
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
@@ -51,7 +53,8 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     searchTerm: [''],
     circleId: [null],
     studentId: [null],
-    nationalityId: [null]
+    nationalityId: [null],
+    residentGroup: ['all']
   });
 
   displayedColumns: string[] = ['student', 'circle', 'status', 'creationTime', 'actions'];
@@ -63,6 +66,7 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
   students: StudentOption[] = [];
   private allStudents: StudentOption[] = [];
   nationalities: NationalityDto[] = [];
+  residencyGroupOptions = RESIDENCY_GROUP_OPTIONS;
 
   isLoading = false;
   isLoadingStudents = false;
@@ -72,6 +76,7 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
   private selectedCircleId?: number;
   private selectedStudentId?: number;
   private selectedNationalityId?: number | null;
+  private selectedResidencyGroup: ResidencyGroupFilter = 'all';
   private readonly teacherId?: number;
 
   role = this.auth.getRole();
@@ -110,6 +115,11 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
       .get('nationalityId')
       ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe((nationalityId) => this.onNationalityChange(nationalityId));
+
+    this.filterForm
+      .get('residentGroup')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((group: ResidencyGroupFilter | null) => this.onResidencyGroupChange(group));
   }
 
   ngAfterViewInit(): void {
@@ -151,7 +161,12 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isLoadingStudents = true;
     this.lookupService
       .getUsersForSelects(
-        { skipCount: 0, maxResultCount: 100, searchTerm: searchTerm?.trim() || undefined },
+        {
+          skipCount: 0,
+          maxResultCount: 100,
+          searchTerm: searchTerm?.trim() || undefined,
+          residentGroup: this.selectedResidencyGroup
+        },
         Number(UserTypesEnum.Student),
         0,
         0,
@@ -162,7 +177,11 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
         next: (res) => {
           if (res.isSuccess && res.data?.items) {
             const mapped = res.data.items
-              .filter((s) => this.matchesSelectedNationality(s.nationalityId))
+              .filter(
+                (s) =>
+                  this.matchesSelectedNationality(s.nationalityId) &&
+                  this.matchesSelectedResidency(s.residentId)
+              )
               .map((s) => this.mapLookupToStudentOption(s));
             this.allStudents = mapped;
             if (!this.selectedCircleId) {
@@ -207,6 +226,9 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
               .filter((student) =>
                 this.matchesSelectedNationality(
                   (student.student as LookUpUserDto | undefined)?.nationalityId
+                ) &&
+                this.matchesSelectedResidency(
+                  (student.student as LookUpUserDto | undefined)?.residentId ?? null
                 )
               )
               .map((s) => this.mapCircleStudentToOption(s))
@@ -251,6 +273,7 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     const { circleId, studentId } = this.filterForm.value;
     this.selectedCircleId = circleId ?? undefined;
     this.selectedStudentId = studentId ?? undefined;
+    this.filter.residentGroup = this.selectedResidencyGroup;
     this.filter.skipCount = 0;
     this.paginator()?.firstPage();
     this.loadReports();
@@ -269,11 +292,39 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  private onResidencyGroupChange(group: ResidencyGroupFilter | null): void {
+    this.selectedResidencyGroup = group ?? 'all';
+    this.filterForm.patchValue({ studentId: null }, { emitEvent: false });
+    this.students = [];
+    this.loadAllStudents();
+    const circleId = this.selectedCircleId ?? null;
+    if (circleId !== null) {
+      this.onCircleChange(circleId);
+    } else {
+      this.applyFilters();
+    }
+  }
+
   private matchesSelectedNationality(nationalityId?: number | null): boolean {
     if (!this.selectedNationalityId || this.selectedNationalityId <= 0) {
       return true;
     }
     return nationalityId === this.selectedNationalityId;
+  }
+
+  private matchesSelectedResidency(residentId?: number | null): boolean {
+    if (!this.selectedResidencyGroup || this.selectedResidencyGroup === 'all') {
+      return true;
+    }
+    const nationality = this.getNationalityById(residentId);
+    return matchesResidencyGroup(nationality ?? null, this.selectedResidencyGroup);
+  }
+
+  private getNationalityById(id?: number | null): NationalityDto | undefined {
+    if (id === null || id === undefined) {
+      return undefined;
+    }
+    return this.nationalities.find((n) => n.id === Number(id));
   }
 
   onSearch(): void {
@@ -291,12 +342,14 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private loadReports(): void {
     this.isLoading = true;
+    this.filter.residentGroup = this.selectedResidencyGroup;
     this.reportService
       .getAll(this.filter, {
         circleId: this.selectedCircleId,
         studentId: this.selectedStudentId,
         teacherId: this.teacherId,
-        nationalityId: this.selectedNationalityId ?? undefined
+        nationalityId: this.selectedNationalityId ?? undefined,
+        residentGroup: this.selectedResidencyGroup
       })
       .subscribe({
         next: (res) => {

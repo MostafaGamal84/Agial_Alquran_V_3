@@ -22,6 +22,7 @@ import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { StudentDetailsComponent } from '../student-details/student-details.component';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { DisableUserConfirmDialogComponent } from './student-list.disable-user-confirm-dialog.component';
+import { RESIDENCY_GROUP_OPTIONS, ResidencyGroupFilter } from 'src/app/@theme/types/residency-group';
 
 @Component({
   selector: 'app-student-list',
@@ -43,6 +44,8 @@ export class StudentListComponent implements OnInit, AfterViewInit {
   showInactive = false;
   nationalities: NationalityDto[] = [];
   selectedNationalityId: number | null = null;
+  residencyGroupOptions = RESIDENCY_GROUP_OPTIONS;
+  selectedResidencyGroup: ResidencyGroupFilter = 'all';
   private pendingStudentIds = new Set<number>();
 
   // paginator
@@ -86,6 +89,7 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
   }
 
   private loadStudents() {
+    this.filter.residentGroup = this.selectedResidencyGroup;
     this.lookupService
       .getUsersForSelects(
         this.filter,
@@ -108,6 +112,13 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
 
   onNationalityChange(value: number | null): void {
     this.selectedNationalityId = value && value > 0 ? value : null;
+    this.filter.skipCount = 0;
+    this.paginator().firstPage();
+    this.loadStudents();
+  }
+
+  onResidencyGroupChange(value: ResidencyGroupFilter | null): void {
+    this.selectedResidencyGroup = value ?? 'all';
     this.filter.skipCount = 0;
     this.paginator().firstPage();
     this.loadStudents();

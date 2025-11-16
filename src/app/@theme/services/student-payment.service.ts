@@ -180,6 +180,9 @@ export class StudentPaymentService {
     if (nationalityId && nationalityId > 0) {
       params = params.set('nationalityId', nationalityId.toString());
     }
+    if (filter.residentGroup && filter.residentGroup !== 'all') {
+      params = params.set('residentGroup', filter.residentGroup);
+    }
     return this.http
       .get<ApiResponse<PagedResultDto<StudentInvoiceDto>>>(
         `${environment.apiUrl}/api/StudentPayment/Invoices`,

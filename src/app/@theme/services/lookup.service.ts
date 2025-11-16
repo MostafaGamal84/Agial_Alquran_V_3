@@ -6,6 +6,7 @@ import { environment } from 'src/environments/environment';
 import { AuthenticationService } from './authentication.service';
 import { UserTypesEnum } from '../types/UserTypesEnum';
 import { SubscribeAudience } from './subscribe-audience';
+import { ResidencyGroupFilter, hasActiveResidencyGroup } from '../types/residency-group';
 
 export interface LookUpUserDto {
   id: number;
@@ -51,6 +52,7 @@ export interface FilteredResultRequestDto {
   maxResultCount?: number;
   studentId?: number;
   nationalityId?: number;
+  residentGroup?: ResidencyGroupFilter | null;
 }
 
 export interface PagedResultDto<T> {
@@ -176,6 +178,10 @@ export class LookupService {
 
     if (nationalityId && nationalityId > 0) {
       params = params.set('nationalityId', nationalityId.toString());
+    }
+
+    if (hasActiveResidencyGroup(filter.residentGroup)) {
+      params = params.set('residentGroup', filter.residentGroup);
     }
 
     return this.http

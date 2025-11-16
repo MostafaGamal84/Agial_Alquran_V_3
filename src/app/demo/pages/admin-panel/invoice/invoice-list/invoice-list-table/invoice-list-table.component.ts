@@ -31,6 +31,7 @@ import {
   FilteredResultRequestDto,
   PagedResultDto
 } from 'src/app/@theme/services/lookup.service';
+import { ResidencyGroupFilter } from 'src/app/@theme/types/residency-group';
 
 export interface InvoiceTableItem {
   id: number;
@@ -55,6 +56,7 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
   @Input() compareMonth?: string;
   @Input() search = '';
   @Input() nationalityId: number | null = null;
+  @Input() residentGroup: ResidencyGroupFilter = 'all';
   @Output() countChange = new EventEmitter<number>();
   private studentPaymentService = inject(StudentPaymentService);
   private dialog = inject(MatDialog);
@@ -85,7 +87,13 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['tab'] || changes['month'] || changes['compareMonth'] || changes['nationalityId']) {
+    if (
+      changes['tab'] ||
+      changes['month'] ||
+      changes['compareMonth'] ||
+      changes['nationalityId'] ||
+      changes['residentGroup']
+    ) {
       this.loadData();
     }
     if (changes['search'] && !changes['search'].firstChange) {
@@ -121,7 +129,8 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
   loadData(): void {
     const filter: FilteredResultRequestDto = {
       skipCount: 0,
-      maxResultCount: 100
+      maxResultCount: 100,
+      residentGroup: this.residentGroup
     };
     let monthDate: Date | undefined;
     let compareMonthDate: Date | undefined;
