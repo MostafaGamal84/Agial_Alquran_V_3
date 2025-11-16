@@ -549,5 +549,16 @@
   "Arab price is required when selected as the default category": "السعر العربي مطلوب عند اختياره كفئة افتراضية.",
   "Arab price per hour must be zero or greater": "يجب أن يكون السعر العربي للساعة صفراً أو أكثر.",
   "Egyptian price is required when selected as the default category": "السعر المصري مطلوب عند اختياره كفئة افتراضية.",
-  "Egyptian price per hour must be zero or greater": "يجب أن يكون السعر المصري للساعة صفراً أو أكثر."
+  "Egyptian price per hour must be zero or greater": "يجب أن يكون السعر المصري للساعة صفراً أو أكثر.",
+  "All nationalities": "كل الجنسيات",
+  "Filter by nationality": "تصفية حسب الجنسية",
+  "Hour Price": "سعر الساعة",
+  "Hour price is required": "سعر الساعة مطلوب",
+  "Hour price must be zero or greater": "يجب أن يكون سعر الساعة صفراً أو أكبر",
+  "Loading subscribe types…": "جاري تحميل أنواع الاشتراك…",
+  "No data matching the filter": "لا توجد بيانات مطابقة للفلتر",
+  "No subscribe types available": "لا توجد أنواع اشتراك متاحة",
+  "Place of residence": "مكان الإقامة",
+  "Place of residence is required": "مكان الإقامة مطلوب",
+  "Select place of residence": "اختر مكان الإقامة"
 }
