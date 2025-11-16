@@ -9,7 +9,6 @@ import {
   PagedResultDto,
   normalizePagedResult
 } from './lookup.service';
-import { SubscribeAudience } from './subscribe-audience';
 
 export enum SubscribeTypeCategory {
   Unknown = 0,
@@ -43,7 +42,6 @@ export interface SubscribeDto {
   minutes?: number;
   subscribeTypeId?: number;
   subscribeType?: SubscribeTypeDto;
-  subscribeFor?: SubscribeAudience | string | number | null;
 }
 
 export interface CreateSubscribeDto {

@@ -248,6 +248,8 @@
   "Nationality": "الجنسية",
   "All Nationalities": "كل الجنسيات",
   "Residency Group": "فئة الإقامة",
+  "Residency": "مكان الإقامة",
+  "Residency Search Hint": "ابحث باسم الطالب أو جواله أو مكان الإقامة",
   "All Residencies": "كل أماكن الإقامة",
   "Egyptians": "مصريون",
   "Arabs": "عرب",

@@ -137,17 +137,9 @@ export class StudentSubscribeDialogComponent implements OnInit {
       return;
     }
 
-    const inferredAudience = inferSubscribeAudience(selected);
-
-    if (!inferredAudience) {
-      this.toast.error(this.translate.instant('Unsupported subscription audience'));
-      return;
-    }
-
     const model: AddStudentSubscribeDto = {
       studentId: this.data?.studentId,
-      studentSubscribeId: subscribeId,
-      subscribeFor: inferredAudience
+      studentSubscribeId: subscribeId
     };
     this.studentSubscribeService.create(model).subscribe({
       next: (res) => {
