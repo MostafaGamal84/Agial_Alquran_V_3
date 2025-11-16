@@ -130,10 +130,9 @@ export class StudentSubscribeDialogComponent implements OnInit {
       return;
     }
     const selected = this.subscribes.find((item) => item.id === subscribeId);
-    const pricing = selected ? resolveSubscribePricing(selected) : null;
 
-    if (!selected || !pricing) {
-      this.toast.error(this.translate.instant('Unsupported subscription audience'));
+    if (!selected) {
+      this.toast.error(this.translate.instant('Unable to determine subscription details.'));
       return;
     }
 
@@ -191,10 +190,15 @@ export class StudentSubscribeDialogComponent implements OnInit {
     const selected = this.subscribes.find((item) => item.id === subscribeId);
     const pricing = selected ? resolveSubscribePricing(selected) : null;
 
-    if (!selected || !pricing) {
+    if (!selected) {
+      this.resetPricingDetails();
+      return;
+    }
+
+    if (!pricing) {
       this.selectedCurrencyCode = null;
       this.selectedAmount = null;
-      this.pricingError = this.translate.instant('Unsupported subscription audience');
+      this.pricingError = this.translate.instant('Subscription price unavailable');
       return;
     }
 
@@ -242,6 +246,8 @@ export class StudentSubscribeDialogComponent implements OnInit {
             this.availabilityMessage = this.translate.instant(
               'No compatible subscriptions were found for this student.'
             );
+          } else {
+            this.availabilityMessage = null;
           }
         } else {
           this.availabilityMessage = this.translate.instant(
