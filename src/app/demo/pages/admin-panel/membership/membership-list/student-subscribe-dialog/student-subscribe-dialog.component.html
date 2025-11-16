@@ -2,62 +2,21 @@
 <mat-dialog-content [formGroup]="form">
   <mat-form-field appearance="outline" class="w-100">
     <mat-label>Subscribe Type</mat-label>
-    <mat-select
-      formControlName="subscribeTypeId"
-      [disabled]="isLoadingTypes || types.length === 0"
-    >
-      <mat-option *ngIf="isLoadingTypes" disabled>
-        {{ 'Loading subscribe types…' | translate }}
-      </mat-option>
-      <mat-option *ngIf="!isLoadingTypes && types.length === 0" disabled>
-        {{ 'No subscribe types available' | translate }}
-      </mat-option>
+    <mat-select formControlName="subscribeTypeId">
       <mat-option [value]="type.id" *ngFor="let type of types">
-        {{ type.name }} ({{ resolveCategoryLabel(type.group) }})
+        {{ type.name }}
       </mat-option>
     </mat-select>
   </mat-form-field>
-  <div class="m-t-10 text-warn" *ngIf="typeAvailabilityMessage">
-    {{ typeAvailabilityMessage }}
-  </div>
 
   <mat-form-field appearance="outline" class="w-100">
     <mat-label>Subscribe</mat-label>
-    <mat-select
-      formControlName="subscribeId"
-      [disabled]="isLoadingSubscriptions || !hasAvailableSubscriptions"
-    >
-      <mat-option *ngIf="isLoadingSubscriptions" disabled>
-        Loading subscriptions…
-      </mat-option>
-      <mat-option *ngIf="!isLoadingSubscriptions && subscribes.length === 0" disabled>
-        No subscriptions available
-      </mat-option>
+    <mat-select formControlName="subscribeId">
       <mat-option [value]="s.id" *ngFor="let s of subscribes">
-        <div class="d-flex flex-column">
-          <span>{{ s.name }}</span>
-          <small class="text-muted">
-            {{ resolveAudienceLabel(s) }}
-            <ng-container *ngIf="getPricing(s) as pricing">
-              <ng-container *ngIf="pricing; else unsupportedOption">
-                — {{ formatAmount(pricing.amount) }} {{ pricing.currencyCode }}
-              </ng-container>
-            </ng-container>
-          </small>
-        </div>
+        {{ s.name }}
       </mat-option>
     </mat-select>
   </mat-form-field>
-  <div class="m-t-10" *ngIf="selectedCurrencyCode && !pricingError">
-    <strong>{{ 'Price' | translate }}:</strong>
-    {{ formatAmount(selectedAmount) }} {{ selectedCurrencyCode }}
-  </div>
-  <div class="m-t-10 text-warn" *ngIf="pricingError">
-    {{ pricingError }}
-  </div>
-  <div class="m-t-10 text-warn" *ngIf="availabilityMessage">
-    {{ availabilityMessage }}
-  </div>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
   <button mat-button mat-dialog-close>Cancel</button>
@@ -65,12 +24,8 @@
     mat-flat-button
     color="primary"
     (click)="submit()"
-    [disabled]="form.invalid || pricingError || !hasAvailableSubscriptions || isLoadingSubscriptions"
+    [disabled]="form.invalid"
   >
     Save
   </button>
 </mat-dialog-actions>
-
-<ng-template #unsupportedOption>
-  — {{ 'Unsupported subscription audience' | translate }}
-</ng-template>
