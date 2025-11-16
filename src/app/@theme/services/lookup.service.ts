@@ -118,7 +118,7 @@ export interface LookupDto {
 }
 
 export interface SubscribeLookupDto extends LookupDto {
-  subscribeFor?: SubscribeAudience | null;
+  subscribeFor?: SubscribeAudience | string | number | null;
   leprice?: number | null;
   sarprice?: number | null;
   usdprice?: number | null;

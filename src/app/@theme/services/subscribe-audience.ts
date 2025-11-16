@@ -16,22 +16,77 @@ export const SUBSCRIBE_AUDIENCE_OPTIONS: readonly SubscribeAudienceOption[] = [
   { value: SubscribeAudience.NonArab, translationKey: 'Non Arab', currencyCode: 'USD' }
 ];
 
+const SUBSCRIBE_AUDIENCE_VALUE_SET = new Set<number>(
+  Object.values(SubscribeAudience).filter((value): value is number => typeof value === 'number')
+);
+
+export function coerceSubscribeAudience(value: unknown): SubscribeAudience | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  const tryParseNumeric = (candidate: unknown): SubscribeAudience | null => {
+    if (typeof candidate === 'number' && SUBSCRIBE_AUDIENCE_VALUE_SET.has(candidate)) {
+      return candidate as SubscribeAudience;
+    }
+
+    const parsed = Number(candidate);
+    if (Number.isFinite(parsed) && SUBSCRIBE_AUDIENCE_VALUE_SET.has(parsed)) {
+      return parsed as SubscribeAudience;
+    }
+
+    return null;
+  };
+
+  const numericValue = tryParseNumeric(value);
+  if (numericValue !== null) {
+    return numericValue;
+  }
+
+  if (typeof value === 'string') {
+    const normalized = value
+      .trim()
+      .toLowerCase()
+      .replace(/[\s_-]+/g, '');
+
+    switch (normalized) {
+      case 'egyptian':
+      case 'egyptians':
+        return SubscribeAudience.Egyptian;
+      case 'gulf':
+      case 'gulfcountries':
+        return SubscribeAudience.Gulf;
+      case 'nonarab':
+      case 'nonarabs':
+      case 'nonarabic':
+      case 'nonarabian':
+        return SubscribeAudience.NonArab;
+      default:
+        return null;
+    }
+  }
+
+  return null;
+}
+
 export function getSubscribeAudienceTranslationKey(
-  audience: SubscribeAudience | null | undefined
+  audience: SubscribeAudience | string | number | null | undefined
 ): string {
-  const entry = SUBSCRIBE_AUDIENCE_OPTIONS.find((option) => option.value === audience);
+  const normalized = coerceSubscribeAudience(audience);
+  const entry = SUBSCRIBE_AUDIENCE_OPTIONS.find((option) => option.value === normalized);
   return entry?.translationKey ?? 'Unknown';
 }
 
 export function getSubscribeAudienceCurrencyCode(
-  audience: SubscribeAudience | null | undefined
+  audience: SubscribeAudience | string | number | null | undefined
 ): string | null {
-  const entry = SUBSCRIBE_AUDIENCE_OPTIONS.find((option) => option.value === audience);
+  const normalized = coerceSubscribeAudience(audience);
+  const entry = SUBSCRIBE_AUDIENCE_OPTIONS.find((option) => option.value === normalized);
   return entry?.currencyCode ?? null;
 }
 
 export interface SubscribePricingSource {
-  subscribeFor?: SubscribeAudience | null;
+  subscribeFor?: SubscribeAudience | string | number | null;
   leprice?: number | null;
   sarprice?: number | null;
   usdprice?: number | null;
@@ -56,7 +111,7 @@ export function resolveSubscribePricing(
     };
   }
 
-  const audience = source.subscribeFor ?? null;
+  const audience = coerceSubscribeAudience(source.subscribeFor);
   const currencyCode = getSubscribeAudienceCurrencyCode(audience);
 
   if (!currencyCode) {

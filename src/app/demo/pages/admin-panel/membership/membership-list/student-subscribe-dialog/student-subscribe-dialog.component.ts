@@ -22,6 +22,7 @@ import {
 } from 'src/app/@theme/services/student-subscribe.service';
 import {
   SubscribeAudience,
+  coerceSubscribeAudience,
   getSubscribeAudienceTranslationKey,
   resolveSubscribePricing
 } from 'src/app/@theme/services/subscribe-audience';
@@ -144,7 +145,7 @@ export class StudentSubscribeDialogComponent implements OnInit {
     const model: AddStudentSubscribeDto = {
       studentId: this.data?.studentId,
       studentSubscribeId: subscribeId,
-      subscribeFor: selected.subscribeFor ?? null
+      subscribeFor: coerceSubscribeAudience(selected.subscribeFor)
     };
     this.studentSubscribeService.create(model).subscribe({
       next: (res) => {
