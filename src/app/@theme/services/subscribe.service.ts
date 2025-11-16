@@ -43,7 +43,7 @@ export interface SubscribeDto {
   minutes?: number;
   subscribeTypeId?: number;
   subscribeType?: SubscribeTypeDto;
-  subscribeFor?: SubscribeAudience | null;
+  subscribeFor?: SubscribeAudience | string | number | null;
 }
 
 export interface CreateSubscribeDto {
