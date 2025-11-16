@@ -342,7 +342,7 @@
   "Subscribe type deleted successfully": "تم حذف نوع الاشتراك بنجاح",
   "Unsupported subscription audience": "فئة اشتراك غير مدعومة.",
   "Subscription price unavailable": "السعر غير متوفر لهذه الفئة.",
-  "Some subscriptions were hidden because they are not available for this audience.": "تم إخفاء بعض الاشتراكات لأنها غير متاحة لهذه الفئة.",
+  "Unable to determine subscription details.": "يتعذر تحديد تفاصيل الاشتراك.",
   "Teacher Details": "تفاصيل المعلم",
   "Teacher List": "قائمة المعلمين",
   "Type": "النوع",
