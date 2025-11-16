@@ -271,20 +271,25 @@ export class StudentSubscribeDialogComponent implements OnInit {
   private extractSubscriptionOptions(
     response: ApiResponse<SubscribeLookupDto[]>
   ): SubscribeLookupDto[] {
+    const tryCoerceArray = (value: unknown): SubscribeLookupDto[] | null => {
+      return Array.isArray(value) ? value : null;
+    };
+
     const rawData = response?.data as unknown;
+    const nestedData = (rawData as { data?: unknown })?.data;
+    const rawResult = (rawData as { result?: unknown })?.result;
+    const rawItems = (rawData as { items?: unknown })?.items;
+    const responseResult = (response as unknown as { result?: unknown })?.result;
+    const responseItems = (responseResult as { items?: unknown })?.items;
 
-    if (Array.isArray(rawData)) {
-      return rawData;
-    }
-
-    if (
-      rawData &&
-      typeof rawData === 'object' &&
-      Array.isArray((rawData as { result?: unknown }).result)
-    ) {
-      return (rawData as { result: SubscribeLookupDto[] }).result;
-    }
-
-    return [];
+    return (
+      tryCoerceArray(rawData) ||
+      tryCoerceArray(nestedData) ||
+      tryCoerceArray(rawResult) ||
+      tryCoerceArray(rawItems) ||
+      tryCoerceArray(responseResult) ||
+      tryCoerceArray(responseItems) ||
+      []
+    );
   }
 }
