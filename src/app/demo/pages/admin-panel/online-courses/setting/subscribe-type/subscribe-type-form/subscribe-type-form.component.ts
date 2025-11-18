@@ -34,9 +34,9 @@ export class SubscribeTypeFormComponent implements OnInit {
   isEdit = false;
   readonly groupOptions = [
     { value: SubscribeTypeCategory.Unknown, label: 'Unknown' },
-    { value: SubscribeTypeCategory.Foreign, label: 'Foreign' },
-    { value: SubscribeTypeCategory.Arab, label: 'Arab' },
-    { value: SubscribeTypeCategory.Egyptian, label: 'Egyptian' }
+    { value: SubscribeTypeCategory.Foreign, label: 'اجانب' },
+    { value: SubscribeTypeCategory.Arab, label: 'عرب' },
+    { value: SubscribeTypeCategory.Egyptian, label: 'مصريين' }
   ];
 
   ngOnInit() {
