@@ -199,6 +199,12 @@ export class AuthenticationService {
   // ------- Session ops -------
   logout(): void {
     localStorage.removeItem(this.storageKey);
+    localStorage.removeItem('ajyal-email');
+    localStorage.removeItem('ajyal-id');
+    localStorage.removeItem('ajyal-token');
+    localStorage.removeItem('showCurrency');
+    localStorage.removeItem('user');
+    localStorage.removeItem('userType');
     this.isLogin = false;
     this.pendingEmail = null;
     this.pendingCode = null;
