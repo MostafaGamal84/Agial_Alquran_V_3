@@ -100,7 +100,11 @@ export class StudentSubscribeDialogComponent implements OnInit {
   }
 
   private loadSubscribeTypes(): void {
-    const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
+    const filter: FilteredResultRequestDto = {
+      skipCount: 0,
+      maxResultCount: 100,
+      studentId: this.data?.studentId ?? undefined
+    };
 
     this.subscribeService.getAllTypes(filter).subscribe({
       next: (res) => {
@@ -145,8 +149,7 @@ export class StudentSubscribeDialogComponent implements OnInit {
       this.subscribes = [];
       return;
     }
-    const studentId = this.data?.studentId ?? null;
-    this.lookupService.getSubscribesByTypeId(typeId ?? undefined, studentId ?? undefined).subscribe({
+    this.lookupService.getSubscribesByTypeId(typeId ?? undefined).subscribe({
       next: (lookupRes) => {
         const options = this.extractSubscriptionOptions(lookupRes);
         this.subscribes = options;
