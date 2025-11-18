@@ -59,7 +59,6 @@ export class StudentSubscribeDialogComponent implements OnInit {
 
   ngOnInit(): void {
     this.prepareResidencyFilter();
-    this.loadSubscribes();
 
     this.form.get('subscribeTypeId')?.valueChanges.subscribe((typeId) => {
       this.form.patchValue({ subscribeId: null }, { emitEvent: false });
@@ -95,9 +94,13 @@ export class StudentSubscribeDialogComponent implements OnInit {
       next: (res) => {
         const fetchedTypes = res.isSuccess && res.data?.items ? res.data.items : [];
         this.types = this.applyResidencyFilterToTypes(fetchedTypes);
+        const selectedTypeId = this.resolveDefaultSubscribeTypeSelection();
+        this.loadSubscribes(selectedTypeId);
       },
       error: () => {
         this.types = [];
+        this.form.patchValue({ subscribeTypeId: null }, { emitEvent: false });
+        this.subscribes = [];
       }
     });
   }
@@ -126,6 +129,10 @@ export class StudentSubscribeDialogComponent implements OnInit {
   }
 
   private loadSubscribes(typeId: number | null = null): void {
+    if (this.typeCategoryFilter && (typeId === null || typeId === undefined)) {
+      this.subscribes = [];
+      return;
+    }
     const studentId = this.data?.studentId ?? null;
     this.lookupService.getSubscribesByTypeId(typeId ?? undefined, studentId ?? undefined).subscribe({
       next: (lookupRes) => {
@@ -190,5 +197,26 @@ export class StudentSubscribeDialogComponent implements OnInit {
       }
       return type.group === this.typeCategoryFilter;
     });
+  }
+
+  private resolveDefaultSubscribeTypeSelection(): number | null {
+    const currentTypeId = this.form.value.subscribeTypeId;
+    const hasCurrentSelection =
+      currentTypeId !== null && currentTypeId !== undefined && this.types.some((type) => type.id === currentTypeId);
+
+    if (hasCurrentSelection) {
+      return currentTypeId as number;
+    }
+
+    if (!this.typeCategoryFilter || this.types.length === 0) {
+      if (currentTypeId !== null) {
+        this.form.patchValue({ subscribeTypeId: null }, { emitEvent: false });
+      }
+      return null;
+    }
+
+    const fallbackType = this.types[0]?.id ?? null;
+    this.form.patchValue({ subscribeTypeId: fallbackType }, { emitEvent: false });
+    return fallbackType;
   }
 }
