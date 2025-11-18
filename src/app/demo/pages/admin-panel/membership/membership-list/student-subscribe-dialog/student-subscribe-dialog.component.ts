@@ -24,6 +24,7 @@ import {
 } from 'src/app/@theme/services/student-subscribe.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { isArabNationality, isEgyptianNationality } from 'src/app/@theme/utils/nationality.utils';
+import { ResidencyGroupFilter } from 'src/app/@theme/types/residency-group';
 
 @Component({
   selector: 'app-student-subscribe-dialog',
@@ -46,7 +47,11 @@ export class StudentSubscribeDialogComponent implements OnInit {
   private lookupService = inject(LookupService);
   private toast = inject(ToastService);
   private dialogRef = inject(MatDialogRef<StudentSubscribeDialogComponent>);
-  private data = inject<{ studentId: number; residentId?: number | null }>(MAT_DIALOG_DATA);
+  private data = inject<{
+    studentId: number;
+    residentId?: number | null;
+    residentGroup?: ResidencyGroupFilter | null;
+  }>(MAT_DIALOG_DATA);
 
   form = this.fb.group({
     subscribeTypeId: [null as number | null],
@@ -67,6 +72,13 @@ export class StudentSubscribeDialogComponent implements OnInit {
   }
 
   private prepareResidencyFilter(): void {
+    const residentGroup = this.data?.residentGroup ?? null;
+    if (residentGroup && residentGroup !== 'all') {
+      this.typeCategoryFilter = this.mapResidencyGroupToCategory(residentGroup);
+      this.loadSubscribeTypes();
+      return;
+    }
+
     const residentId = this.data?.residentId ?? null;
     if (!residentId) {
       this.loadSubscribeTypes();
@@ -88,7 +100,11 @@ export class StudentSubscribeDialogComponent implements OnInit {
   }
 
   private loadSubscribeTypes(): void {
-    const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
+    const filter: FilteredResultRequestDto = {
+      skipCount: 0,
+      maxResultCount: 100,
+      studentId: this.data?.studentId ?? undefined
+    };
 
     this.subscribeService.getAllTypes(filter).subscribe({
       next: (res) => {
@@ -133,8 +149,7 @@ export class StudentSubscribeDialogComponent implements OnInit {
       this.subscribes = [];
       return;
     }
-    const studentId = this.data?.studentId ?? null;
-    this.lookupService.getSubscribesByTypeId(typeId ?? undefined, studentId ?? undefined).subscribe({
+    this.lookupService.getSubscribesByTypeId(typeId ?? undefined).subscribe({
       next: (lookupRes) => {
         const options = this.extractSubscriptionOptions(lookupRes);
         this.subscribes = options;
@@ -197,6 +212,19 @@ export class StudentSubscribeDialogComponent implements OnInit {
       }
       return type.group === this.typeCategoryFilter;
     });
+  }
+
+  private mapResidencyGroupToCategory(group: ResidencyGroupFilter): SubscribeTypeCategory | null {
+    switch (group) {
+      case 'egyptian':
+        return SubscribeTypeCategory.Egyptian;
+      case 'arab':
+        return SubscribeTypeCategory.Arab;
+      case 'foreign':
+        return SubscribeTypeCategory.Foreign;
+      default:
+        return null;
+    }
   }
 
   private resolveDefaultSubscribeTypeSelection(): number | null {
