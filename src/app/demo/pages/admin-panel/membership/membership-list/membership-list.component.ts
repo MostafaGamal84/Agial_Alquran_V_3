@@ -23,6 +23,7 @@ import { StudentPaymentService } from 'src/app/@theme/services/student-payment.s
 import { PaymentDetailsComponent } from '../payment-details/payment-details.component';
 import { StudentSubscribeDialogComponent } from './student-subscribe-dialog/student-subscribe-dialog.component';
 import { RESIDENCY_GROUP_OPTIONS, ResidencyGroupFilter } from 'src/app/@theme/types/residency-group';
+import { isArabNationality, isEgyptianNationality } from 'src/app/@theme/utils/nationality.utils';
 
 @Component({
   selector: 'app-membership-list',
@@ -123,14 +124,37 @@ export class MembershipListComponent implements AfterViewInit, OnInit {
     if (student.payStatus === true || student.isCancelled === true) {
       return;
     }
+    const residentId = student.residentId ?? null;
+    const residentGroup = this.resolveResidencyGroup(residentId);
     const dialogRef = this.dialog.open(StudentSubscribeDialogComponent, {
-      data: { studentId: student.studentId, residentId: student.residentId ?? null }
+      data: {
+        studentId: student.studentId,
+        residentId,
+        residentGroup
+      }
     });
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.load();
       }
     });
+  }
+
+  private resolveResidencyGroup(residentId: number | null): ResidencyGroupFilter | null {
+    if (!residentId || residentId <= 0) {
+      return null;
+    }
+    const nationality = this.nationalities.find((item) => item.id === residentId);
+    if (!nationality) {
+      return null;
+    }
+    if (isEgyptianNationality(nationality)) {
+      return 'egyptian';
+    }
+    if (isArabNationality(nationality)) {
+      return 'arab';
+    }
+    return 'foreign';
   }
 }
 
