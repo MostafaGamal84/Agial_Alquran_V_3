@@ -60,9 +60,22 @@ export class LoadingOverlayComponent implements OnDestroy {
   }
 
   private showNextHadith(): void {
+    this.hadithIndex = this.getRandomHadithIndex();
     this.currentHadith = this.hadithList[this.hadithIndex];
-    this.hadithIndex = (this.hadithIndex + 1) % this.hadithList.length;
     this.cdr.markForCheck();
+  }
+
+  private getRandomHadithIndex(): number {
+    if (this.hadithList.length <= 1) {
+      return 0;
+    }
+
+    let nextIndex: number;
+    do {
+      nextIndex = Math.floor(Math.random() * this.hadithList.length);
+    } while (nextIndex === this.hadithIndex);
+
+    return nextIndex;
   }
 
   private startRotation(): void {
