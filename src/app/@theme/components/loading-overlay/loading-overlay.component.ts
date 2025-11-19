@@ -67,7 +67,7 @@ export class LoadingOverlayComponent implements OnDestroy {
       return;
     }
 
-    this.rotationHandle = setInterval(() => this.showNextHadith(), 6000);
+    this.rotationHandle = setInterval(() => this.showNextHadith(), 2000);
   }
 
   private stopRotation(): void {
