@@ -3,12 +3,10 @@ import { AfterViewInit, Component, OnInit, inject, viewChild } from '@angular/co
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { finalize } from 'rxjs/operators';
-
 // angular material
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { finalize } from 'rxjs/operators';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -17,10 +15,12 @@ import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { UserService } from 'src/app/@theme/services/user.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { DisableUserConfirmDialogComponent } from '../../student/student-list/student-list.disable-user-confirm-dialog.component';
+import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
+import { BranchManagerDetailsComponent } from '../branch-manager-details/branch-manager-details.component';
 
 @Component({
   selector: 'app-branch-manager-list',
-  imports: [CommonModule, SharedModule, RouterModule, MatDialogModule],
+  imports: [CommonModule, SharedModule, RouterModule, MatDialogModule,LoadingOverlayComponent],
   templateUrl: './branch-manager-list.component.html',
   styleUrl: './branch-manager-list.component.scss'
 })
@@ -29,6 +29,7 @@ export class BranchManagerListComponent implements OnInit, AfterViewInit {
   private userService = inject(UserService);
   private toast = inject(ToastService);
   dialog = inject(MatDialog);
+  isLoading = false;
 
   // public props
   displayedColumns: string[] = ['fullName', 'email', 'mobile', 'nationality', 'action'];
@@ -142,6 +143,7 @@ export class BranchManagerListComponent implements OnInit, AfterViewInit {
   branchManagerDetails(manager: LookUpUserDto): void {
     this.dialog.open(BranchManagerDetailsComponent, {
       width: '800px',
+      maxWidth: '95vw',
       data: manager
     });
   }
