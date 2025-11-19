@@ -86,6 +86,7 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
   managerDetails(manager: LookUpUserDto): void {
     this.dialog.open(ManagerDetailsComponent, {
       width: '800px',
+      maxWidth: '95vw',
       data: manager
     });
   }
