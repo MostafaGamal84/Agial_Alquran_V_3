@@ -28,7 +28,7 @@ interface ContactEntry {
 @Component({
   selector: 'app-manager-details',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule, NgxScrollbar,TranslateModule],
+  imports: [CommonModule, MatDialogModule, MatButtonModule, NgxScrollbar, TranslateModule],
   templateUrl: './manager-details.component.html',
   styleUrl: './manager-details.component.scss'
 })
@@ -39,6 +39,21 @@ export class ManagerDetailsComponent {
   managerCircles: Circle[] = [];
   contactEntries: ContactEntry[] = [];
   detailEntries: [string, unknown][] = [];
+  private readonly labelTranslationMap: Record<string, string> = {
+    branchId: 'Branch',
+    gender: 'Gender',
+    userName: 'Username',
+    createdAt: 'Created At',
+    updatedAt: 'Updated At',
+    managerName: 'Manager Name',
+    circleName: 'Circle Name',
+    identityNumber: 'Identity Number',
+    residentId: 'Resident ID',
+    nationality: 'Nationality',
+    nationalityId: 'Nationality',
+    governorate: 'Governorate',
+    governorateId: 'Governorate'
+  };
 
   Branch = [
     { id: BranchesEnum.Mens, label: 'الرجال' },
@@ -94,6 +109,21 @@ export class ManagerDetailsComponent {
       return this.getBranchLabel(typeof value === 'number' ? value : undefined);
     }
     return value;
+  }
+
+  formatLabel(key: string): string {
+    return this.labelTranslationMap[key] ?? this.humanizeKey(key);
+  }
+
+  private humanizeKey(key: string): string {
+    const spaced = key
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/[_-]+/g, ' ')
+      .trim();
+    if (!spaced) {
+      return key;
+    }
+    return spaced.charAt(0).toUpperCase() + spaced.slice(1);
   }
 
   private getContactIcon(key: string): string {

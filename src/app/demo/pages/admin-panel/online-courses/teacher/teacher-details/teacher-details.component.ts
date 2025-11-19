@@ -4,7 +4,7 @@ import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scrollbar';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
-import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateModule } from '@ngx-translate/core';
 
 interface Person {
   fullName?: string;
@@ -30,7 +30,19 @@ export class TeacherDetailsComponent {
   students: Person[] = [];
   contactEntries: ContactEntry[] = [];
   detailEntries: [string, unknown][] = [];
-  private translate = inject(TranslateService);
+  private readonly labelTranslationMap: Record<string, string> = {
+    branchId: 'Branch',
+    gender: 'Gender',
+    userName: 'Username',
+    createdAt: 'Created At',
+    updatedAt: 'Updated At',
+    identityNumber: 'Identity Number',
+    residentId: 'Resident ID',
+    nationality: 'Nationality',
+    nationalityId: 'Nationality',
+    governorate: 'Governorate',
+    governorateId: 'Governorate'
+  };
 
   Branch = [
     { id: BranchesEnum.Mens, label: 'الرجال' },
@@ -73,11 +85,6 @@ export class TeacherDetailsComponent {
     return value;
   }
 
-  formatLabel(key: string): string {
-    const base = this.getLabelForKey(key);
-    return this.translate.instant(base);
-  }
-
   private getContactIcon(key: string): string {
     const icons: Record<string, string> = {
       email: 'ti ti-mail',
@@ -87,21 +94,18 @@ export class TeacherDetailsComponent {
     return icons[key] || 'ti ti-circle';
   }
 
-  private getLabelForKey(key: string): string {
-    const predefined: Record<string, string> = {
-      branchId: 'Branch',
-      gender: 'Gender',
-      createdAt: 'Created At',
-      updatedAt: 'Updated At',
-      userName: 'User Name'
-    };
-    if (predefined[key]) {
-      return predefined[key];
-    }
+  formatLabel(key: string): string {
+    return this.labelTranslationMap[key] ?? this.humanizeKey(key);
+  }
+
+  private humanizeKey(key: string): string {
     const spaced = key
       .replace(/([A-Z])/g, ' $1')
       .replace(/[_-]+/g, ' ')
       .trim();
+    if (!spaced) {
+      return key;
+    }
     return spaced.charAt(0).toUpperCase() + spaced.slice(1);
   }
 }
