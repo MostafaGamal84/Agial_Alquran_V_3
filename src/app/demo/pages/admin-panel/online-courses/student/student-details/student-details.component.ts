@@ -28,7 +28,14 @@ export class StudentDetailsComponent {
     nationality: 'Nationality',
     governorate: 'Governorate',
     managerName: 'Manager Name',
-    circleName: 'Circle Name'
+    circleName: 'Circle Name',
+    branchId: 'Branch',
+    gender: 'Gender',
+    userName: 'Username',
+    identityNumber: 'Identity Number',
+    residentId: 'Resident ID',
+    createdAt: 'Created At',
+    updatedAt: 'Updated At'
   };
 
   Branch = [
@@ -72,10 +79,10 @@ export class StudentDetailsComponent {
   }
 
   getLabel(key: string): string {
-    if (this.labelMap[key]) {
-      return this.labelMap[key];
-    }
+    return this.labelMap[key] ?? this.humanizeKey(key);
+  }
 
+  private humanizeKey(key: string): string {
     const normalised = key
       .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
       .replace(/[_-]+/g, ' ')
