@@ -85,6 +85,7 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
   teacherDetails(teacher: LookUpUserDto): void {
     this.dialog.open(TeacherDetailsComponent, {
       width: '800px',
+      maxWidth: '95vw',
       data: teacher
     });
   }
