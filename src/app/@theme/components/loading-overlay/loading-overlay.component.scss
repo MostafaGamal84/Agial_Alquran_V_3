@@ -38,7 +38,7 @@
   box-shadow: 0 20px 60px rgba(9, 40, 69, 0.3);
   text-align: center;
   font-family: 'Cairo', 'Rubik', 'Helvetica Neue', Arial, sans-serif;
-    animation: hadithPulse 1.6s ease-in-out infinite;
+  animation: hadithPulse 1.6s ease-in-out infinite;
 }
 
 .hadith-view__eyebrow {
@@ -70,4 +70,43 @@
   margin: 0;
   font-size: 0.95rem;
   color: rgba(255, 255, 255, 0.85);
+}
+
+@keyframes hadithPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 20px 60px rgba(9, 40, 69, 0.3);
+  }
+
+  50% {
+    transform: scale(1.01);
+    box-shadow: 0 20px 60px rgba(9, 40, 69, 0.45);
+  }
+}
+
+@keyframes hadithBlink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.loading-overlay.loading .hadith-view__quote-text,
+.loading-overlay.loading .hadith-view__reference,
+.loading-overlay.loading .hadith-view__translation {
+  animation: hadithBlink 1.1s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hadith-view,
+  .loading-overlay.loading .hadith-view__quote-text,
+  .loading-overlay.loading .hadith-view__reference,
+  .loading-overlay.loading .hadith-view__translation {
+    animation: none;
+  }
 }
