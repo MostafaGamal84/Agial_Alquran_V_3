@@ -2,18 +2,26 @@
   <div class="loading-overlay__content">
     <ng-content></ng-content>
   </div>
-  @if (isLoading && currentHadith) {
-    <div class="loading-overlay__backdrop" role="status" aria-live="polite">
+
+  <ng-container *ngIf="isLoading">
+    <div *ngIf="currentHadith$ | async as currentHadith" class="loading-overlay__backdrop" role="status" aria-live="polite">
       <section class="hadith-view" aria-label="Hadith about the Qur'an while loading">
-        <p class="hadith-view__eyebrow">أحاديث عن القرآن الكريم</p>
+        <p class="hadith-view__eyebrow"> فضل القرآن الكريم</p>
+
         <blockquote class="hadith-view__quote">
-          <span class="hadith-view__quote-text">{{ currentHadith.text }}</span>
+          <span class="hadith-view__quote-text">
+            {{ currentHadith.text }}
+          </span>
         </blockquote>
-        <p class="hadith-view__reference">{{ currentHadith.reference }}</p>
-        @if (currentHadith.translation) {
-          <p class="hadith-view__translation">{{ currentHadith.translation }}</p>
-        }
+
+        <p class="hadith-view__reference">
+          {{ currentHadith.reference }}
+        </p>
+
+        <p *ngIf="currentHadith.translation" class="hadith-view__translation">
+          {{ currentHadith.translation }}
+        </p>
       </section>
     </div>
-  }
+  </ng-container>
 </div>

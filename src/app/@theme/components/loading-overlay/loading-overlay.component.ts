@@ -1,20 +1,32 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, Input, NgZone, OnDestroy, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnDestroy,
+} from '@angular/core';
+import { BehaviorSubject, Subscription, interval } from 'rxjs';
+
+interface HadithCard {
+  text: string;
+  translation?: string;
+  reference: string;
+}
 
 @Component({
   selector: 'app-loading-overlay',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './loading-overlay.component.html',
-  styleUrl: './loading-overlay.component.scss'
+  styleUrl: './loading-overlay.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoadingOverlayComponent implements OnDestroy {
   private loadingValue = false;
   private hadithIndex = 0;
-  private rotationHandle: ReturnType<typeof setInterval> | null = null;
-  private readonly ngZone = inject(NgZone);
-  private readonly cdr = inject(ChangeDetectorRef);
-readonly hadithList: HadithCard[] = [
+  private rotationSub: Subscription | null = null;
+
+  readonly hadithList: HadithCard[] = [
   {
     text: 'خَيْرُكُمْ مَن تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ',
     translation: '“The best among you are those who learn the Qur’an and teach it.”',
@@ -77,14 +89,18 @@ readonly hadithList: HadithCard[] = [
   }
 ];
 
-  currentHadith: HadithCard = this.hadithList[0];
+  // بدل currentHadith العادية → stream
+  readonly currentHadith$ = new BehaviorSubject<HadithCard>(this.hadithList[0]);
 
   @Input()
   set isLoading(value: boolean) {
+    if (value === this.loadingValue) return;
+
     this.loadingValue = value;
+
     if (value) {
-      this.showNextHadith();
-      this.startRotation();
+      this.showNextHadith();   // أول حديث عشوائي
+      this.startRotation();    // وبعدين نبدأ التدوير
     } else {
       this.stopRotation();
     }
@@ -98,16 +114,17 @@ readonly hadithList: HadithCard[] = [
     this.stopRotation();
   }
 
-  private showNextHadith(): void {
+  // ================= helpers =================
+
+  private emitRandomHadith(): void {
     this.hadithIndex = this.getRandomHadithIndex();
-    this.currentHadith = this.hadithList[this.hadithIndex];
-    this.cdr.markForCheck();
+    const hadith = this.hadithList[this.hadithIndex];
+
+    this.currentHadith$.next(hadith);
   }
 
   private getRandomHadithIndex(): number {
-    if (this.hadithList.length <= 1) {
-      return 0;
-    }
+    if (this.hadithList.length <= 1) return 0;
 
     let nextIndex: number;
     do {
@@ -118,29 +135,23 @@ readonly hadithList: HadithCard[] = [
   }
 
   private startRotation(): void {
-    if (this.rotationHandle) {
-      return;
-    }
+    if (this.rotationSub) return;
 
-    this.rotationHandle = this.ngZone.runOutsideAngular(() =>
-      setInterval(() => {
-        this.ngZone.run(() => this.showNextHadith());
-      }, 2000)
-    );
+    // غيّر الحديث كل 2 ثانية (أو نص ثانية لو حابب)
+    this.rotationSub = interval(2000).subscribe(() => {
+      if (!this.loadingValue) return;
+      this.emitRandomHadith();
+    });
   }
 
   private stopRotation(): void {
-    if (!this.rotationHandle) {
-      return;
-    }
+    if (!this.rotationSub) return;
 
-    clearInterval(this.rotationHandle);
-    this.rotationHandle = null;
+    this.rotationSub.unsubscribe();
+    this.rotationSub = null;
   }
-}
 
-interface HadithCard {
-  text: string;
-  translation: string;
-  reference: string;
+  private showNextHadith(): void {
+    this.emitRandomHadith();
+  }
 }
