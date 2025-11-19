@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, NgZone, OnDestroy, inject } from '@angular/core';
 
 @Component({
   selector: 'app-loading-overlay',
@@ -12,6 +12,8 @@ export class LoadingOverlayComponent implements OnDestroy {
   private loadingValue = false;
   private hadithIndex = 0;
   private rotationHandle: ReturnType<typeof setInterval> | null = null;
+  private readonly ngZone = inject(NgZone);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   readonly hadithList: HadithCard[] = [
     {
@@ -60,6 +62,7 @@ export class LoadingOverlayComponent implements OnDestroy {
   private showNextHadith(): void {
     this.currentHadith = this.hadithList[this.hadithIndex];
     this.hadithIndex = (this.hadithIndex + 1) % this.hadithList.length;
+    this.cdr.markForCheck();
   }
 
   private startRotation(): void {
@@ -67,7 +70,11 @@ export class LoadingOverlayComponent implements OnDestroy {
       return;
     }
 
-    this.rotationHandle = setInterval(() => this.showNextHadith(), 2000);
+    this.rotationHandle = this.ngZone.runOutsideAngular(() =>
+      setInterval(() => {
+        this.ngZone.run(() => this.showNextHadith());
+      }, 2000)
+    );
   }
 
   private stopRotation(): void {
