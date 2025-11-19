@@ -1,4 +1,5 @@
-<mat-drawer-container class="teacher-salary-container">
+<app-loading-overlay [isLoading]="pageLoading">
+  <mat-drawer-container class="teacher-salary-container">
   <mat-drawer
     #detailDrawer
     class="teacher-salary-drawer"
@@ -372,4 +373,5 @@
       }
     </mat-card>
   </mat-drawer-content>
-</mat-drawer-container>
+  </mat-drawer-container>
+</app-loading-overlay>

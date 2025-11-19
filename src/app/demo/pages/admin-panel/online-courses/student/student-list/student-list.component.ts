@@ -23,10 +23,11 @@ import { StudentDetailsComponent } from '../student-details/student-details.comp
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { DisableUserConfirmDialogComponent } from './student-list.disable-user-confirm-dialog.component';
 import { RESIDENCY_GROUP_OPTIONS, ResidencyGroupFilter } from 'src/app/@theme/types/residency-group';
+import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 
 @Component({
   selector: 'app-student-list',
-  imports: [CommonModule, SharedModule, RouterModule, MatDialogModule],
+  imports: [CommonModule, SharedModule, RouterModule, MatDialogModule, LoadingOverlayComponent],
   templateUrl: './student-list.component.html',
   styleUrl: './student-list.component.scss'
 })
@@ -47,6 +48,7 @@ export class StudentListComponent implements OnInit, AfterViewInit {
   residencyGroupOptions = RESIDENCY_GROUP_OPTIONS;
   selectedResidencyGroup: ResidencyGroupFilter = 'all';
   private pendingStudentIds = new Set<number>();
+  isLoading = false;
 
   // paginator
 readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
@@ -90,6 +92,7 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
 
   private loadStudents() {
     this.filter.residentGroup = this.selectedResidencyGroup;
+    this.isLoading = true;
     this.lookupService
       .getUsersForSelects(
         this.filter,
@@ -99,11 +102,18 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
         0,
         this.selectedNationalityId ?? undefined
       )
-      .subscribe((res) => {
-        if (res.isSuccess && res.data?.items) {
-          this.dataSource.data = res.data.items;
-          this.totalCount = res.data.totalCount;
-        } else {
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe({
+        next: (res) => {
+          if (res.isSuccess && res.data?.items) {
+            this.dataSource.data = res.data.items;
+            this.totalCount = res.data.totalCount;
+          } else {
+            this.dataSource.data = [];
+            this.totalCount = 0;
+          }
+        },
+        error: () => {
           this.dataSource.data = [];
           this.totalCount = 0;
         }

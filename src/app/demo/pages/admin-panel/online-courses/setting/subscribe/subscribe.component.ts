@@ -5,15 +5,17 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatDialog, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
 import { MatButton } from '@angular/material/button';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { finalize } from 'rxjs/operators';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { SubscribeService, SubscribeDto } from 'src/app/@theme/services/subscribe.service';
 import { FilteredResultRequestDto } from 'src/app/@theme/services/lookup.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
+import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 
 @Component({
   selector: 'app-subscribe',
-  imports: [SharedModule, RouterModule],
+  imports: [SharedModule, RouterModule, LoadingOverlayComponent],
   templateUrl: './subscribe.component.html',
   styleUrl: './subscribe.component.scss'
 })
@@ -27,6 +29,7 @@ export class SubscribeComponent implements OnInit, AfterViewInit {
   dataSource = new MatTableDataSource<SubscribeDto>();
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
+  isLoading = false;
 
   readonly paginator = viewChild.required(MatPaginator);
 
@@ -35,15 +38,26 @@ export class SubscribeComponent implements OnInit, AfterViewInit {
   }
 
   private load() {
-    this.service.getAll(this.filter).subscribe((res) => {
-      if (res.isSuccess && res.data?.items) {
-        this.dataSource.data = res.data.items;
-        this.totalCount = res.data.totalCount;
-      } else {
-        this.dataSource.data = [];
-        this.totalCount = 0;
-      }
-    });
+    this.isLoading = true;
+    this.service
+      .getAll(this.filter)
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe({
+        next: (res) => {
+          if (res.isSuccess && res.data?.items) {
+            this.dataSource.data = res.data.items;
+            this.totalCount = res.data.totalCount;
+          } else {
+            this.dataSource.data = [];
+            this.totalCount = 0;
+          }
+        },
+        error: () => {
+          this.dataSource.data = [];
+          this.totalCount = 0;
+          this.toast.error(this.translate.instant('Error loading subscribes'));
+        }
+      });
   }
 
   applyFilter(event: Event) {
