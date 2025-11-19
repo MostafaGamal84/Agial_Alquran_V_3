@@ -115,21 +115,20 @@
               }
             </mat-form-field>
           </div>
-          <div class="col-md-6">
-            <mat-form-field appearance="outline" class="w-100 m-b-10">
-              <mat-label>{{ 'Governorate' | translate }}</mat-label>
-              <mat-select
-                formControlName="governorateId"
-                [placeholder]="'Select Governorate' | translate"
-                appOpenSelectOnType
-              >
-                <mat-option *ngFor="let g of governorates" [value]="g.id">{{ g.name }}</mat-option>
-              </mat-select>
-              @if (basicInfoForm.get('governorateId')?.touched && basicInfoForm.get('governorateId')?.invalid) {
-                <mat-error>{{ 'EgyptGovernorateRequiredMessage' | translate }}</mat-error>
-              }
-            </mat-form-field>
-          </div>
+          @if (showGovernorateSelect) {
+            <div class="col-md-6">
+              <mat-form-field appearance="outline" class="w-100 m-b-10">
+                <mat-label>{{ 'Governorate' | translate }}</mat-label>
+                <mat-select
+                  formControlName="governorateId"
+                  [placeholder]="'Select Governorate' | translate"
+                  appOpenSelectOnType
+                >
+                  <mat-option *ngFor="let g of governorates" [value]="g.id">{{ g.name }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          }
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100 m-b-10">
               <mat-label>{{ 'Branch' | translate }}</mat-label>
