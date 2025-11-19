@@ -132,3 +132,17 @@
   }
 }
 
+@media (max-width: 576px) {
+  .details-wrapper {
+    padding: 15px;
+  }
+
+  .section {
+    padding: 12px;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
