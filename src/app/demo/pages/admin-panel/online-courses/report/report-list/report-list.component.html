@@ -1,6 +1,7 @@
-<div class="row p-t-25">
-  <div class="col-12">
-    <app-card [cardTitle]="'Circle Reports' | translate" padding="0" cardClass="sm-block">
+<app-loading-overlay [isLoading]="isLoading">
+  <div class="row p-t-25">
+    <div class="col-12">
+      <app-card [cardTitle]="'Circle Reports' | translate" padding="0" cardClass="sm-block">
       <ng-template #headerOptionsTemplate>
         <!-- <div class="table-options" *ngIf="canManageReports">
           <button mat-flat-button color="primary" [routerLink]="['/online-course/report/add']">
@@ -155,6 +156,7 @@
           </div>
         </div>
       </div>
-    </app-card>
+      </app-card>
+    </div>
   </div>
-</div>
+</app-loading-overlay>

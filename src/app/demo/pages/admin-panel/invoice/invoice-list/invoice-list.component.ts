@@ -19,6 +19,7 @@ import {
 } from 'src/app/@theme/services/student-payment.service';
 import { LookupService, NationalityDto } from 'src/app/@theme/services/lookup.service';
 import { RESIDENCY_GROUP_OPTIONS, ResidencyGroupFilter } from 'src/app/@theme/types/residency-group';
+import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 
 const moment = _rollupMoment || _moment;
 
@@ -49,7 +50,8 @@ interface WidgetCard {
     SharedModule,
     CommonModule,
     InvoiceListChartComponent,
-    InvoiceListTableComponent
+    InvoiceListTableComponent,
+    LoadingOverlayComponent
   ],
   templateUrl: './invoice-list.component.html',
   styleUrl: './invoice-list.component.scss',
@@ -89,6 +91,7 @@ export class InvoiceListComponent implements OnInit {
   selectedNationalityId: number | null = null;
   residencyGroupOptions = RESIDENCY_GROUP_OPTIONS;
   selectedResidencyGroup: ResidencyGroupFilter = 'all';
+  isLoading = false;
 
   ngOnInit(): void {
     this.searchTerm = this.route.snapshot.queryParamMap.get('search') ?? '';
@@ -149,51 +152,65 @@ export class InvoiceListComponent implements OnInit {
   }
 
   loadDashboard(): void {
+    this.isLoading = true;
     const dataMonthDate = this.dataMonth.value?.toDate();
     const compareMonthDate = this.compareMonth.value?.toDate();
     this.studentPaymentService
       .getDashboard(undefined, undefined, dataMonthDate, compareMonthDate)
+      .subscribe({
+        next: (data: PaymentDashboardDto) => {
+          const paidTrend = this.getTrend(data.totalPaidMoMPercentage);
+          const unpaidTrend = this.getTrend(data.totalUnPaidMoMPercentage);
+          const overdueTrend = this.getTrend(data.totalOverdueMoMPercentage);
 
-      .subscribe((data: PaymentDashboardDto) => {
-        const paidTrend = this.getTrend(data.totalPaidMoMPercentage);
-        const unpaidTrend = this.getTrend(data.totalUnPaidMoMPercentage);
-        const overdueTrend = this.getTrend(data.totalOverdueMoMPercentage);
-
-        this.widgetCards = [
-          {
-            title: 'Paid',
-            value: `$${data.totalPaid}`,
-            percentage: data.totalPaidMoMPercentage,
-            invoice: data.totalPaidCount,
-            data: data.paidChart ?? [],
-            colors: ['#2ca87f'],
-            ...paidTrend
-          },
-          {
-            title: 'Unpaid',
-            value: `$${data.totalUnPaid}`,
-            percentage: data.totalUnPaidMoMPercentage,
-            invoice: data.totalUnPaidCount,
-            data: data.unpaidChart ?? [],
-            colors: ['#e58a00'],
-            ...unpaidTrend
-          },
-          {
-            title: 'Overdue',
-            value: `$${data.totalOverdue}`,
-            percentage: data.totalOverdueMoMPercentage,
-            invoice: data.totalOverdueCount,
-            data: data.overdueChart ?? [],
-            colors: ['#dc2626'],
-            ...overdueTrend
-          }
-        ];
-        this.bigCard = {
-          currentReceivables: data.currentReceivables,
-          overdueReceivables: data.overdueReceivables,
-          totalReceivables: data.totalReceivables,
-          collectionRate: data.collectionRate
-        };
+          this.widgetCards = [
+            {
+              title: 'Paid',
+              value: `$${data.totalPaid}`,
+              percentage: data.totalPaidMoMPercentage,
+              invoice: data.totalPaidCount,
+              data: data.paidChart ?? [],
+              colors: ['#2ca87f'],
+              ...paidTrend
+            },
+            {
+              title: 'Unpaid',
+              value: `$${data.totalUnPaid}`,
+              percentage: data.totalUnPaidMoMPercentage,
+              invoice: data.totalUnPaidCount,
+              data: data.unpaidChart ?? [],
+              colors: ['#e58a00'],
+              ...unpaidTrend
+            },
+            {
+              title: 'Overdue',
+              value: `$${data.totalOverdue}`,
+              percentage: data.totalOverdueMoMPercentage,
+              invoice: data.totalOverdueCount,
+              data: data.overdueChart ?? [],
+              colors: ['#dc2626'],
+              ...overdueTrend
+            }
+          ];
+          this.bigCard = {
+            currentReceivables: data.currentReceivables,
+            overdueReceivables: data.overdueReceivables,
+            totalReceivables: data.totalReceivables,
+            collectionRate: data.collectionRate
+          };
+        },
+        error: () => {
+          this.widgetCards = [];
+          this.bigCard = {
+            currentReceivables: 0,
+            overdueReceivables: 0,
+            totalReceivables: 0,
+            collectionRate: 0
+          };
+        },
+        complete: () => {
+          this.isLoading = false;
+        }
       });
   }
 

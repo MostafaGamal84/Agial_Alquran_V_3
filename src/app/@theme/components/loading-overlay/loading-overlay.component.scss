@@ -1,0 +1,28 @@
+:host {
+  display: block;
+}
+
+.loading-overlay {
+  position: relative;
+}
+
+.loading-overlay__content {
+  transition: filter 0.2s ease, opacity 0.2s ease;
+}
+
+.loading-overlay.loading .loading-overlay__content {
+  filter: blur(2px);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.loading-overlay__backdrop {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(2px);
+  z-index: 2;
+}
