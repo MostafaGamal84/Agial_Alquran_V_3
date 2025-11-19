@@ -2,6 +2,7 @@
 import { AfterViewInit, Component, OnInit, inject, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { finalize } from 'rxjs/operators';
 
 // angular material
 import { MatTableDataSource } from '@angular/material/table';
@@ -18,10 +19,11 @@ import {
 } from 'src/app/@theme/services/lookup.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { ManagerDetailsComponent } from '../manager-details/manager-details.component';
+import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 
 @Component({
   selector: 'app-manager-list',
-  imports: [CommonModule, SharedModule, RouterModule, MatDialogModule],
+  imports: [CommonModule, SharedModule, RouterModule, MatDialogModule, LoadingOverlayComponent],
   templateUrl: './manager-list.component.html',
   styleUrl: './manager-list.component.scss'
 })
@@ -34,6 +36,7 @@ export class ManagerListComponent implements OnInit, AfterViewInit {
   dataSource = new MatTableDataSource<LookUpUserDto>();
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
+  isLoading = false;
 
   // paginator
 readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
@@ -53,6 +56,7 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
   }
 
   private loadManagers() {
+    this.isLoading = true;
     this.lookupService
       .getUsersForSelects(
         this.filter,
@@ -61,11 +65,18 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
         0,
         0
       )
-      .subscribe((res) => {
-        if (res.isSuccess && res.data?.items) {
-          this.dataSource.data = res.data.items;
-          this.totalCount = res.data.totalCount;
-        } else {
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe({
+        next: (res) => {
+          if (res.isSuccess && res.data?.items) {
+            this.dataSource.data = res.data.items;
+            this.totalCount = res.data.totalCount;
+          } else {
+            this.dataSource.data = [];
+            this.totalCount = 0;
+          }
+        },
+        error: () => {
           this.dataSource.data = [];
           this.totalCount = 0;
         }

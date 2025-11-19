@@ -1,7 +1,8 @@
-<div class="auth-main">
-  <div class="auth-wrapper version-1">
-    <div class="auth-form">
-      <app-card [showHeader]="false" class="auth-form-card" padding="40">
+<app-loading-overlay [isLoading]="loading">
+  <div class="auth-main">
+    <div class="auth-wrapper version-1">
+      <div class="auth-form">
+        <app-card [showHeader]="false" class="auth-form-card" padding="40">
         <div class="text-center">
           <a href="javascript:">
             <img src="assets/images/logo-dark.svg" alt="logo" />
@@ -60,8 +61,9 @@
             {{ 'AUTH.LOGIN.CreateAccount' | translate }}
           </a>
         </div>
-      </app-card>
+        </app-card>
+      </div>
     </div>
   </div>
-</div>
+</app-loading-overlay>
 

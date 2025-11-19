@@ -20,10 +20,11 @@ import {
   NationalityDto
 } from 'src/app/@theme/services/lookup.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
+import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 
 @Component({
   selector: 'app-subscribe-type',
-  imports: [SharedModule, RouterModule],
+  imports: [SharedModule, RouterModule, LoadingOverlayComponent],
   templateUrl: './subscribe-type.component.html',
   styleUrl: './subscribe-type.component.scss'
 })

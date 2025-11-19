@@ -27,6 +27,7 @@ import { matchesResidencyGroup } from 'src/app/@theme/utils/nationality.utils';
 
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 
 interface StudentOption {
   id: number;
@@ -35,7 +36,7 @@ interface StudentOption {
 
 @Component({
   selector: 'app-report-list',
-  imports: [CommonModule, SharedModule, RouterModule],
+  imports: [CommonModule, SharedModule, RouterModule, LoadingOverlayComponent],
   templateUrl: './report-list.component.html',
   styleUrl: './report-list.component.scss'
 })

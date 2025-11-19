@@ -2,6 +2,7 @@
 import { AfterViewInit, Component, OnInit, inject, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { finalize } from 'rxjs/operators';
 
 // angular material
 import { MatTableDataSource } from '@angular/material/table';
@@ -53,6 +54,7 @@ export class BranchManagerListComponent implements OnInit, AfterViewInit {
   }
 
   private loadBranchManagers() {
+    this.isLoading = true;
     this.lookupService
       .getUsersForSelects(
         this.filter,
@@ -61,15 +63,22 @@ export class BranchManagerListComponent implements OnInit, AfterViewInit {
         0,
         0
       )
-      .subscribe((res) => {
-      if (res.isSuccess && res.data?.items) {
-        this.dataSource.data = res.data.items;
-        this.totalCount = res.data.totalCount;
-      } else {
-        this.dataSource.data = [];
-        this.totalCount = 0;
-      }
-    });
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe({
+        next: (res) => {
+          if (res.isSuccess && res.data?.items) {
+            this.dataSource.data = res.data.items;
+            this.totalCount = res.data.totalCount;
+          } else {
+            this.dataSource.data = [];
+            this.totalCount = 0;
+          }
+        },
+        error: () => {
+          this.dataSource.data = [];
+          this.totalCount = 0;
+        }
+      });
   }
 
   confirmDisable(branchManager: LookUpUserDto): void {
@@ -127,6 +136,13 @@ export class BranchManagerListComponent implements OnInit, AfterViewInit {
       this.filter.skipCount = this.paginator().pageIndex * this.paginator().pageSize;
       this.filter.maxResultCount = this.paginator().pageSize;
       this.loadBranchManagers();
+    });
+  }
+
+  branchManagerDetails(manager: LookUpUserDto): void {
+    this.dialog.open(BranchManagerDetailsComponent, {
+      width: '800px',
+      data: manager
     });
   }
 }

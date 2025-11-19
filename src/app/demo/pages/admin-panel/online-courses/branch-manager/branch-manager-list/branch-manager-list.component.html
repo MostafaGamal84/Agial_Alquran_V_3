@@ -1,6 +1,7 @@
-<div class="row p-t-25">
-  <div class="col-12">
-    <app-card cardTitle="Branch Manager List" padding="0" cardClass="sm-block">
+<app-loading-overlay [isLoading]="isLoading">
+  <div class="row p-t-25">
+    <div class="col-12">
+      <app-card cardTitle="Branch Manager List" padding="0" cardClass="sm-block">
       <ng-template #headerOptionsTemplate>
         <div class="table-options">
           <button mat-flat-button color="primary" [routerLink]="['/online-course/branch-manager/add']">
@@ -50,7 +51,11 @@
                 <td mat-cell *matCellDef="let element" class="text-nowrap">
                   <div class="text-center text-nowrap">
                     <ul class="list-inline p-l-0">
-                      <li class="list-inline-item m-r-10" [matTooltip]="'View' | translate">
+                      <li
+                        class="list-inline-item m-r-10"
+                        [matTooltip]="'View' | translate"
+                        (click)="branchManagerDetails(element)"
+                      >
                         <a href="javascript:" class="avatar avatar-xs text-muted">
                           <i class="ti ti-eye f-18"></i>
                         </a>
@@ -98,6 +103,7 @@
           </div>
         </div>
       </div>
-    </app-card>
+      </app-card>
+    </div>
   </div>
-</div>
+</app-loading-overlay>

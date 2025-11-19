@@ -11,6 +11,7 @@ import { ToastService } from 'src/app/@theme/services/toast.service';
 import { formatDayValue } from 'src/app/@theme/types/DaysEnum';
 import { formatTimeValue } from 'src/app/@theme/utils/time';
 import { TranslateService } from '@ngx-translate/core';
+import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 import {
   DashboardOverviewDto,
   DashboardOverviewMetricsDto,
@@ -56,7 +57,8 @@ interface DashboardTransactionView {
   imports: [
     SharedModule,
     CommonModule,
-    StatisticsChartComponent
+    StatisticsChartComponent,
+    LoadingOverlayComponent
   ],
   templateUrl: './online-dashboard.component.html',
   styleUrl: './online-dashboard.component.scss'
@@ -87,6 +89,10 @@ export class OnlineDashboardComponent implements OnInit {
 
   upcomingCircles: UpcomingCircleDto[] = [];
   upcomingLoading = false;
+
+  get pageLoading(): boolean {
+    return this.overviewLoading || this.upcomingLoading;
+  }
   ngOnInit(): void {
     this.loadDashboardOverview();
     this.loadUpcomingCircles();
