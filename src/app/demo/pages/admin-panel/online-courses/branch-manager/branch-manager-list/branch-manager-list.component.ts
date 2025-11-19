@@ -7,21 +7,23 @@ import { finalize } from 'rxjs/operators';
 // angular material
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { LookupService, LookUpUserDto, FilteredResultRequestDto } from 'src/app/@theme/services/lookup.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
-import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
+import { BranchManagerDetailsComponent } from '../branch-manager-details/branch-manager-details.component';
 
 @Component({
   selector: 'app-branch-manager-list',
-  imports: [CommonModule, SharedModule, RouterModule, LoadingOverlayComponent],
+  imports: [CommonModule, SharedModule, RouterModule, MatDialogModule],
   templateUrl: './branch-manager-list.component.html',
   styleUrl: './branch-manager-list.component.scss'
 })
 export class BranchManagerListComponent implements OnInit, AfterViewInit {
   private lookupService = inject(LookupService);
+  private dialog = inject(MatDialog);
 
   // public props
   displayedColumns: string[] = ['fullName', 'email', 'mobile', 'nationality', 'action'];
@@ -80,6 +82,13 @@ export class BranchManagerListComponent implements OnInit, AfterViewInit {
       this.filter.skipCount = this.paginator().pageIndex * this.paginator().pageSize;
       this.filter.maxResultCount = this.paginator().pageSize;
       this.loadBranchManagers();
+    });
+  }
+
+  branchManagerDetails(manager: LookUpUserDto): void {
+    this.dialog.open(BranchManagerDetailsComponent, {
+      width: '800px',
+      data: manager
     });
   }
 }
