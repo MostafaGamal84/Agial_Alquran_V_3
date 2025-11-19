@@ -142,6 +142,7 @@ export class BranchManagerListComponent implements OnInit, AfterViewInit {
   branchManagerDetails(manager: LookUpUserDto): void {
     this.dialog.open(BranchManagerDetailsComponent, {
       width: '800px',
+      maxWidth: '95vw',
       data: manager
     });
   }
