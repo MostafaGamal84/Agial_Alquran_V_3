@@ -2,6 +2,7 @@
 import { AfterViewInit, Component, OnInit, inject, viewChild } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { NgFor, NgIf } from '@angular/common';
+import { finalize } from 'rxjs/operators';
 
 // angular material
 import { MatTableDataSource } from '@angular/material/table';
@@ -34,6 +35,7 @@ import { AuthenticationService } from 'src/app/@theme/services/authentication.se
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { DayValue, formatDayValue } from 'src/app/@theme/types/DaysEnum';
 import { formatTimeValue } from 'src/app/@theme/utils/time';
+import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 
 interface CircleScheduleEntry {
   day: string;
@@ -61,7 +63,7 @@ interface CourseParticipantsDialogOptions {
 
 @Component({
   selector: 'app-courses-view',
-  imports: [SharedModule, RouterModule],
+  imports: [SharedModule, RouterModule, LoadingOverlayComponent],
   templateUrl: './courses-view.component.html',
   styleUrl: './courses-view.component.scss'
 })
@@ -76,6 +78,7 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
   dataSource = new MatTableDataSource<CircleViewModel>();
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
+  isLoading = false;
 
   readonly paginator = viewChild.required(MatPaginator);
   isTeacherOrStudent = [UserTypesEnum.Teacher, UserTypesEnum.Student].includes(this.auth.getRole()!);
@@ -84,18 +87,28 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
   }
 
   private loadCircles() {
-    this.circleService.getAll(this.filter).subscribe((res) => {
-      if (res.isSuccess && res.data?.items) {
-        const sourceCircles = res.data.items;
-        const viewModels = sourceCircles.map((circle) => this.buildViewModel(circle));
-        this.dataSource.data = viewModels;
-        this.totalCount = res.data.totalCount;
-
-      } else {
-        this.dataSource.data = [];
-        this.totalCount = 0;
-      }
-    });
+    this.isLoading = true;
+    this.circleService
+      .getAll(this.filter)
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe({
+        next: (res) => {
+          if (res.isSuccess && res.data?.items) {
+            const sourceCircles = res.data.items;
+            const viewModels = sourceCircles.map((circle) => this.buildViewModel(circle));
+            this.dataSource.data = viewModels;
+            this.totalCount = res.data.totalCount;
+          } else {
+            this.dataSource.data = [];
+            this.totalCount = 0;
+          }
+        },
+        error: () => {
+          this.dataSource.data = [];
+          this.totalCount = 0;
+          this.toast.error('Error loading courses');
+        }
+      });
   }
 
   private buildViewModel(circle: CircleDto): CircleViewModel {

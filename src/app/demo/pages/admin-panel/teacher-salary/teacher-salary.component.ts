@@ -68,6 +68,7 @@ import { AuthenticationService } from 'src/app/@theme/services/authentication.se
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { environment } from 'src/environments/environment';
 import { TranslateModule } from '@ngx-translate/core';
+import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 const PRINT_ACCENT_COLOR = '#134273';
 const PRINT_ACCENT_LIGHT = '#f3f6fd';
 const PRINT_BORDER_COLOR = '#dfe6f2';
@@ -139,7 +140,8 @@ class InvoicePrintContextError extends Error {
     MatTableModule,
     MatSlideToggleModule,
     MatPaginatorModule,
-     TranslateModule 
+    TranslateModule,
+    LoadingOverlayComponent
   ],
   templateUrl: './teacher-salary.component.html',
   styleUrls: ['./teacher-salary.component.scss'],
@@ -197,6 +199,16 @@ export class TeacherSalaryComponent
   summaryLoading = false;
   detailsLoading = false;
   manualGenerationLoading = false;
+
+  get pageLoading(): boolean {
+    return (
+      this.teacherLoading ||
+      this.invoicesLoading ||
+      this.summaryLoading ||
+      this.detailsLoading ||
+      this.manualGenerationLoading
+    );
+  }
 
   selectedInvoice: TeacherSalaryInvoice | null = null;
   invoiceDetails: TeacherSalaryInvoiceDetails | null = null;

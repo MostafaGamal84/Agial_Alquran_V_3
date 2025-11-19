@@ -1,0 +1,10 @@
+<div class="loading-overlay" [class.loading]="isLoading">
+  <div class="loading-overlay__content">
+    <ng-content></ng-content>
+  </div>
+  @if (isLoading) {
+    <div class="loading-overlay__backdrop">
+      <mat-progress-spinner mode="indeterminate" diameter="48"></mat-progress-spinner>
+    </div>
+  }
+</div>

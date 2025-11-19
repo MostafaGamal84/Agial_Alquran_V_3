@@ -36,6 +36,7 @@ export class StudentAddComponent implements OnInit {
   nationalities: NationalityDto[] = [];
   governorates: GovernorateDto[] = [];
   countries: Country[] = [];
+  showGovernorateSelect = false;
   Branch = [
     { id: BranchesEnum.Mens, label: 'الرجال' },
     { id: BranchesEnum.Women, label: 'النساء' }
@@ -68,12 +69,12 @@ export class StudentAddComponent implements OnInit {
 
     this.basicInfoForm
       .get('nationalityId')
-      ?.valueChanges.subscribe((nationalityId) => this.applyGovernorateRequirement(nationalityId));
+      ?.valueChanges.subscribe((nationalityId) => this.updateGovernorateVisibility(nationalityId));
 
     this.lookupService.getAllNationalities().subscribe((res) => {
       if (res.isSuccess) {
         this.nationalities = res.data;
-        this.applyGovernorateRequirement(this.basicInfoForm.get('nationalityId')?.value);
+        this.updateGovernorateVisibility(this.basicInfoForm.get('nationalityId')?.value);
       }
     });
 
@@ -88,20 +89,17 @@ export class StudentAddComponent implements OnInit {
     });
   }
 
-  private applyGovernorateRequirement(nationalityId: number | null): void {
+  private updateGovernorateVisibility(nationalityId: number | null): void {
     const governorateControl = this.basicInfoForm.get('governorateId');
     if (!governorateControl) {
       return;
     }
 
     const nationality = this.nationalities.find((n) => n.id === Number(nationalityId)) ?? null;
-    if (isEgyptianNationality(nationality)) {
-      governorateControl.setValidators([Validators.required]);
-    } else {
-      governorateControl.clearValidators();
+    this.showGovernorateSelect = isEgyptianNationality(nationality);
+    if (!this.showGovernorateSelect) {
+      governorateControl.setValue(null);
     }
-
-    governorateControl.updateValueAndValidity({ emitEvent: false });
   }
 
   onCountryCodeChange(
