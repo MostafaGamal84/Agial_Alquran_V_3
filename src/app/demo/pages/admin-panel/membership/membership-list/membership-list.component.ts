@@ -2,6 +2,7 @@
 import { AfterViewInit, Component, OnInit, inject, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { finalize } from 'rxjs/operators';
 
 // angular material
 import { MatTableDataSource } from '@angular/material/table';
@@ -24,10 +25,11 @@ import { PaymentDetailsComponent } from '../payment-details/payment-details.comp
 import { StudentSubscribeDialogComponent } from './student-subscribe-dialog/student-subscribe-dialog.component';
 import { RESIDENCY_GROUP_OPTIONS, ResidencyGroupFilter } from 'src/app/@theme/types/residency-group';
 import { isArabNationality, isEgyptianNationality } from 'src/app/@theme/utils/nationality.utils';
+import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 
 @Component({
   selector: 'app-membership-list',
-  imports: [CommonModule, SharedModule, RouterModule],
+  imports: [CommonModule, SharedModule, RouterModule, LoadingOverlayComponent],
   templateUrl: './membership-list.component.html',
   styleUrl: './membership-list.component.scss'
 })
@@ -45,6 +47,7 @@ export class MembershipListComponent implements AfterViewInit, OnInit {
   selectedNationalityId: number | null = null;
   residencyGroupOptions = RESIDENCY_GROUP_OPTIONS;
   selectedResidencyGroup: ResidencyGroupFilter = 'all';
+  isLoading = false;
 
   // paginator
   readonly paginator = viewChild.required(MatPaginator); // if Angular ≥17
@@ -66,15 +69,25 @@ export class MembershipListComponent implements AfterViewInit, OnInit {
 
   private load() {
     this.filter.residentGroup = this.selectedResidencyGroup;
-    this.service.getStudents(this.filter, undefined, this.selectedNationalityId ?? undefined).subscribe((res) => {
-      if (res.isSuccess && res.data?.items) {
-        this.dataSource.data = res.data.items;
-        this.totalCount = res.data.totalCount;
-      } else {
-        this.dataSource.data = [];
-        this.totalCount = 0;
-      }
-    });
+    this.isLoading = true;
+    this.service
+      .getStudents(this.filter, undefined, this.selectedNationalityId ?? undefined)
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe({
+        next: (res) => {
+          if (res.isSuccess && res.data?.items) {
+            this.dataSource.data = res.data.items;
+            this.totalCount = res.data.totalCount;
+          } else {
+            this.dataSource.data = [];
+            this.totalCount = 0;
+          }
+        },
+        error: () => {
+          this.dataSource.data = [];
+          this.totalCount = 0;
+        }
+      });
   }
 
   // table search filter

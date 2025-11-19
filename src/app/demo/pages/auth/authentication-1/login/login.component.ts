@@ -13,6 +13,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { TranslateService } from '@ngx-translate/core';
+import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 
 interface Roles {
   name: string;
@@ -23,7 +24,7 @@ interface Roles {
 
 @Component({
   selector: 'app-login',
-  imports: [CommonModule, SharedModule, RouterModule, FormsModule],
+  imports: [CommonModule, SharedModule, RouterModule, FormsModule, LoadingOverlayComponent],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss', '../authentication-1.scss', '../../authentication.scss']
 })

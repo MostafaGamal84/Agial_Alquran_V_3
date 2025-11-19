@@ -1,6 +1,7 @@
-<div class="row p-t-25">
-  <div class="col-12">
-    <app-card [cardTitle]="'Membership List' | translate" padding="0">
+<app-loading-overlay [isLoading]="isLoading">
+  <div class="row p-t-25">
+    <div class="col-12">
+      <app-card [cardTitle]="'Membership List' | translate" padding="0">
       <div class="p-b-15">
         <div class="table-containe table-reponsive">
           <div class="table-search p-t-15 p-x-15">
@@ -178,6 +179,7 @@
           </div>
         </div>
       </div>
-    </app-card>
+      </app-card>
+    </div>
   </div>
-</div>
+</app-loading-overlay>

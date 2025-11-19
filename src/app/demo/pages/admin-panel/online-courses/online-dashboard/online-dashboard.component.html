@@ -1,4 +1,5 @@
-<div class="row">
+<app-loading-overlay [isLoading]="pageLoading">
+  <div class="row">
   <div class="col-12" *ngIf="overviewError">
     <app-card [showHeader]="false" [padding]="20">
       <div class="text-warn-500">{{ overviewError }}</div>
@@ -168,4 +169,5 @@
       <div class="text-muted">No recent transactions found for this range.</div>
     </app-card>
   </div>
-</div>
+  </div>
+</app-loading-overlay>
