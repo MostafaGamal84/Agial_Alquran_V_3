@@ -117,12 +117,10 @@ export interface LookupDto {
 }
 
 export interface SubscribeLookupDto extends LookupDto {
-  leprice?: number | null;
-  sarprice?: number | null;
-  usdprice?: number | null;
   allowedNationalities?: string[] | null;
   durationMonths?: number | null;
   price?: number | null;
+  currencyId?: number | null;
   currencyCode?: string | null;
   isRecommended?: boolean | null;
 }

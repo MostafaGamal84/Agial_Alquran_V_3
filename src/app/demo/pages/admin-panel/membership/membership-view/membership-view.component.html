@@ -92,7 +92,7 @@
                 <p><strong>Amount:</strong> {{ paymentDetails.amount }}</p>
                 <p>
                   <strong>Currency:</strong>
-                  {{ paymentDetails.currency !== undefined ? (currencyEnum[paymentDetails.currency] || '') : '' }}
+                  {{ getCurrencyLabel(paymentDetails.currencyId ?? paymentDetails.currency ?? null) }}
                 </p>
                 <p><strong>Status:</strong> {{ paymentDetails.statusText }}</p>
                 <button mat-button color="primary" (click)="goToInvoice(paymentDetails?.invoiceId)">View Invoice</button>

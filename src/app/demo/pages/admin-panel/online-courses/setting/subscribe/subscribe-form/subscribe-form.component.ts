@@ -37,9 +37,7 @@ export class SubscribeFormComponent implements OnInit {
   form = this.fb.group({
     id: [0 as number | null],
     name: ['', Validators.required],
-    leprice: [null as number | null],
-    sarprice: [null as number | null],
-    usdprice: [null as number | null],
+    price: [null as number | null, Validators.required],
     minutes: [null as number | null],
     subscribeTypeId: [null as number | null]
   });
@@ -58,9 +56,7 @@ export class SubscribeFormComponent implements OnInit {
       this.form.patchValue({
         id: data.id,
         name: data.name ?? '',
-        leprice: data.leprice ?? null,
-        sarprice: data.sarprice ?? null,
-        usdprice: data.usdprice ?? null,
+        price: data.price ?? null,
         minutes: data.minutes ?? null,
         subscribeTypeId: data.subscribeTypeId ?? data.subscribeType?.id ?? null
       });
