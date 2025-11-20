@@ -16,6 +16,18 @@ export const SUBSCRIBE_AUDIENCE_OPTIONS: readonly SubscribeAudienceOption[] = [
   { value: SubscribeAudience.NonArab, translationKey: 'Non Arab', currencyCode: 'USD' }
 ];
 
+const AUDIENCE_CURRENCY_IDS: Record<SubscribeAudience, number> = {
+  [SubscribeAudience.Egyptian]: 1,
+  [SubscribeAudience.Gulf]: 2,
+  [SubscribeAudience.NonArab]: 3
+};
+
+const CURRENCY_CODE_BY_ID: Record<number, string> = {
+  1: 'LE',
+  2: 'SAR',
+  3: 'USD'
+};
+
 const SUBSCRIBE_AUDIENCE_VALUE_SET = new Set<number>(
   Object.values(SubscribeAudience).filter((value): value is number => typeof value === 'number')
 );
@@ -102,11 +114,9 @@ const CURRENCY_AUDIENCE_MAP = new Map<string, SubscribeAudience>(
   })
 );
 
-const PRICE_ORDER: ReadonlyArray<{ field: keyof SubscribePricingSource; audience: SubscribeAudience }> = [
-  { field: 'leprice', audience: SubscribeAudience.Egyptian },
-  { field: 'sarprice', audience: SubscribeAudience.Gulf },
-  { field: 'usdprice', audience: SubscribeAudience.NonArab }
-];
+const CURRENCY_ID_AUDIENCE_MAP = new Map<number, SubscribeAudience>(
+  Object.entries(AUDIENCE_CURRENCY_IDS).map(([audience, currencyId]) => [currencyId, Number(audience) as SubscribeAudience])
+);
 
 function normalizeCurrencyCode(value: unknown): string {
   if (value === null || value === undefined) {
@@ -122,40 +132,20 @@ function normalizeCurrencyCode(value: unknown): string {
     .replace(/[\s_.-]+/g, '');
 }
 
-function coerceAmount(value: unknown): number | null {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return value;
-  }
-
-  if (typeof value === 'string') {
-    const parsed = Number(value);
-    if (Number.isFinite(parsed)) {
-      return parsed;
-    }
-  }
-
-  return null;
-}
-
 export function inferSubscribeAudience(source: SubscribePricingSource): SubscribeAudience | null {
+  const audienceFromId = inferAudienceFromCurrencyId(source?.currencyId);
+  if (audienceFromId !== null) {
+    return audienceFromId;
+  }
+
   const currencyAudience = inferAudienceFromCurrency(source?.currencyCode);
   if (currencyAudience !== null) {
     return currencyAudience;
   }
 
-  const populatedFields = PRICE_ORDER.filter(({ field }) => coerceAmount(source?.[field]) !== null);
-
-  if (populatedFields.length === 1) {
-    return populatedFields[0].audience;
-  }
-
-  const positiveAmount = populatedFields.find(({ field }) => {
-    const amount = coerceAmount(source?.[field]);
-    return typeof amount === 'number' && amount > 0;
-  });
-
-  if (positiveAmount) {
-    return positiveAmount.audience;
+  const audienceFromGroup = inferAudienceFromSubscribeTypeGroup(source?.subscribeTypeGroup);
+  if (audienceFromGroup !== null) {
+    return audienceFromGroup;
   }
 
   return null;
@@ -168,6 +158,33 @@ function inferAudienceFromCurrency(code: unknown): SubscribeAudience | null {
   }
 
   return CURRENCY_AUDIENCE_MAP.get(normalizedCode) ?? null;
+}
+
+function inferAudienceFromCurrencyId(currencyId: unknown): SubscribeAudience | null {
+  const parsed = Number(currencyId);
+  if (!Number.isFinite(parsed)) {
+    return null;
+  }
+
+  return CURRENCY_ID_AUDIENCE_MAP.get(parsed) ?? null;
+}
+
+function inferAudienceFromSubscribeTypeGroup(group: unknown): SubscribeAudience | null {
+  const parsed = Number(group);
+  if (!Number.isFinite(parsed)) {
+    return null;
+  }
+
+  switch (parsed) {
+    case 3:
+      return SubscribeAudience.Egyptian;
+    case 2:
+      return SubscribeAudience.Gulf;
+    case 1:
+      return SubscribeAudience.NonArab;
+    default:
+      return null;
+  }
 }
 
 export function getSubscribeAudienceTranslationKey(
@@ -187,11 +204,10 @@ export function getSubscribeAudienceCurrencyCode(
 }
 
 export interface SubscribePricingSource {
-  leprice?: number | null;
-  sarprice?: number | null;
-  usdprice?: number | null;
-  currencyCode?: string | null;
   price?: number | null;
+  currencyId?: number | null;
+  currencyCode?: string | null;
+  subscribeTypeGroup?: number | null;
 }
 
 export interface SubscribePricingResult {
@@ -202,30 +218,32 @@ export interface SubscribePricingResult {
 export function resolveSubscribePricing(
   source: SubscribePricingSource
 ): SubscribePricingResult | null {
-  const explicitCurrency = (source.currencyCode ?? '').toString().trim();
-  if (explicitCurrency) {
-    const amount = source.price ?? null;
-    return {
-      currencyCode: explicitCurrency,
-      amount
-    };
-  }
-
-  const audience = inferSubscribeAudience(source);
-  const currencyCode = getSubscribeAudienceCurrencyCode(audience);
+  const amount = source.price ?? null;
+  const currencyCode = resolveCurrencyCode(source);
 
   if (!currencyCode) {
     return null;
   }
 
-  switch (audience) {
-    case SubscribeAudience.Egyptian:
-      return { currencyCode, amount: source.leprice ?? null };
-    case SubscribeAudience.Gulf:
-      return { currencyCode, amount: source.sarprice ?? null };
-    case SubscribeAudience.NonArab:
-      return { currencyCode, amount: source.usdprice ?? null };
-    default:
-      return null;
+  return {
+    currencyCode,
+    amount
+  };
+}
+
+function resolveCurrencyCode(source: SubscribePricingSource): string | null {
+  const currencyFromId = CURRENCY_CODE_BY_ID[source.currencyId ?? -1];
+  if (currencyFromId) {
+    return currencyFromId;
   }
+
+  const explicitCurrency = (source.currencyCode ?? '').toString().trim();
+  if (explicitCurrency) {
+    return explicitCurrency;
+  }
+
+  const audience = inferSubscribeAudience(source);
+  const currencyCode = getSubscribeAudienceCurrencyCode(audience);
+
+  return currencyCode;
 }

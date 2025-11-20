@@ -7,10 +7,7 @@ import {
 } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { Router } from '@angular/router';
-import {
-  StudentPaymentDto,
-  CurrencyEnum
-} from 'src/app/@theme/services/student-payment.service';
+import { StudentPaymentDto, getCurrencyLabel } from 'src/app/@theme/services/student-payment.service';
 
 @Component({
   selector: 'app-payment-details',
@@ -21,8 +18,6 @@ import {
 })
 export class PaymentDetailsComponent {
   data = inject<StudentPaymentDto>(MAT_DIALOG_DATA);
-  currencyEnum = CurrencyEnum;
-
   private router = inject(Router);
   private dialogRef = inject(MatDialogRef<PaymentDetailsComponent>);
 
@@ -31,5 +26,9 @@ export class PaymentDetailsComponent {
     this.router.navigate(['/invoice/list'], {
       queryParams: { search: this.data.invoiceId }
     });
+  }
+
+  get currencyLabel(): string {
+    return getCurrencyLabel(this.data.currencyId ?? this.data.currency ?? null);
   }
 }
