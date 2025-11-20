@@ -8,9 +8,9 @@ import { MatInputModule } from '@angular/material/input';
 import { catchError, map, of, switchMap } from 'rxjs';
 import {
   StudentPaymentDto,
-  CurrencyEnum,
   UpdatePaymentDto,
-  StudentPaymentService
+  StudentPaymentService,
+  getCurrencyLabel
 } from 'src/app/@theme/services/student-payment.service';
 
 @Component({
@@ -25,13 +25,13 @@ export class PaymentEditComponent {
   private service = inject(StudentPaymentService);
   private dialogRef = inject(MatDialogRef<PaymentEditComponent>);
   data = inject<StudentPaymentDto>(MAT_DIALOG_DATA);
-  currencyEnum = CurrencyEnum;
+  currencyLabel = getCurrencyLabel(this.data.currencyId ?? this.data.currency ?? null);
   receiptFile?: File;
 
   form = this.fb.group({
     subscribe: [{ value: this.data.subscribe, disabled: true }],
     amount: [this.data.amount, Validators.required],
-    currency: [{ value: this.currencyEnum[this.data.currency ?? 1], disabled: true }]
+    currency: [{ value: this.currencyLabel, disabled: true }]
   });
 
   onFileChange(event: Event) {

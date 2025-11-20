@@ -11,6 +11,20 @@ export enum CurrencyEnum {
   USD = 3
 }
 
+export const CurrencyLabels: Record<number, string> = {
+  [CurrencyEnum.LE]: 'LE',
+  [CurrencyEnum.SAR]: 'SAR',
+  [CurrencyEnum.USD]: 'USD'
+};
+
+export function getCurrencyLabel(currencyId?: number | null): string {
+  if (currencyId === null || currencyId === undefined) {
+    return '';
+  }
+
+  return CurrencyLabels[currencyId] ?? '';
+}
+
 export interface StudentPaymentDto {
   invoiceId: number;
   studentId: number;
@@ -22,6 +36,7 @@ export interface StudentPaymentDto {
   paymentDate?: string | null;
   statusText?: string | null;
   amount?: number | null;
+  currencyId?: number | null;
   currency?: CurrencyEnum | null;
 }
 
@@ -61,6 +76,7 @@ export interface StudentInvoiceDto {
   createDate?: string | null;
   dueDate?: string | null;
   amount?: number | null;
+  currencyId?: number | null;
   statusText?: string | null;
   payStatue?: boolean | null;
   isCancelled?: boolean | null;

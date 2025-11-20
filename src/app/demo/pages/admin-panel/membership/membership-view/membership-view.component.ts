@@ -10,7 +10,7 @@ import { FilteredResultRequestDto } from 'src/app/@theme/services/lookup.service
 import {
   StudentPaymentService,
   StudentPaymentDto,
-  CurrencyEnum
+  getCurrencyLabel
 } from 'src/app/@theme/services/student-payment.service';
 
 
@@ -35,8 +35,6 @@ export class MembershipViewComponent implements OnInit, AfterViewInit {
   expandedElement: ViewStudentSubscribeReDto | null = null;
   paymentDetails: StudentPaymentDto | null = null;
   panelOpen = false;
-  currencyEnum = CurrencyEnum;
-
   readonly paginator = viewChild.required(MatPaginator);
 
   ngOnInit() {
@@ -94,6 +92,10 @@ export class MembershipViewComponent implements OnInit, AfterViewInit {
       return;
     }
     this.router.navigate(['/invoice/list'], { queryParams: { search: invoiceId } });
+  }
+
+  getCurrencyLabel(currencyId?: number | null): string {
+    return getCurrencyLabel(currencyId);
   }
 }
 

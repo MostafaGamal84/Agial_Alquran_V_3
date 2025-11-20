@@ -36,9 +36,8 @@ export function getSubscribeTypeCategoryTranslationKey(
 export interface SubscribeDto {
   id: number;
   name?: string;
-  leprice?: number;
-  sarprice?: number;
-  usdprice?: number;
+  price?: number | null;
+  currencyId?: number | null;
   minutes?: number;
   subscribeTypeId?: number;
   subscribeType?: SubscribeTypeDto;
@@ -46,9 +45,8 @@ export interface SubscribeDto {
 
 export interface CreateSubscribeDto {
   name?: string;
-  leprice?: number;
-  sarprice?: number;
-  usdprice?: number;
+  price?: number | null;
+  currencyId?: number | null;
   minutes?: number;
   subscribeTypeId?: number;
 }
