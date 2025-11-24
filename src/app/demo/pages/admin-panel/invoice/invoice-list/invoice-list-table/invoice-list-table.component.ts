@@ -11,7 +11,7 @@ import {
   viewChild,
   inject
 } from '@angular/core';
-import { MatPaginator } from '@angular/material/paginator';
+import { PageEvent } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { forkJoin, Observable } from 'rxjs';
@@ -65,9 +65,9 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
   displayedColumns: string[] = ['id', 'name', 'create_date', 'due_date', 'qty', 'status', 'action'];
   dataSource = new MatTableDataSource<InvoiceTableItem>([]);
   searchTerm = '';
-  // paginator
-  readonly paginator = viewChild.required(MatPaginator); // if Angular ≥17
-
+  totalCount = 0;
+  pageIndex = 0;
+  pageSize = 100;
   readonly sort = viewChild(MatSort);
 
   ngOnInit(): void {
@@ -94,6 +94,7 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
       changes['nationalityId'] ||
       changes['residentGroup']
     ) {
+      this.pageIndex = 0;
       this.loadData();
     }
     if (changes['search'] && !changes['search'].firstChange) {
@@ -128,8 +129,8 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
 
   loadData(): void {
     const filter: FilteredResultRequestDto = {
-      skipCount: 0,
-      maxResultCount: 100,
+      skipCount: this.pageIndex * this.pageSize,
+      maxResultCount: this.pageSize,
       residentGroup: this.residentGroup
     };
     let monthDate: Date | undefined;
@@ -213,6 +214,10 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
         );
       }
       forkJoin(requests).subscribe((responses) => {
+        this.totalCount = responses.reduce(
+          (acc: number, resp: ApiResponse<PagedResultDto<StudentInvoiceDto>>) => acc + (resp.data.totalCount ?? 0),
+          0
+        );
         const items = responses.reduce(
           (acc: InvoiceTableItem[], resp: ApiResponse<PagedResultDto<StudentInvoiceDto>>) => [
             ...acc,
@@ -222,7 +227,7 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
         );
         this.dataSource.data = items;
         this.dataSource.filter = this.searchTerm.trim().toLowerCase();
-        this.countChange.emit(this.dataSource.filteredData.length);
+        this.countChange.emit(this.totalCount || this.dataSource.filteredData.length);
       });
     } else {
       const requests: Observable<ApiResponse<PagedResultDto<StudentInvoiceDto>>>[] = [];
@@ -257,6 +262,10 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
         );
       }
       forkJoin(requests).subscribe((responses) => {
+        this.totalCount = responses.reduce(
+          (acc: number, resp: ApiResponse<PagedResultDto<StudentInvoiceDto>>) => acc + (resp.data.totalCount ?? 0),
+          0
+        );
         const items = responses.reduce(
           (acc: InvoiceTableItem[], resp: ApiResponse<PagedResultDto<StudentInvoiceDto>>) => [
             ...acc,
@@ -266,14 +275,19 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
         );
         this.dataSource.data = items;
         this.dataSource.filter = this.searchTerm.trim().toLowerCase();
-        this.countChange.emit(this.dataSource.filteredData.length);
+        this.countChange.emit(this.totalCount || this.dataSource.filteredData.length);
       });
     }
   }
 
 
   ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator()!;
     this.dataSource.sort = this.sort()!;
+  }
+
+  onPageChange(event: PageEvent): void {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.loadData();
   }
 }
