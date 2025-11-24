@@ -146,7 +146,8 @@ export const menus: Navigation[] = [
           {
             id: 'branch-manager',
             title: 'Branch Manager',
-            type: 'collapse',
+            type: 'item',
+              url: '/online-course/branch-manager/list',
             role: [
               UserTypesEnum.Admin.toString(),
               // UserTypesEnum.Manager.toString(),
@@ -154,28 +155,29 @@ export const menus: Navigation[] = [
               // UserTypesEnum.Student.toString(),
               // UserTypesEnum.Teacher.toString()
             ],
-            children: [
-              {
-                id: 'list',
-                title: 'List',
-                type: 'item',
-                url: '/online-course/branch-manager/list'
-              },
-              {
-                id: 'add',
-                title: 'Add',
-                type: 'item',
-                url: '/online-course/branch-manager/add',
-                role: [
-                  UserTypesEnum.Admin.toString(),
-                ]
-              }
-            ]
+            // children: [
+              // {
+              //   id: 'list',
+              //   title: 'List',
+              //   type: 'item',
+              //   url: '/online-course/branch-manager/list'
+              // },
+              // {
+              //   id: 'add',
+              //   title: 'Add',
+              //   type: 'item',
+              //   url: '/online-course/branch-manager/add',
+              //   role: [
+              //     UserTypesEnum.Admin.toString(),
+              //   ]
+              // }
+            // ]
           },
            {
             id: 'manager',
             title: 'Manager',
-            type: 'collapse',
+             type: 'item',
+                url: '/online-course/manager/list',
             role: [
               UserTypesEnum.Admin.toString(),
               // UserTypesEnum.Manager.toString(),
@@ -183,35 +185,36 @@ export const menus: Navigation[] = [
               // UserTypesEnum.Student.toString(),
               // UserTypesEnum.Teacher.toString()
             ],
-            children: [
-              {
-                id: 'list',
-                title: 'List',
-                type: 'item',
-                url: '/online-course/manager/list'
-              },
+            // children: [
+              // {
+              //   id: 'list',
+              //   title: 'List',
+              //   type: 'item',
+              //   url: '/online-course/manager/list'
+              // },
               // {
               //   id: 'apply',
               //   title: 'Apply',
               //   type: 'item',
               //   url: '/online-course/manager/apply'
               // },
-              {
-                id: 'add',
-                title: 'Add',
-                type: 'item',
-                url: '/online-course/manager/add',
-                role: [
-                  UserTypesEnum.Admin.toString(),
-                  UserTypesEnum.BranchLeader.toString(),
-                ]
-              }
-            ]
+              // {
+              //   id: 'add',
+              //   title: 'Add',
+              //   type: 'item',
+              //   url: '/online-course/manager/add',
+              //   role: [
+              //     UserTypesEnum.Admin.toString(),
+              //     UserTypesEnum.BranchLeader.toString(),
+              //   ]
+              // }
+            // ]
           },
           {
             id: 'teacher',
             title: 'Teacher',
-            type: 'collapse',
+            type: 'item',
+                url: '/online-course/teacher/list',
             role: [
               UserTypesEnum.Admin.toString(),
               UserTypesEnum.Manager.toString(),
@@ -219,36 +222,37 @@ export const menus: Navigation[] = [
               // UserTypesEnum.Student.toString(),
               // UserTypesEnum.Teacher.toString()
             ],
-            children: [
-              {
-                id: 'list',
-                title: 'List',
-                type: 'item',
-                url: '/online-course/teacher/list'
-              },
+            // children: [
+            //   {
+            //     id: 'list',
+            //     title: 'List',
+            //     type: 'item',
+            //     url: '/online-course/teacher/list'
+            //   },
               // {
               //   id: 'apply',
               //   title: 'Apply',
               //   type: 'item',
               //   url: '/online-course/teacher/apply'
               // },
-              {
-                id: 'add',
-                title: 'Add',
-                type: 'item',
-                url: '/online-course/teacher/add',
-                role: [
-                  UserTypesEnum.Admin.toString(),
-                  UserTypesEnum.Manager.toString(),
-                  UserTypesEnum.BranchLeader.toString(),
-                ]
-              }
-            ]
+              // {
+              //   id: 'add',
+              //   title: 'Add',
+              //   type: 'item',
+              //   url: '/online-course/teacher/add',
+              //   role: [
+              //     UserTypesEnum.Admin.toString(),
+              //     UserTypesEnum.Manager.toString(),
+              //     UserTypesEnum.BranchLeader.toString(),
+              //   ]
+              // }
+            // ]
           },
           {
             id: 'student',
             title: 'Student',
-            type: 'collapse',
+             type: 'item',
+                url: '/online-course/student/list',
             role: [
               UserTypesEnum.Admin.toString(),
               UserTypesEnum.Manager.toString(),
@@ -256,38 +260,39 @@ export const menus: Navigation[] = [
               // UserTypesEnum.Student.toString(),
               // UserTypesEnum.Teacher.toString()
             ],
-            children: [
-              {
-                id: 'list',
-                title: 'List',
-                type: 'item',
-                url: '/online-course/student/list'
-              },
+            // children: [
+            //   {
+            //     id: 'list',
+            //     title: 'List',
+            //     type: 'item',
+            //     url: '/online-course/student/list'
+            //   },
               // {
               //   id: 'apply',
               //   title: 'Apply',
               //   type: 'item',
               //   url: '/online-course/student/apply'
               // },
-              {
-                id: 'add',
-                title: 'Add',
-                type: 'item',
-                url: '/online-course/student/add',
-                role: [
-                  UserTypesEnum.Admin.toString(),
-                  UserTypesEnum.Manager.toString(),
-                  UserTypesEnum.BranchLeader.toString(),
-                  UserTypesEnum.Student.toString(),
-                  UserTypesEnum.Teacher.toString()
-                ]
-              }
-            ]
+              // {
+              //   id: 'add',
+              //   title: 'Add',
+              //   type: 'item',
+              //   url: '/online-course/student/add',
+              //   role: [
+              //     UserTypesEnum.Admin.toString(),
+              //     UserTypesEnum.Manager.toString(),
+              //     UserTypesEnum.BranchLeader.toString(),
+              //     UserTypesEnum.Student.toString(),
+              //     UserTypesEnum.Teacher.toString()
+              //   ]
+              // }
+            // ]
           },
           {
             id: 'courses',
             title: 'Courses',
-            type: 'collapse',
+           type: 'item',
+                url: '/online-course/courses/view',
             role: [
               UserTypesEnum.Admin.toString(),
               UserTypesEnum.Manager.toString(),
@@ -295,32 +300,33 @@ export const menus: Navigation[] = [
               UserTypesEnum.Student.toString(),
               UserTypesEnum.Teacher.toString()
             ],
-            children: [
-              {
-                id: 'view',
-                title: 'View',
-                type: 'item',
-                url: '/online-course/courses/view'
-              },
-              {
-                id: 'add',
-                title: 'Add',
-                type: 'item',
-                url: '/online-course/courses/add',
-                role: [
-                  UserTypesEnum.Admin.toString(),
-                  // UserTypesEnum.Manager.toString(),
-                  UserTypesEnum.BranchLeader.toString(),
-                  // UserTypesEnum.Student.toString(),
-                  // UserTypesEnum.Teacher.toString()
-                ]
-              }
-            ]
+            // children: [
+            //   {
+            //     id: 'view',
+            //     title: 'View',
+            //     type: 'item',
+            //     url: '/online-course/courses/view'
+            //   },
+              // {
+              //   id: 'add',
+              //   title: 'Add',
+              //   type: 'item',
+              //   url: '/online-course/courses/add',
+              //   role: [
+              //     UserTypesEnum.Admin.toString(),
+              //     // UserTypesEnum.Manager.toString(),
+              //     UserTypesEnum.BranchLeader.toString(),
+              //     // UserTypesEnum.Student.toString(),
+              //     // UserTypesEnum.Teacher.toString()
+              //   ]
+              // }
+            // ]
           },
           {
             id: 'reports',
             title: 'Reports',
-            type: 'collapse',
+             type: 'item',
+                url: '/online-course/report/view',
             role: [
               UserTypesEnum.Admin.toString(),
               UserTypesEnum.Manager.toString(),
@@ -328,26 +334,26 @@ export const menus: Navigation[] = [
               UserTypesEnum.Student.toString(),
               UserTypesEnum.Teacher.toString()
             ],
-            children: [
-              {
-                id: 'view',
-                title: 'View',
-                type: 'item',
-                url: '/online-course/report/view'
-              },
-              {
-                id: 'add',
-                title: 'Add',
-                type: 'item',
-                url: '/online-course/report/add',
-                role: [
-                  UserTypesEnum.Admin.toString(),
-                  UserTypesEnum.Manager.toString(),
-                  UserTypesEnum.BranchLeader.toString(),
-                  UserTypesEnum.Teacher.toString()
-                ]
-              }
-            ]
+            // children: [
+            //   {
+            //     id: 'view',
+            //     title: 'View',
+            //     type: 'item',
+            //     url: '/online-course/report/view'
+            //   },
+              // {
+              //   id: 'add',
+              //   title: 'Add',
+              //   type: 'item',
+              //   url: '/online-course/report/add',
+              //   role: [
+              //     UserTypesEnum.Admin.toString(),
+              //     UserTypesEnum.Manager.toString(),
+              //     UserTypesEnum.BranchLeader.toString(),
+              //     UserTypesEnum.Teacher.toString()
+              //   ]
+              // }
+            // ]
           },
           {
             id: 'subscribes',
@@ -375,6 +381,7 @@ export const menus: Navigation[] = [
               }
             ]
           },
+          
           // {
           //   id: 'pricing',
           //   title: 'Pricing',
@@ -436,7 +443,8 @@ export const menus: Navigation[] = [
       {
         id: 'membership',
         title: 'Membership',
-        type: 'collapse',
+         type: 'item',
+            url: '/membership/list',
         icon: '#custom-user',
         role: [
           UserTypesEnum.Admin.toString(),
@@ -445,7 +453,7 @@ export const menus: Navigation[] = [
           UserTypesEnum.Student.toString(),
           UserTypesEnum.Teacher.toString()
         ],
-        children: [
+        // children: [
           // {
           //   id: 'dashboard',
           //   title: 'Dashboard',
@@ -459,12 +467,12 @@ export const menus: Navigation[] = [
           //     UserTypesEnum.Teacher.toString()
           //   ]
           // },
-          {
-            id: 'list',
-            title: 'List',
-            type: 'item',
-            url: '/membership/list'
-          },
+          // {
+          //   id: 'list',
+          //   title: 'List',
+          //   type: 'item',
+          //   url: '/membership/list'
+          // },
           // {
           //   id: 'price',
           //   title: 'Pricing',
@@ -477,7 +485,7 @@ export const menus: Navigation[] = [
           //   type: 'item',
           //   url: '/membership/setting'
           // }
-        ]
+        // ]
       },
       // {
       //   id: 'helpdesk',
@@ -555,7 +563,8 @@ export const menus: Navigation[] = [
       {
         id: 'invoice',
         title: 'Invoice',
-        type: 'collapse',
+         type: 'item',
+            url: '/invoice/list',
         icon: '#custom-bill',
         role: [
           UserTypesEnum.Admin.toString(),
@@ -564,7 +573,7 @@ export const menus: Navigation[] = [
           UserTypesEnum.Student.toString(),
           UserTypesEnum.Teacher.toString()
         ],
-        children: [
+        // children: [
           // {
           //   id: 'dashboard',
           //   title: 'Dashboard',
@@ -590,12 +599,12 @@ export const menus: Navigation[] = [
           //   type: 'item',
           //   url: '/invoice/details'
           // },
-          {
-            id: 'list',
-            title: 'List',
-            type: 'item',
-            url: '/invoice/list'
-          }
+          // {
+          //   id: 'list',
+          //   title: 'List',
+          //   type: 'item',
+          //   url: '/invoice/list'
+          // }
           // {
           //   id: 'edit',
           //   title: 'Edit',
@@ -609,7 +618,7 @@ export const menus: Navigation[] = [
           //     UserTypesEnum.Teacher.toString()
           //   ]
           // }
-        ]
+        // ]
       },
       {
         id: 'teacher-salary',
