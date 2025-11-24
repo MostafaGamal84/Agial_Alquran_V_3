@@ -1,9 +1,0 @@
-@import '../../../../../../@theme/styles/theme-palette-colors.scss';
-
-.bg-cyan {
-  background: map-get($cyan-theme, 50);
-}
-
-.text-cyan {
-  color: map-get($cyan-theme, 500);
-}
