@@ -24,6 +24,7 @@ import { ToastService } from 'src/app/@theme/services/toast.service';
 import { DisableUserConfirmDialogComponent } from './student-list.disable-user-confirm-dialog.component';
 import { RESIDENCY_GROUP_OPTIONS, ResidencyGroupFilter } from 'src/app/@theme/types/residency-group';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-student-list',
@@ -35,6 +36,7 @@ export class StudentListComponent implements OnInit, AfterViewInit {
   private lookupService = inject(LookupService);
   private userService = inject(UserService);
   private toast = inject(ToastService);
+  private translate = inject(TranslateService);
   dialog = inject(MatDialog);
 
   // public props
@@ -177,11 +179,11 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
           if (res.isSuccess) {
             if (statue) {
               student.inactive = false;
-              this.toast.success('User restored successfully');
+              this.toast.success(this.translate.instant('User restored successfully'));
             } else {
               this.dataSource.data = this.dataSource.data.filter((s) => s.id !== student.id);
               this.totalCount = Math.max(this.totalCount - 1, 0);
-              this.toast.success('User disabled successfully');
+              this.toast.success(this.translate.instant('User disabled successfully'));
             }
             return;
           }
@@ -189,10 +191,10 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
           if (res.errors?.length) {
             res.errors.forEach((error) => this.toast.error(error.message));
           } else {
-            this.toast.error('Failed to update user status');
+            this.toast.error(this.translate.instant('Failed to update user status'));
           }
         },
-        error: () => this.toast.error('Failed to update user status')
+        error: () => this.toast.error(this.translate.instant('Failed to update user status'))
       });
   }
 
