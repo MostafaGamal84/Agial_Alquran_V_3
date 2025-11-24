@@ -7,6 +7,7 @@ import { finalize } from 'rxjs/operators';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { TranslateService } from '@ngx-translate/core';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -28,6 +29,7 @@ export class BranchManagerListComponent implements OnInit, AfterViewInit {
   private lookupService = inject(LookupService);
   private userService = inject(UserService);
   private toast = inject(ToastService);
+  private translate = inject(TranslateService);
   dialog = inject(MatDialog);
   isLoading = false;
 
@@ -117,17 +119,17 @@ export class BranchManagerListComponent implements OnInit, AfterViewInit {
           if (res.isSuccess) {
             this.dataSource.data = this.dataSource.data.filter((manager) => manager.id !== branchManager.id);
             this.totalCount = Math.max(this.totalCount - 1, 0);
-            this.toast.success('Branch manager disabled successfully');
+            this.toast.success(this.translate.instant('Branch manager disabled successfully'));
             return;
           }
 
           if (res.errors?.length) {
             res.errors.forEach((error) => this.toast.error(error.message));
           } else {
-            this.toast.error('Failed to disable branch manager');
+            this.toast.error(this.translate.instant('Failed to disable branch manager'));
           }
         },
-        error: () => this.toast.error('Failed to disable branch manager')
+        error: () => this.toast.error(this.translate.instant('Failed to disable branch manager'))
       });
   }
 

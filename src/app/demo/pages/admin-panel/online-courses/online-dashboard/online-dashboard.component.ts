@@ -289,7 +289,8 @@ export class OnlineDashboardComponent implements OnInit {
       const currencyCode = typeof transaction?.currency === 'string' ? transaction.currency : undefined;
       const amount = this.formatCurrency(amountValue, currencyCode ?? undefined);
       const date = this.formatTransactionDate(transaction?.date);
-      const status = this.formatTransactionStatus(transaction?.status);
+      const statusCode = typeof transaction?.status === 'string' ? transaction.status : undefined;
+      const status = this.formatTransactionStatus(statusCode);
 
       return {
         key,
@@ -297,7 +298,7 @@ export class OnlineDashboardComponent implements OnInit {
         amount,
         date,
         status,
-        statusClass: this.getStatusClass(status)
+        statusClass: this.getStatusClass(statusCode)
       } satisfies DashboardTransactionView;
     });
   }
@@ -310,10 +311,10 @@ export class OnlineDashboardComponent implements OnInit {
     });
 
     const seriesDefinitions = [
-      { key: 'earnings', name: 'Earnings' },
-      { key: 'teacherPayout', name: 'Teacher Payout' },
-      { key: 'managerPayout', name: 'Manager Payout' },
-      { key: 'netIncome', name: 'Net Income' }
+      { key: 'earnings', nameKey: 'Earnings' },
+      { key: 'teacherPayout', nameKey: 'Teacher Payout' },
+      { key: 'managerPayout', nameKey: 'Manager Payout' },
+      { key: 'netIncome', nameKey: 'Net Income' }
     ] as const;
 
     const series: ApexAxisChartSeries = [];
@@ -327,7 +328,7 @@ export class OnlineDashboardComponent implements OnInit {
       const data = points.map((point) => this.coerceNumber(point?.[definition.key]) ?? 0);
 
       series.push({
-        name: definition.name,
+        name: this.translate.instant(definition.nameKey),
         data
       });
     }
@@ -561,11 +562,21 @@ export class OnlineDashboardComponent implements OnInit {
   }
 
   private formatTransactionStatus(value?: string | null): string {
-    if (typeof value === 'string' && value.trim()) {
-      return this.toTitleCase(value.trim());
-    }
+    const normalized = typeof value === 'string' ? value.trim().toLowerCase() : '';
 
-    return 'Pending';
+    switch (normalized) {
+      case 'paid':
+        return 'Paid';
+      case 'pending':
+        return 'Pending';
+      case 'failed':
+        return 'Failed';
+      case 'cancelled':
+      case 'canceled':
+        return 'Cancelled';
+      default:
+        return 'Unknown Status';
+    }
   }
 
   private formatTransactionStudent(value: unknown, id: unknown, index: number): string {
@@ -580,8 +591,8 @@ export class OnlineDashboardComponent implements OnInit {
     return this.translate.instant('Student #{{id}}', { id: index + 1 });
   }
 
-  private getStatusClass(status: string): string {
-    const normalized = status.trim().toLowerCase();
+  private getStatusClass(status?: string | null): string {
+    const normalized = typeof status === 'string' ? status.trim().toLowerCase() : '';
 
     if (normalized === 'paid') {
       return 'badge bg-light-success text-success-500';
