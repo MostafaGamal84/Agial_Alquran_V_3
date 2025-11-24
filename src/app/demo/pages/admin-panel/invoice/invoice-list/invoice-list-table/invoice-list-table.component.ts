@@ -12,7 +12,6 @@ import {
   inject
 } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
-import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { forkJoin, Observable } from 'rxjs';
@@ -69,9 +68,6 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
   totalCount = 0;
   pageIndex = 0;
   pageSize = 100;
-  // paginator
-  readonly paginator = viewChild.required(MatPaginator); // if Angular ≥17
-
   readonly sort = viewChild(MatSort);
 
   ngOnInit(): void {
@@ -286,7 +282,6 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
 
 
   ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator()!;
     this.dataSource.sort = this.sort()!;
   }
 
