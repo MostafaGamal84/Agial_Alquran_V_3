@@ -207,8 +207,9 @@ export class ReportAddComponent implements OnInit {
 
   private loadManagers(): void {
     this.isLoadingManagers = true;
+    const branchId = this.role === UserTypesEnum.BranchLeader ? this.getBranchId() ?? 0 : 0;
     this.lookupService
-      .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Manager))
+      .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Manager), 0, 0, branchId)
       .subscribe({
         next: (res) => {
           this.managers = res.isSuccess ? res.data.items : [];
@@ -445,6 +446,11 @@ export class ReportAddComponent implements OnInit {
 
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : undefined;
+  }
+
+  private getBranchId(): number | undefined {
+    const branchId = (this.auth.currentUserValue as { user?: { branchId?: unknown } } | null)?.user?.branchId;
+    return this.toNumber(branchId);
   }
 
   private toString(value: unknown): string | undefined {
