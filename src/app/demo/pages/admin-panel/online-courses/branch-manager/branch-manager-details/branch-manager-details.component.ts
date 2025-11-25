@@ -50,6 +50,7 @@ export class BranchManagerDetailsComponent {
     circleName: 'Circle Name',
     identityNumber: 'Identity Number',
     residentId: 'Resident ID',
+    resident: 'Resident',
     nationality: 'Nationality',
     nationalityId: 'Nationality',
     governorate: 'Governorate',
@@ -85,6 +86,7 @@ export class BranchManagerDetailsComponent {
         'managers',
         'teacherName',
         'managerName',
+        'inactive',
         ...contactKeys
       ];
 
