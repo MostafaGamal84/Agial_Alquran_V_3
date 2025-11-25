@@ -30,8 +30,8 @@ export class NavRightComponent {
     this.languageService.initialize();
   }
 
-  // public method
-  // user according language change of sidebar menu item
+  // وظائف واجهة المستخدم
+  // تغيير اللغة إلى العربية فقط
   useLanguage(language: string) {
     this.languageService.changeLanguage(language);
   }
@@ -40,7 +40,7 @@ export class NavRightComponent {
     this.HeaderBlur.emit();
   }
 
-  // user Logout
+  // تسجيل الخروج للمستخدم
   logout() {
     this.authenticationService.logout();
   }
@@ -48,46 +48,44 @@ export class NavRightComponent {
   cards = [
     {
       icon: 'custom-layer',
-      time: '2 min ago',
-      position: 'UI/UX Design',
-      description:
-        "Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley oftype and scrambled it to make a type"
+      time: 'منذ دقيقتين',
+      position: 'تصميم واجهات المستخدم',
+      description: 'نص افتراضي يُستخدم في التصميم منذ القرن السادس عشر لتوضيح شكل المحتوى.'
     },
     {
       icon: 'custom-sms',
-      time: '1 hour ago',
-      position: 'Message',
-      description: "Lorem Ipsum has been the industry's standard dummy text ever since the 1500."
+      time: 'منذ ساعة',
+      position: 'رسالة',
+      description: 'نص افتراضي يُستخدم في التصميم منذ القرن السادس عشر لتوضيح شكل المحتوى.'
     }
   ];
 
   cards2 = [
     {
       icon: 'custom-document-text',
-      time: '12 hour ago',
-      position: 'Forms',
-      description:
-        "Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley oftype and scrambled it to make a type"
+      time: 'منذ 12 ساعة',
+      position: 'نماذج',
+      description: 'نص افتراضي يُستخدم في التصميم منذ القرن السادس عشر لتوضيح شكل المحتوى.'
     },
     {
       icon: 'custom-security-safe',
-      time: '18 hour ago',
-      position: 'Security',
-      description: "Lorem Ipsum has been the industry's standard dummy text ever since the 1500."
+      time: 'منذ 18 ساعة',
+      position: 'حماية',
+      description: 'نص افتراضي يُستخدم في التصميم منذ القرن السادس عشر لتوضيح شكل المحتوى.'
     }
   ];
 
   notification = [
     {
-      sub_title: 'Improvement',
-      time: '12 hour ago',
-      title: 'Widgets update',
+      sub_title: 'تحسين',
+      time: 'منذ 12 ساعة',
+      title: 'تحديث الأدوات',
       img: 'assets/images/layout/img-announcement-3.png'
     },
     {
-      sub_title: 'New Feature',
-      time: '18 hour ago',
-      title: 'Coming soon dark mode',
+      sub_title: 'ميزة جديدة',
+      time: 'منذ 18 ساعة',
+      title: 'الوضع الليلي قريباً',
       img: 'assets/images/layout/img-announcement-4.png'
     }
   ];

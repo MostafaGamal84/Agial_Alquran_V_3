@@ -1,16 +1,16 @@
 <div class="address-modal">
   <div class="p-20 flex align-item-center justify-content-between border-bottom">
-    <div class="f-16 f-w-600">Select address</div>
+    <div class="f-16 f-w-600">اختر العنوان</div>
     <button mat-button class="bg-primary-50 text-primary-500" mat-dialog-close>
       <div class="flex align-item-center">
         <i class="ti ti-plus m-r-5"></i>
-        Add New
+        إضافة جديد
       </div>
     </button>
   </div>
   <div class="p-20">
     <mat-form-field appearance="outline" class="w-100 input-group">
-      <input matInput placeholder="Search...." #input />
+      <input matInput placeholder="ابحث...." #input />
     </mat-form-field>
   </div>
   <app-scrollbar [customStyle]="{ height: 'calc(100vh - 433px)', position: 'relative' }">
@@ -30,7 +30,7 @@
     </div>
   </app-scrollbar>
   <div class="dialog-footer">
-    <button mat-button color="warn" class="m-r-10" mat-dialog-close>Cancel</button>
-    <button mat-flat-button color="primary" mat-dialog-close>Add</button>
+    <button mat-button color="warn" class="m-r-10" mat-dialog-close>إلغاء</button>
+    <button mat-flat-button color="primary" mat-dialog-close>إضافة</button>
   </div>
 </div>

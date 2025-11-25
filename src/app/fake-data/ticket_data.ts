@@ -2,7 +2,7 @@ export const ticketData = [
   {
     subject: 'Website down for one week',
     department: 'support',
-    date: 'Today 2:00',
+    date: 'اليوم 2:00',
     status: 'open',
     status_type: 'bg-success-50 text-success-500'
   },
@@ -23,7 +23,7 @@ export const ticketData = [
   {
     subject: 'Restoring default settings',
     department: 'support',
-    date: 'Today 9:00',
+    date: 'اليوم 9:00',
     status: 'open',
     status_type: 'bg-success-50 text-success-500'
   },
@@ -37,7 +37,7 @@ export const ticketData = [
   {
     subject: 'Restoring default settings',
     department: 'support',
-    date: 'Today 9:00',
+    date: 'اليوم 9:00',
     status: 'open',
     status_type: 'bg-success-50 text-success-500'
   },

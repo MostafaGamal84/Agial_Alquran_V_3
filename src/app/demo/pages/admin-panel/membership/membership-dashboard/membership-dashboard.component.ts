@@ -87,7 +87,7 @@ export class MembershipDashboardComponent {
     {
       image: 'assets/images/user/avatar-1.png',
       title: 'Brieley join casual membership..',
-      date: 'Today | 9:00 AM'
+      date: 'اليوم | 9:00 صباحًا'
     },
     {
       image: 'assets/images/user/avatar-5.jpg',

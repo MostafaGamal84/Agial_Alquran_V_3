@@ -73,8 +73,8 @@
         </div>
         <mat-divider></mat-divider>
         <div class="drawer-section">
-          <div class="section-header">
-            <h4>{{ 'Monthly Summary' | translate }}</h4>
+            <div class="section-header">
+              <h4>{{ 'Monthly Summary' | translate }}</h4>
           </div>
           @if (detailSummaryMetrics.length > 0) {
             <div class="summary-metrics">
@@ -114,7 +114,7 @@
           [disabled]="manualGenerationLoading"
         >
           <mat-icon>cached</mat-icon>
-          {{ 'Generate Monthly Invoices' | translate }}
+            {{ 'Generate Monthly Invoices' | translate }}
         </button>
       }
     </div>
@@ -340,18 +340,18 @@
     <mat-card class="summary-card">
       <div class="summary-header">
         <div>
-          <h3>{{ 'Monthly Summary' | translate }}</h3>
-          <p class="summary-subtitle">
-            {{ 'Monthly Summary Subtitle' | translate }}
-            <strong>{{ formatSummaryMonth() }}</strong>.
-          </p>
-        </div>
-        <button
-          mat-icon-button
-          type="button"
-          (click)="loadMonthlySummary()"
-          [disabled]="summaryLoading"
-        >
+            <h3>{{ 'Monthly Summary' | translate }}</h3>
+            <p class="summary-subtitle">
+              {{ 'Monthly Summary Subtitle' | translate }}
+              <strong>{{ formatSummaryMonth() }}</strong>.
+            </p>
+          </div>
+          <button
+            mat-icon-button
+            type="button"
+            (click)="loadMonthlySummary()"
+            [disabled]="summaryLoading"
+          >
           <mat-icon>refresh</mat-icon>
         </button>
       </div>
