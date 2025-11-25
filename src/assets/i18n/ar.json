@@ -219,6 +219,7 @@
   "Manager Name": "اسم المدير",
   "Circle Name": "اسم الحلقة",
   "Identity Number": "رقم الهوية",
+  "Resident": "مكان الإقامة",
   "Resident ID": "رقم الإقامة",
   "Business name": "اسم العمل",
   "Buy Now": "اشتر الآن",
@@ -580,6 +581,14 @@
   "Place of residence is required": "مكان الإقامة مطلوب",
   "Select place of residence": "اختر مكان الإقامة",
   "Branch manager disabled successfully": "تم تعطيل مدير الفرع بنجاح",
+  "BRANCH_MANAGER_DETAILS": {
+    "Branch": "الفرع",
+    "Nationality": "الجنسية",
+    "Resident": "مكان الإقامة",
+    "Resident ID": "رقم الإقامة",
+    "Governorate": "المحافظة",
+    "Circle Name": "اسم الحلقة"
+  },
   "Failed to disable branch manager": "تعذر تعطيل مدير الفرع",
   "User restored successfully": "تم استعادة المستخدم بنجاح",
   "User disabled successfully": "تم تعطيل المستخدم بنجاح",

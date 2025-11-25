@@ -26,6 +26,12 @@ interface ContactEntry {
   icon: string;
 }
 
+interface DetailEntry {
+  key: string;
+  labelKey: string;
+  value: unknown;
+}
+
 @Component({
   selector: 'app-branch-manager-details',
   standalone: true,
@@ -39,7 +45,7 @@ export class BranchManagerDetailsComponent {
   students: Person[] = [];
   managerCircles: Circle[] = [];
   contactEntries: ContactEntry[] = [];
-  detailEntries: [string, unknown][] = [];
+  detailEntries: DetailEntry[] = [];
   private readonly labelTranslationMap: Record<string, string> = {
     branchId: 'Branch',
     gender: 'Gender',
@@ -47,9 +53,9 @@ export class BranchManagerDetailsComponent {
     createdAt: 'Created At',
     updatedAt: 'Updated At',
     managerName: 'Manager Name',
-    circleName: 'Circle Name',
     identityNumber: 'Identity Number',
     residentId: 'Resident ID',
+    resident: 'Resident',
     nationality: 'Nationality',
     nationalityId: 'Nationality',
     governorate: 'Governorate',
@@ -85,17 +91,25 @@ export class BranchManagerDetailsComponent {
         'managers',
         'teacherName',
         'managerName',
+        'circleName',
+        'inactive',
         ...contactKeys
       ];
 
-      this.detailEntries = Object.entries(user).filter(
-        ([key, value]) =>
-          !exclude.includes(key) &&
-          !/id$/i.test(key) &&
-          key.toLowerCase() !== 'id' &&
-          !Array.isArray(value) &&
-          (typeof value !== 'object' || value === null)
-      );
+      this.detailEntries = Object.entries(user)
+        .filter(
+          ([key, value]) =>
+            !exclude.includes(key) &&
+            !/id$/i.test(key) &&
+            key.toLowerCase() !== 'id' &&
+            !Array.isArray(value) &&
+            (typeof value !== 'object' || value === null)
+        )
+        .map(([key, value]) => ({
+          key,
+          labelKey: this.formatLabel(key),
+          value: this.formatValue(key, value)
+        }));
     }
   }
 
