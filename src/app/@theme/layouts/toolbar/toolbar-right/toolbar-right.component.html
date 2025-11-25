@@ -195,7 +195,7 @@
   </mat-menu> -->
   <mat-menu #user="matMenu" xPosition="before" class="dropdown-user-profile">
     <div class="dropdown-header flex align-item-center justify-content-between">
-      <div class="user-title f-16 f-w-600">Profile</div>
+      <div class="user-title f-16 f-w-600">{{ 'Profile' | translate }}</div>
     </div>
     <app-scrollbar [customStyle]="{ height: 'calc(100vh - 225px)', position: 'relative' }">
       <div class="dropdown-body">
@@ -220,12 +220,12 @@
             <mat-slide-toggle color="primary" (click)="$event.stopPropagation()"></mat-slide-toggle>
           </div>
         </app-card> -->
-        <div class="m-b-15 mat-body f-w-500">Manage</div>
+        <div class="m-b-15 mat-body f-w-500">{{ 'Manage' | translate }}</div>
         <a href="javascript:" class="dropdown-item text-muted" [routerLink]="['/application/profile/account/settings']">
           <svg class="pc-icon m-r-10">
             <use xlink:href="assets/fonts/custom-icon.svg#custom-setting-outline"></use>
           </svg>
-          <div class="m-b-0 mat-body">Settings</div>
+          <div class="m-b-0 mat-body">{{ 'Settings' | translate }}</div>
         </a>
         <!-- <a href="javascript:" class="dropdown-item text-muted">
           <svg class="pc-icon m-r-10">
