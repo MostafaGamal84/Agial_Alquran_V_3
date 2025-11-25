@@ -544,6 +544,14 @@
   "What is your current tax filing situation?": "What is your current tax filing situation?",
   "What were your total sales for the previous year?": "What were your total sales for the previous year?",
   "Branch manager disabled successfully": "Branch manager disabled successfully",
+  "BRANCH_MANAGER_DETAILS": {
+    "Branch": "Branch",
+    "Nationality": "Nationality",
+    "Resident": "Resident",
+    "Resident ID": "Resident ID",
+    "Governorate": "Governorate",
+    "Circle Name": "Circle Name"
+  },
   "Failed to disable branch manager": "Failed to disable branch manager",
   "User restored successfully": "User restored successfully",
   "User disabled successfully": "User disabled successfully",
