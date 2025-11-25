@@ -30,7 +30,6 @@ interface ContactEntry {
 interface DetailEntry {
   key: string;
   labelKey: string;
-  label: string;
   value: unknown;
 }
 
@@ -102,8 +101,6 @@ export class BranchManagerDetailsComponent {
         ...contactKeys
       ];
 
-      this.branchLabel = translate.instant('Branch');
-
       this.detailEntries = Object.entries(user)
         .filter(
           ([key, value]) =>
@@ -118,7 +115,6 @@ export class BranchManagerDetailsComponent {
           return {
             key,
             labelKey,
-            label: translate.instant(labelKey),
             value: this.formatValue(key, value)
           };
         });
