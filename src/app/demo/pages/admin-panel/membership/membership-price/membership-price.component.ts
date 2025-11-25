@@ -30,7 +30,7 @@ export class MembershipPriceComponent {
           title: '10% Discounts'
         },
         {
-          title: 'Cancel anytime'
+          title: 'الإلغاء متاح في أي وقت'
         }
       ]
     },
@@ -51,7 +51,7 @@ export class MembershipPriceComponent {
           title: '50% Discounts'
         },
         {
-          title: 'Cancel anytime'
+          title: 'الإلغاء متاح في أي وقت'
         },
         {
           title: 'Basic feature'
@@ -78,7 +78,7 @@ export class MembershipPriceComponent {
           title: '75% Discounts'
         },
         {
-          title: 'Cancel anytime'
+          title: 'الإلغاء متاح في أي وقت'
         },
         {
           title: 'Online booking'

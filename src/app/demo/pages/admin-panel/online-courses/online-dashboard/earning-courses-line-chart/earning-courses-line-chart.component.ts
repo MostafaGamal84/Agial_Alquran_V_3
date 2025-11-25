@@ -63,7 +63,7 @@ export class EarningCoursesLineChartComponent implements OnInit {
       },
       series: [
         {
-          name: 'Today',
+          name: 'اليوم',
           data: [200, 320, 275, 400, 300, 440]
         }
       ],
@@ -96,7 +96,7 @@ export class EarningCoursesLineChartComponent implements OnInit {
       case 'today':
         this.chartOptions.series = [
           {
-            name: 'Today',
+            name: 'اليوم',
             data: [200, 320, 275, 400, 300, 440]
           }
         ];

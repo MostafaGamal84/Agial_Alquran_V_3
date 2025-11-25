@@ -7,7 +7,7 @@
         </div>
         <div class="flex-grow-1 user-details">
           <div class="f-w-600">{{ this.authenticationService.currentUserName }}</div>
-          <div class="mat-caption">Administrator</div>
+          <div class="mat-caption">مسؤول النظام</div>
         </div>
         <div class="user-setting">
           <a href="javascript:" [matMenuTriggerFor]="menu" class="text-muted">
@@ -19,7 +19,7 @@
             <button mat-menu-item>
               <a [routerLink]="['/application/profile/account']" class="text-muted">
                 <i class="ti ti-user f-18 m-r-10"></i>
-                <span>My Account</span>
+                <span>حسابي</span>
               </a>
             </button>
             <!-- <button mat-menu-item>
@@ -37,7 +37,7 @@
             <button mat-menu-item>
               <a href="javascript:" class="text-muted" (click)="logout()">
                 <i class="ti ti-power f-18 m-r-10"></i>
-                <span>Logout</span>
+                <span>تسجيل الخروج</span>
               </a>
             </button>
           </mat-menu>

@@ -34,18 +34,6 @@
   </button>
   <mat-menu #languages="matMenu" xPosition="before">
     <button mat-menu-item>
-      <div class="mat-body" (click)="useLanguage('en')">English (uk)</div>
-    </button>
-    <!-- <button mat-menu-item>
-      <div class="mat-body" (click)="useLanguage('fr')">français</div>
-    </button>
-    <button mat-menu-item>
-      <div class="mat-body" (click)="useLanguage('ro')">Română</div>
-    </button>
-    <button mat-menu-item>
-      <div class="mat-body" (click)="useLanguage('cn')">中国人</div> -->
-    <!-- </button> -->
-    <button mat-menu-item>
       <div class="mat-body" (click)="useLanguage('ar')">العربية</div>
     </button>
   </mat-menu>
@@ -53,7 +41,7 @@
     <button mat-menu-item [routerLink]="['/application/profile/account/account']">
       <div class="dropdown-item">
         <i class="ti ti-user"></i>
-        <span>My Account</span>
+        <span>حسابي</span>
       </div>
     </button>
     <!-- <button mat-menu-item [routerLink]="['/application/profile/account/settings']">
@@ -77,7 +65,7 @@
     <button mat-menu-item (click)="logout()">
       <div class="dropdown-item">
         <i class="ti ti-power"></i>
-        <span>Logout</span>
+        <span>تسجيل الخروج</span>
       </div>
     </button>
   </mat-menu>
@@ -90,7 +78,7 @@
     </div> -->
     <!-- <app-scrollbar [customStyle]="{ height: 'calc(100vh - 88px)', position: 'relative' }">
       <div class="drawer-body">
-        <div class="m-b-10 mat-body f-w-500">Today</div>
+        <div class="m-b-10 mat-body f-w-500">اليوم</div>
         <app-card [showHeader]="false" padding="16" cardClass="m-b-15">
           <div class="flex align-item-center m-b-15">
             <div class="mat-subtitle-2 badge-status bg-success-50 text-success-500 m-r-10">New Feature</div>
@@ -152,7 +140,7 @@
     </div>
     <app-scrollbar [customStyle]="{ height: 'calc(100vh - 215px)', position: 'relative' }">
       <div class="dropdown-body">
-        <div class="m-b-10 mat-body f-w-500">Today</div>
+        <div class="m-b-10 mat-body f-w-500">اليوم</div>
         @for (card of cards; track card) {
           <app-card [showHeader]="false" cardClass="notification-card m-b-10" padding="16">
             <div class="flex">
@@ -249,7 +237,7 @@
           <svg class="pc-icon m-r-10">
             <use xlink:href="assets/fonts/custom-icon.svg#custom-lock-outline"></use>
           </svg>
-          <div class="m-b-0 mat-body">Change Password</div>
+          <div class="m-b-0 mat-body">تغيير كلمة المرور</div>
         </a>
         <!-- <mat-divider class="m-b-15 m-t-15"></mat-divider> -->
         <!-- <div class="m-b-15 mat-body f-w-500">Team</div>
@@ -258,7 +246,7 @@
             <svg class="pc-icon m-r-10">
               <use xlink:href="assets/fonts/custom-icon.svg#custom-profile-2user-outline"></use>
             </svg>
-            <div class="m-b-0 mat-body">UI Design team</div>
+            <div class="m-b-0 mat-body">فريق تصميم الواجهة</div>
           </span>
           <div class="user-group">
             <img src="assets/images/user/avatar-1.png" alt="user-images" class="avatar" />
@@ -276,7 +264,7 @@
             <svg class="pc-icon m-r-10">
               <use xlink:href="assets/fonts/custom-icon.svg#custom-profile-2user-outline"></use>
             </svg>
-            <div class="m-b-0 mat-body">Friends Groups</div>
+            <div class="m-b-0 mat-body">مجموعات الأصدقاء</div>
           </span>
           <div class="user-group">
             <img src="assets/images/user/avatar-1.png" alt="user-images" class="avatar" />
@@ -293,7 +281,7 @@
             <svg class="pc-icon m-r-10">
               <use xlink:href="assets/fonts/custom-icon.svg#custom-add-outline"></use>
             </svg>
-            <div class="m-b-0 mat-body">Add New</div>
+            <div class="m-b-0 mat-body">إضافة جديد</div>
           </span>
           <div class="user-group">
             <span class="avatar bg-primary-500 text-white">
@@ -310,7 +298,7 @@
               <svg class="pc-icon m-r-10">
                 <use xlink:href="assets/fonts/custom-icon.svg#custom-logout-1-outline"></use>
               </svg>
-              Logout
+              تسجيل الخروج
             </div>
           </button>
         </div>

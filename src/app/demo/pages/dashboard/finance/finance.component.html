@@ -7,9 +7,9 @@
           <i class="ti ti-dots-vertical f-18 text-accent-500"></i>
         </a>
         <mat-menu #menu="matMenu">
-          <a mat-menu-item>Today</a>
-          <a mat-menu-item>Weekly</a>
-          <a mat-menu-item>Monthly</a>
+          <a mat-menu-item>اليوم</a>
+          <a mat-menu-item>أسبوعيًا</a>
+          <a mat-menu-item>شهريًا</a>
         </mat-menu>
       </div>
       <app-card [showHeader]="false" cardClass="overflow-hidden my-card">
@@ -46,9 +46,9 @@
           <i class="ti ti-dots-vertical f-18 text-accent-500"></i>
         </a>
         <mat-menu #menu="matMenu">
-          <a mat-menu-item>Today</a>
-          <a mat-menu-item>Weekly</a>
-          <a mat-menu-item>Monthly</a>
+          <a mat-menu-item>اليوم</a>
+          <a mat-menu-item>أسبوعيًا</a>
+          <a mat-menu-item>شهريًا</a>
         </mat-menu>
       </div>
       <ul class="list-group list-group-flush">
@@ -96,11 +96,11 @@
     <app-cash-flow-chart />
     <app-card [showHeader]="false">
       <div class="moneyGo">
-        <div class="f-16 f-w-600">Where your money go ?</div>
+        <div class="f-16 f-w-600">إلى أين تذهب أموالك؟</div>
         <button mat-flat-button color="primary">
           <div class="flex align-item-center">
             <i class="ti ti-plus m-r-15"></i>
-            <span>Add New</span>
+            <span>إضافة جديد</span>
           </div>
         </button>
       </div>
@@ -114,9 +114,9 @@
                   <i class="ti ti-dots-vertical f-18 text-accent-500"></i>
                 </a>
                 <mat-menu #menu="matMenu">
-                  <a mat-menu-item>Today</a>
-                  <a mat-menu-item>Weekly</a>
-                  <a mat-menu-item>Monthly</a>
+                  <a mat-menu-item>اليوم</a>
+                  <a mat-menu-item>أسبوعيًا</a>
+                  <a mat-menu-item>شهريًا</a>
                 </mat-menu>
               </div>
               <div class="m-b-15 f-w-600">{{ item.title }}</div>
@@ -180,9 +180,9 @@
           <i class="ti ti-dots-vertical f-18 text-accent-500"></i>
         </a>
         <mat-menu #menu="matMenu">
-          <a mat-menu-item>Today</a>
-          <a mat-menu-item>Weekly</a>
-          <a mat-menu-item>Monthly</a>
+          <a mat-menu-item>اليوم</a>
+          <a mat-menu-item>أسبوعيًا</a>
+          <a mat-menu-item>شهريًا</a>
         </mat-menu>
       </div>
       <div class="flex align-item-center justify-content-between gap-2 m-y-15">
@@ -275,7 +275,7 @@
               } @else if (element.status === 'pending') {
                 <span class="user-status bg-warning-500 text-white mat-small">Pending</span>
               } @else if (element.status === 'canceled') {
-                <span class="user-status bg-warn-500 text-white mat-small">Canceled</span>
+                <span class="user-status bg-warn-500 text-white mat-small">ملغي</span>
               } @else if (element.status === 'progress') {
                 <span class="user-status bg-primary-500 text-white mat-small">In Progress</span>
               }

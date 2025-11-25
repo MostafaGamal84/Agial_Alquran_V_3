@@ -12,13 +12,13 @@ export interface DisableUserConfirmDialogData {
   standalone: true,
   imports: [CommonModule, MatDialogModule, MatButtonModule],
   template: `
-    <h2 mat-dialog-title>Disable user</h2>
+    <h2 mat-dialog-title>إيقاف المستخدم</h2>
     <mat-dialog-content>
-      Are you sure you want to disable <strong>{{ data.fullName }}</strong>?
+      هل أنت متأكد أنك تريد إيقاف <strong>{{ data.fullName }}</strong>؟
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button type="button" (click)="onCancel()">Cancel</button>
-      <button mat-flat-button color="warn" type="button" (click)="onConfirm()">Disable</button>
+      <button mat-button type="button" (click)="onCancel()">إلغاء</button>
+      <button mat-flat-button color="warn" type="button" (click)="onConfirm()">إيقاف</button>
     </mat-dialog-actions>
   `
 })

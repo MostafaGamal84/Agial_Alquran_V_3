@@ -76,7 +76,7 @@ export class VerticalMenuComponent {
     }
   }
 
-  // user Logout
+  // تسجيل خروج المستخدم
   logout() {
     this.authenticationService.logout();
   }

@@ -4,7 +4,7 @@
     class="nav-item coded-hasmenu"
     [routerLinkActive]="['active']"
     [ngClass]="{ disabled: !isEnabled }"
-    matTooltip="{{ !isEnabled ? 'Logout and Login with Admin to view this page ' : '' }}"
+    matTooltip="{{ !isEnabled ? 'يرجى تسجيل الخروج والدخول كمسؤول لعرض هذه الصفحة' : '' }}"
   >
     <a [routerLinkActive]="['active']" class="nav-link" (click)="navCollapse($event)">
       @if (item()!.icon) {

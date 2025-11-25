@@ -3,7 +3,7 @@
     <li
       [ngClass]="item().classes!"
       [routerLinkActive]="['active']"
-      matTooltip="{{ !isEnabled ? 'Logout and Login with Admin to view this page ' : '' }}"
+      matTooltip="{{ !isEnabled ? 'يرجى تسجيل الخروج والدخول كمسؤول لعرض هذه الصفحة' : '' }}"
     >
       <a
         class="nav-link"
@@ -43,7 +43,7 @@
       </a>
     </li>
   } @else if (item().url && item().external) {
-    <li [ngClass]="item().classes!" matTooltip="{{ !isEnabled ? 'Logout and Login with Admin to view this page ' : '' }}">
+    <li [ngClass]="item().classes!" matTooltip="{{ !isEnabled ? 'يرجى تسجيل الخروج والدخول كمسؤول لعرض هذه الصفحة' : '' }}">
       <a [target]="item().target ? '_blank' : '_self'" [href]="item().url" [ngClass]="{ disabled: !isEnabled }">
         @if (item().icon) {
           <span class="coded-micon">
