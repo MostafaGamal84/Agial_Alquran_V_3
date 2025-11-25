@@ -547,7 +547,7 @@ export class ReportAddComponent implements OnInit {
             } else if (this.role === UserTypesEnum.Manager) {
               const managerId = this.toNumber(this.auth.currentUserValue?.user.id);
               if (managerId) {
-                defaults.managerId = managerId;
+                // defaults.managerId = managerId;
                 this.onManagerChange(managerId, true);
               }
             } else {
