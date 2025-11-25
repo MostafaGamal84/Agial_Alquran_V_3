@@ -1,12 +1,12 @@
 <app-card [showHeader]="false">
   <div class="flex align-item-start justify-content-between">
     <div>
-      <div class="f-16 f-w-600 m-b-5">Earning Courses</div>
+      <div class="f-16 f-w-600 m-b-5">أرباح الدورات</div>
     </div>
     <select class="form-select-sm" [(ngModel)]="selectType" (change)="onOptionSelected()">
-      <option value="today">اليوم</option>
-      <option value="week">أسبوعيًا</option>
-      <option value="month">شهريًا</option>
+      <option value="اليوم">اليوم</option>
+      <option value="الأسبوع">أسبوعيًا</option>
+      <option value="الشهر">شهريًا</option>
     </select>
   </div>
   <div id="chart">

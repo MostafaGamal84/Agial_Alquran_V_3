@@ -109,7 +109,8 @@ export class OnlineDashboardComponent implements OnInit {
         if (!response?.isSuccess) {
           this.overviewLoaded = false;
           this.resetOverviewData();
-          const message = this.extractFirstError(response?.errors) || this.translate.instant('Failed to load dashboard overview');
+          const message =
+            this.extractFirstError(response?.errors) || this.translate.instant('تعذر تحميل نظرة عامة لوحة التحكم');
           this.overviewError = message;
           if (message) {
             this.toast.error(message);
@@ -124,7 +125,7 @@ export class OnlineDashboardComponent implements OnInit {
         this.overviewLoading = false;
         this.overviewLoaded = false;
         this.resetOverviewData();
-        const message = this.translate.instant('Failed to load dashboard overview');
+        const message = this.translate.instant('تعذر تحميل نظرة عامة لوحة التحكم');
         this.overviewError = message;
         this.toast.error(message);
       }
@@ -165,7 +166,7 @@ export class OnlineDashboardComponent implements OnInit {
     const definitions = [
       {
         key: 'earnings',
-        title: 'All Earnings',
+        title: 'كل الأرباح',
         icon: '#custom-card',
         background: 'bg-warn-50 text-warn-500',
         defaultTrendClass: 'text-success-500',
@@ -175,7 +176,7 @@ export class OnlineDashboardComponent implements OnInit {
       },
       {
         key: 'newStudents',
-        title: 'New Students',
+        title: 'الطلاب الجدد',
         icon: '#custom-profile-2user-outline',
         background: 'bg-primary-50 text-primary-500',
         defaultTrendClass: 'text-success-500',
@@ -184,7 +185,7 @@ export class OnlineDashboardComponent implements OnInit {
       },
       {
         key: 'circleReports',
-        title: 'Circle Reports',
+        title: 'تقارير الحلقات',
         icon: '#custom-eye',
         background: 'bg-success-50 text-success-500',
         defaultTrendClass: 'text-success-500',
@@ -193,7 +194,7 @@ export class OnlineDashboardComponent implements OnInit {
       },
       {
         key: 'netIncome',
-        title: 'Net Income',
+        title: 'صافي الدخل',
         icon: '#book',
         background: 'bg-warning-50 text-warning-500',
         defaultTrendClass: 'text-success-500',
@@ -228,12 +229,12 @@ export class OnlineDashboardComponent implements OnInit {
 
   private buildRoleMetricEntries(metrics?: DashboardOverviewMetricsDto | null): DashboardRoleMetricEntry[] {
     const definitions = [
-      { key: 'branchManagersCount', label: 'Branch Managers' },
-      { key: 'supervisorsCount', label: 'Supervisors' },
-      { key: 'teachersCount', label: 'Teachers' },
-      { key: 'studentsCount', label: 'Students' },
-      { key: 'circlesCount', label: 'Circles' },
-      { key: 'reportsCount', label: 'Reports' }
+      { key: 'branchManagersCount', label: 'مديرو الفروع' },
+      { key: 'supervisorsCount', label: 'المشرفون' },
+      { key: 'teachersCount', label: 'المعلمون' },
+      { key: 'studentsCount', label: 'الطلاب' },
+      { key: 'circlesCount', label: 'الحلقات' },
+      { key: 'reportsCount', label: 'التقارير' }
     ];
 
     return definitions
@@ -254,11 +255,11 @@ export class OnlineDashboardComponent implements OnInit {
 
   private buildProjectOverviewEntries(projectOverview?: DashboardOverviewProjectOverviewDto | null): DashboardOverviewListEntry[] {
     const definitions = [
-      { key: 'totalCircles', label: 'Total Circles' },
-      { key: 'activeCircles', label: 'Active Circles' },
-      { key: 'teachers', label: 'Teachers' },
-      { key: 'students', label: 'Students' },
-      { key: 'reports', label: 'Reports' }
+      { key: 'totalCircles', label: 'إجمالي الحلقات' },
+      { key: 'activeCircles', label: 'الحلقات النشطة' },
+      { key: 'teachers', label: 'المعلمون' },
+      { key: 'students', label: 'الطلاب' },
+      { key: 'reports', label: 'التقارير' }
     ];
 
     return definitions
@@ -311,10 +312,10 @@ export class OnlineDashboardComponent implements OnInit {
     });
 
     const seriesDefinitions = [
-      { key: 'earnings', nameKey: 'Earnings' },
-      { key: 'teacherPayout', nameKey: 'Teacher Payout' },
-      { key: 'managerPayout', nameKey: 'Manager Payout' },
-      { key: 'netIncome', nameKey: 'Net Income' }
+      { key: 'earnings', nameKey: 'الأرباح' },
+      { key: 'teacherPayout', nameKey: 'مدفوعات المعلمين' },
+      { key: 'managerPayout', nameKey: 'مدفوعات المديرين' },
+      { key: 'netIncome', nameKey: 'صافي الدخل' }
     ] as const;
 
     const series: ApexAxisChartSeries = [];
@@ -566,16 +567,16 @@ export class OnlineDashboardComponent implements OnInit {
 
     switch (normalized) {
       case 'paid':
-        return 'Paid';
+        return 'مدفوع';
       case 'pending':
-        return 'Pending';
+        return 'قيد الانتظار';
       case 'failed':
-        return 'Failed';
+        return 'فشل';
       case 'cancelled':
       case 'canceled':
-        return 'Cancelled';
+        return 'ملغي';
       default:
-        return 'Unknown Status';
+        return 'حالة غير معروفة';
     }
   }
 
@@ -585,10 +586,10 @@ export class OnlineDashboardComponent implements OnInit {
     }
 
     if (typeof id === 'number' || typeof id === 'string') {
-      return this.translate.instant('Student #{{id}}', { id });
+      return this.translate.instant('طالب رقم {{id}}', { id });
     }
 
-    return this.translate.instant('Student #{{id}}', { id: index + 1 });
+    return this.translate.instant('طالب رقم {{id}}', { id: index + 1 });
   }
 
   private getStatusClass(status?: string | null): string {
@@ -650,7 +651,7 @@ export class OnlineDashboardComponent implements OnInit {
       error: () => {
         this.upcomingLoading = false;
         this.upcomingCircles = [];
-        this.toast.error(this.translate.instant('Failed to load upcoming courses'));
+        this.toast.error(this.translate.instant('تعذر تحميل الدورات القادمة'));
       }
     });
   }
@@ -701,7 +702,7 @@ export class OnlineDashboardComponent implements OnInit {
     }
 
     if (circle.teacherId !== undefined && circle.teacherId !== null) {
-      return this.translate.instant('Teacher #{{id}}', { id: circle.teacherId });
+      return this.translate.instant('معلم رقم {{id}}', { id: circle.teacherId });
     }
 
     return '';
@@ -709,7 +710,7 @@ export class OnlineDashboardComponent implements OnInit {
 
   getCircleInitials(name?: string | null): string {
     if (!name) {
-      return 'C';
+      return 'ح';
     }
 
     const segments = name
@@ -719,7 +720,7 @@ export class OnlineDashboardComponent implements OnInit {
 
     const initials = segments.map((segment) => segment.charAt(0)).join('').toUpperCase();
 
-    return initials || name.charAt(0).toUpperCase() || 'C';
+    return initials || name.charAt(0).toUpperCase() || 'ح';
   }
 
   getUpcomingManagersLabel(circle: UpcomingCircleDto): string {

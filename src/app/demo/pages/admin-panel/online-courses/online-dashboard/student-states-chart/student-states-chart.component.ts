@@ -44,7 +44,7 @@ export class StudentStatesChartComponent implements OnInit {
           }
         }
       },
-      labels: ['Total Signups', 'Active Student'],
+      labels: ['إجمالي التسجيلات', 'الطلاب النشطون'],
       series: [76.7, 30],
       legend: {
         show: true,
