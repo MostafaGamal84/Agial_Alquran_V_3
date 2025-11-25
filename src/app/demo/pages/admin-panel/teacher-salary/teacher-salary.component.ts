@@ -165,20 +165,20 @@ export class TeacherSalaryComponent
 
   private readonly apiBaseUrl = environment.apiUrl.replace(/\/+$/, '');
   private subscriptions = new Subscription();
-  private readonly numberFormatter = new Intl.NumberFormat(undefined, {
+  private readonly numberFormatter = new Intl.NumberFormat('ar-EG', {
     maximumFractionDigits: 0
   });
-  private readonly percentFormatter = new Intl.NumberFormat(undefined, {
+  private readonly percentFormatter = new Intl.NumberFormat('ar-EG', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2
   });
-  private readonly currencyFormatter = new Intl.NumberFormat(undefined, {
+  private readonly currencyFormatter = new Intl.NumberFormat('ar-EG', {
     style: 'currency',
     currency: 'USD',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   });
-  private readonly dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
+  private readonly dateTimeFormatter = new Intl.DateTimeFormat('ar-EG', {
     dateStyle: 'medium',
     timeStyle: 'short'
   });
@@ -331,7 +331,7 @@ export class TeacherSalaryComponent
     const invoiceId = invoice.id;
     if (!invoiceId) {
       event.source.checked = !event.checked;
-      this.toastService.error('Invoice identifier was invalid.');
+      this.toastService.error('معرف الفاتورة غير صالح.');
       return;
     }
 
@@ -356,7 +356,7 @@ export class TeacherSalaryComponent
               this.extractInvoiceFromStatusResponse(response)
             );
             this.toastService.success(
-              `Invoice marked as ${newValue ? 'paid' : 'unpaid'}.`
+              `تم تحديث حالة الفاتورة إلى ${newValue ? 'مدفوعة' : 'غير مدفوعة'}.`
             );
             this.applyInvoiceUpdate(updatedInvoice);
             this.loadInvoices();
@@ -364,7 +364,7 @@ export class TeacherSalaryComponent
             event.source.checked = !newValue;
             this.handleErrors(
               response.errors,
-              'Failed to update invoice payment status.'
+              'فشل تحديث حالة دفع الفاتورة.'
             );
           }
         },
@@ -372,7 +372,7 @@ export class TeacherSalaryComponent
           event.source.checked = !newValue;
           await this.notifyHttpError(
             error,
-            'Failed to update invoice payment status.'
+            'فشل تحديث حالة دفع الفاتورة.'
           );
         }
       });
@@ -397,7 +397,7 @@ export class TeacherSalaryComponent
 
     const invoiceId = invoice.id;
     if (!invoiceId) {
-      this.toastService.error('Invoice identifier was invalid.');
+      this.toastService.error('معرف الفاتورة غير صالح.');
       return;
     }
 
@@ -441,12 +441,12 @@ export class TeacherSalaryComponent
             );
             this.applyInvoiceUpdate(updatedInvoice);
             this.toastService.success(
-              'Printable invoice generated and uploaded successfully.'
+              'تم إنشاء نسخة الفاتورة للطباعة ورفعها بنجاح.'
             );
           } else {
             this.handleErrors(
               response.errors,
-              'Failed to upload the printable invoice.'
+              'فشل رفع نسخة الفاتورة للطباعة.'
             );
           }
         },
@@ -455,24 +455,24 @@ export class TeacherSalaryComponent
             if (error.apiErrors?.length) {
               this.handleErrors(
                 error.apiErrors,
-                'Failed to upload the printable invoice.'
+                'فشل رفع نسخة الفاتورة للطباعة.'
               );
             } else {
               this.toastService.error(
-                error.message || 'Failed to upload the printable invoice.'
+                error.message || 'فشل رفع نسخة الفاتورة للطباعة.'
               );
             }
             return;
           }
 
           if (error instanceof Error && error.message === 'PRINT_RENDER_FAILED') {
-            this.toastService.error('Failed to render the printable invoice.');
+            this.toastService.error('تعذر إنشاء نسخة الفاتورة للطباعة.');
             return;
           }
 
           await this.notifyHttpError(
             error,
-            'Failed to upload the printable invoice.'
+            'فشل رفع نسخة الفاتورة للطباعة.'
           );
         }
       });
@@ -497,19 +497,19 @@ export class TeacherSalaryComponent
             const updated = this.generationResult?.updatedCount ?? 0;
             const skipped = this.generationResult?.skippedCount ?? 0;
             this.toastService.success(
-              `Generation complete. Created ${created}, updated ${updated}, skipped ${skipped}.`
+              `اكتمل التوليد. تم إنشاء ${created} وتحديث ${updated} وتخطي ${skipped}.`
             );
             this.loadInvoices();
             this.loadMonthlySummary();
           } else {
             this.handleErrors(
               response.errors,
-              'Failed to generate monthly invoices.'
+              'فشل إنشاء فواتير الشهر.'
             );
           }
         },
         error: () => {
-          this.toastService.error('Failed to generate monthly invoices.');
+          this.toastService.error('فشل إنشاء فواتير الشهر.');
         }
       });
   }
@@ -743,12 +743,12 @@ export class TeacherSalaryComponent
             this.teachers = response.data?.items ?? [];
           } else {
             this.teachers = [];
-            this.handleErrors(response.errors, 'Failed to load teachers.');
+            this.handleErrors(response.errors, 'فشل تحميل بيانات المعلمين.');
           }
         },
         error: () => {
           this.teachers = [];
-          this.toastService.error('Failed to load teachers.');
+          this.toastService.error('فشل تحميل بيانات المعلمين.');
         }
       });
   }
@@ -771,13 +771,13 @@ export class TeacherSalaryComponent
             this.applyInvoices([]);
             this.handleErrors(
               response.errors,
-              'Failed to load teacher salary invoices.'
+              'فشل تحميل فواتير رواتب المعلمين.'
             );
           }
         },
         error: () => {
           this.applyInvoices([]);
-          this.toastService.error('Failed to load teacher salary invoices.');
+          this.toastService.error('فشل تحميل فواتير رواتب المعلمين.');
         }
       });
   }
@@ -800,14 +800,14 @@ export class TeacherSalaryComponent
             this.summaryMetrics = [];
             this.handleErrors(
               response.errors,
-              'Failed to load teacher monthly summary.'
+              'فشل تحميل الملخص الشهري للمعلمين.'
             );
           }
         },
         error: () => {
           this.summary = null;
           this.summaryMetrics = [];
-          this.toastService.error('Failed to load teacher monthly summary.');
+          this.toastService.error('فشل تحميل الملخص الشهري للمعلمين.');
         }
       });
   }
@@ -830,11 +830,11 @@ export class TeacherSalaryComponent
               setTimeout(() => this.detailDrawer?.open(), 0);
             }
           } else {
-            this.handleErrors(response.errors, 'Failed to load invoice details.');
+            this.handleErrors(response.errors, 'فشل تحميل تفاصيل الفاتورة.');
           }
         },
         error: () => {
-          this.toastService.error('Failed to load invoice details.');
+          this.toastService.error('فشل تحميل تفاصيل الفاتورة.');
         }
       });
   }
@@ -947,7 +947,7 @@ export class TeacherSalaryComponent
     }
     const parsed = new Date(value);
     if (!Number.isNaN(parsed.getTime())) {
-      return new Intl.DateTimeFormat(undefined, {
+      return new Intl.DateTimeFormat('ar-EG', {
         month: 'long',
         year: 'numeric'
       }).format(parsed);
@@ -1009,25 +1009,25 @@ export class TeacherSalaryComponent
       }
     };
 
-    addMetric('Reports', ['totalReports', 'reportCount'], 'number');
-    addMetric(
-      'Attendance',
-      ['presentCount', 'attendanceCount', 'totalAttendance', 'attendedSessions'],
-      'number'
-    );
-    addMetric('Absence (Excused)', ['absentWithExcuseCount'], 'number');
-    addMetric('Absence (Unexcused)', ['absentWithoutExcuseCount'], 'number');
-    addMetric('Absence (Total)', ['absenceCount', 'totalAbsence', 'missedSessions'], 'number');
-    addMetric('Sessions', ['sessionCount', 'lessonsCount'], 'number');
-    addMetric('Teaching Minutes', ['teachingMinutes', 'totalMinutes'], 'number', 'min');
-    addMetric('Overtime Minutes', ['overtimeMinutes'], 'number', 'min');
-    addMetric('Base Salary', ['baseSalary'], 'currency');
-    addMetric('Salary Total', ['salaryTotal', 'totalSalary'], 'currency');
-    addMetric('Bonuses', ['bonusTotal', 'bonuses', 'totalBonus'], 'currency');
-    addMetric('Deductions', ['deductionTotal', 'deductions', 'totalDeduction'], 'currency');
-    addMetric('Net Salary', ['netSalary', 'takeHomePay'], 'currency');
-    addMetric('Hourly Rate', ['hourlyRate'], 'currency');
-    addMetric('Attendance Rate', ['attendanceRate'], 'percentage');
+      addMetric('التقارير', ['totalReports', 'reportCount'], 'number');
+      addMetric(
+        'الحضور',
+        ['presentCount', 'attendanceCount', 'totalAttendance', 'attendedSessions'],
+        'number'
+      );
+      addMetric('الغياب المبرر', ['absentWithExcuseCount'], 'number');
+      addMetric('الغياب غير المبرر', ['absentWithoutExcuseCount'], 'number');
+      addMetric('إجمالي الغياب', ['absenceCount', 'totalAbsence', 'missedSessions'], 'number');
+      addMetric('عدد الحصص', ['sessionCount', 'lessonsCount'], 'number');
+      addMetric('دقائق التدريس', ['teachingMinutes', 'totalMinutes'], 'number', 'دقيقة');
+      addMetric('الدقائق الإضافية', ['overtimeMinutes'], 'number', 'دقيقة');
+      addMetric('الراتب الأساسي', ['baseSalary'], 'currency');
+      addMetric('إجمالي الراتب', ['salaryTotal', 'totalSalary'], 'currency');
+      addMetric('المكافآت', ['bonusTotal', 'bonuses', 'totalBonus'], 'currency');
+      addMetric('الخصومات', ['deductionTotal', 'deductions', 'totalDeduction'], 'currency');
+      addMetric('صافي الراتب', ['netSalary', 'takeHomePay'], 'currency');
+      addMetric('الأجر بالساعة', ['hourlyRate'], 'currency');
+      addMetric('نسبة الحضور', ['attendanceRate'], 'percentage');
 
     return metrics;
   }
@@ -1092,13 +1092,13 @@ export class TeacherSalaryComponent
   }
 
   private buildReceiptFileName(invoice: TeacherSalaryInvoice): string {
-    const teacherPart = this.toSlug(invoice.teacherName ?? 'teacher');
+    const teacherPart = this.toSlug(invoice.teacherName ?? 'المعلم');
     const monthDisplay = this.formatMonth(invoice);
     const monthPart = this.toSlug(monthDisplay);
-    const teacher = teacherPart.length > 0 ? teacherPart : 'teacher';
-    const month = monthPart.length > 0 ? monthPart : 'month';
+    const teacher = teacherPart.length > 0 ? teacherPart : 'المعلم';
+    const month = monthPart.length > 0 ? monthPart : 'الشهر';
     const idPart = invoice.id ? `-${invoice.id}` : '';
-    return `teacher-invoice-${teacher}-${month}${idPart}.html`;
+    return `فاتورة-راتب-${teacher}-${month}${idPart}.html`;
   }
 
   private mergeInvoiceData(
@@ -1196,9 +1196,8 @@ export class TeacherSalaryComponent
   private toSlug(value: string): string {
     const normalized = value
       .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
+      .normalize('NFKD')
+      .replace(/[^\p{L}\p{N}]+/gu, '-')
       .replace(/^-+|-+$/g, '');
     return normalized;
   }
@@ -1228,11 +1227,11 @@ export class TeacherSalaryComponent
             return context;
           }
           throw new InvoicePrintContextError(
-            'Invoice data was incomplete for building the printable invoice.'
+            'بيانات الفاتورة غير مكتملة لإنشاء نسخة الطباعة.'
           );
         }
         throw new InvoicePrintContextError(
-          'Failed to load data for the printable invoice.',
+          'فشل تحميل بيانات الفاتورة الخاصة بالطباعة.',
           response.errors
         );
       })
@@ -1288,7 +1287,7 @@ export class TeacherSalaryComponent
         }
       };
     } catch (error) {
-      console.error('Failed to render printable invoice', error);
+      console.error('تعذر إنشاء نسخة الفاتورة للطباعة', error);
       throw new Error('PRINT_RENDER_FAILED');
     }
   }
@@ -1297,8 +1296,6 @@ export class TeacherSalaryComponent
     const invoice = context.invoice;
     const summary = context.summary;
     const invoiceNumberValue = invoice.id ?? null;
-    const invoiceNumber =
-      invoiceNumberValue !== null ? this.numberFormatter.format(invoiceNumberValue) : '—';
     const invoiceNumberAr = this.formatArabicNumber(invoiceNumberValue);
     const teacherIdValue =
       this.resolveInvoiceNumber(invoice, ['teacherId']) ??
@@ -1310,16 +1307,11 @@ export class TeacherSalaryComponent
         'teacherArabicName',
         'teacherName'
       ]) ?? teacherName;
-    const billingMonthEn = this.resolveInvoiceMonth(context);
     const billingMonthAr = this.resolveInvoiceMonthArabic(context);
-    const paymentDateEn = this.resolvePaymentDateDisplay(invoice);
     const paymentDateAr = this.resolvePaymentDateDisplay(invoice, 'ar-EG');
-    const statusLabelEn = this.getStatusLabel(invoice);
     const statusLabelAr = this.getStatusLabel(invoice);
     const invoiceAmountValue = this.getSalaryAmount(invoice);
-    const invoiceAmountEn = this.formatCurrency(invoiceAmountValue);
     const invoiceAmountAr = this.formatArabicCurrency(invoiceAmountValue);
-    const generatedOnEn = this.formatDateTime(new Date());
     const generatedOnAr = this.formatDateTime(new Date(), 'ar-EG');
 
     const baseSalary = this.resolveSummaryNumber(summary, ['baseSalary']);
@@ -1366,138 +1358,133 @@ export class TeacherSalaryComponent
         : Math.abs(attendanceRateRaw) <= 1
         ? attendanceRateRaw * 100
         : attendanceRateRaw;
-    const attendanceRateEn =
-      attendanceRateNormalized === null
-        ? '—'
-        : `${this.percentFormatter.format(attendanceRateNormalized)}%`;
-    const attendanceRateAr =
+    const attendanceRateDisplay =
       attendanceRateNormalized === null
         ? '—'
         : `${this.formatArabicPercent(attendanceRateNormalized)}٪`;
 
     const summaryCards: SummaryCardItem[] = [
       {
-        titleEn: 'Invoice Amount',
+        titleEn: 'إجمالي الفاتورة',
         titleAr: 'إجمالي الفاتورة',
-        value: invoiceAmountEn,
+        value: invoiceAmountAr,
         valueAr: invoiceAmountAr
       },
       {
-        titleEn: 'Net Salary',
+        titleEn: 'صافي الراتب',
         titleAr: 'صافي الراتب',
-        value: this.formatCurrency(netSalaryValue),
+        value: this.formatArabicCurrency(netSalaryValue),
         valueAr: this.formatArabicCurrency(netSalaryValue)
       },
       {
-        titleEn: 'Attendance Rate',
+        titleEn: 'نسبة الحضور',
         titleAr: 'نسبة الحضور',
-        value: attendanceRateEn,
-        valueAr: attendanceRateAr
+        value: attendanceRateDisplay,
+        valueAr: attendanceRateDisplay
       },
       {
-        titleEn: 'Status',
+        titleEn: 'الحالة',
         titleAr: 'الحالة',
-        value: statusLabelEn,
+        value: statusLabelAr,
         valueAr: statusLabelAr
       }
     ];
 
     const infoRows = [
       {
-        labelEn: 'Invoice Number',
-        valueEn: invoiceNumber,
+        labelEn: 'رقم الفاتورة',
+        valueEn: invoiceNumberAr,
         labelAr: 'رقم الفاتورة',
         valueAr: invoiceNumberAr
       },
       {
-        labelEn: 'Teacher ID',
-        valueEn:
-          teacherIdValue !== null ? this.numberFormatter.format(teacherIdValue) : '—',
+        labelEn: 'رقم المعلم',
+        valueEn: this.formatArabicNumber(teacherIdValue),
         labelAr: 'رقم المعلم',
         valueAr: this.formatArabicNumber(teacherIdValue)
       },
       {
-        labelEn: 'Teacher',
-        valueEn: teacherName,
+        labelEn: 'اسم المعلم',
+        valueEn: teacherNameAr,
         labelAr: 'اسم المعلم',
         valueAr: teacherNameAr
       },
       {
-        labelEn: 'Billing Month',
-        valueEn: billingMonthEn,
+        labelEn: 'شهر الفاتورة',
+        valueEn: billingMonthAr,
         labelAr: 'شهر الفاتورة',
         valueAr: billingMonthAr
       },
       {
-        labelEn: 'Payment Date',
-        valueEn: paymentDateEn,
+        labelEn: 'تاريخ الدفع',
+        valueEn: paymentDateAr,
         labelAr: 'تاريخ الدفع',
         valueAr: paymentDateAr
       },
       {
-        labelEn: 'Status',
-        valueEn: statusLabelEn,
+        labelEn: 'الحالة',
+        valueEn: statusLabelAr,
         labelAr: 'الحالة',
         valueAr: statusLabelAr
       },
       {
-        labelEn: 'Invoice Amount',
-        valueEn: invoiceAmountEn,
+        labelEn: 'قيمة الفاتورة',
+        valueEn: invoiceAmountAr,
         labelAr: 'قيمة الفاتورة',
         valueAr: invoiceAmountAr,
         highlight: true
       },
       {
-        labelEn: 'Generated On',
-        valueEn: generatedOnEn,
+        labelEn: 'تاريخ الإنشاء',
+        valueEn: generatedOnAr,
         labelAr: 'تاريخ الإنشاء',
         valueAr: generatedOnAr
       }
     ];
 
     const salaryRows = [
-      { labelEn: 'Base Salary', value: baseSalary, labelAr: 'الراتب الأساسي' },
-      { labelEn: 'Bonuses', value: bonuses, labelAr: 'المكافآت' },
-      { labelEn: 'Deductions', value: deductions, labelAr: 'الخصومات' },
-      { labelEn: 'Net Salary', value: netSalaryValue, labelAr: 'صافي الراتب', highlight: true },
-      { labelEn: 'Total Salary', value: salaryTotal, labelAr: 'إجمالي الراتب', highlight: true },
-      { labelEn: 'Hourly Rate', value: hourlyRate, labelAr: 'الأجر بالساعة' }
+      { labelEn: 'الراتب الأساسي', value: baseSalary, labelAr: 'الراتب الأساسي' },
+      { labelEn: 'المكافآت', value: bonuses, labelAr: 'المكافآت' },
+      { labelEn: 'الخصومات', value: deductions, labelAr: 'الخصومات' },
+      { labelEn: 'صافي الراتب', value: netSalaryValue, labelAr: 'صافي الراتب', highlight: true },
+      { labelEn: 'إجمالي الراتب', value: salaryTotal, labelAr: 'إجمالي الراتب', highlight: true },
+      { labelEn: 'الأجر بالساعة', value: hourlyRate, labelAr: 'الأجر بالساعة' }
     ];
 
     const attendanceRows = [
       {
-        labelEn: 'Attendance',
+        labelEn: 'الحضور',
         value: attendanceCount,
         labelAr: 'الحضور',
-        formatEn: (value: number) => this.numberFormatter.format(value),
+        formatEn: (value: number) => this.formatArabicNumber(value),
         formatAr: (value: number) => `${this.formatArabicNumber(value)} حضور`
       },
       {
-        labelEn: 'Absence',
+        labelEn: 'الغياب',
         value: absenceCount,
         labelAr: 'الغياب',
-        formatEn: (value: number) => this.numberFormatter.format(value),
+        formatEn: (value: number) => this.formatArabicNumber(value),
         formatAr: (value: number) => `${this.formatArabicNumber(value)} غياب`
       },
       {
-        labelEn: 'Sessions',
+        labelEn: 'عدد الحصص',
         value: sessionCount,
         labelAr: 'عدد الحصص',
-        formatEn: (value: number) => this.numberFormatter.format(value),
+        formatEn: (value: number) => this.formatArabicNumber(value),
         formatAr: (value: number) => `${this.formatArabicNumber(value)} حصة`
       },
       {
-        labelEn: 'Teaching Minutes',
+        labelEn: 'دقائق التدريس',
         value: teachingMinutes,
         labelAr: 'دقائق التدريس',
-        formatEn: (value: number) => `${this.numberFormatter.format(value)} min`,
+        formatEn: (value: number) => `${this.formatArabicNumber(value)} دقيقة`,
         formatAr: (value: number) => `${this.formatArabicNumber(value)} دقيقة`
       },
       {
-        labelEn: 'Overtime Minutes',
+        labelEn: 'الدقائق الإضافية',
         value: overtimeMinutes,
         labelAr: 'الدقائق الإضافية',
-        formatEn: (value: number) => `${this.numberFormatter.format(value)} min`,
+        formatEn: (value: number) => `${this.formatArabicNumber(value)} دقيقة إضافية`,
         formatAr: (value: number) => `${this.formatArabicNumber(value)} دقيقة إضافية`
       }
     ];
@@ -1543,26 +1530,25 @@ export class TeacherSalaryComponent
       .map((card) => this.buildSummaryCardHtml(card))
       .join('');
 
-    const notesEn =
-      'This invoice has been generated automatically based on recorded salary and attendance data for the selected period.';
-    const notesAr =
+    const notesText =
       'تم إنشاء هذه الفاتورة تلقائياً استناداً إلى بيانات الراتب والحضور للفترة المحددة.';
 
     const styles = this.buildPrintStyles();
     const attendanceRateRowHtml =
       attendanceRateNormalized !== null
         ? this.buildPrintRow(
-            'Attendance Rate',
-            attendanceRateEn,
             'نسبة الحضور',
-            attendanceRateAr
+            attendanceRateDisplay,
+            'نسبة الحضور',
+            attendanceRateDisplay
           )
         : '';
-    const documentTitleSuffix = invoiceNumber !== '—' ? ` #${invoiceNumber}` : '';
-    const documentTitle = `Teacher Salary Invoice${documentTitleSuffix}`;
+    const documentTitleSuffix =
+      invoiceNumberAr !== '—' ? ` رقم ${invoiceNumberAr}` : '';
+    const documentTitle = `فاتورة راتب المعلم${documentTitleSuffix}`;
 
     return `<!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
   <meta charset="utf-8" />
   <title>${this.escapeHtml(documentTitle)}</title>
@@ -1574,12 +1560,11 @@ ${styles}
   <div class="print-page">
     <header class="print-header">
       <div class="header-text">
-        <h1>Teacher Salary Invoice</h1>
-        <h2 dir="rtl">فاتورة راتب المعلم</h2>
+        <h1 dir="rtl">فاتورة راتب المعلم</h1>
+        <h2 dir="rtl">سند دفع الراتب</h2>
       </div>
       <div class="header-meta">
-        <span class="label">Invoice</span>
-        <span class="value">${this.escapeHtml(invoiceNumber)}</span>
+        <span class="label">رقم الفاتورة</span>
         <span class="value" dir="rtl">${this.escapeHtml(invoiceNumberAr)}</span>
       </div>
     </header>
@@ -1588,8 +1573,8 @@ ${styles}
     </section>
     <section class="print-section">
       <div class="section-title">
-        <h3>Invoice Details</h3>
-        <h4 dir="rtl">بيانات الفاتورة</h4>
+        <h3 dir="rtl">بيانات الفاتورة</h3>
+        <h4 dir="rtl">تفاصيل الطلب</h4>
       </div>
       <div class="print-grid">
         ${infoRowsHtml}
@@ -1597,31 +1582,30 @@ ${styles}
     </section>
     <section class="print-section">
       <div class="section-title">
-        <h3>Salary Breakdown</h3>
-        <h4 dir="rtl">تفاصيل الراتب</h4>
+        <h3 dir="rtl">تفاصيل الراتب</h3>
+        <h4 dir="rtl">ملخص المستحقات</h4>
       </div>
       <div class="print-grid">
         ${salaryRowsHtml}
       </div>
     </section>
-    <section class="print-section">
-      <div class="section-title">
-        <h3>Attendance Summary</h3>
-        <h4 dir="rtl">ملخص الحضور</h4>
-      </div>
-      <div class="print-grid">
-        ${attendanceRowsHtml}
+      <section class="print-section">
+        <div class="section-title">
+        <h3 dir="rtl">ملخص الحضور</h3>
+        <h4 dir="rtl">بيانات الالتزام</h4>
+        </div>
+        <div class="print-grid">
+          ${attendanceRowsHtml}
         ${attendanceRateRowHtml}
       </div>
     </section>
     <section class="print-section">
       <div class="section-title">
-        <h3>Notes</h3>
-        <h4 dir="rtl">ملاحظات</h4>
+        <h3 dir="rtl">ملاحظات</h3>
+        <h4 dir="rtl">معلومات إضافية</h4>
       </div>
       <div class="notes-card">
-        <p>${this.escapeHtml(notesEn)}</p>
-        <p dir="rtl">${this.escapeHtml(notesAr)}</p>
+        <p dir="rtl">${this.escapeHtml(notesText)}</p>
       </div>
     </section>
   </div>
