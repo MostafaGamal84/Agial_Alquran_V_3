@@ -29,7 +29,7 @@
             <hr />
             <div class="detail-grid">
               <div class="detail-item" *ngIf="m.branchId !== undefined">
-                <span class="label">{{ 'Branch' | translate }}:</span>
+                <span class="label">{{ branchLabel }}:</span>
                 <span>{{ getBranchLabel(m.branchId) }}</span>
               </div>
               <div class="detail-item" *ngFor="let entry of detailEntries">

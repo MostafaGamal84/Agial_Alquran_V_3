@@ -7,6 +7,7 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scrollbar';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
+import { TranslateService } from '@ngx-translate/core';
 
 interface Person {
   fullName?: string;
@@ -47,7 +48,7 @@ export class BranchManagerDetailsComponent {
   contactEntries: ContactEntry[] = [];
   detailEntries: DetailEntry[] = [];
   private readonly labelTranslationMap: Record<string, string> = {
-    branchId: 'Branch',
+    branchId: 'BRANCH_MANAGER_DETAILS.Branch',
     gender: 'Gender',
     userName: 'Username',
     createdAt: 'Created At',
@@ -66,9 +67,11 @@ export class BranchManagerDetailsComponent {
     { id: BranchesEnum.Mens, label: 'الرجال' },
     { id: BranchesEnum.Women, label: 'النساء' }
   ];
+  branchLabel = '';
 
   constructor() {
     const user = inject<Record<string, unknown>>(MAT_DIALOG_DATA);
+    const translate = inject(TranslateService);
     if (user) {
       this.manager = user;
       const raw = user as Record<string, unknown>;
