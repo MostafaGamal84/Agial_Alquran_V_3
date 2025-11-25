@@ -47,14 +47,13 @@ export class BranchManagerDetailsComponent {
     createdAt: 'Created At',
     updatedAt: 'Updated At',
     managerName: 'Manager Name',
-    circleName: 'BRANCH_MANAGER_DETAILS.Circle Name',
     identityNumber: 'Identity Number',
-    residentId: 'BRANCH_MANAGER_DETAILS.Resident ID',
-    resident: 'BRANCH_MANAGER_DETAILS.Resident',
-    nationality: 'BRANCH_MANAGER_DETAILS.Nationality',
-    nationalityId: 'BRANCH_MANAGER_DETAILS.Nationality',
-    governorate: 'BRANCH_MANAGER_DETAILS.Governorate',
-    governorateId: 'BRANCH_MANAGER_DETAILS.Governorate'
+    residentId: 'Resident ID',
+    resident: 'Resident',
+    nationality: 'Nationality',
+    nationalityId: 'Nationality',
+    governorate: 'Governorate',
+    governorateId: 'Governorate'
   };
 
   Branch = [
@@ -86,6 +85,7 @@ export class BranchManagerDetailsComponent {
         'managers',
         'teacherName',
         'managerName',
+        'circleName',
         'inactive',
         ...contactKeys
       ];
