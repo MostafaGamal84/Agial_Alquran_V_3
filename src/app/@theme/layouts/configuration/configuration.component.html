@@ -8,14 +8,14 @@
   </div>
   <div class="style-block">
     <div class="customize-header align-item-center">
-      <div class="f-16 f-w-600">Settings</div>
+      <div class="f-16 f-w-600">{{ 'Settings' | translate }}</div>
       <button
         type="button"
         mat-icon-button
         class="close-drawer"
         color="warn"
         (click)="styleSelectorToggle = !styleSelectorToggle"
-        matTooltip="Close Customizer "
+        [matTooltip]="'Close Customizer' | translate"
       >
         <mat-icon>close</mat-icon>
       </button>
@@ -25,13 +25,13 @@
         <ul class="list-group">
           <li class="list-group-item">
             <div class="pc-dark">
-              <div class="m-b-5 f-16 f-w-600">Theme Mode</div>
-              <p class="text-muted">Choose Light or Dark Mode or Auto</p>
+              <div class="m-b-5 f-16 f-w-600">{{ 'Theme Mode' | translate }}</div>
+              <p class="text-muted">{{ 'Choose Light or Dark Mode or Auto' | translate }}</p>
               <div class="row">
                 <div class="col-4">
                   <div class="grid">
                     <button
-                      matTooltip="Light Mode"
+                      [matTooltip]="'Light Mode' | translate"
                       mat-stroked-button
                       class="customize-button"
                       [ngClass]="{ active: layoutType === 'light' }"
@@ -46,7 +46,7 @@
                 <div class="col-4">
                   <div class="grid">
                     <button
-                      matTooltip="Dark Mode"
+                      [matTooltip]="'Dark Mode' | translate"
                       mat-stroked-button
                       class="customize-button"
                       [ngClass]="{ active: layoutType === 'dark' }"
@@ -61,7 +61,7 @@
                 <div class="col-4">
                   <div class="grid">
                     <button
-                      matTooltip="Auto Mode"
+                      [matTooltip]="'Auto Mode' | translate"
                       mat-stroked-button
                       class="customize-button auto-button"
                       [ngClass]="{ active: layoutType === 'auto' }"
@@ -79,13 +79,13 @@
 
           @if (layoutType !== 'dark') {
             <li class="list-group-item">
-              <div class="m-b-5 f-16 f-w-600">Theme Contrast</div>
-              <p class="text-muted">Choose Theme Contrast</p>
+              <div class="m-b-5 f-16 f-w-600">{{ 'Theme Contrast' | translate }}</div>
+              <p class="text-muted">{{ 'Choose Theme Contrast' | translate }}</p>
               <div class="row">
                 <div class="col-6">
                   <div class="grid">
                     <button
-                      matTooltip="Light Contrast"
+                      [matTooltip]="'Light Contrast' | translate"
                       mat-stroked-button
                       class="customize-button"
                       [ngClass]="{ active: contrast === true }"
@@ -100,7 +100,7 @@
                 <div class="col-6">
                   <div class="grid">
                     <button
-                      matTooltip="Gray Contrast"
+                      [matTooltip]="'Gray Contrast' | translate"
                       mat-stroked-button
                       class="customize-button"
                       [ngClass]="{ active: contrast === false }"
@@ -116,12 +116,12 @@
             </li>
           }
           <li class="list-group-item">
-            <div class="m-b-5 f-16 f-w-600">Custom Theme</div>
-            <p class="text-muted">Choose your Primary color</p>
+            <div class="m-b-5 f-16 f-w-600">{{ 'Custom Theme' | translate }}</div>
+            <p class="text-muted">{{ 'Choose your Primary color' | translate }}</p>
             <div class="theme-color">
               <a
                 href="javascript:"
-                matTooltip="Blue Layout"
+                [matTooltip]="'Blue Layout' | translate"
                 class="blue-layout"
                 [ngClass]="{ active: bodyColor === 'blue-theme' }"
                 (click)="SetBodyColor('blue-theme')"
@@ -131,7 +131,7 @@
               </a>
               <a
                 href="javascript:"
-                matTooltip="Indigo Layout"
+                [matTooltip]="'Indigo Layout' | translate"
                 class="indigo-layout"
                 [ngClass]="{ active: bodyColor === 'indigo-theme' }"
                 (click)="SetBodyColor('indigo-theme')"
@@ -141,7 +141,7 @@
               </a>
               <a
                 href="javascript:"
-                matTooltip="Purple Layout"
+                [matTooltip]="'Purple Layout' | translate"
                 class="purple-layout"
                 [ngClass]="{ active: bodyColor === 'purple-theme' }"
                 (click)="SetBodyColor('purple-theme')"
@@ -151,7 +151,7 @@
               </a>
               <a
                 href="javascript:"
-                matTooltip="Pink Layout"
+                [matTooltip]="'Pink Layout' | translate"
                 class="pink-layout"
                 [ngClass]="{ active: bodyColor === 'pink-theme' }"
                 (click)="SetBodyColor('pink-theme')"
