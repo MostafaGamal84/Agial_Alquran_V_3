@@ -33,8 +33,8 @@
                 <span>{{ getBranchLabel(m.branchId) }}</span>
               </div>
               <div class="detail-item" *ngFor="let entry of detailEntries">
-                <span class="label">{{ formatLabel(entry[0]) | translate }}:</span>
-                <span>{{ formatValue(entry[0], entry[1]) }}</span>
+                <span class="label">{{ entry.labelKey | translate }}:</span>
+                <span>{{ entry.value }}</span>
               </div>
             </div>
           </section>
