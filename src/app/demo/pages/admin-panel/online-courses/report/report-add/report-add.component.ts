@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
@@ -31,6 +32,7 @@ export class ReportAddComponent implements OnInit {
   private toast = inject(ToastService);
   private auth = inject(AuthenticationService);
   private route = inject(ActivatedRoute);
+  private translate = inject(TranslateService);
   private reportId?: number;
 
   reportForm!: FormGroup;
@@ -107,10 +109,12 @@ export class ReportAddComponent implements OnInit {
         if (report) {
           this.populateFormFromReport(report, reportId);
         } else {
-          this.toast.error('Report details are unavailable. Please return to the list and select a report to edit.');
+          this.toast.error(
+            this.translate.instant('Report details are unavailable. Please return to the list and select a report to edit.')
+          );
         }
       } else {
-        this.toast.error('Invalid report identifier');
+        this.toast.error(this.translate.instant('Invalid report identifier'));
       }
     }
   }
@@ -326,27 +330,27 @@ export class ReportAddComponent implements OnInit {
 
     if (this.mode === 'update') {
       if (!this.reportId) {
-        this.toast.error('Missing report identifier');
+        this.toast.error(this.translate.instant('Missing report identifier'));
         return;
       }
       model.id = this.reportId;
       this.service.update(model).subscribe({
         next: (res) => {
           if (res.isSuccess) {
-            this.toast.success('Report updated successfully');
+            this.toast.success(this.translate.instant('Report updated successfully'));
           } else if (res.errors?.length) {
             res.errors.forEach((e) => this.toast.error(e.message));
           } else {
-            this.toast.error('Unable to update report');
+            this.toast.error(this.translate.instant('Unable to update report'));
           }
         },
-        error: () => this.toast.error('Error updating report')
+        error: () => this.toast.error(this.translate.instant('Error updating report'))
       });
     } else {
       this.service.create(model).subscribe({
         next: (res) => {
           if (res.isSuccess) {
-            this.toast.success('Report created successfully');
+            this.toast.success(this.translate.instant('Report created successfully'));
             this.reportForm.reset();
             this.reportForm.get('creationTime')?.setValue(new Date());
             this.toggleFields();
@@ -354,10 +358,10 @@ export class ReportAddComponent implements OnInit {
           } else if (res.errors?.length) {
             res.errors.forEach((e) => this.toast.error(e.message));
           } else {
-            this.toast.error('Unable to create report');
+            this.toast.error(this.translate.instant('Unable to create report'));
           }
         },
-        error: () => this.toast.error('Error creating report')
+        error: () => this.toast.error(this.translate.instant('Error creating report'))
       });
     }
   }
