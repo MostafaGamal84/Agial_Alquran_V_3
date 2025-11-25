@@ -9,7 +9,7 @@
   <div class="col-12" *ngIf="overviewLoading">
     <app-card [showHeader]="false" [padding]="20">
       <div class="flex align-item-center justify-content-center text-muted">
-        {{ 'Loading dashboard overview…' | translate }}
+        {{ 'جاري تحميل نظرة عامة لوحة التحكم…' | translate }}
       </div>
     </app-card>
   </div>
@@ -44,23 +44,23 @@
   @if (!overviewLoading && !summaryCards.length && overviewLoaded) {
     <div class="col-12">
       <app-card [showHeader]="false" [padding]="20">
-        <div class="text-muted">{{ 'No dashboard metrics available for this range.' | translate }}</div>
+        <div class="text-muted">{{ 'لا توجد إحصائيات للوحة التحكم في هذه المدة.' | translate }}</div>
       </app-card>
     </div>
   }
 
   <div class="col-12" *ngIf="overviewLoaded && (overviewRoleLabel || overviewRangeDescription)">
     <div class="text-muted f-12 m-b-20">
-      <span *ngIf="overviewRoleLabel"><strong>{{ 'Role' | translate }}:</strong> {{ overviewRoleLabel }}</span>
+      <span *ngIf="overviewRoleLabel"><strong>{{ 'الدور' | translate }}:</strong> {{ overviewRoleLabel }}</span>
       <span *ngIf="overviewRoleLabel && overviewRangeDescription"> · </span>
-      <span *ngIf="overviewRangeDescription"><strong>{{ 'Range' | translate }}:</strong> {{ overviewRangeDescription }}</span>
+      <span *ngIf="overviewRangeDescription"><strong>{{ 'المدة' | translate }}:</strong> {{ overviewRangeDescription }}</span>
     </div>
   </div>
 
   <div class="col-lg-7 col-md-12" *ngIf="monthlyRevenueHasData">
     <app-statistics-chart
       [height]="300"
-      [chartTitle]="'Monthly Revenue' | translate"
+      [chartTitle]="'الإيرادات الشهرية' | translate"
       [chartSubtitle]="overviewRangeDescription"
       [series]="monthlyRevenueSeries"
       [categories]="monthlyRevenueCategories"
@@ -69,12 +69,12 @@
   </div>
   <div class="col-lg-7 col-md-12" *ngIf="!monthlyRevenueHasData && overviewLoaded">
     <app-card [showHeader]="false" [padding]="24">
-      <div class="text-muted">{{ 'No monthly revenue data available for this range.' | translate }}</div>
+      <div class="text-muted">{{ 'لا توجد بيانات للإيرادات الشهرية في هذه المدة.' | translate }}</div>
     </app-card>
   </div>
 
   <div class="col-lg-5 col-md-12" *ngIf="roleMetricEntries.length">
-    <app-card [cardTitle]="'Role Metrics' | translate" [padding]="0">
+    <app-card [cardTitle]="'إحصائيات الأدوار' | translate" [padding]="0">
       <ul class="list-group list-group-flush">
         @for (metric of roleMetricEntries; track metric.key) {
           <li class="list-group-item d-flex align-item-center justify-content-between">
@@ -87,7 +87,7 @@
   </div>
 
   <div class="col-lg-5 col-md-12" *ngIf="projectOverviewEntries.length">
-    <app-card [cardTitle]="'Project Overview' | translate" [padding]="0">
+    <app-card [cardTitle]="'نظرة عامة على المشروع' | translate" [padding]="0">
       <ul class="list-group list-group-flush">
         @for (item of projectOverviewEntries; track item.key) {
           <li class="list-group-item d-flex align-item-center justify-content-between">
@@ -100,13 +100,13 @@
   </div>
 
   <div class="col-lg-7 col-md-12">
-    <app-card [cardTitle]="'Upcoming Courses' | translate" [padding]="0" cardClass="upcoming-course">
+    <app-card [cardTitle]="'الدورات القادمة' | translate" [padding]="0" cardClass="upcoming-course">
       <ul class="list-group list-group-flush">
         <li class="list-group-item" *ngIf="upcomingLoading">
-          <div class="flex align-item-center">{{ 'Loading upcoming circles…' | translate }}</div>
+          <div class="flex align-item-center">{{ 'جاري تحميل الحلقات القادمة…' | translate }}</div>
         </li>
         <li class="list-group-item" *ngIf="!upcomingLoading && !upcomingCircles.length">
-          <div class="flex align-item-center">{{ 'No upcoming circles found' | translate }}</div>
+          <div class="flex align-item-center">{{ 'لا توجد حلقات قادمة' | translate }}</div>
         </li>
         @for (circle of upcomingCircles; track circle?.id ?? circle?.name ?? circle) {
           <li class="list-group-item">
@@ -117,12 +117,12 @@
                 </div>
               </div>
               <div class="flex-grow-1 m-x-15">
-                <div class="f-14 f-w-600">{{ circle.name || ('Unnamed Circle' | translate) }}</div>
+                <div class="f-14 f-w-600">{{ circle.name || ('حلقة بدون اسم' | translate) }}</div>
                 <div class="text-muted f-12">
-                  {{ getUpcomingScheduleLabel(circle) || ('Schedule TBD' | translate) }}
+                  {{ getUpcomingScheduleLabel(circle) || ('الجدول غير محدد' | translate) }}
                 </div>
                 <div class="text-muted f-12" *ngIf="getUpcomingManagersLabel(circle) as managers">
-                  {{ 'Managers' | translate }}: {{ managers }}
+                  {{ 'المديرون' | translate }}: {{ managers }}
                 </div>
               </div>
               <div class="flex-shrink-0" *ngIf="getUpcomingTeacherName(circle) as teacher">
@@ -136,15 +136,15 @@
   </div>
 
   <div class="col-12" *ngIf="transactionsView.length">
-    <app-card [cardTitle]="'Recent Transactions' | translate" padding="0">
+    <app-card [cardTitle]="'المعاملات الأخيرة' | translate" padding="0">
       <div class="table-responsive">
         <table class="table table-hover m-b-0">
           <thead>
             <tr>
-              <th class="text-nowrap">{{ 'Student' | translate }}</th>
-              <th class="text-nowrap">{{ 'Amount' | translate }}</th>
-              <th class="text-nowrap">{{ 'Date' | translate }}</th>
-              <th class="text-nowrap">{{ 'Status' | translate }}</th>
+              <th class="text-nowrap">{{ 'الطالب' | translate }}</th>
+              <th class="text-nowrap">{{ 'المبلغ' | translate }}</th>
+              <th class="text-nowrap">{{ 'التاريخ' | translate }}</th>
+              <th class="text-nowrap">{{ 'الحالة' | translate }}</th>
             </tr>
           </thead>
           <tbody>
@@ -166,7 +166,7 @@
 
   <div class="col-12" *ngIf="overviewLoaded && !transactionsView.length">
     <app-card [showHeader]="false" [padding]="20">
-      <div class="text-muted">{{ 'No recent transactions found for this range.' | translate }}</div>
+      <div class="text-muted">{{ 'لا توجد معاملات حديثة لهذه المدة.' | translate }}</div>
     </app-card>
   </div>
   </div>

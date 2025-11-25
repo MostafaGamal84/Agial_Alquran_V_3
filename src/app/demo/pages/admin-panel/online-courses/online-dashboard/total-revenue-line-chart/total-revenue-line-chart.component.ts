@@ -53,7 +53,7 @@ export class TotalRevenueLineChartComponent implements OnInit {
       },
       series: [
         {
-          name: 'series1',
+          name: 'الإيرادات',
           data: this.values()
         }
       ],

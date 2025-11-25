@@ -22,7 +22,7 @@ export class EarningCoursesLineChartComponent implements OnInit {
 
   // public props
   chartOptions!: Partial<ApexOptions>;
-  selectType: string = 'today';
+  selectType: string = 'اليوم';
 
   // constructor
   constructor() {
@@ -93,7 +93,7 @@ export class EarningCoursesLineChartComponent implements OnInit {
   // public method
   onOptionSelected() {
     switch (this.selectType) {
-      case 'today':
+      case 'اليوم':
         this.chartOptions.series = [
           {
             name: 'اليوم',
@@ -101,18 +101,18 @@ export class EarningCoursesLineChartComponent implements OnInit {
           }
         ];
         break;
-      case 'week':
+      case 'الأسبوع':
         this.chartOptions.series = [
           {
-            name: 'Week',
+            name: 'الأسبوع',
             data: [750, 550, 650, 450, 500, 350]
           }
         ];
         break;
-      case 'month':
+      case 'الشهر':
         this.chartOptions.series = [
           {
-            name: 'Month',
+            name: 'الشهر',
             data: [500, 700, 300, 600, 200, 400]
           }
         ];

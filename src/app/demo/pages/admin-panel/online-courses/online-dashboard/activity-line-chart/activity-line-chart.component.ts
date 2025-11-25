@@ -22,7 +22,7 @@ export class ActivityLineChartComponent implements OnInit {
 
   // public props
   chartOptions!: Partial<ApexOptions>;
-  selectType: string = 'today';
+  selectType: string = 'اليوم';
   themeColors = ['#52c41a', '#1677ff'];
 
   // constructor
@@ -73,11 +73,11 @@ export class ActivityLineChartComponent implements OnInit {
       },
       series: [
         {
-          name: 'Free Course',
+          name: 'دورة مجانية',
           data: [20, 90, 65, 85, 20, 80, 30]
         },
         {
-          name: 'Subscription',
+          name: 'اشتراك',
           data: [70, 30, 40, 15, 60, 40, 95]
         }
       ],
@@ -144,38 +144,38 @@ export class ActivityLineChartComponent implements OnInit {
   // public methods
   onOptionSelected() {
     switch (this.selectType) {
-      case 'today':
+      case 'اليوم':
         this.chartOptions.series = [
           {
-            name: 'Free Course',
+            name: 'دورة مجانية',
             data: [20, 90, 65, 85, 20, 80, 30]
           },
           {
-            name: 'Subscription',
+            name: 'اشتراك',
             data: [70, 30, 40, 15, 60, 40, 95]
           }
         ];
         break;
-      case 'week':
+      case 'الأسبوع':
         this.chartOptions.series = [
           {
-            name: 'Free Course',
+            name: 'دورة مجانية',
             data: [30, 50, 65, 80, 35, 55, 20]
           },
           {
-            name: 'Subscription',
+            name: 'اشتراك',
             data: [95, 80, 55, 10, 25, 50, 60]
           }
         ];
         break;
-      case 'month':
+      case 'الشهر':
         this.chartOptions.series = [
           {
-            name: 'Free Course',
+            name: 'دورة مجانية',
             data: [55, 75, 25, 40, 65, 95, 20]
           },
           {
-            name: 'Subscription',
+            name: 'اشتراك',
             data: [10, 65, 85, 45, 20, 10, 35]
           }
         ];

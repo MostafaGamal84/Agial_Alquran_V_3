@@ -80,11 +80,11 @@ export class CourseReportBarChartComponent implements OnInit {
       colors: this.themeColors,
       series: [
         {
-          name: 'Net Profit',
+          name: 'صافي الربح',
           data: [180, 90, 135, 114, 120, 145, 180, 90, 135, 114, 120, 145]
         },
         {
-          name: 'Revenue',
+          name: 'الإيرادات',
           data: [120, 45, 78, 150, 168, 99, 120, 45, 78, 150, 168, 99]
         }
       ],
