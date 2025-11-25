@@ -57,6 +57,15 @@ const routes: Routes = [
         }
       },
       {
+        path: 'create',
+        loadComponent: () => import('./report-create/report-create.component').then((c) => c.ReportCreateComponent),
+        data: {
+          roles: manageReportRoles,
+
+          mode: 'add'
+        }
+      },
+      {
         path: 'edit/:id',
         loadComponent: () => import('./report-add/report-add.component').then((c) => c.ReportAddComponent),
         data: {
