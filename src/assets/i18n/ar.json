@@ -681,12 +681,12 @@
   "Blue Layout": "تنسيق أزرق",
   "Indigo Layout": "تنسيق نيلي",
   "Purple Layout": "تنسيق أرجواني",
-  "Pink Layout": "تنسيق وردي"
-}
+  "Pink Layout": "تنسيق وردي",
   "Create": "إنشاء",
   "Error creating report": "حدث خطأ أثناء إنشاء التقرير",
   "Error updating report": "حدث خطأ أثناء تحديث التقرير",
   "Unable to create report": "تعذر إنشاء التقرير",
   "Unable to update report": "تعذر تحديث التقرير",
   "Update": "تحديث",
-  "Update Circle Report": "تحديث تقرير الحلقة",
+  "Update Circle Report": "تحديث تقرير الحلقة"
+}
