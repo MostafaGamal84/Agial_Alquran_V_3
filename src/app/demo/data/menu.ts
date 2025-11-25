@@ -325,8 +325,7 @@ export const menus: Navigation[] = [
           {
             id: 'reports',
             title: 'Reports',
-             type: 'item',
-                url: '/online-course/report/view',
+            type: 'collapse',
             role: [
               UserTypesEnum.Admin.toString(),
               UserTypesEnum.Manager.toString(),
@@ -334,26 +333,33 @@ export const menus: Navigation[] = [
               UserTypesEnum.Student.toString(),
               UserTypesEnum.Teacher.toString()
             ],
-            // children: [
-            //   {
-            //     id: 'view',
-            //     title: 'View',
-            //     type: 'item',
-            //     url: '/online-course/report/view'
-            //   },
-              // {
-              //   id: 'add',
-              //   title: 'Add',
-              //   type: 'item',
-              //   url: '/online-course/report/add',
-              //   role: [
-              //     UserTypesEnum.Admin.toString(),
-              //     UserTypesEnum.Manager.toString(),
-              //     UserTypesEnum.BranchLeader.toString(),
-              //     UserTypesEnum.Teacher.toString()
-              //   ]
-              // }
-            // ]
+            children: [
+              {
+                id: 'reports-view',
+                title: 'Reports',
+                type: 'item',
+                url: '/online-course/report/view',
+                role: [
+                  UserTypesEnum.Admin.toString(),
+                  UserTypesEnum.Manager.toString(),
+                  UserTypesEnum.BranchLeader.toString(),
+                  UserTypesEnum.Student.toString(),
+                  UserTypesEnum.Teacher.toString()
+                ]
+              },
+              {
+                id: 'report-add',
+                title: 'Add Report',
+                type: 'item',
+                url: '/online-course/report/create',
+                role: [
+                  UserTypesEnum.Admin.toString(),
+                  UserTypesEnum.Manager.toString(),
+                  UserTypesEnum.BranchLeader.toString(),
+                  UserTypesEnum.Teacher.toString()
+                ]
+              }
+            ]
           },
           {
             id: 'subscribes',
