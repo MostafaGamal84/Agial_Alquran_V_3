@@ -6,7 +6,7 @@ export const techData = [
     target: true,
     tooltip: 'Angular',
     description:
-      'Able Pro Angular dashboard template is a powerful tool that utilizes the Google Material component library to create stunning and intuitive user interfaces.',
+      'أجيال القرآن is a powerful tool that utilizes the Google Material component library to create stunning and intuitive user interfaces.',
     freeRepo: true
   },
   {
