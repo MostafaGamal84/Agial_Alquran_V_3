@@ -7,6 +7,7 @@ import { TranslateModule } from '@ngx-translate/core';
 
 import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scrollbar';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
+import { TranslateService } from '@ngx-translate/core';
 
 interface Person {
   fullName?: string;
@@ -26,6 +27,13 @@ interface ContactEntry {
   icon: string;
 }
 
+interface DetailEntry {
+  key: string;
+  labelKey: string;
+  label: string;
+  value: unknown;
+}
+
 @Component({
   selector: 'app-branch-manager-details',
   standalone: true,
@@ -39,7 +47,7 @@ export class BranchManagerDetailsComponent {
   students: Person[] = [];
   managerCircles: Circle[] = [];
   contactEntries: ContactEntry[] = [];
-  detailEntries: [string, unknown][] = [];
+  detailEntries: DetailEntry[] = [];
   private readonly labelTranslationMap: Record<string, string> = {
     branchId: 'Branch',
     gender: 'Gender',
@@ -47,9 +55,9 @@ export class BranchManagerDetailsComponent {
     createdAt: 'Created At',
     updatedAt: 'Updated At',
     managerName: 'Manager Name',
-    circleName: 'Circle Name',
     identityNumber: 'Identity Number',
     residentId: 'Resident ID',
+    resident: 'Resident',
     nationality: 'Nationality',
     nationalityId: 'Nationality',
     governorate: 'Governorate',
@@ -60,9 +68,11 @@ export class BranchManagerDetailsComponent {
     { id: BranchesEnum.Mens, label: 'الرجال' },
     { id: BranchesEnum.Women, label: 'النساء' }
   ];
+  branchLabel = '';
 
   constructor() {
     const user = inject<Record<string, unknown>>(MAT_DIALOG_DATA);
+    const translate = inject(TranslateService);
     if (user) {
       this.manager = user;
       const raw = user as Record<string, unknown>;
@@ -85,17 +95,31 @@ export class BranchManagerDetailsComponent {
         'managers',
         'teacherName',
         'managerName',
+        'circleName',
+        'inactive',
         ...contactKeys
       ];
 
-      this.detailEntries = Object.entries(user).filter(
-        ([key, value]) =>
-          !exclude.includes(key) &&
-          !/id$/i.test(key) &&
-          key.toLowerCase() !== 'id' &&
-          !Array.isArray(value) &&
-          (typeof value !== 'object' || value === null)
-      );
+      this.branchLabel = translate.instant('Branch');
+
+      this.detailEntries = Object.entries(user)
+        .filter(
+          ([key, value]) =>
+            !exclude.includes(key) &&
+            !/id$/i.test(key) &&
+            key.toLowerCase() !== 'id' &&
+            !Array.isArray(value) &&
+            (typeof value !== 'object' || value === null)
+        )
+        .map(([key, value]) => {
+          const labelKey = this.formatLabel(key);
+          return {
+            key,
+            labelKey,
+            label: translate.instant(labelKey),
+            value: this.formatValue(key, value)
+          };
+        });
     }
   }
 

@@ -106,8 +106,20 @@
   .detail-item,
   .relation-item,
   .contact-item {
-    flex-direction: row-reverse;
+    flex-direction: row;
     text-align: right;
+  }
+
+  .detail-grid {
+    direction: rtl;
+  }
+
+  .detail-item .label {
+    text-align: right;
+  }
+
+  .detail-item span:last-child {
+    text-align: left;
   }
 
   .section-title {
