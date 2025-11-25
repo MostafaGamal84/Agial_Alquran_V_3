@@ -334,10 +334,17 @@ export class ReportAddComponent implements OnInit {
   private mapStudent(student: CircleDto['students'] extends (infer U)[] | null | undefined ? U : never) {
     const data = (student as { student?: LookUpUserDto }).student;
     const id = this.toNumber((student as { studentId?: unknown }).studentId ?? (student as { id?: unknown }).id);
-    const name = data?.fullName || (typeof id === 'number' ? `Student #${id}` : undefined);
+    const name =
+      data?.fullName ||
+      data?.name ||
+      (student as { fullName?: string }).fullName ||
+      (student as { name?: string }).name ||
+      (typeof id === 'number' ? `Student #${id}` : undefined);
+
     if (id === undefined || name === undefined) {
       return undefined;
     }
+
     return { id, name };
   }
 
