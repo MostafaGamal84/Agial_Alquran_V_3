@@ -6,6 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { catchError, map, of, switchMap } from 'rxjs';
+import { TranslateModule } from '@ngx-translate/core';
 import {
   StudentPaymentDto,
   UpdatePaymentDto,
@@ -16,7 +17,7 @@ import {
 @Component({
   selector: 'app-payment-edit',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, ReactiveFormsModule],
+  imports: [CommonModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, ReactiveFormsModule, TranslateModule],
   templateUrl: './payment-edit.component.html',
   styleUrl: './payment-edit.component.scss'
 })
