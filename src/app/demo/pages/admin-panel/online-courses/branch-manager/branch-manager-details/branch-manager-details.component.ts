@@ -49,7 +49,7 @@ export class BranchManagerDetailsComponent {
   contactEntries: ContactEntry[] = [];
   detailEntries: DetailEntry[] = [];
   private readonly labelTranslationMap: Record<string, string> = {
-    branchId: 'Branch',
+    branchId: 'BRANCH_MANAGER_DETAILS.Branch',
     gender: 'Gender',
     userName: 'Username',
     createdAt: 'Created At',
