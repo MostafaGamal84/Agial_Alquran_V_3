@@ -336,7 +336,6 @@ export class ReportAddComponent implements OnInit {
     const id = this.toNumber((student as { studentId?: unknown }).studentId ?? (student as { id?: unknown }).id);
     const name =
       data?.fullName ||
-      data?.name ||
       (student as { fullName?: string }).fullName ||
       (student as { name?: string }).name ||
       (typeof id === 'number' ? `Student #${id}` : undefined);
