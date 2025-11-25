@@ -41,19 +41,20 @@ export class BranchManagerDetailsComponent {
   contactEntries: ContactEntry[] = [];
   detailEntries: [string, unknown][] = [];
   private readonly labelTranslationMap: Record<string, string> = {
-    branchId: 'Branch',
+    branchId: 'BRANCH_MANAGER_DETAILS.Branch',
     gender: 'Gender',
     userName: 'Username',
     createdAt: 'Created At',
     updatedAt: 'Updated At',
     managerName: 'Manager Name',
-    circleName: 'Circle Name',
+    circleName: 'BRANCH_MANAGER_DETAILS.Circle Name',
     identityNumber: 'Identity Number',
-    residentId: 'Resident ID',
-    nationality: 'Nationality',
-    nationalityId: 'Nationality',
-    governorate: 'Governorate',
-    governorateId: 'Governorate'
+    residentId: 'BRANCH_MANAGER_DETAILS.Resident ID',
+    resident: 'BRANCH_MANAGER_DETAILS.Resident',
+    nationality: 'BRANCH_MANAGER_DETAILS.Nationality',
+    nationalityId: 'BRANCH_MANAGER_DETAILS.Nationality',
+    governorate: 'BRANCH_MANAGER_DETAILS.Governorate',
+    governorateId: 'BRANCH_MANAGER_DETAILS.Governorate'
   };
 
   Branch = [
@@ -85,6 +86,7 @@ export class BranchManagerDetailsComponent {
         'managers',
         'teacherName',
         'managerName',
+        'inactive',
         ...contactKeys
       ];
 
