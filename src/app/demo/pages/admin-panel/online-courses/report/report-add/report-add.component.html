@@ -1,10 +1,10 @@
 <div class="row">
   <div class="col-12">
-    <app-card [cardTitle]="cardTitle">
+    <app-card [cardTitle]="cardTitle | translate">
       <form [formGroup]="reportForm" (ngSubmit)="onSubmit()" class="row">
         <div class="col-md-6">
           <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Attend Status</mat-label>
+            <mat-label>{{ 'Attend Status' | translate }}</mat-label>
             <mat-select formControlName="attendStatueId" (selectionChange)="onStatusChange($event.value)">
               <mat-option [value]="AttendStatusEnum.Attended">حضر</mat-option>
               <mat-option [value]="AttendStatusEnum.ExcusedAbsence">تغيب بعذر</mat-option>
@@ -15,7 +15,7 @@
 
         <div class="col-md-6" *ngIf="selectedStatus === AttendStatusEnum.Attended || selectedStatus === AttendStatusEnum.UnexcusedAbsence">
           <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Minutes</mat-label>
+            <mat-label>{{ 'Minutes' | translate }}</mat-label>
             <input matInput type="number" formControlName="minutes" />
           </mat-form-field>
         </div>
@@ -23,7 +23,7 @@
         <ng-container *ngIf="selectedStatus === AttendStatusEnum.Attended">
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100">
-              <mat-label>New Surah</mat-label>
+              <mat-label>{{ 'New Surah' | translate }}</mat-label>
               <mat-select formControlName="newId">
                 <mat-option *ngFor="let s of surahList" [value]="s.id">
                   {{ s.name }}
@@ -34,91 +34,91 @@
 
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100">
-              <mat-label>New From</mat-label>
+              <mat-label>{{ 'New From' | translate }}</mat-label>
               <input matInput formControlName="newFrom" />
             </mat-form-field>
           </div>
 
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100">
-              <mat-label>New To</mat-label>
+              <mat-label>{{ 'New To' | translate }}</mat-label>
               <input matInput formControlName="newTo" />
             </mat-form-field>
           </div>
 
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100">
-              <mat-label>New Rate</mat-label>
+              <mat-label>{{ 'New Rate' | translate }}</mat-label>
               <input matInput formControlName="newRate" />
             </mat-form-field>
           </div>
 
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100">
-              <mat-label>Recent Past</mat-label>
+              <mat-label>{{ 'Recent Past' | translate }}</mat-label>
               <input matInput formControlName="recentPast" />
             </mat-form-field>
           </div>
 
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100">
-              <mat-label>Recent Past Rate</mat-label>
+              <mat-label>{{ 'Recent Past Rate' | translate }}</mat-label>
               <input matInput formControlName="recentPastRate" />
             </mat-form-field>
           </div>
 
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100">
-              <mat-label>Distant Past</mat-label>
+              <mat-label>{{ 'Distant Past' | translate }}</mat-label>
               <input matInput formControlName="distantPast" />
             </mat-form-field>
           </div>
 
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100">
-              <mat-label>Distant Past Rate</mat-label>
+              <mat-label>{{ 'Distant Past Rate' | translate }}</mat-label>
               <input matInput formControlName="distantPastRate" />
             </mat-form-field>
           </div>
 
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100">
-              <mat-label>Farthest Past</mat-label>
+              <mat-label>{{ 'Farthest Past' | translate }}</mat-label>
               <input matInput formControlName="farthestPast" />
             </mat-form-field>
           </div>
 
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100">
-              <mat-label>Farthest Past Rate</mat-label>
+              <mat-label>{{ 'Farthest Past Rate' | translate }}</mat-label>
               <input matInput formControlName="farthestPastRate" />
             </mat-form-field>
           </div>
 
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100">
-              <mat-label>The Words Quran Stranger</mat-label>
+              <mat-label>{{ 'The Words of the Quran Stranger' | translate }}</mat-label>
               <input matInput formControlName="theWordsQuranStranger" />
             </mat-form-field>
           </div>
 
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100">
-              <mat-label>Intonation</mat-label>
+              <mat-label>{{ 'Intonation' | translate }}</mat-label>
               <input matInput formControlName="intonation" />
             </mat-form-field>
           </div>
 
           <div class="col-md-12">
             <mat-form-field appearance="outline" class="w-100">
-              <mat-label>Other</mat-label>
+              <mat-label>{{ 'Other Notes' | translate }}</mat-label>
               <textarea matInput formControlName="other"></textarea>
             </mat-form-field>
           </div>
         </ng-container>
 
         <div class="col-12">
-          <button mat-flat-button color="primary" type="submit">{{ submitLabel }}</button>
+          <button mat-flat-button color="primary" type="submit">{{ submitLabel | translate }}</button>
         </div>
       </form>
     </app-card>
