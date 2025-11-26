@@ -19,6 +19,7 @@ import {
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { TeacherDetailsComponent } from '../teacher-details/teacher-details.component';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
+import { ToastService } from 'src/app/@theme/services/toast.service';
 
 @Component({
   selector: 'app-teacher-list',
@@ -28,6 +29,7 @@ import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overl
 })
 export class TeacherListComponent implements OnInit, AfterViewInit {
   private lookupService = inject(LookupService);
+  private toast = inject(ToastService);
   dialog = inject(MatDialog);
 
   // public props
@@ -83,10 +85,19 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
   }
 
   teacherDetails(teacher: LookUpUserDto): void {
-    this.dialog.open(TeacherDetailsComponent, {
-      width: '800px',
-      maxWidth: '95vw',
-      data: teacher
+    this.lookupService.getUserDetails(teacher.id).subscribe({
+      next: (res) => {
+        if (res.isSuccess && res.data) {
+          this.dialog.open(TeacherDetailsComponent, {
+            width: '800px',
+            maxWidth: '95vw',
+            data: res.data
+          });
+          return;
+        }
+        this.toast.error('Failed to load teacher details');
+      },
+      error: () => this.toast.error('Failed to load teacher details')
     });
   }
 

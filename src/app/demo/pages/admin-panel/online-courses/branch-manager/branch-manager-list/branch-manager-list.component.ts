@@ -143,10 +143,19 @@ export class BranchManagerListComponent implements OnInit, AfterViewInit {
   }
 
   branchManagerDetails(manager: LookUpUserDto): void {
-    this.dialog.open(BranchManagerDetailsComponent, {
-      width: '800px',
-      maxWidth: '95vw',
-      data: manager
+    this.lookupService.getUserDetails(manager.id).subscribe({
+      next: (res) => {
+        if (res.isSuccess && res.data) {
+          this.dialog.open(BranchManagerDetailsComponent, {
+            width: '800px',
+            maxWidth: '95vw',
+            data: res.data
+          });
+          return;
+        }
+        this.toast.error(this.translate.instant('Failed to load branch manager details'));
+      },
+      error: () => this.toast.error(this.translate.instant('Failed to load branch manager details'))
     });
   }
 }

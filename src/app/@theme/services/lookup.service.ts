@@ -139,7 +139,8 @@ export class LookupService {
     managerId = 0,
     teacherId = 0,
     branchId = 0,
-    nationalityId?: number | null
+    nationalityId?: number | null,
+    includeRelations = false
   ): Observable<ApiResponse<PagedResultDto<LookUpUserDto>>> {
     const role = this.auth.getRole();
     const effectiveBranchId = role === UserTypesEnum.Admin ? 0 : branchId;
@@ -195,6 +196,10 @@ export class LookupService {
       params = params.set('residentGroup', filter.residentGroup);
     }
 
+    if (includeRelations) {
+      params = params.set('includeRelations', 'true');
+    }
+
     return this.http
       .get<ApiResponse<PagedResultDto<LookUpUserDto>>>(
         `${environment.apiUrl}/api/UsersForGroups/GetUsersForSelects`,
@@ -203,6 +208,14 @@ export class LookupService {
         }
       )
       .pipe(map((response) => normalizePagedResult(response, { skipCount: filter.skipCount })));
+  }
+
+  getUserDetails(id: number): Observable<ApiResponse<LookUpUserDto>> {
+    const params = new HttpParams().set('id', id.toString());
+    return this.http.get<ApiResponse<LookUpUserDto>>(
+      `${environment.apiUrl}/api/UsersForGroups/GetUserDetails`,
+      { params }
+    );
   }
 
   private resolveLookupMode(filter: FilteredResultRequestDto): 'lookupOnly' | 'lookup' | 'idsOnly' | null {
