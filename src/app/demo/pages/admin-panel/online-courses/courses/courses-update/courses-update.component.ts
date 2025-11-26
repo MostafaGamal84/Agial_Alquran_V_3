@@ -53,7 +53,7 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
   private auth = inject(AuthenticationService);
   private userService = inject(UserService);
   private destroy$ = new Subject<void>();
-  private readonly userFilter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
+  private readonly userFilter: FilteredResultRequestDto = { lookupOnly: true };
 
   circleForm!: FormGroup;
   teachers: LookUpUserDto[] = [];

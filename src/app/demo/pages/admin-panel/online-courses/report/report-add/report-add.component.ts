@@ -54,7 +54,7 @@ export class ReportAddComponent implements OnInit {
   isLoadingTeachers = false;
   isLoadingCircles = false;
   isLoadingStudents = false;
-  private readonly userFilter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
+  private readonly userFilter: FilteredResultRequestDto = { lookupOnly: true };
   surahList = Object.keys(QuranSurahEnum)
     .filter((key) => isNaN(Number(key)))
     .map((key) => ({

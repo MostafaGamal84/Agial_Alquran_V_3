@@ -320,7 +320,7 @@ export class UserEditComponent implements OnInit {
   }
 
   private loadRelatedUsers() {
-    const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
+    const filter: FilteredResultRequestDto = { lookupOnly: true };
     if (this.isManager) {
       this.lookupService
         .getUsersForSelects(filter, Number(UserTypesEnum.Teacher), 0, 0, this.currentUser?.branchId || 0)
@@ -389,7 +389,7 @@ export class UserEditComponent implements OnInit {
   }
 
   onManagerChange(managerId: number, initial = false) {
-    const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
+    const filter: FilteredResultRequestDto = { lookupOnly: true };
     if (managerId) {
       this.lookupService
         .getUsersForSelects(filter, Number(UserTypesEnum.Teacher), managerId, 0, this.currentUser?.branchId || 0)
@@ -437,7 +437,7 @@ export class UserEditComponent implements OnInit {
   }
 
   private loadStudentsAndCircles(managerId: number) {
-    const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
+    const filter: FilteredResultRequestDto = { lookupOnly: true };
     this.lookupService
       .getUsersForSelects(filter, Number(UserTypesEnum.Student), managerId, 0, this.currentUser?.branchId || 0)
       .subscribe((res) => {

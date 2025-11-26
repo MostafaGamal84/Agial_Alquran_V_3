@@ -45,6 +45,9 @@ export interface FilteredResultRequestDto {
   searchTerm?: string;
   searchWord?: string;
   filter?: string;
+  lookupOnly?: boolean;
+  lookup?: boolean;
+  idsOnly?: boolean;
   lang?: string;
   sortingDirection?: string;
   sortBy?: string;
@@ -140,15 +143,17 @@ export class LookupService {
   ): Observable<ApiResponse<PagedResultDto<LookUpUserDto>>> {
     const role = this.auth.getRole();
     const effectiveBranchId = role === UserTypesEnum.Admin ? 0 : branchId;
+    const lookupMode = this.resolveLookupMode(filter);
+    const shouldPaginate = !lookupMode;
     let params = new HttpParams()
       .set('UserTypeId', userTypeId.toString())
       .set('managerId', managerId.toString())
       .set('teacherId', teacherId.toString())
       .set('branchId', effectiveBranchId.toString());
-    if (filter.skipCount !== undefined) {
+    if (shouldPaginate && filter.skipCount !== undefined) {
       params = params.set('SkipCount', filter.skipCount.toString());
     }
-    if (filter.maxResultCount !== undefined) {
+    if (shouldPaginate && filter.maxResultCount !== undefined) {
       params = params.set('MaxResultCount', filter.maxResultCount.toString());
     }
     const searchWord = filter.searchWord ?? filter.searchTerm;
@@ -159,8 +164,18 @@ export class LookupService {
     if (searchWord) {
       params = params.set('SearchWord', searchWord);
     }
+    const filterTokens: string[] = [];
+
     if (filter.filter) {
-      params = params.set('Filter', filter.filter);
+      filterTokens.push(filter.filter);
+    }
+
+    if (lookupMode) {
+      filterTokens.push(`${lookupMode}=true`);
+    }
+
+    if (filterTokens.length) {
+      params = params.set('Filter', filterTokens.join('&'));
     }
     if (filter.lang) {
       params = params.set('Lang', filter.lang);
@@ -188,6 +203,22 @@ export class LookupService {
         }
       )
       .pipe(map((response) => normalizePagedResult(response, { skipCount: filter.skipCount })));
+  }
+
+  private resolveLookupMode(filter: FilteredResultRequestDto): 'lookupOnly' | 'lookup' | 'idsOnly' | null {
+    if (filter.lookupOnly) {
+      return 'lookupOnly';
+    }
+
+    if (filter.lookup) {
+      return 'lookup';
+    }
+
+    if (filter.idsOnly) {
+      return 'idsOnly';
+    }
+
+    return null;
   }
 
   getAllNationalities(): Observable<ApiResponse<NationalityDto[]>> {
