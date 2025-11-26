@@ -20,6 +20,7 @@ import {
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { ManagerDetailsComponent } from '../manager-details/manager-details.component';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
+import { ToastService } from 'src/app/@theme/services/toast.service';
 
 @Component({
   selector: 'app-manager-list',
@@ -29,6 +30,7 @@ import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overl
 })
 export class ManagerListComponent implements OnInit, AfterViewInit {
   private lookupService = inject(LookupService);
+  private toast = inject(ToastService);
   dialog = inject(MatDialog);
 
   // public props
@@ -84,10 +86,19 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
   }
 
   managerDetails(manager: LookUpUserDto): void {
-    this.dialog.open(ManagerDetailsComponent, {
-      width: '800px',
-      maxWidth: '95vw',
-      data: manager
+    this.lookupService.getUserDetails(manager.id).subscribe({
+      next: (res) => {
+        if (res.isSuccess && res.data) {
+          this.dialog.open(ManagerDetailsComponent, {
+            width: '800px',
+            maxWidth: '95vw',
+            data: res.data
+          });
+          return;
+        }
+        this.toast.error('Failed to load manager details');
+      },
+      error: () => this.toast.error('Failed to load manager details')
     });
   }
 
