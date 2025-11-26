@@ -137,10 +137,19 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
   }
 
   studentDetails(student: LookUpUserDto): void {
-    this.dialog.open(StudentDetailsComponent, {
-      width: '800px',
-      maxWidth: '95vw',
-      data: student
+    this.lookupService.getUserDetails(student.id).subscribe({
+      next: (res) => {
+        if (res.isSuccess && res.data) {
+          this.dialog.open(StudentDetailsComponent, {
+            width: '800px',
+            maxWidth: '95vw',
+            data: res.data
+          });
+          return;
+        }
+        this.toast.error(this.translate.instant('Failed to load student details'));
+      },
+      error: () => this.toast.error(this.translate.instant('Failed to load student details'))
     });
   }
 
