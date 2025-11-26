@@ -136,15 +136,15 @@ export class ManagerAddComponent implements OnInit {
       this.userService.createUser(model).subscribe({
         next: (res) => {
           if (res?.isSuccess) {
-            this.toast.success(res.message || this.translate.instant('User created successfully'));
+            this.toast.success(res.message || this.translate.instant('تمت الاضافة بنجاح'));
             this.basicInfoForm.reset();
           } else if (res?.errors?.length) {
             res.errors.forEach((e) => this.toast.error(e.message));
           } else {
-            this.toast.error(this.translate.instant('Error creating user'));
+            this.toast.error(this.translate.instant('خطا في الاضافة'));
           }
         },
-        error: () => this.toast.error(this.translate.instant('Error creating user'))
+        error: () => this.toast.error(this.translate.instant('خطا في الاضافة'))
       });
     } else {
       this.basicInfoForm.markAllAsTouched();

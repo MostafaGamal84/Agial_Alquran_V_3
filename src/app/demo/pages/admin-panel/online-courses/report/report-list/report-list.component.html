@@ -118,7 +118,7 @@
                 <td mat-cell *matCellDef="let element" class="text-nowrap">
                   <div class="text-center text-nowrap">
                     <ul class="list-inline p-l-0">
-                      <li class="list-inline-item m-r-10" [matTooltip]="'View' | translate">
+                      <li class="list-inline-item m-r-10" [matTooltip]="'عرض' | translate">
                         <a
                           [routerLink]="['/online-course/report/details', element.id]"
                           [state]="{ report: element }"
@@ -127,7 +127,7 @@
                           <i class="ti ti-eye f-18"></i>
                         </a>
                       </li>
-                      <li class="list-inline-item m-r-10" [matTooltip]="'Edit' | translate" *ngIf="canManageReports">
+                      <li class="list-inline-item m-r-10" [matTooltip]="'تعديل' | translate" *ngIf="canManageReports">
                         <a
                           [routerLink]="['/online-course/report/edit', element.id]"
                           [state]="{ report: element }"

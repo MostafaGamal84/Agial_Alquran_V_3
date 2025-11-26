@@ -440,15 +440,15 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
     this.circle.create(model).subscribe({
       next: (res) => {
         if (res.isSuccess) {
-          this.toast.success('Circle created successfully');
+          this.toast.success('تم اضافة الحلقة بنجاح');
           this.resetForm();
         } else if (res.errors?.length) {
           res.errors.forEach((e) => this.toast.error(e.message));
         } else {
-          this.toast.error('Error creating circle');
+          this.toast.error('خطا في التعديل');
         }
       },
-      error: () => this.toast.error('Error creating circle')
+      error: () => this.toast.error('خطا في الحفظ')
     });
   }
 

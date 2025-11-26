@@ -53,14 +53,14 @@
                     <ul class="list-inline p-l-0">
                       <li
                         class="list-inline-item m-r-10"
-                        [matTooltip]="'View' | translate"
+                        [matTooltip]="'عرض' | translate"
                         (click)="branchManagerDetails(element)"
                       >
                         <a href="javascript:" class="avatar avatar-xs text-muted">
                           <i class="ti ti-eye f-18"></i>
                         </a>
                       </li>
-                      <li class="list-inline-item m-r-10" [matTooltip]="'Edit' | translate">
+                      <li class="list-inline-item m-r-10" [matTooltip]="'تعديل' | translate">
                         <a
                           [routerLink]="['/online-course/branch-manager/edit', element.id]"
                           [state]="{ user: element }"
@@ -69,7 +69,7 @@
                           <i class="ti ti-edit-circle f-18"></i>
                         </a>
                       </li>
-                      <li class="list-inline-item m-r-10" [matTooltip]="'Delete' | translate">
+                      <li class="list-inline-item m-r-10" [matTooltip]="'حذف' | translate">
                         <button
                           type="button"
                           class="avatar avatar-xs text-muted"

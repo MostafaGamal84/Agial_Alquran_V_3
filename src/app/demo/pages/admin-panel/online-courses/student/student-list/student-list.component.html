@@ -93,12 +93,12 @@
                 <td mat-cell *matCellDef="let element" class="text-nowrap">
                   <div class="text-center text-nowrap">
                     <ul class="list-inline p-l-0" *ngIf="!element.inactive; else inactiveIcons">
-                      <li class="list-inline-item m-r-10" [matTooltip]="'View' | translate" (click)="studentDetails(element)">
+                      <li class="list-inline-item m-r-10" [matTooltip]="'عرض' | translate" (click)="studentDetails(element)">
                         <a href="javascript:" class="avatar avatar-xs text-muted">
                           <i class="ti ti-eye f-18"></i>
                         </a>
                       </li>
-                      <li class="list-inline-item m-r-10" [matTooltip]="'Edit' | translate">
+                      <li class="list-inline-item m-r-10" [matTooltip]="'تعديل' | translate">
                         <a
                           [routerLink]="['/online-course/student/edit', element.id]"
                           [state]="{ user: element }"
@@ -107,7 +107,7 @@
                           <i class="ti ti-edit-circle f-18"></i>
                         </a>
                       </li>
-                      <li class="list-inline-item m-r-10" [matTooltip]="'Delete' | translate">
+                      <li class="list-inline-item m-r-10" [matTooltip]="'حذف' | translate">
                         <button
                           type="button"
                           class="avatar avatar-xs text-muted"
