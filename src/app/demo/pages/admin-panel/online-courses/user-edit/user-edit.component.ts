@@ -3,7 +3,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
 
 // project import
@@ -38,6 +38,7 @@ export class UserEditComponent implements OnInit {
   private circleService = inject(CircleService);
   private countryService = inject(CountryService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   basicInfoForm!: FormGroup;
   userId!: number;
@@ -119,176 +120,201 @@ export class UserEditComponent implements OnInit {
       }
     });
 
-    this.currentUser = history.state['user'] as typeof this.currentUser;
-    if (this.currentUser) {
-      this.userId = this.currentUser.id;
-      const clean = (phone: string) => phone.replace(/\D/g, '');
-      this.basicInfoForm.patchValue({
-        fullName: this.currentUser.fullName,
-        email: this.currentUser.email,
-        mobile: clean(this.currentUser.mobile),
-        secondMobile: this.currentUser.secondMobile ? clean(this.currentUser.secondMobile) : '',
-        nationalityId: this.currentUser.nationalityId,
-        residentId: this.currentUser.residentId ?? null,
-        governorateId: this.currentUser.governorateId,
-        branchId: this.currentUser.branchId
-      });
+    const idParam = this.route.snapshot.paramMap.get('id');
+    const parsedId = idParam ? Number(idParam) : NaN;
+    if (!isNaN(parsedId)) {
+      this.userId = parsedId;
+      this.loadUserDetails(parsedId);
+    } else {
+      this.toast.error('No user id provided');
+    }
+  }
 
-      this.applyGovernorateRequirement(this.currentUser.nationalityId);
-
-      if (this.isManager || this.isTeacher || this.isStudent) {
-        if (this.isManager) {
-          const teacherList = this.currentUser.teachers ?? this.currentUser.managers ?? [];
-          if (teacherList.length) {
-            this.teachers = teacherList;
-            const ids = teacherList.map((t) => t.id);
-            this.basicInfoForm.patchValue({
-              teacherIds: ids
-            });
-            this.onTeachersChange(ids);
-          }
-        } else if (this.isTeacher) {
-          if (this.currentUser.managers?.length) {
-            this.managers = this.currentUser.managers;
-            this.basicInfoForm.patchValue({
-              managerId: this.currentUser.managers[0].id
-            });
-          } else if (this.currentUser.managerId && this.currentUser.managerName) {
-            const manager: LookUpUserDto = {
-              id: this.currentUser.managerId,
-              fullName: this.currentUser.managerName,
-              email: '',
-              mobile: '',
-              secondMobile: '',
-              nationality: '',
-              nationalityId: 0,
-              residentId: 0,
-              governorate: '',
-              governorateId: 0,
-              branchId: 0
-
-            };
-            this.managers = [manager];
-            this.basicInfoForm.patchValue({
-              managerId: manager.id
-            });
-          }
-        } else if (this.isStudent) {
-          if (this.currentUser.teachers?.length) {
-            this.teachers = this.currentUser.teachers;
-            this.basicInfoForm.patchValue({
-              teacherId: this.currentUser.teachers[0].id
-            });
-          } else if (this.currentUser.teacherId && this.currentUser.teacherName) {
-            const teacher: LookUpUserDto = {
-              id: this.currentUser.teacherId,
-              fullName: this.currentUser.teacherName,
-              email: '',
-              mobile: '',
-              secondMobile: '',
-              nationality: '',
-              nationalityId: 0,
-              residentId: 0,
-              governorate: '',
-              governorateId: 0,
-              branchId: 0
-            };
-            this.teachers = [teacher];
-            this.basicInfoForm.patchValue({
-              teacherId: teacher.id
-            });
-          }
-          if (this.currentUser.managers?.length) {
-            this.managers = this.currentUser.managers;
-            this.basicInfoForm.patchValue({
-              managerId: this.currentUser.managers[0].id
-            });
-          } else if (this.currentUser.managerId && this.currentUser.managerName) {
-            const manager: LookUpUserDto = {
-              id: this.currentUser.managerId,
-              fullName: this.currentUser.managerName,
-              email: '',
-              mobile: '',
-              secondMobile: '',
-              nationality: '',
-              nationalityId: 0,
-              residentId: 0,
-              governorate: '',
-              governorateId: 0,
-              branchId: 0
-            };
-            this.managers = [manager];
-            this.basicInfoForm.patchValue({
-              managerId: manager.id
-
-            });
-          }
+  private loadUserDetails(id: number) {
+    this.lookupService.getUserDetails(id).subscribe({
+      next: (res) => {
+        if (res.isSuccess && res.data) {
+          this.currentUser = res.data as typeof this.currentUser;
+          this.populateUserForm();
+        } else {
+          this.toast.error('Failed to load user details');
         }
+      },
+      error: () => this.toast.error('Failed to load user details')
+    });
+  }
 
-        if ((this.isManager || this.isTeacher) && this.currentUser.students?.length) {
-          this.students = this.currentUser.students;
+  private populateUserForm() {
+    if (!this.currentUser) {
+      return;
+    }
+
+    const clean = (phone: string) => phone.replace(/\D/g, '');
+    this.basicInfoForm.patchValue({
+      fullName: this.currentUser.fullName,
+      email: this.currentUser.email,
+      mobile: clean(this.currentUser.mobile),
+      secondMobile: this.currentUser.secondMobile ? clean(this.currentUser.secondMobile) : '',
+      nationalityId: this.currentUser.nationalityId,
+      residentId: this.currentUser.residentId ?? null,
+      governorateId: this.currentUser.governorateId,
+      branchId: this.currentUser.branchId
+    });
+
+    this.applyGovernorateRequirement(this.currentUser.nationalityId);
+
+    if (this.isManager || this.isTeacher || this.isStudent) {
+      if (this.isManager) {
+        const teacherList = this.currentUser.teachers ?? this.currentUser.managers ?? [];
+        if (teacherList.length) {
+          this.teachers = teacherList;
+          const ids = teacherList.map((t) => t.id);
           this.basicInfoForm.patchValue({
-            studentIds: this.currentUser.students.map((s) => s.id)
+            teacherIds: ids
+          });
+          this.onTeachersChange(ids);
+        }
+      } else if (this.isTeacher) {
+        if (this.currentUser.managers?.length) {
+          this.managers = this.currentUser.managers;
+          this.basicInfoForm.patchValue({
+            managerId: this.currentUser.managers[0].id
+          });
+        } else if (this.currentUser.managerId && this.currentUser.managerName) {
+          const manager: LookUpUserDto = {
+            id: this.currentUser.managerId,
+            fullName: this.currentUser.managerName,
+            email: '',
+            mobile: '',
+            secondMobile: '',
+            nationality: '',
+            nationalityId: 0,
+            residentId: 0,
+            governorate: '',
+            governorateId: 0,
+            branchId: 0
+
+          };
+          this.managers = [manager];
+          this.basicInfoForm.patchValue({
+            managerId: manager.id
           });
         }
-        if (this.currentUser.managerCircles?.length) {
-          const circleList: CircleDto[] = this.currentUser.managerCircles.map((c) => ({
-            id: c.circleId,
-            name: c.circle || ''
-          }));
-          this.circles = circleList;
-          if (this.isManager) {
-            this.basicInfoForm.patchValue({
-              circleIds: this.currentUser.managerCircles.map((c) => c.circleId)
-            });
-          } else {
-            this.basicInfoForm.patchValue({
-              circleId: this.currentUser.managerCircles[0].circleId
-            });
-          }
-        } else if (this.currentUser.circleId && this.currentUser.circleName) {
-          const circle: CircleDto = {
-            id: this.currentUser.circleId,
-            name: this.currentUser.circleName
+      } else if (this.isStudent) {
+        if (this.currentUser.teachers?.length) {
+          this.teachers = this.currentUser.teachers;
+          this.basicInfoForm.patchValue({
+            teacherId: this.currentUser.teachers[0].id
+          });
+        } else if (this.currentUser.teacherId && this.currentUser.teacherName) {
+          const teacher: LookUpUserDto = {
+            id: this.currentUser.teacherId,
+            fullName: this.currentUser.teacherName,
+            email: '',
+            mobile: '',
+            secondMobile: '',
+            nationality: '',
+            nationalityId: 0,
+            residentId: 0,
+            governorate: '',
+            governorateId: 0,
+            branchId: 0
           };
-          this.circles = [circle];
-          if (this.isManager) {
-            this.basicInfoForm.patchValue({
-              circleIds: [circle.id]
-            });
-          } else {
-            this.basicInfoForm.patchValue({
-              circleId: circle.id
-            });
-          }
+          this.teachers = [teacher];
+          this.basicInfoForm.patchValue({
+            teacherId: teacher.id
+          });
         }
-        this.loadRelatedUsers();
+        if (this.currentUser.managers?.length) {
+          this.managers = this.currentUser.managers;
+          this.basicInfoForm.patchValue({
+            managerId: this.currentUser.managers[0].id
+          });
+        } else if (this.currentUser.managerId && this.currentUser.managerName) {
+          const manager: LookUpUserDto = {
+            id: this.currentUser.managerId,
+            fullName: this.currentUser.managerName,
+            email: '',
+            mobile: '',
+            secondMobile: '',
+            nationality: '',
+            nationalityId: 0,
+            residentId: 0,
+            governorate: '',
+            governorateId: 0,
+            branchId: 0
+          };
+          this.managers = [manager];
+          this.basicInfoForm.patchValue({
+            managerId: manager.id
+
+          });
+        }
+      }
+
+      if ((this.isManager || this.isTeacher) && this.currentUser.students?.length) {
+        this.students = this.currentUser.students;
+        this.basicInfoForm.patchValue({
+          studentIds: this.currentUser.students.map((s) => s.id)
+        });
+      }
+      if (this.currentUser.managerCircles?.length) {
+        const circleList: CircleDto[] = this.currentUser.managerCircles.map((c) => ({
+          id: c.circleId,
+          name: c.circle || ''
+        }));
+        this.circles = circleList;
         if (this.isManager) {
-          this.basicInfoForm.get('circleIds')?.disable();
-        }
-        if (this.isTeacher) {
-          this.basicInfoForm.get('managerId')?.disable();
-          const mId = this.basicInfoForm.get('managerId')?.value;
-          if (mId) {
-            this.loadStudentsAndCircles(mId);
-          } else {
-            this.basicInfoForm.get('studentIds')?.disable();
-            this.basicInfoForm.get('circleId')?.disable();
-          }
-        } else if (this.isStudent) {
-          this.basicInfoForm.get('teacherId')?.disable();
-          this.basicInfoForm.get('circleId')?.disable();
-          const mId = this.basicInfoForm.get('managerId')?.value;
-          if (mId) {
-            this.onManagerChange(mId, true);
-            const tId = this.basicInfoForm.get('teacherId')?.value;
-            if (tId) {
-              this.onTeacherChange(tId);
-            }
-          }
+          this.basicInfoForm.patchValue({
+            circleIds: this.currentUser.managerCircles.map((c) => c.circleId)
+          });
         } else {
-          this.loadCircles();
+          this.basicInfoForm.patchValue({
+            circleId: this.currentUser.managerCircles[0].circleId
+          });
         }
+      } else if (this.currentUser.circleId && this.currentUser.circleName) {
+        const circle: CircleDto = {
+          id: this.currentUser.circleId,
+          name: this.currentUser.circleName
+        };
+        this.circles = [circle];
+        if (this.isManager) {
+          this.basicInfoForm.patchValue({
+            circleIds: [circle.id]
+          });
+        } else {
+          this.basicInfoForm.patchValue({
+            circleId: circle.id
+          });
+        }
+      }
+      this.loadRelatedUsers();
+      if (this.isManager) {
+        this.basicInfoForm.get('circleIds')?.disable();
+      }
+      if (this.isTeacher) {
+        this.basicInfoForm.get('managerId')?.disable();
+        const mId = this.basicInfoForm.get('managerId')?.value;
+        if (mId) {
+          this.loadStudentsAndCircles(mId);
+        } else {
+          this.basicInfoForm.get('studentIds')?.disable();
+          this.basicInfoForm.get('circleId')?.disable();
+        }
+      } else if (this.isStudent) {
+        this.basicInfoForm.get('teacherId')?.disable();
+        this.basicInfoForm.get('circleId')?.disable();
+        const mId = this.basicInfoForm.get('managerId')?.value;
+        if (mId) {
+          this.onManagerChange(mId, true);
+          const tId = this.basicInfoForm.get('teacherId')?.value;
+          if (tId) {
+            this.onTeacherChange(tId);
+          }
+        }
+      } else {
+        this.loadCircles();
       }
     }
 
