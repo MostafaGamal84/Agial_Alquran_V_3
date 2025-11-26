@@ -198,7 +198,7 @@ export class ReportAddComponent implements OnInit {
       const branchId = this.getBranchId();
       if (supervisorId) {
         this.reportForm.patchValue({ managerId: supervisorId });
-        this.loadTeachersForManager(supervisorId, undefined, false, branchId);
+        this.loadTeachersForManager(supervisorId, undefined, true, branchId, true);
       }
       return;
     }
@@ -256,7 +256,8 @@ export class ReportAddComponent implements OnInit {
     managerId: number,
     teacherId?: number | null,
     loadCircles = false,
-    branchId?: number | null
+    branchId?: number | null,
+    autoSelectFirst = false
   ): void {
     this.isLoadingTeachers = true;
     const effectiveManagerId =
@@ -272,6 +273,10 @@ export class ReportAddComponent implements OnInit {
             if (loadCircles) {
               this.loadCirclesForTeacher(teacherId, true);
             }
+          } else if (autoSelectFirst && this.teachers.length === 1) {
+            const firstTeacherId = this.teachers[0].id;
+            this.reportForm.patchValue({ teacherId: firstTeacherId }, { emitEvent: false });
+            this.loadCirclesForTeacher(firstTeacherId, true);
           }
         },
         error: () => {
