@@ -1,6 +1,6 @@
 <div class="manager-details-header" mat-dialog-title>
   <div class="flex align-item-center justify-content-between">
-    <div class="f-w-700 f-16">{{ 'Branch Manager Details' | translate }}</div>
+    <div class="f-w-700 f-16">{{ 'تفاصيل مدير الفرع ' | translate }}</div>
 
     <button mat-icon-button class="avatar avatar-s modal-close" mat-dialog-close>
       <i class="ti ti-x f-20"></i>
@@ -29,11 +29,11 @@
             <hr />
             <div class="detail-grid">
               <div class="detail-item" *ngIf="m.branchId !== undefined">
-                <span class="label">{{ branchLabel }}:</span>
+                <span class="label">{{ 'الفرع' }}:</span>
                 <span>{{ getBranchLabel(m.branchId) }}</span>
               </div>
               <div class="detail-item" *ngFor="let entry of detailEntries">
-                <span class="label">{{ entry.labelKey | translate }}:</span>
+                <span class="label">{{'الجنسية'}}:</span>
                 <span>{{ entry.value }}</span>
               </div>
             </div>

@@ -97,6 +97,7 @@ export class BranchManagerDetailsComponent {
         'circleName',
         'inactive',
         'governorate',
+        'resident',
 
         ...contactKeys
       ];
