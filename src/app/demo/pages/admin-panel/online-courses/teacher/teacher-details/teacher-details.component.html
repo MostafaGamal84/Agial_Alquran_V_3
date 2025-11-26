@@ -1,6 +1,6 @@
 <div class="manager-details-header" mat-dialog-title>
   <div class="flex align-item-center justify-content-between">
-    <div class="f-w-700 f-16">{{ 'Teacher Details' | translate }}</div>
+    <div class="f-w-700 f-16">{{ 'بيانات المعلم' | translate }}</div>
     <button mat-icon-button class="avatar avatar-s modal-close" mat-dialog-close>
       <i class="ti ti-x f-20"></i>
     </button>
@@ -23,13 +23,13 @@
           </div>
         </div>
         <div class="right-panel">
-          <section class="section" *ngIf="detailEntries.length">
+          <!-- <section class="section" *ngIf="detailEntries.length">
             <h6 class="section-title">{{ 'Personal Details' | translate }}</h6>
             <hr />
 
             <div class="detail-grid">
               <div class="detail-item" *ngIf="t.branchId !== undefined">
-                <span class="label">{{ 'Branch' | translate }}:</span>
+                <span class="label">{{ 'الفرع' | translate }}:</span>
                 <span>{{ getBranchLabel(t.branchId) }}</span>
               </div>
               <div class="detail-item" *ngFor="let entry of detailEntries">
@@ -37,10 +37,10 @@
                 <span>{{ formatValue(entry[0], entry[1]) }}</span>
               </div>
             </div>
-          </section>
+          </section> -->
 
           <section class="section" *ngIf="students.length">
-            <h6 class="section-title">{{ 'Students' | translate }}</h6>
+            <h6 class="section-title">{{ 'الطلاب' | translate }}</h6>
             <hr />
 
             <div class="relation-item" *ngFor="let s of students">

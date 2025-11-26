@@ -9,7 +9,6 @@
   border: 1px solid var(--bs-border-color, #eee);
   border-radius: 8px;
   padding: 20px;
-
 }
 
 .left-panel {
@@ -45,7 +44,6 @@
   border: 1px solid var(--bs-border-color, #eee);
   border-radius: 8px;
   padding: 15px;
-
 }
 
 .section-title {
@@ -57,7 +55,6 @@
   border: none;
   border-top: 1px solid var(--bs-border-color, #eee);
   margin: 10px 0;
-
 }
 
 .detail-grid {
@@ -77,7 +74,6 @@
 .detail-item .label {
   font-weight: 700;
 }
-
 
 .relation-item {
   display: flex;
@@ -110,14 +106,25 @@
   .detail-item,
   .relation-item,
   .contact-item {
-    flex-direction: row-reverse;
+    flex-direction: row;
     text-align: right;
+  }
+
+  .detail-grid {
+    direction: rtl;
+  }
+
+  .detail-item .label {
+    text-align: right;
+  }
+
+  .detail-item span:last-child {
+    text-align: left;
   }
 
   .section-title {
     text-align: right;
   }
-
 }
 
 .relation-phone {
@@ -158,6 +165,13 @@
     grid-template-columns: 1fr;
   }
 
+  .left-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
   .detail-item,
   .relation-item {
     flex-direction: column;
@@ -182,8 +196,11 @@
     align-items: center;
   }
 
+  :host-context([dir='rtl']) .left-panel {
+    text-align: center;
+  }
+
   .detail-item .label {
     margin-bottom: 4px;
   }
 }
-

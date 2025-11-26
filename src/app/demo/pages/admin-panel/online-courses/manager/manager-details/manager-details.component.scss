@@ -75,7 +75,6 @@
   font-weight: 700;
 }
 
-
 .relation-item {
   display: flex;
   justify-content: space-between;
@@ -107,14 +106,25 @@
   .detail-item,
   .relation-item,
   .contact-item {
-    flex-direction: row-reverse;
+    flex-direction: row;
     text-align: right;
+  }
+
+  .detail-grid {
+    direction: rtl;
+  }
+
+  .detail-item .label {
+    text-align: right;
+  }
+
+  .detail-item span:last-child {
+    text-align: left;
   }
 
   .section-title {
     text-align: right;
   }
-
 }
 
 .relation-phone {
@@ -155,6 +165,13 @@
     grid-template-columns: 1fr;
   }
 
+  .left-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
   .detail-item,
   .relation-item {
     flex-direction: column;
@@ -179,8 +196,11 @@
     align-items: center;
   }
 
+  :host-context([dir='rtl']) .left-panel {
+    text-align: center;
+  }
+
   .detail-item .label {
     margin-bottom: 4px;
   }
 }
-
