@@ -259,8 +259,9 @@ export class ReportAddComponent implements OnInit {
     branchId?: number | null
   ): void {
     this.isLoadingTeachers = true;
+    const effectiveManagerId = this.role === UserTypesEnum.Manager ? 0 : managerId;
     this.lookupService
-      .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Teacher), managerId, 0, branchId ?? 0)
+      .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Teacher), effectiveManagerId, 0, branchId ?? 0)
       .subscribe({
         next: (res) => {
           this.teachers = res.isSuccess ? res.data.items : [];
