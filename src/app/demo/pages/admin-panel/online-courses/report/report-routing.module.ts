@@ -58,12 +58,8 @@ const routes: Routes = [
       },
       {
         path: 'create',
-        loadComponent: () => import('./report-create/report-create.component').then((c) => c.ReportCreateComponent),
-        data: {
-          roles: manageReportRoles,
-
-          mode: 'add'
-        }
+        pathMatch: 'full',
+        redirectTo: '/online-course/student/report/add'
       },
       {
         path: 'edit/:id',
