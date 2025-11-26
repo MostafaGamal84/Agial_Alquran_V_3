@@ -242,13 +242,19 @@ export class ReportAddComponent implements OnInit {
     }
 
     const existingTeacherId = this.toNumber(this.reportForm.get('teacherId')?.value);
-    this.loadTeachersForManager(managerId, existingTeacherId, initial);
+    const branchId = this.role === UserTypesEnum.Manager ? this.getBranchId() : undefined;
+    this.loadTeachersForManager(managerId, existingTeacherId, initial, branchId);
   }
 
-  private loadTeachersForManager(managerId: number, teacherId?: number | null, loadCircles = false): void {
+  private loadTeachersForManager(
+    managerId: number,
+    teacherId?: number | null,
+    loadCircles = false,
+    branchId?: number | null
+  ): void {
     this.isLoadingTeachers = true;
     this.lookupService
-      .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Teacher), managerId)
+      .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Teacher), managerId, 0, branchId ?? 0)
       .subscribe({
         next: (res) => {
           this.teachers = res.isSuccess ? res.data.items : [];
