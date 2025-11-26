@@ -240,11 +240,17 @@ export class ReportAddComponent implements OnInit {
 
   private loadTeachersForManager(managerId: number, teacherId?: number | null, loadCircles = false): void {
     this.isLoadingTeachers = true;
+    const managerScopeId = this.role === UserTypesEnum.Manager
+      ? managerId || this.toNumber(this.auth.currentUserValue?.user.id) || 0
+      : managerId;
     this.lookupService
-      .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Teacher), managerId)
+      .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Teacher), managerScopeId)
       .subscribe({
         next: (res) => {
-          this.teachers = res.isSuccess ? res.data.items : [];
+          const teachers = res.isSuccess ? res.data.items : [];
+          this.teachers = managerScopeId
+            ? teachers.filter((teacher) => teacher.managerId === managerScopeId)
+            : teachers;
           this.isLoadingTeachers = false;
           if (teacherId && this.teachers.some((t) => t.id === teacherId)) {
             this.reportForm.patchValue({ teacherId }, { emitEvent: false });
