@@ -45,6 +45,9 @@ export interface FilteredResultRequestDto {
   searchTerm?: string;
   searchWord?: string;
   filter?: string;
+  lookupOnly?: boolean;
+  lookup?: boolean;
+  idsOnly?: boolean;
   lang?: string;
   sortingDirection?: string;
   sortBy?: string;
@@ -159,8 +162,19 @@ export class LookupService {
     if (searchWord) {
       params = params.set('SearchWord', searchWord);
     }
+    const lookupMode = this.resolveLookupMode(filter);
+    const filterTokens: string[] = [];
+
     if (filter.filter) {
-      params = params.set('Filter', filter.filter);
+      filterTokens.push(filter.filter);
+    }
+
+    if (lookupMode) {
+      filterTokens.push(`${lookupMode}=true`);
+    }
+
+    if (filterTokens.length) {
+      params = params.set('Filter', filterTokens.join('&'));
     }
     if (filter.lang) {
       params = params.set('Lang', filter.lang);
@@ -188,6 +202,22 @@ export class LookupService {
         }
       )
       .pipe(map((response) => normalizePagedResult(response, { skipCount: filter.skipCount })));
+  }
+
+  private resolveLookupMode(filter: FilteredResultRequestDto): 'lookupOnly' | 'lookup' | 'idsOnly' | null {
+    if (filter.lookupOnly) {
+      return 'lookupOnly';
+    }
+
+    if (filter.lookup) {
+      return 'lookup';
+    }
+
+    if (filter.idsOnly) {
+      return 'idsOnly';
+    }
+
+    return null;
   }
 
   getAllNationalities(): Observable<ApiResponse<NationalityDto[]>> {
