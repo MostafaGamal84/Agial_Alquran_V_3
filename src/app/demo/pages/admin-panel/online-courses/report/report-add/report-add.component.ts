@@ -214,7 +214,10 @@ export class ReportAddComponent implements OnInit {
 
   private loadManagers(): void {
     this.isLoadingManagers = true;
-    const branchId = this.role === UserTypesEnum.BranchLeader ? this.getBranchId() ?? 0 : 0;
+    const branchId =
+      this.role === UserTypesEnum.BranchLeader || this.role === UserTypesEnum.Manager
+        ? this.getBranchId() ?? 0
+        : 0;
     this.lookupService
       .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Manager), 0, 0, branchId)
       .subscribe({
@@ -242,7 +245,10 @@ export class ReportAddComponent implements OnInit {
     }
 
     const existingTeacherId = this.toNumber(this.reportForm.get('teacherId')?.value);
-    const branchId = this.role === UserTypesEnum.Manager ? this.getBranchId() : undefined;
+    const branchId =
+      this.role === UserTypesEnum.Manager || this.role === UserTypesEnum.BranchLeader
+        ? this.getBranchId()
+        : undefined;
     this.loadTeachersForManager(managerId, existingTeacherId, initial, branchId);
   }
 
@@ -564,7 +570,7 @@ export class ReportAddComponent implements OnInit {
             } else if (this.role === UserTypesEnum.Manager) {
               const managerId = this.toNumber(this.auth.currentUserValue?.user.id);
               if (managerId) {
-                // defaults.managerId = managerId;
+                defaults.managerId = managerId;
                 this.onManagerChange(managerId, true);
               }
             } else {

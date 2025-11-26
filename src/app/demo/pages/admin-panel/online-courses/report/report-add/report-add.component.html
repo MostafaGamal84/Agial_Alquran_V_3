@@ -32,7 +32,7 @@
           </mat-form-field>
         </div>
 
-        <div class="col-md-6">
+        <div class="col-md-6" *ngIf="role !== UserTypesEnum.Teacher">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>{{ 'Circle' | translate }}</mat-label>
             <mat-select
