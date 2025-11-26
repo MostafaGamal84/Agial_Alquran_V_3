@@ -54,6 +54,9 @@ export class ReportAddComponent implements OnInit {
   isLoadingTeachers = false;
   isLoadingCircles = false;
   isLoadingStudents = false;
+  lockManagerSelection = false;
+  lockTeacherSelection = false;
+  lockCircleSelection = false;
   private readonly userFilter: FilteredResultRequestDto = { lookupOnly: true };
   surahList = Object.keys(QuranSurahEnum)
     .filter((key) => isNaN(Number(key)))
@@ -177,6 +180,9 @@ export class ReportAddComponent implements OnInit {
 
   private initializeSelectionFlow(): void {
     if (this.role === UserTypesEnum.Teacher) {
+      this.lockManagerSelection = true;
+      this.lockTeacherSelection = true;
+      this.lockCircleSelection = true;
       const current = this.auth.currentUserValue;
       const teacherId = current ? Number(current.user.id) : null;
       if (teacherId) {
@@ -187,6 +193,7 @@ export class ReportAddComponent implements OnInit {
     }
 
     if (this.role === UserTypesEnum.Manager) {
+      this.lockManagerSelection = true;
       const current = this.auth.currentUserValue;
       const managerId = current ? Number(current.user.id) : null;
       if (managerId) {
@@ -511,9 +518,7 @@ export class ReportAddComponent implements OnInit {
       this.reportForm.markAllAsTouched();
       return;
     }
-    const formValue = (this.mode === 'update'
-      ? this.reportForm.getRawValue()
-      : this.reportForm.value) as CircleReportAddDto & { managerId?: number };
+    const formValue = this.reportForm.getRawValue() as CircleReportAddDto & { managerId?: number };
     const { managerId: _managerId, ...model } = formValue;
 
     if (this.mode === 'update') {
@@ -553,7 +558,7 @@ export class ReportAddComponent implements OnInit {
             } else if (this.role === UserTypesEnum.Manager) {
               const managerId = this.toNumber(this.auth.currentUserValue?.user.id);
               if (managerId) {
-                // defaults.managerId = managerId;
+                defaults.managerId = managerId;
                 this.onManagerChange(managerId, true);
               }
             } else {

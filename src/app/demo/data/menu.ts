@@ -351,7 +351,7 @@ export const menus: Navigation[] = [
                 id: 'report-add',
                 title: 'Add Report',
                 type: 'item',
-                url: '/online-course/report/create',
+                url: '/online-course/student/report/add',
                 role: [
                   UserTypesEnum.Admin.toString(),
                   UserTypesEnum.Manager.toString(),
