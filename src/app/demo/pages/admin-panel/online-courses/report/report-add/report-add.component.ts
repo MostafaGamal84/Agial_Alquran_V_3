@@ -194,11 +194,12 @@ export class ReportAddComponent implements OnInit {
 
     if (this.role === UserTypesEnum.Manager) {
       this.lockManagerSelection = true;
-      const current = this.auth.currentUserValue;
-      const managerId = current ? Number(current.user.id) : null;
-      if (managerId) {
-        this.reportForm.patchValue({ managerId });
-        this.onManagerChange(managerId, true);
+      const supervisorId = this.toNumber(this.auth.currentUserValue?.user.id);
+      const branchId = this.getBranchId();
+      if (supervisorId) {
+        this.reportForm.patchValue({ managerId: supervisorId });
+        this.loadStudentsForManager(supervisorId, branchId);
+        this.loadTeachersForManager(supervisorId, undefined, true, branchId, true);
       }
       return;
     }
@@ -249,6 +250,9 @@ export class ReportAddComponent implements OnInit {
       this.role === UserTypesEnum.Manager || this.role === UserTypesEnum.BranchLeader
         ? this.getBranchId()
         : undefined;
+    if (managerId) {
+      this.loadStudentsForManager(managerId, branchId);
+    }
     this.loadTeachersForManager(managerId, existingTeacherId, initial, branchId);
   }
 
@@ -256,10 +260,12 @@ export class ReportAddComponent implements OnInit {
     managerId: number,
     teacherId?: number | null,
     loadCircles = false,
-    branchId?: number | null
+    branchId?: number | null,
+    autoSelectFirst = false
   ): void {
     this.isLoadingTeachers = true;
-    const effectiveManagerId = this.role === UserTypesEnum.Manager ? 0 : managerId;
+    const effectiveManagerId =
+      managerId || (this.role === UserTypesEnum.Manager ? this.toNumber(this.auth.currentUserValue?.user.id) ?? 0 : 0);
     this.lookupService
       .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Teacher), effectiveManagerId, 0, branchId ?? 0)
       .subscribe({
@@ -271,11 +277,36 @@ export class ReportAddComponent implements OnInit {
             if (loadCircles) {
               this.loadCirclesForTeacher(teacherId, true);
             }
+          } else if (autoSelectFirst && this.teachers.length === 1) {
+            const firstTeacherId = this.teachers[0].id;
+            this.reportForm.patchValue({ teacherId: firstTeacherId }, { emitEvent: false });
+            this.loadCirclesForTeacher(firstTeacherId, true);
           }
         },
         error: () => {
           this.teachers = [];
           this.isLoadingTeachers = false;
+        }
+      });
+  }
+
+  private loadStudentsForManager(managerId: number, branchId?: number | null): void {
+    this.isLoadingStudents = true;
+    this.lookupService
+      .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Student), managerId, 0, branchId ?? 0)
+      .subscribe({
+        next: (res) => {
+          const records = res.isSuccess ? res.data.items : [];
+          this.students = records.map((student) => {
+            const id = this.toNumber(student.id);
+            const name = student.fullName || student.email || (id ? `Student #${id}` : undefined);
+            return id && name ? { id, name } : undefined;
+          }).filter((s): s is { id: number; name: string } => !!s);
+          this.isLoadingStudents = false;
+        },
+        error: () => {
+          this.students = [];
+          this.isLoadingStudents = false;
         }
       });
   }
@@ -306,7 +337,15 @@ export class ReportAddComponent implements OnInit {
     this.circleService.get(circleId).subscribe({
       next: (res) => {
         if (res.isSuccess && res.data?.students) {
-          const mapped = res.data.students
+          const selectedTeacherId = this.toNumber(this.reportForm.get('teacherId')?.value);
+          const relevantStudents = selectedTeacherId
+            ? res.data.students.filter((student) => {
+                const teacherId = this.toNumber((student as { teacherId?: unknown }).teacherId);
+                return teacherId === undefined || teacherId === selectedTeacherId;
+              })
+            : res.data.students;
+
+          const mapped = relevantStudents
             .map((student) => this.mapStudent(student))
             .filter((s): s is { id: number; name: string } => !!s);
           const unique = new Map(mapped.map((s) => [s.id, s]));

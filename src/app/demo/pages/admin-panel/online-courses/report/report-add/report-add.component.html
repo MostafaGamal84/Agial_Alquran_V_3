@@ -35,15 +35,7 @@
         <div class="col-md-6" *ngIf="role !== UserTypesEnum.Teacher">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>{{ 'Circle' | translate }}</mat-label>
-            <mat-select
-              formControlName="circleId"
-              [disabled]="
-                isLoadingCircles ||
-                lockCircleSelection ||
-                (!reportForm.get('teacherId')?.value && role !== UserTypesEnum.Teacher)
-              "
-              (selectionChange)="onCircleChange($event.value)"
-            >
+            <mat-select formControlName="circleId" [disabled]="true">
               <mat-option *ngFor="let circle of circles" [value]="circle.id">
                 {{ circle.name || ('Circle #' + circle.id) }}
               </mat-option>
