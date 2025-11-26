@@ -723,8 +723,6 @@ export class TeacherSalaryComponent
       return;
     }
     const filter: FilteredResultRequestDto = {
-      skipCount: 0,
-      maxResultCount: 50,
       searchTerm: searchTerm?.trim() ?? undefined,
       lookupOnly: true
     };

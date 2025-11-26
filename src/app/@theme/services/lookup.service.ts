@@ -143,15 +143,17 @@ export class LookupService {
   ): Observable<ApiResponse<PagedResultDto<LookUpUserDto>>> {
     const role = this.auth.getRole();
     const effectiveBranchId = role === UserTypesEnum.Admin ? 0 : branchId;
+    const lookupMode = this.resolveLookupMode(filter);
+    const shouldPaginate = !lookupMode;
     let params = new HttpParams()
       .set('UserTypeId', userTypeId.toString())
       .set('managerId', managerId.toString())
       .set('teacherId', teacherId.toString())
       .set('branchId', effectiveBranchId.toString());
-    if (filter.skipCount !== undefined) {
+    if (shouldPaginate && filter.skipCount !== undefined) {
       params = params.set('SkipCount', filter.skipCount.toString());
     }
-    if (filter.maxResultCount !== undefined) {
+    if (shouldPaginate && filter.maxResultCount !== undefined) {
       params = params.set('MaxResultCount', filter.maxResultCount.toString());
     }
     const searchWord = filter.searchWord ?? filter.searchTerm;
@@ -162,7 +164,6 @@ export class LookupService {
     if (searchWord) {
       params = params.set('SearchWord', searchWord);
     }
-    const lookupMode = this.resolveLookupMode(filter);
     const filterTokens: string[] = [];
 
     if (filter.filter) {
