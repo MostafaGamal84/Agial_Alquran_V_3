@@ -190,7 +190,7 @@ export class ReportAddComponent implements OnInit {
   }
 
   get showCircleSelector(): boolean {
-    return !this.isTeacher;
+    return false;
   }
 
   private initializeSelectionFlow(): void {
