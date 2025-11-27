@@ -40,6 +40,9 @@ export class ReportAddComponent implements OnInit {
 
   reportForm!: FormGroup;
   role = this.auth.getRole();
+  isBranchManager = this.role === UserTypesEnum.BranchLeader;
+  isSupervisor = this.role === UserTypesEnum.Manager;
+  isTeacher = this.role === UserTypesEnum.Teacher;
   UserTypesEnum = UserTypesEnum;
   AttendStatusEnum = AttendStatusEnum;
   selectedStatus?: AttendStatusEnum;
@@ -56,7 +59,7 @@ export class ReportAddComponent implements OnInit {
   isLoadingStudents = false;
   lockManagerSelection = false;
   lockTeacherSelection = false;
-  lockCircleSelection = false;
+  lockCircleSelection = true;
   private readonly userFilter: FilteredResultRequestDto = { lookupOnly: true };
   surahList = Object.keys(QuranSurahEnum)
     .filter((key) => isNaN(Number(key)))
@@ -178,8 +181,20 @@ export class ReportAddComponent implements OnInit {
     }
   }
 
+  get showSupervisorSelector(): boolean {
+    return this.isBranchManager;
+  }
+
+  get showTeacherSelector(): boolean {
+    return this.isBranchManager || this.isSupervisor;
+  }
+
+  get showCircleSelector(): boolean {
+    return !this.isTeacher;
+  }
+
   private initializeSelectionFlow(): void {
-    if (this.role === UserTypesEnum.Teacher) {
+    if (this.isTeacher) {
       this.lockManagerSelection = true;
       this.lockTeacherSelection = true;
       this.lockCircleSelection = true;
@@ -192,7 +207,7 @@ export class ReportAddComponent implements OnInit {
       return;
     }
 
-    if (this.role === UserTypesEnum.Manager) {
+    if (this.isSupervisor) {
       this.lockManagerSelection = true;
       const supervisorId = this.toNumber(this.auth.currentUserValue?.user.id);
       const branchId = this.getBranchId();
@@ -204,6 +219,14 @@ export class ReportAddComponent implements OnInit {
     }
 
     const existingTeacherId = this.toNumber(this.reportForm.get('teacherId')?.value);
+
+    if (this.isBranchManager) {
+      const branchId = this.getBranchId();
+      this.loadManagers();
+      this.loadTeachersForManager(0, existingTeacherId, true, branchId ?? 0);
+      return;
+    }
+
     if (existingTeacherId) {
       this.loadTeachersForManager(0, existingTeacherId, true);
       return;
@@ -214,10 +237,7 @@ export class ReportAddComponent implements OnInit {
 
   private loadManagers(): void {
     this.isLoadingManagers = true;
-    const branchId =
-      this.role === UserTypesEnum.BranchLeader || this.role === UserTypesEnum.Manager
-        ? this.getBranchId() ?? 0
-        : 0;
+    const branchId = this.isBranchManager || this.isSupervisor ? this.getBranchId() ?? 0 : 0;
     this.lookupService
       .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Manager), 0, 0, branchId)
       .subscribe({
@@ -246,9 +266,7 @@ export class ReportAddComponent implements OnInit {
 
     const existingTeacherId = this.toNumber(this.reportForm.get('teacherId')?.value);
     const branchId =
-      this.role === UserTypesEnum.Manager || this.role === UserTypesEnum.BranchLeader
-        ? this.getBranchId()
-        : undefined;
+      this.isSupervisor || this.isBranchManager ? this.getBranchId() : undefined;
     this.loadTeachersForManager(managerId, existingTeacherId, initial, branchId);
   }
 
@@ -261,7 +279,7 @@ export class ReportAddComponent implements OnInit {
   ): void {
     this.isLoadingTeachers = true;
     const effectiveManagerId =
-      managerId || (this.role === UserTypesEnum.Manager ? this.toNumber(this.auth.currentUserValue?.user.id) ?? 0 : 0);
+      managerId || (this.isSupervisor ? this.toNumber(this.auth.currentUserValue?.user.id) ?? 0 : 0);
     this.lookupService
       .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Teacher), effectiveManagerId, 0, branchId ?? 0)
       .subscribe({
