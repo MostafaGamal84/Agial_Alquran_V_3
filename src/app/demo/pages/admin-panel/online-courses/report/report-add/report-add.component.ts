@@ -219,6 +219,14 @@ export class ReportAddComponent implements OnInit {
     }
 
     const existingTeacherId = this.toNumber(this.reportForm.get('teacherId')?.value);
+
+    if (this.isBranchManager) {
+      const branchId = this.getBranchId();
+      this.loadManagers();
+      this.loadTeachersForManager(0, existingTeacherId, true, branchId ?? 0);
+      return;
+    }
+
     if (existingTeacherId) {
       this.loadTeachersForManager(0, existingTeacherId, true);
       return;
