@@ -2,7 +2,7 @@
   <div class="col-12">
     <app-card [cardTitle]="cardTitle | translate">
       <form [formGroup]="reportForm" (ngSubmit)="onSubmit()" class="row">
-        <div class="col-md-6" *ngIf="role !== UserTypesEnum.Manager && role !== UserTypesEnum.Teacher">
+        <div class="col-md-6" *ngIf="showSupervisorSelector">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>{{ 'Supervisor' | translate }}</mat-label>
             <mat-select
@@ -17,7 +17,7 @@
           </mat-form-field>
         </div>
 
-        <div class="col-md-6" *ngIf="role !== UserTypesEnum.Teacher">
+        <div class="col-md-6" *ngIf="showTeacherSelector">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>{{ 'Teacher' | translate }}</mat-label>
             <mat-select
@@ -32,10 +32,10 @@
           </mat-form-field>
         </div>
 
-        <div class="col-md-6" *ngIf="role !== UserTypesEnum.Teacher">
+        <div class="col-md-6" *ngIf="showCircleSelector">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>{{ 'Circle' | translate }}</mat-label>
-            <mat-select formControlName="circleId" [disabled]="true">
+            <mat-select formControlName="circleId" [disabled]="lockCircleSelection || isLoadingCircles">
               <mat-option *ngFor="let circle of circles" [value]="circle.id">
                 {{ circle.name || ('Circle #' + circle.id) }}
               </mat-option>
