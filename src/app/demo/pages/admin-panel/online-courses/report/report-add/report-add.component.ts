@@ -45,7 +45,7 @@ export class ReportAddComponent implements OnInit {
   private reportId?: number;
   private preselectedStudentId?: number;
 
-  // علشان الـ HTML يقدر يستخدمهم
+  // عشان نستخدمهم في الـ HTML
   UserTypesEnum = UserTypesEnum;
   AttendStatusEnum = AttendStatusEnum;
 
@@ -80,13 +80,11 @@ export class ReportAddComponent implements OnInit {
   // ================================
   // Helpers على اليوزر والدور
   // ================================
-  /** currentUser = inner user أو نفس الـ object لو مفيش user داخلي */
   private get currentUser(): any {
     const raw = this.auth.currentUserValue as any;
     return raw?.user ?? raw ?? null;
   }
 
-  /** نحاول نجيب الـ ID لو موجود (بس عندك حالياً فاضي كمشرف) */
   private getUserId(): number | undefined {
     const raw =
       (this.auth.currentUserValue as any)?.user?.id ??
@@ -107,13 +105,12 @@ export class ReportAddComponent implements OnInit {
     return this.toNumber(raw) ?? undefined;
   }
 
-  // نجيب نوع المستخدم من userTypeId أو من getRole()
   private get userTypeNumber(): number {
     const raw =
       (this.auth.currentUserValue as any)?.user?.userTypeId ??
       (this.auth.currentUserValue as any)?.userTypeId ??
       this.currentUser?.userTypeId ??
-      this.auth.getRole(); // عندك هنا role = "3"
+      this.auth.getRole(); // مثال: "3" أو "4"
 
     const n = Number(raw);
     return Number.isFinite(n) ? n : 0;
@@ -240,13 +237,17 @@ export class ReportAddComponent implements OnInit {
       this.lockTeacherSelection = true;
       this.lockCircleSelection = true;
 
-      const teacherId = this.getUserId();
+      // المعلم لا يختار Teacher من UI
+      const teacherCtrl = this.reportForm.get('teacherId');
+      teacherCtrl?.clearValidators();
+      teacherCtrl?.updateValueAndValidity();
+
+      const teacherId = this.getUserId(); // حالياً undefined عندك
       console.log('[ReportAdd] Teacher flow', { teacherId });
 
-      if (teacherId) {
-        this.reportForm.patchValue({ teacherId }, { emitEvent: false });
-        this.loadCirclesForTeacher(teacherId, true);
-      }
+      // حتى لو مفيش teacherId هننده السيرفس، والبك إند يعتمد على التوكن
+      this.loadCirclesForTeacher(teacherId ?? 0, true);
+
       return;
     }
 
@@ -254,21 +255,19 @@ export class ReportAddComponent implements OnInit {
     if (this.isSupervisor) {
       this.lockManagerSelection = true;
 
-      const supervisorId = this.getUserId(); // عندك undefined حالياً
+      const supervisorId = this.getUserId();
       const branchId = this.getBranchId();
 
       console.log('[ReportAdd] Supervisor flow', { supervisorId, branchId });
 
-      // حتى لو supervisorId مش موجود، هانستدعي GetUsersForSelects
       if (supervisorId) {
         this.reportForm.patchValue({ managerId: supervisorId }, { emitEvent: false });
       } else {
         this.reportForm.patchValue({ managerId: null }, { emitEvent: false });
       }
 
-      // هنا التعديل المهم: دايمًا نستدعي loadTeachersForManager
       this.loadTeachersForManager(
-        supervisorId ?? 0,   // لو مفيش ID هنعدّي 0
+        supervisorId ?? 0,
         undefined,
         true,
         branchId,
@@ -317,7 +316,7 @@ export class ReportAddComponent implements OnInit {
   }
 
   get showCircleSelector(): boolean {
-    return false; // الحلقة دايمًا auto من الكود
+    return false; // الحلقة دايمًا auto
   }
 
   // ================================
@@ -465,9 +464,14 @@ export class ReportAddComponent implements OnInit {
   private loadCirclesForTeacher(teacherId: number, autoSelect = false): void {
     this.isLoadingCircles = true;
 
-    console.log('[ReportAdd] loadCirclesForTeacher', { teacherId });
+    const effectiveTeacherId = teacherId || this.getUserId() || 0;
 
-    this.circleService.getAll(this.userFilter, undefined, teacherId).subscribe({
+    console.log('[ReportAdd] loadCirclesForTeacher', {
+      teacherId,
+      effectiveTeacherId
+    });
+
+    this.circleService.getAll(this.userFilter, undefined, effectiveTeacherId).subscribe({
       next: (res) => {
         this.circles = res.isSuccess ? res.data.items : [];
         this.isLoadingCircles = false;
@@ -519,8 +523,8 @@ export class ReportAddComponent implements OnInit {
 
           const relevantStudents = selectedTeacherId
             ? res.data.students.filter((student: any) => {
-                const teacherId = this.toNumber(student.teacherId);
-                return teacherId === undefined || teacherId === selectedTeacherId;
+                const tId = this.toNumber(student.teacherId);
+                return tId === undefined || tId === selectedTeacherId;
               })
             : res.data.students;
 
@@ -618,6 +622,20 @@ export class ReportAddComponent implements OnInit {
   // ================================
   // UTILITIES
   // ================================
+  getAttendStatusLabel(value: any): string {
+    const v = Number(value);
+    switch (v) {
+      case AttendStatusEnum.Attended:
+        return 'حضر';
+      case AttendStatusEnum.ExcusedAbsence:
+        return 'تغيب بعذر';
+      case AttendStatusEnum.UnexcusedAbsence:
+        return 'تغيب بدون عذر';
+      default:
+        return '';
+    }
+  }
+
   private resolveStatus(report: ReportState): AttendStatusEnum | undefined {
     const rawStatus = this.toNumber(
       report.attendStatueId ??
@@ -808,10 +826,7 @@ export class ReportAddComponent implements OnInit {
 
             if (this.isTeacher) {
               const teacherId = this.getUserId();
-              if (teacherId) {
-                defaults.teacherId = teacherId;
-                this.loadCirclesForTeacher(teacherId, true);
-              }
+              this.loadCirclesForTeacher(teacherId ?? 0, true);
             } else if (this.isSupervisor) {
               const supervisorId = this.getUserId();
               if (supervisorId) {

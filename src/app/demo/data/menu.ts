@@ -137,10 +137,10 @@ export const menus: Navigation[] = [
             url: '/online-course/dashboard',
             role: [
               UserTypesEnum.Admin.toString(),
-              UserTypesEnum.Manager.toString(),
-              UserTypesEnum.BranchLeader.toString(),
-              UserTypesEnum.Student.toString(),
-              UserTypesEnum.Teacher.toString()
+              // UserTypesEnum.Manager.toString(),
+              // UserTypesEnum.BranchLeader.toString(),
+              // UserTypesEnum.Student.toString(),
+              // UserTypesEnum.Teacher.toString()
             ]
           },
           {
@@ -574,10 +574,10 @@ export const menus: Navigation[] = [
         icon: '#custom-bill',
         role: [
           UserTypesEnum.Admin.toString(),
-          UserTypesEnum.Manager.toString(),
-          UserTypesEnum.BranchLeader.toString(),
-          UserTypesEnum.Student.toString(),
-          UserTypesEnum.Teacher.toString()
+          // UserTypesEnum.Manager.toString(),
+          // UserTypesEnum.BranchLeader.toString(),
+          // UserTypesEnum.Student.toString(),
+          // UserTypesEnum.Teacher.toString()
         ],
         // children: [
           // {
@@ -634,8 +634,8 @@ export const menus: Navigation[] = [
         url: '/teacher-salary',
         role: [
           UserTypesEnum.Admin.toString(),
-          UserTypesEnum.Manager.toString(),
-          UserTypesEnum.Teacher.toString()
+          // UserTypesEnum.Manager.toString(),
+          // UserTypesEnum.Teacher.toString()
         ]
       }
     ]
