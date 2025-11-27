@@ -221,9 +221,7 @@ export class ReportAddComponent implements OnInit {
     const existingTeacherId = this.toNumber(this.reportForm.get('teacherId')?.value);
 
     if (this.isBranchManager) {
-      const branchId = this.getBranchId();
-      this.loadManagers();
-      this.loadTeachersForManager(0, existingTeacherId, true, branchId ?? 0);
+      this.loadManagers(true, existingTeacherId);
       return;
     }
 
@@ -235,7 +233,7 @@ export class ReportAddComponent implements OnInit {
     this.loadManagers();
   }
 
-  private loadManagers(): void {
+  private loadManagers(autoSelectFirst = false, teacherId?: number | null): void {
     this.isLoadingManagers = true;
     const branchId = this.isBranchManager || this.isSupervisor ? this.getBranchId() ?? 0 : 0;
     this.lookupService
@@ -244,6 +242,12 @@ export class ReportAddComponent implements OnInit {
         next: (res) => {
           this.managers = res.isSuccess ? res.data.items : [];
           this.isLoadingManagers = false;
+
+          if (autoSelectFirst && this.managers.length > 0) {
+            const managerId = this.managers[0].id;
+            this.reportForm.patchValue({ managerId }, { emitEvent: false });
+            this.onManagerChange(managerId, true, teacherId);
+          }
         },
         error: () => {
           this.managers = [];
@@ -252,7 +256,7 @@ export class ReportAddComponent implements OnInit {
       });
   }
 
-  onManagerChange(managerId: number | null, initial = false): void {
+  onManagerChange(managerId: number | null, initial = false, teacherId?: number | null): void {
     if (!initial) {
       this.reportForm.patchValue({ teacherId: null, circleId: null, studentId: null });
     } else {
@@ -264,7 +268,7 @@ export class ReportAddComponent implements OnInit {
       return;
     }
 
-    const existingTeacherId = this.toNumber(this.reportForm.get('teacherId')?.value);
+    const existingTeacherId = teacherId ?? this.toNumber(this.reportForm.get('teacherId')?.value);
     const branchId =
       this.isSupervisor || this.isBranchManager ? this.getBranchId() : undefined;
     this.loadTeachersForManager(managerId, existingTeacherId, initial, branchId);
