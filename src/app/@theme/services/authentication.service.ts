@@ -70,7 +70,7 @@ export class AuthenticationService {
   pendingCode: string | null = null;
 
   // ------- Role mapping helpers -------
-  // backend numeric id -> enum (string ids in your enum)
+  // backend numeric id -> enum
   private readonly roleIdToEnum: Record<number, UserTypesEnum> = {
     1: UserTypesEnum.Admin,
     2: UserTypesEnum.BranchLeader,
@@ -80,9 +80,9 @@ export class AuthenticationService {
   };
 
   private mapRoleToEnum(role: number | string | null | undefined): UserTypesEnum {
-    // normalize to number first (enum stores string IDs)
-    const n = typeof role === 'string' ? parseInt(role, 10) : (role ?? NaN as number);
-    return this.roleIdToEnum[n] ?? UserTypesEnum.Manager; // sensible fallback
+    const normalizedRole = typeof role === 'string' ? Number(role) : role;
+    const resolvedRole = normalizedRole ?? NaN;
+    return this.roleIdToEnum[resolvedRole] ?? UserTypesEnum.Manager; // sensible fallback
   }
 
   constructor() {
