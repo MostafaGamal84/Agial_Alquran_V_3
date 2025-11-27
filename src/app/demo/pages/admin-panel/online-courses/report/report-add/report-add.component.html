@@ -1,7 +1,13 @@
 <div class="row">
   <div class="col-12">
     <app-card [cardTitle]="cardTitle | translate">
-      <form [formGroup]="reportForm" (ngSubmit)="onSubmit()" class="row">
+      <form
+        *ngIf="reportForm"
+        [formGroup]="reportForm"
+        (ngSubmit)="onSubmit()"
+        class="row"
+      >
+        <!-- Supervisor selector (Admin + BranchManager فقط) -->
         <div class="col-md-6" *ngIf="showSupervisorSelector">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>{{ 'Supervisor' | translate }}</mat-label>
@@ -17,6 +23,7 @@
           </mat-form-field>
         </div>
 
+        <!-- Teacher selector (Admin + BranchManager + Supervisor) -->
         <div class="col-md-6" *ngIf="showTeacherSelector">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>{{ 'Teacher' | translate }}</mat-label>
@@ -32,21 +39,31 @@
           </mat-form-field>
         </div>
 
+        <!-- Circle selector (لو حبيت تعرضه مستقبلاً)
         <div class="col-md-6" *ngIf="showCircleSelector">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>{{ 'Circle' | translate }}</mat-label>
-            <mat-select formControlName="circleId" [disabled]="lockCircleSelection || isLoadingCircles">
+            <mat-select
+              formControlName="circleId"
+              [disabled]="lockCircleSelection || isLoadingCircles"
+              (selectionChange)="onCircleChange($event.value)"
+            >
               <mat-option *ngFor="let circle of circles" [value]="circle.id">
                 {{ circle.name || ('Circle #' + circle.id) }}
               </mat-option>
             </mat-select>
           </mat-form-field>
         </div>
+        -->
 
+        <!-- Student -->
         <div class="col-md-6">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>{{ 'Student' | translate }}</mat-label>
-            <mat-select formControlName="studentId" [disabled]="isLoadingStudents || !reportForm.get('circleId')?.value">
+            <mat-select
+              formControlName="studentId"
+              [disabled]="isLoadingStudents || !reportForm.get('circleId')?.value"
+            >
               <mat-option *ngFor="let student of students" [value]="student.id">
                 {{ student.name }}
               </mat-option>
@@ -54,24 +71,42 @@
           </mat-form-field>
         </div>
 
+        <!-- Attend Status -->
         <div class="col-md-6">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>{{ 'Attend Status' | translate }}</mat-label>
-            <mat-select formControlName="attendStatueId" (selectionChange)="onStatusChange($event.value)">
-              <mat-option [value]="AttendStatusEnum.Attended">حضر</mat-option>
-              <mat-option [value]="AttendStatusEnum.ExcusedAbsence">تغيب بعذر</mat-option>
-              <mat-option [value]="AttendStatusEnum.UnexcusedAbsence">تغيب بدون عذر</mat-option>
+            <mat-select
+              formControlName="attendStatueId"
+              (selectionChange)="onStatusChange($event.value)"
+            >
+              <mat-option [value]="AttendStatusEnum.Attended">
+                حضر
+              </mat-option>
+              <mat-option [value]="AttendStatusEnum.ExcusedAbsence">
+                تغيب بعذر
+              </mat-option>
+              <mat-option [value]="AttendStatusEnum.UnexcusedAbsence">
+                تغيب بدون عذر
+              </mat-option>
             </mat-select>
           </mat-form-field>
         </div>
 
-        <div class="col-md-6" *ngIf="selectedStatus === AttendStatusEnum.Attended || selectedStatus === AttendStatusEnum.UnexcusedAbsence">
+        <!-- Minutes (للحضور أو الغياب بدون عذر) -->
+        <div
+          class="col-md-6"
+          *ngIf="
+            selectedStatus === AttendStatusEnum.Attended ||
+            selectedStatus === AttendStatusEnum.UnexcusedAbsence
+          "
+        >
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>{{ 'Minutes' | translate }}</mat-label>
             <input matInput type="number" formControlName="minutes" />
           </mat-form-field>
         </div>
 
+        <!-- باقي الحقول تظهر فقط عند الحضور -->
         <ng-container *ngIf="selectedStatus === AttendStatusEnum.Attended">
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100">
@@ -149,7 +184,9 @@
 
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100">
-              <mat-label>{{ 'The Words of the Quran Stranger' | translate }}</mat-label>
+              <mat-label>
+                {{ 'The Words of the Quran Stranger' | translate }}
+              </mat-label>
               <input matInput formControlName="theWordsQuranStranger" />
             </mat-form-field>
           </div>
@@ -170,7 +207,9 @@
         </ng-container>
 
         <div class="col-12">
-          <button mat-flat-button color="primary" type="submit">{{ submitLabel | translate }}</button>
+          <button mat-flat-button color="primary" type="submit">
+            {{ submitLabel | translate }}
+          </button>
         </div>
       </form>
     </app-card>

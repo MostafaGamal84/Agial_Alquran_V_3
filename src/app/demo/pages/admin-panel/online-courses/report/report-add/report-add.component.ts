@@ -15,13 +15,18 @@ import { ToastService } from 'src/app/@theme/services/toast.service';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { AttendStatusEnum } from 'src/app/@theme/types/AttendStatusEnum';
+import {
+  FilteredResultRequestDto,
+  LookUpUserDto,
+  LookupService
+} from 'src/app/@theme/services/lookup.service';
 import { QuranSurahEnum } from 'src/app/@theme/types/QuranSurahEnum';
-import { FilteredResultRequestDto, LookUpUserDto, LookupService } from 'src/app/@theme/services/lookup.service';
 
 type ReportState = Partial<CircleReportAddDto> & Partial<CircleReportListDto>;
 
 @Component({
   selector: 'app-report-add',
+  standalone: true,
   imports: [CommonModule, SharedModule],
   templateUrl: './report-add.component.html',
   styleUrl: './report-add.component.scss'
@@ -35,32 +40,36 @@ export class ReportAddComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private translate = inject(TranslateService);
   private lookupService = inject(LookupService);
+
+  reportForm!: FormGroup;
   private reportId?: number;
   private preselectedStudentId?: number;
 
-  reportForm!: FormGroup;
-  role = this.auth.getRole();
-  isBranchManager = this.role === UserTypesEnum.BranchLeader;
-  isSupervisor = this.role === UserTypesEnum.Manager;
-  isTeacher = this.role === UserTypesEnum.Teacher;
+  // علشان الـ HTML يقدر يستخدمهم
   UserTypesEnum = UserTypesEnum;
   AttendStatusEnum = AttendStatusEnum;
+
   selectedStatus?: AttendStatusEnum;
   mode: 'add' | 'update' = 'add';
   cardTitle = 'Add Circle Report';
   submitLabel = 'Create';
+
   managers: LookUpUserDto[] = [];
   teachers: LookUpUserDto[] = [];
   circles: CircleDto[] = [];
   students: { id: number; name: string }[] = [];
+
   isLoadingManagers = false;
   isLoadingTeachers = false;
   isLoadingCircles = false;
   isLoadingStudents = false;
+
   lockManagerSelection = false;
   lockTeacherSelection = false;
   lockCircleSelection = true;
+
   private readonly userFilter: FilteredResultRequestDto = { lookupOnly: true };
+
   surahList = Object.keys(QuranSurahEnum)
     .filter((key) => isNaN(Number(key)))
     .map((key) => ({
@@ -68,6 +77,67 @@ export class ReportAddComponent implements OnInit {
       name: key
     }));
 
+  // ================================
+  // Helpers على اليوزر والدور
+  // ================================
+  /** currentUser = inner user أو نفس الـ object لو مفيش user داخلي */
+  private get currentUser(): any {
+    const raw = this.auth.currentUserValue as any;
+    return raw?.user ?? raw ?? null;
+  }
+
+  /** نحاول نجيب الـ ID لو موجود (بس عندك حالياً فاضي كمشرف) */
+  private getUserId(): number | undefined {
+    const raw =
+      (this.auth.currentUserValue as any)?.user?.id ??
+      (this.auth.currentUserValue as any)?.id ??
+      this.currentUser?.id ??
+      this.currentUser?.userId;
+
+    return this.toNumber(raw);
+  }
+
+  private getBranchId(): number | undefined {
+    const raw =
+      (this.auth.currentUserValue as any)?.user?.branchId ??
+      (this.auth.currentUserValue as any)?.branchId ??
+      this.currentUser?.branchId ??
+      this.currentUser?.branch?.id;
+
+    return this.toNumber(raw) ?? undefined;
+  }
+
+  // نجيب نوع المستخدم من userTypeId أو من getRole()
+  private get userTypeNumber(): number {
+    const raw =
+      (this.auth.currentUserValue as any)?.user?.userTypeId ??
+      (this.auth.currentUserValue as any)?.userTypeId ??
+      this.currentUser?.userTypeId ??
+      this.auth.getRole(); // عندك هنا role = "3"
+
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  get isSystemManager(): boolean {
+    return this.userTypeNumber === Number(UserTypesEnum.Admin); // "1"
+  }
+
+  get isBranchManager(): boolean {
+    return this.userTypeNumber === Number(UserTypesEnum.BranchLeader); // "2"
+  }
+
+  get isSupervisor(): boolean {
+    return this.userTypeNumber === Number(UserTypesEnum.Manager); // "3"
+  }
+
+  get isTeacher(): boolean {
+    return this.userTypeNumber === Number(UserTypesEnum.Teacher); // "4"
+  }
+
+  // ================================
+  // INIT
+  // ================================
   ngOnInit(): void {
     this.mode = this.determineMode();
     if (this.mode === 'update') {
@@ -75,6 +145,30 @@ export class ReportAddComponent implements OnInit {
       this.submitLabel = 'Update';
     }
 
+    console.log('[ReportAdd] init role info', {
+      currentUser: this.currentUser,
+      userTypeId: this.currentUser?.userTypeId,
+      authRole: this.auth.getRole(),
+      userTypeNumber: this.userTypeNumber,
+      isSystemManager: this.isSystemManager,
+      isBranchManager: this.isBranchManager,
+      isSupervisor: this.isSupervisor,
+      isTeacher: this.isTeacher
+    });
+
+    this.buildForm();
+    this.toggleFields();
+
+    if (this.mode === 'add') {
+      this.initAddMode();
+    } else {
+      this.initUpdateMode();
+    }
+
+    this.initializeSelectionFlow();
+  }
+
+  private buildForm(): void {
     this.reportForm = this.fb.group({
       minutes: [],
       newId: [],
@@ -90,51 +184,390 @@ export class ReportAddComponent implements OnInit {
       theWordsQuranStranger: [''],
       intonation: [''],
       other: [''],
+
       creationTime: [new Date(), Validators.required],
+
       managerId: [null],
       teacherId: [null, Validators.required],
       circleId: [null, Validators.required],
       studentId: [null, Validators.required],
       attendStatueId: []
     });
+  }
 
-    this.toggleFields();
+  private initAddMode(): void {
+    const course = history.state.circle as CircleDto | undefined;
+    if (course) {
+      this.reportForm.patchValue({
+        teacherId: course.teacherId ?? course.teacher?.id,
+        circleId: course.id
+      });
+    }
 
-    if (this.mode === 'add') {
-      const course = history.state.circle as CircleDto | undefined;
+    const id = Number(this.route.snapshot.paramMap.get('id'));
+    if (id) {
+      this.preselectedStudentId = id;
+      this.reportForm.get('studentId')?.setValue(id);
+    }
+  }
 
-      if (course) {
-        this.reportForm.patchValue({
-          teacherId: course.teacherId ?? course.teacher?.id,
-          circleId: course.id
-        });
-      }
-
-      const id = Number(this.route.snapshot.paramMap.get('id'));
-      if (id) {
-        this.preselectedStudentId = id;
-        this.reportForm.get('studentId')?.setValue(id);
+  private initUpdateMode(): void {
+    const reportId = Number(this.route.snapshot.paramMap.get('id'));
+    if (reportId) {
+      this.reportId = reportId;
+      const report = this.getReportFromState(reportId);
+      if (report) {
+        this.populateFormFromReport(report, reportId);
+      } else {
+        this.toast.error(
+          this.translate.instant(
+            'Report details are unavailable. Please return to the list and select a report to edit.'
+          )
+        );
       }
     } else {
-      const reportId = Number(this.route.snapshot.paramMap.get('id'));
-      if (reportId) {
-        this.reportId = reportId;
-        const report = this.getReportFromState(reportId);
-        if (report) {
-          this.populateFormFromReport(report, reportId);
-        } else {
-          this.toast.error(
-            this.translate.instant('Report details are unavailable. Please return to the list and select a report to edit.')
-          );
-        }
+      this.toast.error(this.translate.instant('Invalid report identifier'));
+    }
+  }
+
+  // ================================
+  // ROLE-BASED FLOW
+  // ================================
+  private initializeSelectionFlow(): void {
+    // 4) Teacher
+    if (this.isTeacher) {
+      this.lockManagerSelection = true;
+      this.lockTeacherSelection = true;
+      this.lockCircleSelection = true;
+
+      const teacherId = this.getUserId();
+      console.log('[ReportAdd] Teacher flow', { teacherId });
+
+      if (teacherId) {
+        this.reportForm.patchValue({ teacherId }, { emitEvent: false });
+        this.loadCirclesForTeacher(teacherId, true);
+      }
+      return;
+    }
+
+    // 3) Supervisor
+    if (this.isSupervisor) {
+      this.lockManagerSelection = true;
+
+      const supervisorId = this.getUserId(); // عندك undefined حالياً
+      const branchId = this.getBranchId();
+
+      console.log('[ReportAdd] Supervisor flow', { supervisorId, branchId });
+
+      // حتى لو supervisorId مش موجود، هانستدعي GetUsersForSelects
+      if (supervisorId) {
+        this.reportForm.patchValue({ managerId: supervisorId }, { emitEvent: false });
       } else {
-        this.toast.error(this.translate.instant('Invalid report identifier'));
+        this.reportForm.patchValue({ managerId: null }, { emitEvent: false });
+      }
+
+      // هنا التعديل المهم: دايمًا نستدعي loadTeachersForManager
+      this.loadTeachersForManager(
+        supervisorId ?? 0,   // لو مفيش ID هنعدّي 0
+        undefined,
+        true,
+        branchId,
+        true
+      );
+
+      return;
+    }
+
+    const existingTeacherId = this.toNumber(this.reportForm.get('teacherId')?.value);
+
+    // 2) Branch Manager
+    if (this.isBranchManager) {
+      console.log('[ReportAdd] BranchManager flow');
+      this.loadManagers(true, existingTeacherId);
+      return;
+    }
+
+    // 1) System Admin
+    if (this.isSystemManager) {
+      console.log('[ReportAdd] SystemManager flow');
+      this.loadManagers(true, existingTeacherId);
+      return;
+    }
+
+    // Fallback
+    console.log('[ReportAdd] Fallback flow');
+    if (existingTeacherId) {
+      this.loadTeachersForManager(0, existingTeacherId, true);
+    } else {
+      this.loadManagers();
+    }
+  }
+
+  // ================================
+  // UI VISIBILITY
+  // ================================
+  get showSupervisorSelector(): boolean {
+    // مدير نظام + مدير فرع فقط
+    return this.isSystemManager || this.isBranchManager;
+  }
+
+  get showTeacherSelector(): boolean {
+    // مدير نظام + مدير فرع + مشرف
+    return this.isSystemManager || this.isBranchManager || this.isSupervisor;
+  }
+
+  get showCircleSelector(): boolean {
+    return false; // الحلقة دايمًا auto من الكود
+  }
+
+  // ================================
+  // LOAD MANAGERS (SUPERVISORS)
+  // ================================
+  private loadManagers(autoSelectFirst = false, teacherId?: number | null): void {
+    this.isLoadingManagers = true;
+
+    const branchId =
+      this.isBranchManager || this.isSupervisor ? this.getBranchId() ?? 0 : 0;
+
+    console.log('[ReportAdd] loadManagers', { branchId });
+
+    this.lookupService
+      .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Manager), 0, 0, branchId)
+      .subscribe({
+        next: (res) => {
+          this.managers = res.isSuccess ? res.data.items : [];
+          this.isLoadingManagers = false;
+
+          console.log('[ReportAdd] managers loaded', this.managers);
+
+          if (autoSelectFirst && this.managers.length > 0) {
+            const managerId = this.toNumber(this.managers[0].id) ?? 0;
+            this.reportForm.patchValue({ managerId }, { emitEvent: false });
+            this.onManagerChange(managerId, true, teacherId ?? null);
+          }
+        },
+        error: () => {
+          this.managers = [];
+          this.isLoadingManagers = false;
+        }
+      });
+  }
+
+  onManagerChange(managerId: number | null, initial = false, teacherId?: number | null): void {
+    console.log('[ReportAdd] onManagerChange', { managerId, initial, teacherId });
+
+    if (!initial) {
+      this.reportForm.patchValue({ teacherId: null, circleId: null, studentId: null });
+    }
+    this.circles = [];
+    this.students = [];
+    this.teachers = [];
+
+    if (managerId === null || managerId === undefined) return;
+
+    const existingTeacherId =
+      teacherId ?? this.toNumber(this.reportForm.get('teacherId')?.value);
+    const branchId = this.isSupervisor || this.isBranchManager ? this.getBranchId() : undefined;
+
+    this.loadTeachersForManager(managerId, existingTeacherId, true, branchId);
+  }
+
+  // ================================
+  // LOAD TEACHERS
+  // ================================
+  private loadTeachersForManager(
+    managerId: number,
+    teacherId?: number | null,
+    loadCircles = false,
+    branchId?: number | null,
+    autoSelectFirst = false
+  ): void {
+    this.isLoadingTeachers = true;
+
+    const effectiveManagerId =
+      managerId || (this.isSupervisor ? this.getUserId() ?? 0 : 0);
+
+    console.log('[ReportAdd] loadTeachersForManager', {
+      managerId,
+      effectiveManagerId,
+      branchId
+    });
+
+    this.lookupService
+      .getUsersForSelects(
+        this.userFilter,
+        Number(UserTypesEnum.Teacher),
+        effectiveManagerId,
+        0,
+        branchId ?? 0
+      )
+      .subscribe({
+        next: (res) => {
+          this.teachers = res.isSuccess ? res.data.items : [];
+          this.isLoadingTeachers = false;
+
+          console.log('[ReportAdd] teachers loaded', this.teachers);
+
+          const existingId =
+            teacherId ?? this.toNumber(this.reportForm.get('teacherId')?.value);
+
+          if (existingId && this.teachers.some((t) => this.toNumber(t.id) === existingId)) {
+            this.reportForm.patchValue({ teacherId: existingId }, { emitEvent: false });
+            if (loadCircles) {
+              this.loadCirclesForTeacher(existingId, true);
+            }
+          } else if (autoSelectFirst && this.teachers.length === 1) {
+            const firstTeacherId = this.toNumber(this.teachers[0].id);
+            if (firstTeacherId) {
+              this.reportForm.patchValue(
+                { teacherId: firstTeacherId },
+                { emitEvent: false }
+              );
+              if (loadCircles) {
+                this.loadCirclesForTeacher(firstTeacherId, true);
+              }
+            }
+          }
+        },
+        error: () => {
+          this.teachers = [];
+          this.isLoadingTeachers = false;
+        }
+      });
+  }
+
+  // ================================
+  // TEACHER CHANGE
+  // ================================
+  onTeacherChange(teacherId: number | null): void {
+    console.log('[ReportAdd] onTeacherChange', { teacherId });
+
+    this.reportForm.patchValue({ circleId: null, studentId: null });
+    this.circles = [];
+    this.students = [];
+
+    if (!teacherId) return;
+
+    const teacher = this.teachers.find((t) => this.toNumber(t.id) === teacherId);
+    if (teacher?.managerId && !this.isSupervisor) {
+      const mgrId = this.toNumber(teacher.managerId);
+      if (mgrId) {
+        this.reportForm.patchValue({ managerId: mgrId }, { emitEvent: false });
       }
     }
 
-    this.initializeSelectionFlow();
+    this.loadCirclesForTeacher(teacherId, true);
   }
 
+  // ================================
+  // LOAD CIRCLES BY TEACHER
+  // ================================
+  private loadCirclesForTeacher(teacherId: number, autoSelect = false): void {
+    this.isLoadingCircles = true;
+
+    console.log('[ReportAdd] loadCirclesForTeacher', { teacherId });
+
+    this.circleService.getAll(this.userFilter, undefined, teacherId).subscribe({
+      next: (res) => {
+        this.circles = res.isSuccess ? res.data.items : [];
+        this.isLoadingCircles = false;
+
+        console.log('[ReportAdd] circles loaded', this.circles);
+
+        if (autoSelect && this.circles.length > 0) {
+          const currentCircle = this.toNumber(this.reportForm.get('circleId')?.value);
+          const targetCircle =
+            currentCircle && this.circles.some((c) => c.id === currentCircle)
+              ? currentCircle
+              : this.circles[0]?.id ?? null;
+
+          if (targetCircle) {
+            this.reportForm.patchValue({ circleId: targetCircle }, { emitEvent: false });
+            this.onCircleChange(targetCircle);
+          }
+        }
+      },
+      error: () => {
+        this.circles = [];
+        this.isLoadingCircles = false;
+      }
+    });
+  }
+
+  // ================================
+  // LOAD STUDENTS BY CIRCLE
+  // ================================
+  onCircleChange(circleId: number | null): void {
+    console.log('[ReportAdd] onCircleChange', { circleId });
+
+    const existingStudentId =
+      this.toNumber(this.reportForm.get('studentId')?.value) ?? this.preselectedStudentId;
+
+    this.reportForm.patchValue({ studentId: null });
+    this.students = [];
+
+    if (!circleId) return;
+
+    this.isLoadingStudents = true;
+
+    this.circleService.get(circleId).subscribe({
+      next: (res) => {
+        console.log('[ReportAdd] circle details', res);
+
+        if (res.isSuccess && res.data?.students) {
+          const selectedTeacherId = this.toNumber(this.reportForm.get('teacherId')?.value);
+
+          const relevantStudents = selectedTeacherId
+            ? res.data.students.filter((student: any) => {
+                const teacherId = this.toNumber(student.teacherId);
+                return teacherId === undefined || teacherId === selectedTeacherId;
+              })
+            : res.data.students;
+
+          const mapped = relevantStudents
+            .map((student: any) => this.mapStudent(student))
+            .filter(
+              (s): s is { id: number; name: string } =>
+                !!s
+            );
+
+          const unique = new Map(mapped.map((s) => [s.id, s]));
+          this.students = Array.from(unique.values());
+
+          const targetStudent = existingStudentId;
+          if (targetStudent && this.students.some((s) => s.id === targetStudent)) {
+            this.reportForm.patchValue({ studentId: targetStudent }, { emitEvent: false });
+            this.preselectedStudentId = undefined;
+          }
+        }
+        this.isLoadingStudents = false;
+      },
+      error: () => {
+        this.students = [];
+        this.isLoadingStudents = false;
+      }
+    });
+  }
+
+  private mapStudent(
+    student: CircleDto['students'] extends (infer U)[] | null | undefined ? U : never
+  ) {
+    const data = (student as any).student;
+    const id = this.toNumber((student as any).studentId ?? (student as any).id);
+    const name =
+      data?.fullName ||
+      (student as any).fullName ||
+      (student as any).name ||
+      (typeof id === 'number' ? `Student #${id}` : undefined);
+
+    if (id === undefined || name === undefined) return undefined;
+
+    return { id, name };
+  }
+
+  // ================================
+  // STATUS-BASED FIELDS
+  // ================================
   private allFields(): string[] {
     return [
       'minutes',
@@ -154,7 +587,7 @@ export class ReportAddComponent implements OnInit {
     ];
   }
 
-  private toggleFields() {
+  private toggleFields(): void {
     const controls = this.allFields();
     controls.forEach((c) => {
       this.reportForm.get(c)?.disable();
@@ -163,9 +596,10 @@ export class ReportAddComponent implements OnInit {
     });
   }
 
-  onStatusChange(status: AttendStatusEnum) {
+  onStatusChange(status: AttendStatusEnum): void {
     this.selectedStatus = status;
     const controls = this.allFields();
+
     controls.forEach((c) => {
       this.reportForm.get(c)?.disable();
       this.reportForm.get(c)?.clearValidators();
@@ -181,291 +615,13 @@ export class ReportAddComponent implements OnInit {
     }
   }
 
-  get showSupervisorSelector(): boolean {
-    return this.isBranchManager;
-  }
-
-  get showTeacherSelector(): boolean {
-    return this.isBranchManager || this.isSupervisor;
-  }
-
-  get showCircleSelector(): boolean {
-    return false;
-  }
-
-  private initializeSelectionFlow(): void {
-    if (this.isTeacher) {
-      this.lockManagerSelection = true;
-      this.lockTeacherSelection = true;
-      this.lockCircleSelection = true;
-      const current = this.auth.currentUserValue;
-      const teacherId = current ? Number(current.user.id) : null;
-      if (teacherId) {
-        this.reportForm.patchValue({ teacherId });
-        this.loadCirclesForTeacher(teacherId, true);
-      }
-      return;
-    }
-
-    if (this.isSupervisor) {
-      this.lockManagerSelection = true;
-      const supervisorId = this.toNumber(this.auth.currentUserValue?.user.id);
-      const branchId = this.getBranchId();
-      if (supervisorId) {
-        this.reportForm.patchValue({ managerId: supervisorId });
-        this.loadTeachersForManager(supervisorId, undefined, true, branchId, true);
-      }
-      return;
-    }
-
-    const existingTeacherId = this.toNumber(this.reportForm.get('teacherId')?.value);
-
-    if (this.isBranchManager) {
-      this.loadManagers(true, existingTeacherId);
-      return;
-    }
-
-    if (existingTeacherId) {
-      this.loadTeachersForManager(0, existingTeacherId, true);
-      return;
-    }
-
-    this.loadManagers();
-  }
-
-  private loadManagers(autoSelectFirst = false, teacherId?: number | null): void {
-    this.isLoadingManagers = true;
-    const branchId = this.isBranchManager || this.isSupervisor ? this.getBranchId() ?? 0 : 0;
-    this.lookupService
-      .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Manager), 0, 0, branchId)
-      .subscribe({
-        next: (res) => {
-          this.managers = res.isSuccess ? res.data.items : [];
-          this.isLoadingManagers = false;
-
-          if (autoSelectFirst && this.managers.length > 0) {
-            const managerId = this.managers[0].id;
-            this.reportForm.patchValue({ managerId }, { emitEvent: false });
-            this.onManagerChange(managerId, true, teacherId);
-          }
-        },
-        error: () => {
-          this.managers = [];
-          this.isLoadingManagers = false;
-        }
-      });
-  }
-
-  onManagerChange(managerId: number | null, initial = false, teacherId?: number | null): void {
-    if (!initial) {
-      this.reportForm.patchValue({ teacherId: null, circleId: null, studentId: null });
-    } else {
-      this.students = [];
-      this.circles = [];
-    }
-    this.teachers = [];
-    if (managerId === null || managerId === undefined) {
-      return;
-    }
-
-    const existingTeacherId = teacherId ?? this.toNumber(this.reportForm.get('teacherId')?.value);
-    const branchId =
-      this.isSupervisor || this.isBranchManager ? this.getBranchId() : undefined;
-    this.loadTeachersForManager(managerId, existingTeacherId, initial, branchId);
-  }
-
-  private loadTeachersForManager(
-    managerId: number,
-    teacherId?: number | null,
-    loadCircles = false,
-    branchId?: number | null,
-    autoSelectFirst = false
-  ): void {
-    this.isLoadingTeachers = true;
-    const effectiveManagerId =
-      managerId || (this.isSupervisor ? this.toNumber(this.auth.currentUserValue?.user.id) ?? 0 : 0);
-    this.lookupService
-      .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Teacher), effectiveManagerId, 0, branchId ?? 0)
-      .subscribe({
-        next: (res) => {
-          this.teachers = res.isSuccess ? res.data.items : [];
-          this.isLoadingTeachers = false;
-          if (teacherId && this.teachers.some((t) => t.id === teacherId)) {
-            this.reportForm.patchValue({ teacherId }, { emitEvent: false });
-            if (loadCircles) {
-              this.loadCirclesForTeacher(teacherId, true);
-            }
-          } else if (autoSelectFirst && this.teachers.length === 1) {
-            const firstTeacherId = this.teachers[0].id;
-            this.reportForm.patchValue({ teacherId: firstTeacherId }, { emitEvent: false });
-            this.loadCirclesForTeacher(firstTeacherId, true);
-          }
-        },
-        error: () => {
-          this.teachers = [];
-          this.isLoadingTeachers = false;
-        }
-      });
-  }
-
-  onTeacherChange(teacherId: number | null): void {
-    this.reportForm.patchValue({ circleId: null, studentId: null });
-    this.circles = [];
-    this.students = [];
-    if (!teacherId) {
-      return;
-    }
-    const teacher = this.teachers.find((t) => t.id === teacherId);
-    if (teacher?.managerId && this.role !== UserTypesEnum.Manager) {
-      this.reportForm.patchValue({ managerId: teacher.managerId });
-    }
-    this.loadCirclesForTeacher(teacherId, true);
-  }
-
-  onCircleChange(circleId: number | null): void {
-    const existingStudentId =
-      this.toNumber(this.reportForm.get('studentId')?.value) ?? this.preselectedStudentId;
-    this.reportForm.patchValue({ studentId: null });
-    this.students = [];
-    if (!circleId) {
-      return;
-    }
-    this.isLoadingStudents = true;
-    this.circleService.get(circleId).subscribe({
-      next: (res) => {
-        if (res.isSuccess && res.data?.students) {
-          const selectedTeacherId = this.toNumber(this.reportForm.get('teacherId')?.value);
-          const relevantStudents = selectedTeacherId
-            ? res.data.students.filter((student) => {
-                const teacherId = this.toNumber((student as { teacherId?: unknown }).teacherId);
-                return teacherId === undefined || teacherId === selectedTeacherId;
-              })
-            : res.data.students;
-
-          const mapped = relevantStudents
-            .map((student) => this.mapStudent(student))
-            .filter((s): s is { id: number; name: string } => !!s);
-          const unique = new Map(mapped.map((s) => [s.id, s]));
-          this.students = Array.from(unique.values());
-          const targetStudent = existingStudentId;
-          if (targetStudent && this.students.some((s) => s.id === targetStudent)) {
-            this.reportForm.patchValue({ studentId: targetStudent });
-            this.preselectedStudentId = undefined;
-          }
-        }
-        this.isLoadingStudents = false;
-      },
-      error: () => {
-        this.students = [];
-        this.isLoadingStudents = false;
-      }
-    });
-  }
-
-  private loadCirclesForTeacher(teacherId: number, autoSelect = false): void {
-    this.isLoadingCircles = true;
-    this.circleService.getAll(this.userFilter, undefined, teacherId).subscribe({
-      next: (res) => {
-        this.circles = res.isSuccess ? res.data.items : [];
-        this.isLoadingCircles = false;
-        if (autoSelect) {
-          const currentCircle = this.toNumber(this.reportForm.get('circleId')?.value);
-          const targetCircle =
-            currentCircle && this.circles.some((c) => c.id === currentCircle)
-              ? currentCircle
-              : this.circles[0]?.id ?? null;
-          if (targetCircle) {
-            this.reportForm.patchValue({ circleId: targetCircle });
-            this.onCircleChange(targetCircle);
-          }
-        }
-      },
-      error: () => {
-        this.circles = [];
-        this.isLoadingCircles = false;
-      }
-    });
-  }
-
-  private mapStudent(student: CircleDto['students'] extends (infer U)[] | null | undefined ? U : never) {
-    const data = (student as { student?: LookUpUserDto }).student;
-    const id = this.toNumber((student as { studentId?: unknown }).studentId ?? (student as { id?: unknown }).id);
-    const name =
-      data?.fullName ||
-      (student as { fullName?: string }).fullName ||
-      (student as { name?: string }).name ||
-      (typeof id === 'number' ? `Student #${id}` : undefined);
-
-    if (id === undefined || name === undefined) {
-      return undefined;
-    }
-
-    return { id, name };
-  }
-
-  private getReportFromState(id: number): ReportState | undefined {
-    const maybeState = (history.state?.report as ReportState | undefined) ?? undefined;
-    if (!maybeState) {
-      return undefined;
-    }
-
-    const stateId = this.toNumber((maybeState as { id?: unknown }).id ?? maybeState.id);
-    if (!stateId || stateId !== id) {
-      return undefined;
-    }
-
-    return { ...maybeState, id: stateId };
-  }
-
-  private populateFormFromReport(report: ReportState, fallbackId: number): void {
-    this.reportId = this.toNumber(report.id) ?? fallbackId;
-
-    const status = this.resolveStatus(report);
-    if (status !== undefined) {
-      this.onStatusChange(status);
-      this.reportForm.get('attendStatueId')?.setValue(status, { emitEvent: false });
-    } else {
-      this.selectedStatus = undefined;
-      this.reportForm.get('attendStatueId')?.setValue(null, { emitEvent: false });
-      this.toggleFields();
-    }
-
-    const creationTime = this.resolveDate(report.creationTime);
-
-    const patch: Partial<CircleReportAddDto> = { creationTime };
-
-    this.assignIfDefined(patch, 'minutes', this.toNumber(report.minutes));
-    this.assignIfDefined(patch, 'newId', this.toNumber(report.newId));
-    this.assignIfDefined(patch, 'newFrom', this.toString(report.newFrom));
-    this.assignIfDefined(patch, 'newTo', this.toString(report.newTo));
-    this.assignIfDefined(patch, 'newRate', this.toString(report.newRate));
-    this.assignIfDefined(patch, 'recentPast', this.toString(report.recentPast));
-    this.assignIfDefined(patch, 'recentPastRate', this.toString(report.recentPastRate));
-    this.assignIfDefined(patch, 'distantPast', this.toString(report.distantPast));
-    this.assignIfDefined(patch, 'distantPastRate', this.toString(report.distantPastRate));
-    this.assignIfDefined(patch, 'farthestPast', this.toString(report.farthestPast));
-    this.assignIfDefined(patch, 'farthestPastRate', this.toString(report.farthestPastRate));
-    this.assignIfDefined(patch, 'theWordsQuranStranger', this.toString(report.theWordsQuranStranger));
-    this.assignIfDefined(patch, 'intonation', this.toString(report.intonation));
-    this.assignIfDefined(patch, 'other', this.toString(report.other));
-    const circleId = this.extractEntityId(report, 'circle');
-    const studentId = this.extractEntityId(report, 'student');
-    const teacherId = this.extractEntityId(report, 'teacher');
-
-    this.assignIfDefined(patch, 'circleId', circleId);
-    this.assignIfDefined(patch, 'studentId', studentId);
-    this.assignIfDefined(patch, 'teacherId', teacherId);
-
-    if (studentId !== undefined) {
-      this.preselectedStudentId = studentId;
-    }
-
-    this.reportForm.patchValue(patch);
-  }
-
+  // ================================
+  // UTILITIES
+  // ================================
   private resolveStatus(report: ReportState): AttendStatusEnum | undefined {
     const rawStatus = this.toNumber(
-      report.attendStatueId ?? (report as { attendStatus?: unknown; attendStatusId?: unknown }).attendStatusId
+      report.attendStatueId ??
+        (report as { attendStatus?: unknown; attendStatusId?: unknown }).attendStatusId
     );
 
     if (rawStatus === undefined) {
@@ -498,43 +654,39 @@ export class ReportAddComponent implements OnInit {
   }
 
   private toNumber(value: unknown): number | undefined {
-    if (value === null || value === undefined || value === '') {
-      return undefined;
-    }
-
-    if (typeof value === 'number') {
-      return Number.isFinite(value) ? value : undefined;
-    }
-
+    if (value === null || value === undefined || value === '') return undefined;
+    if (typeof value === 'number') return Number.isFinite(value) ? value : undefined;
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : undefined;
   }
 
-  private getBranchId(): number | undefined {
-    const branchId = (this.auth.currentUserValue as { user?: { branchId?: unknown } } | null)?.user?.branchId;
-    return this.toNumber(branchId);
-  }
-
   private toString(value: unknown): string | undefined {
-    if (value === null || value === undefined || value === '') {
-      return undefined;
-    }
+    if (value === null || value === undefined || value === '') return undefined;
     return String(value);
   }
 
-  private extractEntityId(report: ReportState, key: 'circle' | 'student' | 'teacher'): number | undefined {
+  private getReportFromState(id: number): ReportState | undefined {
+    const maybeState = (history.state?.report as ReportState | undefined) ?? undefined;
+    if (!maybeState) return undefined;
+
+    const stateId = this.toNumber((maybeState as { id?: unknown }).id ?? maybeState.id);
+    if (!stateId || stateId !== id) return undefined;
+
+    return { ...maybeState, id: stateId };
+  }
+
+  private extractEntityId(
+    report: ReportState,
+    key: 'circle' | 'student' | 'teacher'
+  ): number | undefined {
     const record = report as Record<string, unknown>;
     const direct = this.toNumber(record[`${key}Id`]);
-    if (direct !== undefined) {
-      return direct;
-    }
+    if (direct !== undefined) return direct;
 
     const entity = record[key];
     if (entity && typeof entity === 'object') {
       const nestedId = this.toNumber((entity as Record<string, unknown>)['id']);
-      if (nestedId !== undefined) {
-        return nestedId;
-      }
+      if (nestedId !== undefined) return nestedId;
     }
 
     return undefined;
@@ -550,24 +702,78 @@ export class ReportAddComponent implements OnInit {
     }
   }
 
+  private populateFormFromReport(report: ReportState, fallbackId: number): void {
+    this.reportId = this.toNumber(report.id) ?? fallbackId;
+
+    const status = this.resolveStatus(report);
+    if (status !== undefined) {
+      this.onStatusChange(status);
+      this.reportForm.get('attendStatueId')?.setValue(status, { emitEvent: false });
+    } else {
+      this.selectedStatus = undefined;
+      this.reportForm.get('attendStatueId')?.setValue(null, { emitEvent: false });
+      this.toggleFields();
+    }
+
+    const creationTime = this.resolveDate(report.creationTime);
+
+    const patch: Partial<CircleReportAddDto> = { creationTime };
+
+    this.assignIfDefined(patch, 'minutes', this.toNumber(report.minutes));
+    this.assignIfDefined(patch, 'newId', this.toNumber(report.newId));
+    this.assignIfDefined(patch, 'newFrom', this.toString(report.newFrom));
+    this.assignIfDefined(patch, 'newTo', this.toString(report.newTo));
+    this.assignIfDefined(patch, 'newRate', this.toString(report.newRate));
+    this.assignIfDefined(patch, 'recentPast', this.toString(report.recentPast));
+    this.assignIfDefined(patch, 'recentPastRate', this.toString(report.recentPastRate));
+    this.assignIfDefined(patch, 'distantPast', this.toString(report.distantPast));
+    this.assignIfDefined(patch, 'distantPastRate', this.toString(report.distantPastRate));
+    this.assignIfDefined(patch, 'farthestPast', this.toString(report.farthestPast));
+    this.assignIfDefined(patch, 'farthestPastRate', this.toString(report.farthestPastRate));
+    this.assignIfDefined(
+      patch,
+      'theWordsQuranStranger',
+      this.toString(report.theWordsQuranStranger)
+    );
+    this.assignIfDefined(patch, 'intonation', this.toString(report.intonation));
+    this.assignIfDefined(patch, 'other', this.toString(report.other));
+
+    const circleId = this.extractEntityId(report, 'circle');
+    const studentId = this.extractEntityId(report, 'student');
+    const teacherId = this.extractEntityId(report, 'teacher');
+
+    this.assignIfDefined(patch, 'circleId', circleId);
+    this.assignIfDefined(patch, 'studentId', studentId);
+    this.assignIfDefined(patch, 'teacherId', teacherId);
+
+    if (studentId !== undefined) {
+      this.preselectedStudentId = studentId;
+    }
+
+    this.reportForm.patchValue(patch, { emitEvent: false });
+  }
+
   private determineMode(): 'add' | 'update' {
     const dataMode = this.route.snapshot.data['mode'] as 'add' | 'update' | undefined;
-    if (dataMode) {
-      return dataMode;
-    }
+    if (dataMode) return dataMode;
+
     const path = this.route.snapshot.routeConfig?.path ?? '';
-    if (path.includes('update') || path.includes('edit')) {
-      return 'update';
-    }
+    if (path.includes('update') || path.includes('edit')) return 'update';
     return 'add';
   }
 
-  onSubmit() {
+  // ================================
+  // SUBMIT
+  // ================================
+  onSubmit(): void {
     if (this.reportForm.invalid) {
       this.reportForm.markAllAsTouched();
       return;
     }
-    const formValue = this.reportForm.getRawValue() as CircleReportAddDto & { managerId?: number };
+
+    const formValue = this.reportForm.getRawValue() as CircleReportAddDto & {
+      managerId?: number;
+    };
     const { managerId: _managerId, ...model } = formValue;
 
     if (this.mode === 'update') {
@@ -597,23 +803,31 @@ export class ReportAddComponent implements OnInit {
             this.reportForm.get('creationTime')?.setValue(new Date());
             this.toggleFields();
             this.selectedStatus = undefined;
+
             const defaults: Partial<CircleReportAddDto> = { creationTime: new Date() };
-            if (this.role === UserTypesEnum.Teacher) {
-              const teacherId = this.toNumber(this.auth.currentUserValue?.user.id);
+
+            if (this.isTeacher) {
+              const teacherId = this.getUserId();
               if (teacherId) {
                 defaults.teacherId = teacherId;
                 this.loadCirclesForTeacher(teacherId, true);
               }
-            } else if (this.role === UserTypesEnum.Manager) {
-              const managerId = this.toNumber(this.auth.currentUserValue?.user.id);
-              if (managerId) {
-                // defaults.managerId = managerId;
-                this.onManagerChange(managerId, true);
+            } else if (this.isSupervisor) {
+              const supervisorId = this.getUserId();
+              if (supervisorId) {
+                this.reportForm.patchValue(
+                  { managerId: supervisorId },
+                  { emitEvent: false }
+                );
+                this.onManagerChange(supervisorId, true);
+              } else {
+                this.onManagerChange(0, true);
               }
-            } else {
+            } else if (this.isSystemManager || this.isBranchManager) {
               this.loadManagers();
             }
-            this.reportForm.patchValue(defaults);
+
+            this.reportForm.patchValue(defaults, { emitEvent: false });
           } else if (res.errors?.length) {
             res.errors.forEach((e) => this.toast.error(e.message));
           } else {
