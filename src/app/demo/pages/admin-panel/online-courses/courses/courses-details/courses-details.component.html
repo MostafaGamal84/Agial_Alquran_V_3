@@ -1,6 +1,6 @@
 <div class="row p-t-25">
   <div class="col-12">
-    <app-card cardTitle="Course Details" padding="0" cardClass="sm-block">
+    <app-card cardTitle="تفاصيل الحلقة" padding="0" cardClass="sm-block">
       <div class="p-10">
         <h5 class="m-b-10">{{ course?.name }}</h5>
         <div class="course-details-table" *ngIf="course as currentCourse">
@@ -8,7 +8,7 @@
             class="course-detail-row"
             *ngIf="course?.teacher || course?.teacherName || course?.teacherId"
           >
-            <span class="course-detail-label">Teacher</span>
+            <span class="course-detail-label">المعلم</span>
             <span class="course-detail-value">
               {{ course?.teacher?.fullName || course?.teacherName || course?.teacherId }}
             </span>
@@ -16,7 +16,7 @@
 
           <ng-container *ngIf="getSchedule(currentCourse) as schedule">
             <div class="course-detail-row" *ngIf="schedule.length">
-              <span class="course-detail-label">Schedule</span>
+              <span class="course-detail-label">المواعيد</span>
               <div class="course-detail-value">
                 <ul class="course-detail-list">
                   <li *ngFor="let day of schedule" class="schedule-item">
@@ -32,11 +32,11 @@
 
             <ng-container *ngIf="!schedule.length">
               <div class="course-detail-row" *ngIf="getDayLabel(currentCourse)">
-                <span class="course-detail-label">Day</span>
+                <span class="course-detail-label">يوم</span>
                 <span class="course-detail-value">{{ getDayLabel(currentCourse) }}</span>
               </div>
               <div class="course-detail-row" *ngIf="getFormattedStartTime(currentCourse)">
-                <span class="course-detail-label">Start Time</span>
+                <span class="course-detail-label">الوقت</span>
                 <span class="course-detail-value">{{ getFormattedStartTime(currentCourse) }}</span>
               </div>
             </ng-container>
@@ -44,11 +44,11 @@
 
           <ng-container *ngIf="getManagers(currentCourse) as managers">
             <div class="course-detail-row" *ngIf="managers.length">
-              <span class="course-detail-label">Managers</span>
+              <span class="course-detail-label">المشرف</span>
               <div class="course-detail-value">
                 <ul class="course-detail-list">
                   <li *ngFor="let manager of managers" class="schedule-item">
-                    <span class="schedule-day">{{ manager }}</span>
+                    <span class="schedule-day">{{ manager.manager }}</span>
                   </li>
                 </ul>
               </div>
@@ -61,31 +61,31 @@
           <div class="table-responsive">
             <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
               <ng-container matColumnDef="fullName">
-                <th mat-header-cell *matHeaderCellDef class="p-l-25">STUDENT</th>
+                <th mat-header-cell *matHeaderCellDef class="p-l-25">الطلاب</th>
                 <td mat-cell *matCellDef="let element" class="p-l-25 text-nowrap">
                   {{ element.student?.fullName || element.fullName }}
                 </td>
               </ng-container>
               <ng-container matColumnDef="action">
-                <th mat-header-cell *matHeaderCellDef class="text-center">ACTIONS</th>
+                <th mat-header-cell *matHeaderCellDef class="text-center"></th>
                 <td mat-cell *matCellDef="let element" class="text-center">
                   <ul class="list-inline p-l-0 m-b-0">
-                    <li class="list-inline-item" matTooltip="Add Report">
-                      <a
+                    <!-- <li class="list-inline-item" matTooltip="اضافة تقرير">
+                      <button
                         [routerLink]="['/online-course/student/report/add', element.studentId || element.id]"
                         [state]="{ circle: course }"
                         class="avatar avatar-xs text-muted"
                       >
                         <i class="ti ti-report f-18"></i>
-                      </a>
-                    </li>
+                    </button>
+                    </li> -->
                   </ul>
                 </td>
               </ng-container>
               <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
               <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
               <tr class="mat-row" *ngIf="dataSource.data.length === 0">
-                <td class="mat-cell" colspan="2">No students found</td>
+                <td class="mat-cell" colspan="2">لا يوجد طلاب لهذة الحلقة بعد</td>
               </tr>
             </table>
           </div>

@@ -1,16 +1,16 @@
 <div class="row">
   <div class="col-12">
-    <app-card cardTitle="Course Add">
+    <app-card cardTitle="اضافة الحلقة">
       <form [formGroup]="circleForm" (ngSubmit)="onSubmit()" class="row">
         <div class="col-md-6">
           <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Circle Name</mat-label>
-            <input matInput formControlName="name" placeholder="Enter Circle Name" />
+            <mat-label>اسم الحلقة</mat-label>
+            <input matInput formControlName="name" placeholder="ادخل اسم الحلقة" />
           </mat-form-field>
         </div>
         <div class="col-md-6">
           <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Teacher</mat-label>
+            <mat-label>المعلم</mat-label>
             <mat-select formControlName="teacherId">
               <mat-option *ngFor="let t of teachers" [value]="t.id">{{ t.fullName }}</mat-option>
             </mat-select>
@@ -22,7 +22,7 @@
               <div class="row" [formGroupName]="i">
                 <div class="col-md-5">
                   <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>Day</mat-label>
+                    <mat-label>اليوم</mat-label>
                     <mat-select formControlName="dayId">
                       <mat-option *ngFor="let day of days" [value]="day.value">{{ day.label }}</mat-option>
                     </mat-select>
@@ -30,8 +30,8 @@
                 </div>
                 <div class="col-md-5">
                   <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>Start Time</mat-label>
-                    <input matInput type="time" formControlName="startTime" placeholder="Select Start Time" />
+                    <mat-label>الوقت</mat-label>
+                    <input matInput type="time" formControlName="startTime" placeholder="ادخل الساعة" />
                   </mat-form-field>
                 </div>
                 <div class="col-md-2 d-flex align-items-center">
@@ -44,7 +44,7 @@
                     (click)="removeDay(i)"
                     *ngIf="daysArray.length > 1"
                   >
-                    <mat-icon>delete</mat-icon>
+                    <mat-icon>حذف</mat-icon>
                   </button>
                   <button
                     mat-icon-button
@@ -54,7 +54,7 @@
                     (click)="addDay()"
                     *ngIf="i === daysArray.length - 1"
                   >
-                    <mat-icon>add</mat-icon>
+                    <mat-icon>+ </mat-icon>
                   </button>
                 </div>
               </div>
@@ -63,22 +63,22 @@
         </div>
         <div class="col-md-6">
           <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Managers</mat-label>
-            <mat-select formControlName="managers" multiple>
+            <mat-label>المشرف</mat-label>
+            <mat-select formControlName="managers" >
               <mat-option *ngFor="let m of managers" [value]="m.id">{{ m.fullName }}</mat-option>
             </mat-select>
           </mat-form-field>
         </div>
         <div class="col-md-6">
           <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Students</mat-label>
+            <mat-label>الطلاب</mat-label>
             <mat-select formControlName="studentsIds" multiple>
               <mat-option *ngFor="let s of students" [value]="s.id">{{ s.fullName }}</mat-option>
             </mat-select>
           </mat-form-field>
         </div>
         <div class="col-12">
-          <button mat-flat-button color="primary" type="submit">Create</button>
+          <button mat-flat-button color="primary" type="submit">انشاء</button>
         </div>
       </form>
     </app-card>

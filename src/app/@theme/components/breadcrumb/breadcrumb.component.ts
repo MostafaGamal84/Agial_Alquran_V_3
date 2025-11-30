@@ -58,8 +58,8 @@ export class BreadcrumbComponent {
         const breadcrumbList = this.filterNavigation(this.navigations, activeLink);
         this.navigationList = breadcrumbList;
         this.componentList = this.filterNavigation(this.ComponentNavigations, activeLink);
-        const title = breadcrumbList[breadcrumbList.length - 1]?.title || 'Welcome';
-        this.titleService.setTitle(title + ' | Able pro Angular Admin Template');
+        const title = breadcrumbList[breadcrumbList.length - 1]?.title || 'اهلاً بكم في أجیال القرآن';
+        this.titleService.setTitle(title + ' | أجيال القرآن');
       }
     });
   }

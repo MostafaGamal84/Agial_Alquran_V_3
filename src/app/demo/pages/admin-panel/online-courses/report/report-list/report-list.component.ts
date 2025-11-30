@@ -393,11 +393,11 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
   getStatusLabel(status?: number | null): string {
     switch (status) {
       case AttendStatusEnum.Attended:
-        return 'Attended';
+        return 'حضر';
       case AttendStatusEnum.ExcusedAbsence:
-        return 'Excused absence';
+        return 'غياب بعذر';
       case AttendStatusEnum.UnexcusedAbsence:
-        return 'Unexcused absence';
+        return 'غياب بدون عذر';
       default:
         return '—';
     }

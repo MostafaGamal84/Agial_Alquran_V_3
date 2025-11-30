@@ -134,13 +134,13 @@ export class StudentSubscribeDialogComponent implements OnInit {
     this.studentSubscribeService.create(model).subscribe({
       next: (res) => {
         if (res.isSuccess) {
-          this.toast.success('Subscribe updated successfully');
+          this.toast.success('تم التحديث بنجاح');
           this.dialogRef.close(true);
         } else {
-          this.toast.error('Error updating subscribe');
+          this.toast.error('حدث خطأ أثناء تحديث الباقة');
         }
       },
-      error: () => this.toast.error('Error updating subscribe')
+      error: () => this.toast.error('حدث خطأ أثناء تحديث الباقة')
     });
   }
 

@@ -28,13 +28,13 @@ export interface DayDto {
 export type DayValue = DaysEnum | number | string | DayDto | null | undefined;
 
 export const DAY_OPTIONS: DayOption[] = [
-  { label: 'Saturday', value: DaysEnum.Saturday },
-  { label: 'Sunday', value: DaysEnum.Sunday },
-  { label: 'Monday', value: DaysEnum.Monday },
-  { label: 'Tuesday', value: DaysEnum.Tuesday },
-  { label: 'Wednesday', value: DaysEnum.Wednesday },
-  { label: 'Thursday', value: DaysEnum.Thursday },
-  { label: 'Friday', value: DaysEnum.Friday }
+  { label: 'السبت', value: DaysEnum.Saturday },
+  { label: 'الاحد', value: DaysEnum.Sunday },
+  { label: 'الاثنين', value: DaysEnum.Monday },
+  { label: 'الثلاثاء', value: DaysEnum.Tuesday },
+  { label: 'الاربعاء', value: DaysEnum.Wednesday },
+  { label: 'الخميس', value: DaysEnum.Thursday },
+  { label: 'الجمعة', value: DaysEnum.Friday }
 ];
 
 export const DAY_LABELS = new Map<DaysEnum, string>(

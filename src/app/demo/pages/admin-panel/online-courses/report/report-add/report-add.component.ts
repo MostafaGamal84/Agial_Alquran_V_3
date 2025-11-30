@@ -157,12 +157,19 @@ export class ReportAddComponent implements OnInit {
     this.toggleFields();
 
     if (this.mode === 'add') {
+      // وضع الإضافة ➜ شغّل سيناريوهات اختيار مشرف/معلم/حلقة/طالب
       this.initAddMode();
+      this.initializeSelectionFlow();
     } else {
+      // وضع التعديل ➜ تحميل بيانات التقرير فقط وتعديلها
       this.initUpdateMode();
-    }
 
-    this.initializeSelectionFlow();
+      // قفل العلاقات (مش ظاهرة في الـ UI لكن للتأكيد)
+      this.reportForm.get('managerId')?.disable({ emitEvent: false });
+      this.reportForm.get('teacherId')?.disable({ emitEvent: false });
+      this.reportForm.get('circleId')?.disable({ emitEvent: false });
+      this.reportForm.get('studentId')?.disable({ emitEvent: false });
+    }
   }
 
   private buildForm(): void {
@@ -228,7 +235,7 @@ export class ReportAddComponent implements OnInit {
   }
 
   // ================================
-  // ROLE-BASED FLOW
+  // ROLE-BASED FLOW (يُستخدم في وضع الإضافة فقط)
   // ================================
   private initializeSelectionFlow(): void {
     // 4) Teacher
@@ -237,17 +244,14 @@ export class ReportAddComponent implements OnInit {
       this.lockTeacherSelection = true;
       this.lockCircleSelection = true;
 
-      // المعلم لا يختار Teacher من UI
       const teacherCtrl = this.reportForm.get('teacherId');
       teacherCtrl?.clearValidators();
       teacherCtrl?.updateValueAndValidity();
 
-      const teacherId = this.getUserId(); // حالياً undefined عندك
+      const teacherId = this.getUserId();
       console.log('[ReportAdd] Teacher flow', { teacherId });
 
-      // حتى لو مفيش teacherId هننده السيرفس، والبك إند يعتمد على التوكن
       this.loadCirclesForTeacher(teacherId ?? 0, true);
-
       return;
     }
 
@@ -306,17 +310,25 @@ export class ReportAddComponent implements OnInit {
   // UI VISIBILITY
   // ================================
   get showSupervisorSelector(): boolean {
-    // مدير نظام + مدير فرع فقط
-    return this.isSystemManager || this.isBranchManager;
+    // مدير نظام + مدير فرع فقط وفي وضع الإضافة فقط
+    return this.mode === 'add' && (this.isSystemManager || this.isBranchManager);
   }
 
   get showTeacherSelector(): boolean {
-    // مدير نظام + مدير فرع + مشرف
-    return this.isSystemManager || this.isBranchManager || this.isSupervisor;
+    // مدير نظام + مدير فرع + مشرف وفي وضع الإضافة فقط
+    return (
+      this.mode === 'add' &&
+      (this.isSystemManager || this.isBranchManager || this.isSupervisor)
+    );
   }
 
   get showCircleSelector(): boolean {
     return false; // الحلقة دايمًا auto
+  }
+
+  // جديد: إظهار الطالب في وضع الإضافة فقط
+  get showStudentSelector(): boolean {
+    return this.mode === 'add';
   }
 
   // ================================

@@ -24,7 +24,6 @@ import { ProfileDto, UserService } from 'src/app/@theme/services/user.service';
 import { timeStringToTimeSpanString } from 'src/app/@theme/utils/time';
 import { Subject, takeUntil } from 'rxjs';
 
-
 interface CircleScheduleFormValue {
   dayId: DayValue | null;
   startTime: string | null;
@@ -34,10 +33,9 @@ interface CircleFormValue {
   name: string;
   teacherId: number;
   days: CircleScheduleFormValue[];
-  managers: number[];
+  managers: number | null;      // 👈 بدل number[]
   studentsIds: number[];
 }
-
 
 @Component({
   selector: 'app-courses-add',
@@ -74,14 +72,16 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
       name: ['', Validators.required],
       teacherId: [{ value: null, disabled: true }, Validators.required],
       days: this.fb.array([this.createDayGroup()]),
+      // 👇 الآن قيمة واحدة (number أو null)
       managers: [
         {
-          value: this.currentManagerId !== null ? [this.currentManagerId] : [],
+          value: this.currentManagerId !== null ? this.currentManagerId : null,
           disabled: false
         }
       ],
       studentsIds: [{ value: [], disabled: true }]
     });
+
     const teacherControl = this.circleForm.get('teacherId');
     const managersControl = this.circleForm.get('managers');
 
@@ -95,6 +95,7 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
       this.resolveManagerFromProfile();
     }
 
+    // تحميل كل المشرفين
     this.lookup
       .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Manager))
       .pipe(takeUntil(this.destroy$))
@@ -113,13 +114,15 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
         }
       });
 
+    // تغيّر المشرف (قيمة واحدة)
     managersControl
       ?.valueChanges.pipe(takeUntil(this.destroy$))
-      .subscribe((managerIds: number[] | null) => {
-        const managerId = this.resolvePrimaryId(managerIds);
-        this.loadTeachers(managerId);
+      .subscribe((managerId: number | null) => {
+        const id = typeof managerId === 'number' ? managerId : null;
+        this.loadTeachers(id);
       });
 
+    // تغيّر المعلم
     teacherControl
       ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe((teacherId: number | null) => {
@@ -127,7 +130,10 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
         this.loadStudents(resolvedTeacherId);
       });
 
-    const initialManagerId = this.resolvePrimaryId(managersControl?.value as number[] | null);
+    // تحميل المعلمين للمشرف المبدئي
+    const rawInitialManager = managersControl?.value;
+    const initialManagerId =
+      typeof rawInitialManager === 'number' ? rawInitialManager : null;
     if (initialManagerId !== null && this.lastLoadedManagerId !== initialManagerId) {
       this.loadTeachers(initialManagerId);
     }
@@ -138,7 +144,7 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-
+  // ========== Days helpers ==========
   get daysArray(): FormArray<FormGroup> {
     return this.circleForm.get('days') as FormArray<FormGroup>;
   }
@@ -169,15 +175,7 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
     return index;
   }
 
-  private resolvePrimaryId(ids: number[] | null | undefined): number | null {
-    if (!Array.isArray(ids) || !ids.length) {
-      return null;
-    }
-
-    const candidate = Number(ids[0]);
-    return Number.isFinite(candidate) ? candidate : null;
-  }
-
+  // ========== Manager helpers ==========
   private resolveCurrentManagerId(): number | null {
     const current = this.auth.currentUserValue;
     const id = current?.user?.id;
@@ -255,7 +253,9 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
 
     const name = this.normalizeIdentity(current?.user?.name);
     if (name) {
-      const match = list.find((manager) => this.normalizeIdentity(manager?.fullName) === name);
+      const match = list.find(
+        (manager) => this.normalizeIdentity(manager?.fullName) === name
+      );
       if (match?.id) {
         return match.id;
       }
@@ -282,7 +282,8 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
       return;
     }
 
-    control.setValue([managerId], { emitEvent: false });
+    // 👇 قيمة واحدة في الفورم
+    control.setValue(managerId, { emitEvent: false });
 
     if (this.isManager) {
       control.disable({ emitEvent: false });
@@ -410,11 +411,13 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ========== Submit ==========
   onSubmit() {
     if (this.circleForm.invalid) {
       this.circleForm.markAllAsTouched();
       return;
     }
+
     const formValue = this.circleForm.getRawValue() as CircleFormValue;
 
     const schedule: CircleDayRequestDto[] = Array.isArray(formValue.days)
@@ -430,13 +433,20 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
         }, [])
       : [];
 
+    const managerId =
+      typeof formValue.managers === 'number' && formValue.managers > 0
+        ? formValue.managers
+        : null;
+
+    // 👇 الريكويست زي ما هو: managers: number[]
     const model: CreateCircleDto = {
       name: formValue.name,
       teacherId: formValue.teacherId,
       days: schedule.length ? schedule : null,
-      managers: formValue.managers,
+      managers: managerId ? [managerId] : [],
       studentsIds: formValue.studentsIds
     };
+
     this.circle.create(model).subscribe({
       next: (res) => {
         if (res.isSuccess) {
@@ -464,7 +474,8 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
     this.daysArray.at(0).reset({ dayId: null, startTime: '' });
 
     const managersControl = this.circleForm.get('managers');
-    const managerSelection = this.isManager && this.currentManagerId !== null ? [this.currentManagerId] : [];
+    const managerSelection =
+      this.isManager && this.currentManagerId !== null ? this.currentManagerId : null;
 
     this.circleForm.reset({
       name: '',
@@ -489,4 +500,3 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
     this.circleForm.markAsUntouched();
   }
 }
-

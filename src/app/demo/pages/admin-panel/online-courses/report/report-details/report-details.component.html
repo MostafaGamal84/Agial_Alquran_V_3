@@ -1,12 +1,12 @@
 <div class="row p-t-25">
   <div class="col-12">
-    <app-card [cardTitle]="'Circle Report Details' | translate" cardClass="sm-block">
+    <app-card [cardTitle]="'تفاصيل التقرير' | translate" cardClass="sm-block">
       <ng-template #headerOptionsTemplate>
         <div class="header-actions" *ngIf="canEdit && report?.id">
           <button mat-stroked-button color="primary" (click)="editReport()">
             <div class="flex align-item-center">
               <i class="ti ti-edit-circle f-18 m-r-5"></i>
-              {{ 'Edit Report' | translate }}
+              {{ 'تعديل التقرير' | translate }}
             </div>
           </button>
         </div>
@@ -16,7 +16,7 @@
         <ng-container *ngIf="report; else emptyState">
           <div class="details-grid">
             <section class="details-section">
-              <h6>{{ 'Overview' | translate }}</h6>
+              <h6>{{ 'عرض ' | translate }}</h6>
               <div class="detail-item">
                 <span class="label">{{ 'Circle' | translate }}</span>
                 <span class="value">{{ getCircleName() }}</span>
@@ -94,7 +94,7 @@
             <section class="details-section">
               <h6>{{ 'Additional Notes' | translate }}</h6>
               <div class="detail-item">
-                <span class="label">{{ 'The Words of the Quran Stranger' | translate }}</span>
+                <span class="label">{{ 'كلمات غريب القرآن' | translate }}</span>
                 <span class="value">{{ displayValue(report?.theWordsQuranStranger) }}</span>
               </div>
               <div class="detail-item">

@@ -24,18 +24,18 @@
           panelClass="example-month-picker"
         ></mat-datepicker>
       </mat-form-field>
-      <mat-form-field appearance="outline">
+      <!-- <mat-form-field appearance="outline">
         <mat-label>{{ 'Nationality' | translate }}</mat-label>
         <mat-select
           [value]="selectedNationalityId ?? null"
           (selectionChange)="onNationalityChange($event.value)"
         >
-          <mat-option [value]="null">{{ 'All Nationalities' | translate }}</mat-option>
+          <mat-option [value]="null">{{ 'كل الجنسيات' | translate }}</mat-option>
           <mat-option *ngFor="let nationality of nationalities" [value]="nationality.id">
             {{ nationality.name }}
           </mat-option>
         </mat-select>
-      </mat-form-field>
+      </mat-form-field> -->
       <mat-form-field appearance="outline">
         <mat-label>{{ 'Residency Group' | translate }}</mat-label>
         <mat-select
