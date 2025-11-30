@@ -6,10 +6,10 @@ export interface ResidencyGroupOption {
 }
 
 export const RESIDENCY_GROUP_OPTIONS: readonly ResidencyGroupOption[] = [
-  { value: 'all', translationKey: 'All Residencies' },
-  { value: 'egyptian', translationKey: 'Egyptians' },
-  { value: 'arab', translationKey: 'Arabs' },
-  { value: 'foreign', translationKey: 'Foreigners' }
+  { value: 'all', translationKey: 'كل اماكن الاقامة' },
+  { value: 'egyptian', translationKey: 'مصريين' },
+  { value: 'arab', translationKey: 'عرب' },
+  { value: 'foreign', translationKey: 'اجانب' }
 ];
 
 export function hasActiveResidencyGroup(

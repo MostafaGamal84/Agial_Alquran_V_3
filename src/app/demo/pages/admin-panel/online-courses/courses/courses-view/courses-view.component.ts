@@ -142,10 +142,10 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
       if (result) {
         this.circleService.delete(id).subscribe({
           next: () => {
-            this.toast.success('Course deleted successfully');
+            this.toast.success('تمت الاضافة بنجاح');
             this.loadCircles();
           },
-          error: () => this.toast.error('Error deleting course')
+          error: () => this.toast.error('خطأ . حاول مرة أخرى.')
         });
       }
     });
@@ -374,30 +374,30 @@ export class DeleteConfirmDialogComponent {}
     <div mat-dialog-title>{{ dialogTitle }}</div>
     <div mat-dialog-content class="participants-dialog">
       <section class="participants-section" *ngIf="data.showManagers">
-        <h3>Managers</h3>
+        <h3>المشرف</h3>
         <ng-container *ngIf="data.managers.length; else noManagers">
           <ul>
             <li *ngFor="let manager of data.managers">{{ manager }}</li>
           </ul>
         </ng-container>
         <ng-template #noManagers>
-          <p class="empty-state">No managers assigned.</p>
+          <p class="empty-state">لا يوجد مشرفين</p>
         </ng-template>
       </section>
       <section class="participants-section" *ngIf="data.showStudents">
-        <h3>Students</h3>
+        <h3>الطلاب</h3>
         <ng-container *ngIf="data.students.length; else noStudents">
           <ul>
             <li *ngFor="let student of data.students">{{ student }}</li>
           </ul>
         </ng-container>
         <ng-template #noStudents>
-          <p class="empty-state">No students enrolled.</p>
+          <p class="empty-state">لا يوجد طلاب بعد</p>
         </ng-template>
       </section>
     </div>
     <div mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>Close</button>
+      <button mat-button mat-dialog-close>اغلاق</button>
     </div>
   `,
   styles: [
@@ -438,17 +438,17 @@ export class CourseParticipantsDialogComponent {
   readonly data = inject<CourseParticipantsDialogData>(MAT_DIALOG_DATA);
 
   get dialogTitle(): string {
-    const courseName = this.data.name?.trim() || 'Course';
+    const courseName = this.data.name?.trim() || 'حلقة';
 
     if (this.data.showManagers && !this.data.showStudents) {
-      return `${courseName} managers`;
+      return `${courseName} `;
     }
 
     if (this.data.showStudents && !this.data.showManagers) {
-      return `${courseName} students`;
+      return `${courseName} `;
     }
 
-    return `${courseName} participants`;
+    return `${courseName} `;
   }
 }
 

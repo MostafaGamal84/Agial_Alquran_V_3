@@ -1,7 +1,7 @@
 <app-loading-overlay [isLoading]="isLoading">
   <div class="row p-t-25">
     <div class="col-12">
-      <app-card [cardTitle]="'Circle Reports' | translate" padding="0" cardClass="sm-block">
+      <app-card [cardTitle]="'تقارير الحلقات' | translate" padding="0" cardClass="sm-block">
       <ng-template #headerOptionsTemplate>
         <!-- <div class="table-options" *ngIf="canManageReports">
           <button mat-flat-button color="primary" [routerLink]="['/online-course/report/add']">
@@ -18,10 +18,10 @@
             <div class="row g-3 p-15">
               <div class="col-12 col-md-6 col-xl-3">
                 <mat-form-field appearance="outline" class="w-100">
-                  <mat-label>{{ 'Search' | translate }}</mat-label>
+                  <mat-label>{{ 'بحث' | translate }}</mat-label>
                   <input
                     matInput
-                    [placeholder]="'Search Reports' | translate"
+                    [placeholder]="'بحث' | translate"
                     formControlName="searchTerm"
                     (keyup.enter)="onSearch()"
                   />
@@ -31,17 +31,17 @@
                     type="button"
                     (click)="clearSearch()"
                     *ngIf="filterForm.value.searchTerm"
-                    [attr.aria-label]="'Clear Search' | translate"
+                    [attr.aria-label]="'ازاله البحث' | translate"
                   >
-                    <mat-icon>close</mat-icon>
+                    <mat-icon>اغلاق</mat-icon>
                   </button>
                 </mat-form-field>
               </div>
               <div class="col-12 col-md-6 col-xl-3">
                 <mat-form-field appearance="outline" class="w-100">
-                  <mat-label>{{ 'Circle' | translate }}</mat-label>
+                  <mat-label>{{ 'الحلقة' | translate }}</mat-label>
                   <mat-select formControlName="circleId" [disabled]="isLoadingStudents">
-                    <mat-option [value]="null">{{ 'All Circles' | translate }}</mat-option>
+                    <mat-option [value]="null">{{ 'كل الحلقات' | translate }}</mat-option>
                     <mat-option *ngFor="let circle of circles" [value]="circle.id">
                       {{ circle.name }}
                     </mat-option>
@@ -50,16 +50,16 @@
               </div>
               <div class="col-12 col-md-6 col-xl-3">
                 <mat-form-field appearance="outline" class="w-100">
-                  <mat-label>{{ 'Student' | translate }}</mat-label>
+                  <mat-label>{{ 'الطالب' | translate }}</mat-label>
                   <mat-select formControlName="studentId" [disabled]="isLoadingStudents">
-                    <mat-option [value]="null">{{ 'All Students' | translate }}</mat-option>
+                    <mat-option [value]="null">{{ 'كل الطلاب' | translate }}</mat-option>
                     <mat-option *ngFor="let student of students" [value]="student.id">
                       {{ student.name }}
                     </mat-option>
                   </mat-select>
                 </mat-form-field>
               </div>
-              <div class="col-12 col-md-6 col-xl-3">
+              <!-- <div class="col-12 col-md-6 col-xl-3">
                 <mat-form-field appearance="outline" class="w-100">
                   <mat-label>{{ 'Nationality' | translate }}</mat-label>
                   <mat-select formControlName="nationalityId">
@@ -69,10 +69,10 @@
                     </mat-option>
                   </mat-select>
                 </mat-form-field>
-              </div>
+              </div> -->
               <div class="col-12 col-md-6 col-xl-3">
                 <mat-form-field appearance="outline" class="w-100">
-                  <mat-label>{{ 'Residency Group' | translate }}</mat-label>
+                  <mat-label>{{ 'الاقامة' | translate }}</mat-label>
                   <mat-select formControlName="residentGroup">
                     <mat-option *ngFor="let option of residencyGroupOptions" [value]="option.value">
                       {{ option.translationKey | translate }}
@@ -86,35 +86,35 @@
           <div class="table-responsive">
             <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
               <ng-container matColumnDef="student">
-                <th mat-header-cell *matHeaderCellDef class="p-l-25">{{ 'Student' | translate }}</th>
+                <th mat-header-cell *matHeaderCellDef class="p-l-25">{{ 'طالب' | translate }}</th>
                 <td mat-cell *matCellDef="let element" class="p-l-25 text-nowrap">
                   {{ getStudentDisplay(element) }}
                 </td>
               </ng-container>
 
               <ng-container matColumnDef="circle">
-                <th mat-header-cell *matHeaderCellDef>{{ 'Circle' | translate }}</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'حلقة' | translate }}</th>
                 <td mat-cell *matCellDef="let element" class="text-nowrap">
                   {{ getCircleDisplay(element) }}
                 </td>
               </ng-container>
 
               <ng-container matColumnDef="status">
-                <th mat-header-cell *matHeaderCellDef>{{ 'Status' | translate }}</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'الحالة' | translate }}</th>
                 <td mat-cell *matCellDef="let element" class="text-nowrap">
                   {{ getStatusLabel(element.attendStatueId) }}
                 </td>
               </ng-container>
 
               <ng-container matColumnDef="creationTime">
-                <th mat-header-cell *matHeaderCellDef>{{ 'Date' | translate }}</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'التاريخ' | translate }}</th>
                 <td mat-cell *matCellDef="let element" class="text-nowrap">
                   {{ formatDate(element.creationTime) }}
                 </td>
               </ng-container>
 
               <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef class="text-center">{{ 'Actions' | translate }}</th>
+                <th mat-header-cell *matHeaderCellDef class="text-center">{{ 'الاجراءات' | translate }}</th>
                 <td mat-cell *matCellDef="let element" class="text-nowrap">
                   <div class="text-center text-nowrap">
                     <ul class="list-inline p-l-0">

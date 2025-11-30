@@ -369,21 +369,35 @@ export const menus: Navigation[] = [
               UserTypesEnum.Admin.toString(),
               UserTypesEnum.Manager.toString(),
               UserTypesEnum.BranchLeader.toString(),
-              UserTypesEnum.Student.toString(),
-              UserTypesEnum.Teacher.toString()
+              // UserTypesEnum.Student.toString(),
+              // UserTypesEnum.Teacher.toString()
             ],
             children: [
               {
                 id: 'subscribe',
                 title: 'Subscribe',
                 type: 'item',
-                url: '/online-course/setting/subscribe'
+                url: '/online-course/setting/subscribe',
+                 role: [
+              UserTypesEnum.Admin.toString(),
+              UserTypesEnum.Manager.toString(),
+              UserTypesEnum.BranchLeader.toString(),
+              // UserTypesEnum.Student.toString(),
+              // UserTypesEnum.Teacher.toString()
+            ],
               },
               {
                 id: 'subscribe-type',
                 title: 'Subscribe Type',
                 type: 'item',
-                url: '/online-course/setting/subscribe-type'
+                url: '/online-course/setting/subscribe-type',
+                 role: [
+              UserTypesEnum.Admin.toString(),
+              UserTypesEnum.Manager.toString(),
+              UserTypesEnum.BranchLeader.toString(),
+              // UserTypesEnum.Student.toString(),
+              // UserTypesEnum.Teacher.toString()
+            ],
               }
             ]
           },
@@ -456,8 +470,8 @@ export const menus: Navigation[] = [
           UserTypesEnum.Admin.toString(),
           UserTypesEnum.Manager.toString(),
           UserTypesEnum.BranchLeader.toString(),
-          UserTypesEnum.Student.toString(),
-          UserTypesEnum.Teacher.toString()
+          // UserTypesEnum.Student.toString(),
+          // UserTypesEnum.Teacher.toString()
         ],
         // children: [
           // {

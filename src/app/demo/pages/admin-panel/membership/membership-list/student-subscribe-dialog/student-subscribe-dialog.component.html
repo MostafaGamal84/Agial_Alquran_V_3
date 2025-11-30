@@ -1,7 +1,7 @@
-<h2 mat-dialog-title>Update Subscription</h2>
+<h2 mat-dialog-title>تحديث الباقة للطالب</h2>
 <mat-dialog-content [formGroup]="form">
   <mat-form-field appearance="outline" class="w-100">
-    <mat-label>Subscribe Type</mat-label>
+    <mat-label>نوع الباقة</mat-label>
     <mat-select formControlName="subscribeTypeId">
       <mat-option [value]="type.id" *ngFor="let type of types">
         {{ type.name }}
@@ -10,7 +10,7 @@
   </mat-form-field>
 
   <mat-form-field appearance="outline" class="w-100">
-    <mat-label>Subscribe</mat-label>
+    <mat-label>الباقة</mat-label>
     <mat-select formControlName="subscribeId">
       <mat-option [value]="s.id" *ngFor="let s of subscribes">
         {{ s.name }}
@@ -25,7 +25,7 @@
     color="primary"
     (click)="submit()"
     [disabled]="form.invalid"
-  >
-    Save
+  > 
+    حفظ
   </button>
 </mat-dialog-actions>

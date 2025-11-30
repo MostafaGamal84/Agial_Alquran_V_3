@@ -1,51 +1,47 @@
-<h2 mat-dialog-title>Payment Details</h2>
+<h2 mat-dialog-title>تفاصيل الفاتورة</h2>
 <div mat-dialog-content>
   <div class="payment-item">
-    <strong>Invoice ID:</strong>
+    <strong>رقم الفاتورة:</strong>
     <span>{{ data.invoiceId }}</span>
   </div>
   <div class="payment-item">
-    <strong>Student ID:</strong>
-    <span>{{ data.studentId }}</span>
-  </div>
-  <div class="payment-item">
-    <strong>Subscribe:</strong>
+    <strong>الباقة:</strong>
     <span>{{ data.subscribe }}</span>
   </div>
   <div class="payment-item">
-    <strong>Name:</strong>
+    <strong>الاسم:</strong>
     <span>{{ data.userName }}</span>
   </div>
   <div class="payment-item">
-    <strong>Email:</strong>
+    <strong>البريد الالكتروني:</strong>
     <span>{{ data.userEmail }}</span>
   </div>
   <div class="payment-item">
-    <strong>Create Date:</strong>
+    <strong>تاريخ انشاء الفاتورة:</strong>
     <span>{{ data.createDate ? (data.createDate | date: 'short') : 'N/A' }}</span>
   </div>
   <div class="payment-item">
-    <strong>Due Date:</strong>
+    <strong>مستحق حتى:</strong>
     <span>{{ data.dueDate ? (data.dueDate | date: 'short') : 'N/A' }}</span>
   </div>
   <div class="payment-item">
-    <strong>Payment Date:</strong>
+    <strong>تاريخ السداد:</strong>
     <span>{{ data.paymentDate ? (data.paymentDate | date: 'short') : 'N/A' }}</span>
   </div>
   <div class="payment-item">
-    <strong>Amount:</strong>
+    <strong>المبلغ:</strong>
     <span>{{ data.amount }}</span>
   </div>
   <div class="payment-item">
-    <strong>Currency:</strong>
+    <strong>العملة:</strong>
     <span>{{ currencyLabel }}</span>
   </div>
   <div class="payment-item">
-    <strong>Status:</strong>
+    <strong>حالة الدفع:</strong>
     <span>{{ data.statusText }}</span>
   </div>
 </div>
 <div mat-dialog-actions align="end">
-  <button mat-button color="primary" (click)="viewInvoice()">View Invoice</button>
-  <button mat-button mat-dialog-close>Close</button>
+  <button mat-button color="primary" (click)="viewInvoice()">عرض الفاتورة</button>
+  <button mat-button mat-dialog-close>اغلاق</button>
 </div>

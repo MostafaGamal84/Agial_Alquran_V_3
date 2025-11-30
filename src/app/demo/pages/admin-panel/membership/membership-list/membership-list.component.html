@@ -52,11 +52,11 @@
                       <img src="assets/images/user/avatar-1.png" alt="user-image" class="wid-40 border-50" />
                     </div>
                     <div class="flex-grow-1 m-l-15">
-                      <div class="f-w-600">{{ element.studentName || ('Not Available' | translate) }}</div>
-                      <div class="mat-caption text-muted">
+                      <div class="f-w-600">{{ element.studentName || ('لا يوجد' | translate) }}</div>
+                      <!-- <div class="mat-caption text-muted">
                         {{ 'Residency' | translate }}:
-                        {{ element.resident || ('Not Available' | translate) }}
-                      </div>
+                        {{ element.resident || ('لا يوجد' | translate) }}
+                      </div> -->
                     </div>
                   </div>
                 </td>
@@ -66,7 +66,7 @@
               <ng-container matColumnDef="mobile">
                 <th mat-header-cell *matHeaderCellDef>{{ 'Mobile' | translate }}</th>
                 <td mat-cell *matCellDef="let element" class="text-nowrap">
-                  {{ element.studentMobile || ('Not Available' | translate) }}
+                  {{ element.studentMobile || ('لا يوجد' | translate) }}
                 </td>
               </ng-container>
 
@@ -74,9 +74,9 @@
               <ng-container matColumnDef="date">
                 <th mat-header-cell *matHeaderCellDef>{{ 'Start Date' | translate }}</th>
                 <td mat-cell *matCellDef="let element" class="text-nowrap">
-                  {{ element.startDate ? (element.startDate | date: 'shortDate') : ('Not Available' | translate) }}
+                  {{ element.startDate ? (element.startDate | date: 'shortDate') : ('لا يوجد' | translate) }}
                   <span class="text-muted mat-small block">
-                    {{ element.startDate ? (element.startDate | date: 'shortTime') : ('Not Available' | translate) }}
+                    {{ element.startDate ? (element.startDate | date: 'shortTime') : ('لا يوجد' | translate) }}
                   </span>
                 </td>
               </ng-container>
@@ -110,16 +110,16 @@
                       ></i>
                     </div>
                   } @else {
-                    <div>{{ 'Not Available' | translate }}</div>
+                    <div>{{ 'لا يوجد' | translate }}</div>
                   }
                 </td>
               </ng-container>
 
               <!-- STATUS Column -->
               <ng-container matColumnDef="plan">
-                <th mat-header-cell *matHeaderCellDef>{{ 'Plan' | translate }}</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'الباقة' | translate }}</th>
                 <td mat-cell *matCellDef="let element" class="text-nowrap">
-                  {{ element.plan || ('Not Available' | translate) }}
+                  {{ element.plan || ('لا يوجد' | translate) }}
                 </td>
               </ng-container>
 
@@ -136,7 +136,7 @@
                         </li>
                         <li
                           class="list-inline-item m-r-10"
-                          [matTooltip]="'تعديل' | translate"
+                          [matTooltip]="'تعديل الباقة' | translate"
                           [matTooltipDisabled]="element.payStatus === true || element.isCancelled === true"
                         >
                           <a
@@ -150,11 +150,11 @@
                             <i class="ti ti-edit-circle f-20"></i>
                           </a>
                         </li>
-                      <li class="list-inline-item m-r-10" [matTooltip]="'حذف' | translate">
+                      <!-- <li class="list-inline-item m-r-10" [matTooltip]="'حذف' | translate">
                         <a href="javascript:" class="avatar avatar-xs text-muted">
                           <i class="ti ti-trash f-20"></i>
                         </a>
-                      </li>
+                      </li> -->
                     </ul>
                   </div>
                 </td>

@@ -37,7 +37,7 @@ export class CoursesDetailsComponent implements OnInit {
       return;
     }
 
-    this.toast.error('Course details are unavailable. Please select a course from the list.');
+    this.toast.error('تفاصيل الحلقة are unavailable. Please select a course from the list.');
     this.navigateToCoursesList();
   }
 
@@ -96,10 +96,12 @@ export class CoursesDetailsComponent implements OnInit {
     if (!circle || !Array.isArray(circle.managers)) {
       return [];
     }
+      console.log(circle.managers);
 
     return circle.managers
       .map((manager) => this.resolveManagerName(manager))
-      .filter((name): name is string => Boolean(name));
+      .filter((name): name is string => Boolean());
+       
   }
 
   private resolveManagerName(

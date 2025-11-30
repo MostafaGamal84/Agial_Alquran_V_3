@@ -7,7 +7,7 @@
         (ngSubmit)="onSubmit()"
         class="row"
       >
-        <!-- Supervisor selector (Admin + BranchManager فقط) -->
+        <!-- Supervisor selector (Admin + BranchManager فقط - وضع الإضافة فقط) -->
         <div class="col-md-6" *ngIf="showSupervisorSelector">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>{{ 'Supervisor' | translate }}</mat-label>
@@ -23,7 +23,7 @@
           </mat-form-field>
         </div>
 
-        <!-- Teacher selector (Admin + BranchManager + Supervisor) -->
+        <!-- Teacher selector (Admin + BranchManager + Supervisor - وضع الإضافة فقط) -->
         <div class="col-md-6" *ngIf="showTeacherSelector">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>{{ 'Teacher' | translate }}</mat-label>
@@ -39,25 +39,8 @@
           </mat-form-field>
         </div>
 
-        <!-- Circle selector (لو حبيت تعرضه مستقبلاً)
-        <div class="col-md-6" *ngIf="showCircleSelector">
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>{{ 'Circle' | translate }}</mat-label>
-            <mat-select
-              formControlName="circleId"
-              [disabled]="lockCircleSelection || isLoadingCircles"
-              (selectionChange)="onCircleChange($event.value)"
-            >
-              <mat-option *ngFor="let circle of circles" [value]="circle.id">
-                {{ circle.name || ('Circle #' + circle.id) }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-        </div>
-        -->
-
-        <!-- Student -->
-        <div class="col-md-6">
+        <!-- Student (نظهره في وضع الإضافة فقط) -->
+        <div class="col-md-6" *ngIf="showStudentSelector">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>{{ 'Student' | translate }}</mat-label>
             <mat-select
