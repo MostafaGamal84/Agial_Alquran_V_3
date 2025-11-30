@@ -243,6 +243,9 @@ export class ReportAddComponent implements OnInit {
       teacherCtrl?.updateValueAndValidity();
 
       const teacherId = this.getUserId(); // حالياً undefined عندك
+      if (teacherId) {
+        this.reportForm.patchValue({ teacherId }, { emitEvent: false });
+      }
       console.log('[ReportAdd] Teacher flow', { teacherId });
 
       // حتى لو مفيش teacherId هننده السيرفس، والبك إند يعتمد على التوكن
@@ -793,6 +796,13 @@ export class ReportAddComponent implements OnInit {
       managerId?: number;
     };
     const { managerId: _managerId, ...model } = formValue;
+
+    if (this.isTeacher && (!model.teacherId || model.teacherId === 0)) {
+      const currentTeacherId = this.getUserId();
+      if (currentTeacherId) {
+        model.teacherId = currentTeacherId;
+      }
+    }
 
     if (this.mode === 'update') {
       if (!this.reportId) {
