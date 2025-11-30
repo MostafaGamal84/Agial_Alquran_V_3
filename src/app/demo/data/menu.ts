@@ -589,7 +589,7 @@ export const menus: Navigation[] = [
         role: [
           UserTypesEnum.Admin.toString(),
           // UserTypesEnum.Manager.toString(),
-          // UserTypesEnum.BranchLeader.toString(),
+          UserTypesEnum.BranchLeader.toString(),
           // UserTypesEnum.Student.toString(),
           // UserTypesEnum.Teacher.toString()
         ],
