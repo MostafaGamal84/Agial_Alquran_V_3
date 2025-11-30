@@ -21,6 +21,7 @@ import {
   LookupService
 } from 'src/app/@theme/services/lookup.service';
 import { QuranSurahEnum } from 'src/app/@theme/types/QuranSurahEnum';
+import { UserService } from 'src/app/@theme/services/user.service';
 
 type ReportState = Partial<CircleReportAddDto> & Partial<CircleReportListDto>;
 
@@ -40,6 +41,7 @@ export class ReportAddComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private translate = inject(TranslateService);
   private lookupService = inject(LookupService);
+  private userService = inject(UserService);
 
   reportForm!: FormGroup;
   private reportId?: number;
@@ -68,6 +70,9 @@ export class ReportAddComponent implements OnInit {
   lockTeacherSelection = false;
   lockCircleSelection = true;
 
+  private profileIdFallback?: number;
+  private profileBranchId?: number;
+
   private readonly userFilter: FilteredResultRequestDto = { lookupOnly: true };
 
   surahList = Object.keys(QuranSurahEnum)
@@ -90,7 +95,8 @@ export class ReportAddComponent implements OnInit {
       (this.auth.currentUserValue as any)?.user?.id ??
       (this.auth.currentUserValue as any)?.id ??
       this.currentUser?.id ??
-      this.currentUser?.userId;
+      this.currentUser?.userId ??
+      this.profileIdFallback;
 
     return this.toNumber(raw);
   }
@@ -100,7 +106,8 @@ export class ReportAddComponent implements OnInit {
       (this.auth.currentUserValue as any)?.user?.branchId ??
       (this.auth.currentUserValue as any)?.branchId ??
       this.currentUser?.branchId ??
-      this.currentUser?.branch?.id;
+      this.currentUser?.branch?.id ??
+      this.profileBranchId;
 
     return this.toNumber(raw) ?? undefined;
   }
@@ -251,10 +258,12 @@ export class ReportAddComponent implements OnInit {
       const teacherId = this.getUserId();
       if (teacherId) {
         this.reportForm.patchValue({ teacherId }, { emitEvent: false });
+        this.loadCirclesForTeacher(teacherId, true);
+      } else {
+        this.loadTeacherProfileAndPrefill();
       }
       console.log('[ReportAdd] Teacher flow', { teacherId });
 
-      this.loadCirclesForTeacher(teacherId ?? 0, true);
       return;
     }
 
@@ -307,6 +316,31 @@ export class ReportAddComponent implements OnInit {
     } else {
       this.loadManagers();
     }
+  }
+
+  private loadTeacherProfileAndPrefill(): void {
+    this.userService.getProfile().subscribe({
+      next: (res) => {
+        if (res.isSuccess && res.data) {
+          const teacherId = this.toNumber(res.data.id);
+          const branchId = this.toNumber(res.data.branchId);
+
+          this.profileIdFallback = teacherId ?? undefined;
+          this.profileBranchId = branchId ?? undefined;
+
+          if (teacherId) {
+            this.reportForm.patchValue({ teacherId }, { emitEvent: false });
+            this.loadCirclesForTeacher(teacherId, true);
+            return;
+          }
+        }
+
+        this.loadCirclesForTeacher(0, true);
+      },
+      error: () => {
+        this.loadCirclesForTeacher(0, true);
+      }
+    });
   }
 
   // ================================
