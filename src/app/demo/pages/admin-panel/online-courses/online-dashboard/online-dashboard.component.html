@@ -65,6 +65,30 @@
     }
   }
 
+  @if (!overviewLoading && financialMetricCards.length) {
+    <div class="col-12">
+      <h5 class="section-title">{{ 'المعاملات المالية' | translate }}</h5>
+    </div>
+
+    @for (finance of financialMetricCards; track finance.key) {
+      <div class="col-lg-3 col-md-6">
+        <app-card [showHeader]="false" [padding]="18" cardClass="role-metric-card finance-card">
+          <div class="flex align-item-center justify-content-between">
+            <div class="flex-grow-1">
+              <p class="m-b-5 f-w-600 text-muted">{{ finance.title | translate }}</p>
+              <div class="f-18 f-w-700">{{ finance.value }}</div>
+            </div>
+            <div class="metric-icon {{ finance.background }}">
+              <svg class="pc-icon">
+                <use attr.xlink:href="assets/fonts/custom-icon.svg{{ finance.icon }}"></use>
+              </svg>
+            </div>
+          </div>
+        </app-card>
+      </div>
+    }
+  }
+
   @if (!overviewLoading && !summaryCards.length && overviewLoaded) {
     <div class="col-12">
       <app-card [showHeader]="false" [padding]="20">
@@ -79,6 +103,22 @@
       <span *ngIf="overviewRoleLabel && overviewRangeDescription"> · </span>
       <span *ngIf="overviewRangeDescription"><strong>{{ 'المدة' | translate }}:</strong> {{ overviewRangeDescription }}</span>
     </div>
+  </div>
+
+  <div class="col-12" *ngIf="financialChartHasData">
+    <app-statistics-chart
+      [height]="260"
+      [chartTitle]="'تحليل المعاملات المالية' | translate"
+      [chartSubtitle]="overviewRangeDescription"
+      [series]="financialChartSeries"
+      [categories]="financialChartCategories"
+      [showRangeSelector]="false"
+    />
+  </div>
+  <div class="col-12" *ngIf="!financialChartHasData && financialMetricCards.length && overviewLoaded">
+    <app-card [showHeader]="false" [padding]="24">
+      <div class="text-muted">{{ 'لا توجد بيانات مالية متاحة لهذه المدة.' | translate }}</div>
+    </app-card>
   </div>
 
   <div class="col-lg-7 col-md-12" *ngIf="monthlyRevenueHasData">

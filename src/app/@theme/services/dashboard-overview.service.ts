@@ -18,6 +18,16 @@ export interface DashboardOverviewMetricsDto {
   netIncome?: number | null;
   netIncomeCurrencyCode?: string | null;
   netIncomePercentChange?: number | null;
+  outgoing?: number | null;
+  outgoingCurrencyCode?: string | null;
+  incomingEgp?: number | null;
+  incomingEgpCurrencyCode?: string | null;
+  incomingSar?: number | null;
+  incomingSarCurrencyCode?: string | null;
+  incomingUsd?: number | null;
+  incomingUsdCurrencyCode?: string | null;
+  netProfit?: number | null;
+  netProfitCurrencyCode?: string | null;
   branchManagersCount?: number | null;
   supervisorsCount?: number | null;
   teachersCount?: number | null;
