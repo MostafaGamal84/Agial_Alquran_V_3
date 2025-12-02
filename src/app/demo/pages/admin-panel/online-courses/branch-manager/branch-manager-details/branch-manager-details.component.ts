@@ -1,30 +1,19 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
-import { TranslateModule } from '@ngx-translate/core';
-
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scrollbar';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
-import { TranslateService } from '@ngx-translate/core';
 
 interface Person {
   fullName?: string;
   mobile?: string;
-  [key: string]: unknown;
 }
 
 interface Circle {
-  circleId?: number;
   circle?: string;
-  [key: string]: unknown;
-}
-
-interface ContactEntry {
-  key: string;
-  value: unknown;
-  icon: string;
 }
 
 interface DetailEntry {
@@ -33,10 +22,23 @@ interface DetailEntry {
   value: unknown;
 }
 
+interface ContactEntry {
+  key: string;
+  value: unknown;
+  icon: string;
+}
+
 @Component({
   selector: 'app-branch-manager-details',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule, NgxScrollbar, TranslateModule],
+  imports: [
+    CommonModule,
+    MatDialogModule,
+    MatButtonModule,
+    MatExpansionModule,
+    NgxScrollbar,
+    TranslateModule
+  ],
   templateUrl: './branch-manager-details.component.html',
   styleUrl: './branch-manager-details.component.scss'
 })
@@ -47,113 +49,65 @@ export class BranchManagerDetailsComponent {
   managerCircles: Circle[] = [];
   contactEntries: ContactEntry[] = [];
   detailEntries: DetailEntry[] = [];
-  private readonly labelTranslationMap: Record<string, string> = {
-    branchId: 'BRANCH_MANAGER_DETAILS.Branch',
-    gender: 'Gender',
-    userName: 'Username',
-    createdAt: 'Created At',
-    updatedAt: 'Updated At',
-    managerName: 'Manager Name',
-    identityNumber: 'Identity Number',
-    residentId: 'Resident ID',
-    resident: 'Resident',
-    nationality: 'Nationality',
-    nationalityId: 'Nationality',
-    governorate: 'Governorate',
-    governorateId: 'Governorate'
-  };
 
   Branch = [
     { id: BranchesEnum.Mens, label: 'الرجال' },
     { id: BranchesEnum.Women, label: 'النساء' }
   ];
-  branchLabel = '';
+
+  private readonly labelTranslationMap: Record<string, string> = {
+    nationality: 'الجنسية',
+    gender: 'الجنس',
+    userName: 'اسم المستخدم',
+    identityNumber: 'رقم الهوية',
+    createdAt: 'تاريخ الإنشاء'
+  };
 
   constructor() {
-    const user = inject<Record<string, unknown>>(MAT_DIALOG_DATA);
-    const translate = inject(TranslateService);
-    if (user) {
-      this.manager = user;
-      const raw = user as Record<string, unknown>;
-      this.teachers = Array.isArray(raw['teachers']) ? (raw['teachers'] as Person[]) : [];
-      this.students = Array.isArray(raw['students']) ? (raw['students'] as Person[]) : [];
-      this.managerCircles = Array.isArray(raw['managerCircles'])
-        ? (raw['managerCircles'] as Circle[])
-        : [];
+    const raw = inject<Record<string, unknown>>(MAT_DIALOG_DATA);
+
+    if (raw) {
+      this.manager = raw;
+      this.teachers = Array.isArray(raw['teachers']) ? raw['teachers'] as Person[] : [];
+      this.students = Array.isArray(raw['students']) ? raw['students'] as Person[] : [];
+      this.managerCircles = Array.isArray(raw['managerCircles']) ? raw['managerCircles'] as Circle[] : [];
 
       const contactKeys = ['email', 'mobile', 'secondMobile'];
       this.contactEntries = contactKeys
-        .filter((k) => raw[k] !== undefined && raw[k] !== null)
-        .map((k) => ({ key: k, value: raw[k], icon: this.getContactIcon(k) }));
+        .filter(k => raw[k])
+        .map(k => ({ key: k, value: raw[k], icon: this.getContactIcon(k) }));
 
-      const exclude = [
-        'fullName',
-        'teachers',
-        'students',
-        'managerCircles',
-        'managers',
-        'teacherName',
-        'managerName',
-        'circleName',
-        'inactive',
-        'governorate',
-        'resident',
+      const exclude = ['fullName',  'managerCircles', ...contactKeys];
 
-        ...contactKeys
-      ];
-
-      this.detailEntries = Object.entries(user)
-        .filter(
-          ([key, value]) =>
-            !exclude.includes(key) &&
-            !/id$/i.test(key) &&
-            key.toLowerCase() !== 'id' &&
-            !Array.isArray(value) &&
-            (typeof value !== 'object' || value === null)
+      this.detailEntries = Object.entries(raw)
+        .filter(([key, val]) =>
+          !exclude.includes(key) &&
+          val !== null &&
+          typeof val !== 'object' &&
+          !Array.isArray(val)
         )
-        .map(([key, value]) => {
-          const labelKey = this.formatLabel(key);
-          return {
-            key,
-            labelKey,
-            value: this.formatValue(key, value)
-          };
-        });
+        .map(([key, value]) => ({
+          key,
+          labelKey: this.labelTranslationMap[key] ?? this.humanizeKey(key),
+          value
+        }));
     }
   }
 
-  getBranchLabel(id: number | undefined): string {
-    return this.Branch.find((b) => b.id === id)?.label || String(id ?? '');
-  }
-
-  formatValue(key: string, value: unknown): unknown {
-    if (key === 'branchId') {
-      return this.getBranchLabel(typeof value === 'number' ? value : undefined);
-    }
-    return value;
-  }
-
-  formatLabel(key: string): string {
-    return this.labelTranslationMap[key] ?? this.humanizeKey(key);
+  getBranchLabel(id: unknown): string {
+    const item = this.Branch.find(b => b.id === id);
+    return item ? item.label : String(id);
   }
 
   private humanizeKey(key: string): string {
-    const spaced = key
-      .replace(/([A-Z])/g, ' $1')
-      .replace(/[_-]+/g, ' ')
-      .trim();
-    if (!spaced) {
-      return key;
-    }
-    return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+    return key.replace(/([A-Z])/g, ' $1').trim();
   }
 
   private getContactIcon(key: string): string {
-    const icons: Record<string, string> = {
+    return {
       email: 'ti ti-mail',
       mobile: 'ti ti-phone',
       secondMobile: 'ti ti-phone'
-    };
-    return icons[key] || 'ti ti-circle';
+    }[key] ?? 'ti ti-circle';
   }
 }
