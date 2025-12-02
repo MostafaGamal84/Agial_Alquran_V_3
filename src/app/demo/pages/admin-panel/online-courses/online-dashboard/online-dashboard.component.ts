@@ -31,12 +31,6 @@ interface DashboardSummaryCard {
   percentageClass?: string;
 }
 
-interface DashboardRoleMetricEntry {
-  key: string;
-  label: string;
-  value: string;
-}
-
 interface DashboardOverviewListEntry {
   key: string;
   label: string;
@@ -87,7 +81,7 @@ export class OnlineDashboardComponent implements OnInit {
   overviewRangeDescription: string | null = null;
 
   summaryCards: DashboardSummaryCard[] = [];
-  roleMetricEntries: DashboardRoleMetricEntry[] = [];
+  roleMetricCards: DashboardSummaryCard[] = [];
   projectOverviewEntries: DashboardOverviewListEntry[] = [];
   transactionsView: DashboardTransactionView[] = [];
 
@@ -142,7 +136,7 @@ export class OnlineDashboardComponent implements OnInit {
 
   private resetOverviewData(): void {
     this.summaryCards = [];
-    this.roleMetricEntries = [];
+    this.roleMetricCards = [];
     this.projectOverviewEntries = [];
     this.transactionsView = [];
     this.monthlyRevenueSeries = undefined;
@@ -162,7 +156,7 @@ export class OnlineDashboardComponent implements OnInit {
     this.overviewRangeDescription = this.buildRangeDescription(data.rangeStart, data.rangeEnd, data.rangeLabel);
 
     this.summaryCards = this.buildSummaryCards(data.metrics);
-    this.roleMetricEntries = this.buildRoleMetricEntries(data.metrics);
+    this.roleMetricCards = this.buildRoleMetricCards(data.metrics);
 
     const charts = data.charts;
     this.projectOverviewEntries = this.buildProjectOverviewEntries(charts?.projectOverview);
@@ -235,14 +229,19 @@ export class OnlineDashboardComponent implements OnInit {
     });
   }
 
-  private buildRoleMetricEntries(metrics?: DashboardOverviewMetricsDto | null): DashboardRoleMetricEntry[] {
+  private buildRoleMetricCards(metrics?: DashboardOverviewMetricsDto | null): DashboardSummaryCard[] {
     const definitions = [
-      { key: 'branchManagersCount', label: 'مديرو الفروع' },
-      { key: 'supervisorsCount', label: 'المشرفون' },
-      { key: 'teachersCount', label: 'المعلمون' },
-      { key: 'studentsCount', label: 'الطلاب' },
-      { key: 'circlesCount', label: 'الحلقات' },
-      { key: 'reportsCount', label: 'التقارير' }
+      {
+        key: 'branchManagersCount',
+        label: 'مديرو الفروع',
+        icon: '#custom-layer',
+        background: 'bg-primary-100 text-primary-600'
+      },
+      { key: 'supervisorsCount', label: 'المشرفون', icon: '#custom-user-tick', background: 'bg-success-100 text-success-600' },
+      { key: 'teachersCount', label: 'المعلمون', icon: '#custom-teacher', background: 'bg-warning-100 text-warning-700' },
+      { key: 'studentsCount', label: 'الطلاب', icon: '#custom-profile-2user-outline', background: 'bg-info-100 text-info-700' },
+      { key: 'circlesCount', label: 'الحلقات', icon: '#custom-status-up', background: 'bg-secondary-100 text-secondary-700' },
+      { key: 'reportsCount', label: 'التقارير', icon: '#custom-document-text', background: 'bg-warn-100 text-warn-700' }
     ];
 
     return definitions
@@ -254,11 +253,13 @@ export class OnlineDashboardComponent implements OnInit {
 
         return {
           key: definition.key,
-          label: definition.label,
+          title: definition.label,
+          icon: definition.icon,
+          background: definition.background,
           value: this.formatNumber(numericValue)
-        } satisfies DashboardRoleMetricEntry;
+        } satisfies DashboardSummaryCard;
       })
-      .filter((entry): entry is DashboardRoleMetricEntry => !!entry);
+      .filter((entry): entry is DashboardSummaryCard => !!entry);
   }
 
   private buildProjectOverviewEntries(projectOverview?: DashboardOverviewProjectOverviewDto | null): DashboardOverviewListEntry[] {
