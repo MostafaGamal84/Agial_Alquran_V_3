@@ -7,3 +7,30 @@
     }
   }
 }
+
+.metric-list {
+  .list-group-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--accent-200);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .metric-label {
+      color: var(--pc-font-muted);
+      font-weight: 600;
+      letter-spacing: 0.1px;
+    }
+
+    .metric-value {
+      font-weight: 700;
+      color: var(--pc-font-dark);
+      padding-inline-start: 12px;
+    }
+  }
+}

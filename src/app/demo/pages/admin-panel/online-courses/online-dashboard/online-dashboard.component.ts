@@ -71,6 +71,14 @@ export class OnlineDashboardComponent implements OnInit {
   private toast = inject(ToastService);
   private translate = inject(TranslateService);
   private dashboardOverview = inject(DashboardOverviewService);
+  private readonly roleTranslations: Record<string, string> = {
+    admin: 'مسؤول',
+    manager: 'مدير',
+    branchleader: 'قائد فرع',
+    branch_leader: 'قائد فرع',
+    student: 'طالب',
+    teacher: 'معلم'
+  };
 
   overviewLoading = false;
   overviewLoaded = false;
@@ -471,7 +479,7 @@ export class OnlineDashboardComponent implements OnInit {
 
     if (currencyCode) {
       try {
-        return new Intl.NumberFormat(undefined, {
+        return new Intl.NumberFormat('ar', {
           style: 'currency',
           currency: currencyCode,
           maximumFractionDigits: 2,
@@ -487,7 +495,7 @@ export class OnlineDashboardComponent implements OnInit {
       maximumFractionDigits: value % 1 === 0 ? 0 : 2
     };
 
-    return new Intl.NumberFormat(undefined, options).format(value);
+    return new Intl.NumberFormat('ar', options).format(value);
   }
 
   private formatNumber(value: number): string {
@@ -497,7 +505,7 @@ export class OnlineDashboardComponent implements OnInit {
       minimumFractionDigits: hasFraction ? 0 : 0
     };
 
-    return new Intl.NumberFormat(undefined, options).format(value);
+    return new Intl.NumberFormat('ar', options).format(value);
   }
 
   private buildRangeDescription(
@@ -536,7 +544,7 @@ export class OnlineDashboardComponent implements OnInit {
       return null;
     }
 
-    return new Intl.DateTimeFormat(undefined, {
+    return new Intl.DateTimeFormat('ar', {
       year: 'numeric',
       month: 'short',
       day: '2-digit'
@@ -553,7 +561,7 @@ export class OnlineDashboardComponent implements OnInit {
       return '—';
     }
 
-    return new Intl.DateTimeFormat(undefined, {
+    return new Intl.DateTimeFormat('ar', {
       year: 'numeric',
       month: 'short',
       day: '2-digit',
@@ -625,6 +633,11 @@ export class OnlineDashboardComponent implements OnInit {
       return null;
     }
 
+    const normalizedRole = trimmed.replace(/\s+|_/g, '').toLowerCase();
+    if (normalizedRole in this.roleTranslations) {
+      return this.roleTranslations[normalizedRole];
+    }
+
     const spaced = trimmed
       .replace(/([a-z])([A-Z])/g, '$1 $2')
       .replace(/_/g, ' ')
@@ -671,7 +684,7 @@ export class OnlineDashboardComponent implements OnInit {
     if (circle.nextOccurrenceDate) {
       const date = new Date(circle.nextOccurrenceDate);
       if (!Number.isNaN(date.getTime())) {
-        dateLabel = date.toLocaleDateString();
+        dateLabel = date.toLocaleDateString('ar');
       }
     }
 
@@ -764,7 +777,7 @@ export class OnlineDashboardComponent implements OnInit {
       })
       .filter((name) => !!name);
 
-    return names.join(', ');
+    return names.join('، ');
   }
 
   private resolveUpcomingPrimaryDay(circle?: UpcomingCircleDto | null): CircleDayDto | undefined {
