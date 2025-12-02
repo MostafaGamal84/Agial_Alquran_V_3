@@ -74,12 +74,12 @@
   </div>
 
   <div class="col-lg-5 col-md-12" *ngIf="roleMetricEntries.length">
-    <app-card [cardTitle]="'إحصائيات الأدوار' | translate" [padding]="0">
+    <app-card [cardTitle]="'إحصائيات الأدوار' | translate" [padding]="0" cardClass="metric-list">
       <ul class="list-group list-group-flush">
         @for (metric of roleMetricEntries; track metric.key) {
-          <li class="list-group-item d-flex align-item-center justify-content-between">
-            <span>{{ metric.label | translate }}</span>
-            <span class="f-w-600">{{ metric.value }}</span>
+          <li class="list-group-item">
+            <span class="metric-label">{{ metric.label | translate }}</span>
+            <span class="metric-value">{{ metric.value }}</span>
           </li>
         }
       </ul>
@@ -87,12 +87,12 @@
   </div>
 
   <div class="col-lg-5 col-md-12" *ngIf="projectOverviewEntries.length">
-    <app-card [cardTitle]="'نظرة عامة على المشروع' | translate" [padding]="0">
+    <app-card [cardTitle]="'نظرة عامة على المشروع' | translate" [padding]="0" cardClass="metric-list">
       <ul class="list-group list-group-flush">
         @for (item of projectOverviewEntries; track item.key) {
-          <li class="list-group-item d-flex align-item-center justify-content-between">
-            <span>{{ item.label | translate }}</span>
-            <span class="f-w-600">{{ item.value }}</span>
+          <li class="list-group-item">
+            <span class="metric-label">{{ item.label | translate }}</span>
+            <span class="metric-value">{{ item.value }}</span>
           </li>
         }
       </ul>
