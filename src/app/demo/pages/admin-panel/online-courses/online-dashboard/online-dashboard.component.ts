@@ -82,12 +82,17 @@ export class OnlineDashboardComponent implements OnInit {
 
   summaryCards: DashboardSummaryCard[] = [];
   roleMetricCards: DashboardSummaryCard[] = [];
+  financialMetricCards: DashboardSummaryCard[] = [];
   projectOverviewEntries: DashboardOverviewListEntry[] = [];
   transactionsView: DashboardTransactionView[] = [];
 
   monthlyRevenueSeries?: ApexAxisChartSeries;
   monthlyRevenueCategories?: string[];
   monthlyRevenueHasData = false;
+
+  financialChartSeries?: ApexAxisChartSeries;
+  financialChartCategories?: string[];
+  financialChartHasData = false;
 
   upcomingCircles: UpcomingCircleDto[] = [];
   upcomingLoading = false;
@@ -137,11 +142,15 @@ export class OnlineDashboardComponent implements OnInit {
   private resetOverviewData(): void {
     this.summaryCards = [];
     this.roleMetricCards = [];
+    this.financialMetricCards = [];
     this.projectOverviewEntries = [];
     this.transactionsView = [];
     this.monthlyRevenueSeries = undefined;
     this.monthlyRevenueCategories = undefined;
     this.monthlyRevenueHasData = false;
+    this.financialChartSeries = undefined;
+    this.financialChartCategories = undefined;
+    this.financialChartHasData = false;
     this.overviewRoleLabel = null;
     this.overviewRangeDescription = null;
   }
@@ -157,11 +166,13 @@ export class OnlineDashboardComponent implements OnInit {
 
     this.summaryCards = this.buildSummaryCards(data.metrics);
     this.roleMetricCards = this.buildRoleMetricCards(data.metrics);
+    this.financialMetricCards = this.buildFinancialMetricCards(data.metrics);
 
     const charts = data.charts;
     this.projectOverviewEntries = this.buildProjectOverviewEntries(charts?.projectOverview);
     this.transactionsView = this.buildTransactionsView(charts?.transactions);
     this.buildMonthlyRevenueChart(charts?.monthlyRevenue);
+    this.buildFinancialChart(data.metrics);
   }
 
   private buildSummaryCards(metrics?: DashboardOverviewMetricsDto | null): DashboardSummaryCard[] {
@@ -262,6 +273,61 @@ export class OnlineDashboardComponent implements OnInit {
       .filter((entry): entry is DashboardSummaryCard => !!entry);
   }
 
+  private buildFinancialMetricCards(metrics?: DashboardOverviewMetricsDto | null): DashboardSummaryCard[] {
+    const definitions = [
+      {
+        key: 'outgoing',
+        label: 'الصادر',
+        icon: '#custom-wallet-2',
+        background: 'bg-secondary-100 text-secondary-700',
+        currencyKeys: ['outgoingCurrencyCode', 'currencyCode']
+      },
+      {
+        key: 'incomingEgp',
+        label: 'الوارد (الجنيه)',
+        icon: '#custom-dollar-square',
+        background: 'bg-primary-50 text-primary-600',
+        currencyKeys: ['incomingEgpCurrencyCode'],
+        fallbackCurrency: 'EGP'
+      },
+      {
+        key: 'incomingSar',
+        label: 'الوارد (الريال)',
+        icon: '#custom-global',
+        background: 'bg-success-50 text-success-600',
+        currencyKeys: ['incomingSarCurrencyCode'],
+        fallbackCurrency: 'SAR'
+      },
+      {
+        key: 'incomingUsd',
+        label: 'الوارد (الدولار)',
+        icon: '#custom-dollar-circle',
+        background: 'bg-warning-50 text-warning-600',
+        currencyKeys: ['incomingUsdCurrencyCode'],
+        fallbackCurrency: 'USD'
+      },
+      {
+        key: 'netProfit',
+        label: 'صافي الأرباح',
+        icon: '#custom-status-up',
+        background: 'bg-info-50 text-info-700',
+        currencyKeys: ['netProfitCurrencyCode', 'netIncomeCurrencyCode', 'currencyCode']
+      }
+    ];
+
+    return definitions.map((definition) => {
+      const currencyCode = this.pickCurrencyCode(metrics, definition.currencyKeys, definition.fallbackCurrency);
+      const rawValue = metrics ? metrics[definition.key] : undefined;
+      return {
+        key: definition.key,
+        title: definition.label,
+        icon: definition.icon,
+        background: definition.background,
+        value: this.formatMetricValue(rawValue, 'currency', currencyCode)
+      } satisfies DashboardSummaryCard;
+    });
+  }
+
   private buildProjectOverviewEntries(projectOverview?: DashboardOverviewProjectOverviewDto | null): DashboardOverviewListEntry[] {
     const definitions = [
       { key: 'totalCircles', label: 'إجمالي الحلقات' },
@@ -348,6 +414,36 @@ export class OnlineDashboardComponent implements OnInit {
     this.monthlyRevenueHasData = series.length > 0;
   }
 
+  private buildFinancialChart(metrics?: DashboardOverviewMetricsDto | null): void {
+    const definitions = [
+      { key: 'outgoing', label: 'الصادر', currencyKeys: ['outgoingCurrencyCode', 'currencyCode'], fallback: 'EGP' },
+      { key: 'incomingEgp', label: 'الوارد (الجنيه)', currencyKeys: ['incomingEgpCurrencyCode'], fallback: 'EGP' },
+      { key: 'incomingSar', label: 'الوارد (الريال)', currencyKeys: ['incomingSarCurrencyCode'], fallback: 'SAR' },
+      { key: 'incomingUsd', label: 'الوارد (الدولار)', currencyKeys: ['incomingUsdCurrencyCode'], fallback: 'USD' },
+      { key: 'netProfit', label: 'صافي الأرباح', currencyKeys: ['netProfitCurrencyCode', 'netIncomeCurrencyCode', 'currencyCode'] }
+    ];
+
+    const data: number[] = [];
+    const categories: string[] = [];
+    let hasData = false;
+
+    for (const definition of definitions) {
+      const numericValue = this.coerceNumber(metrics ? metrics[definition.key] : undefined);
+      const currencyCode = this.pickCurrencyCode(metrics, definition.currencyKeys, definition.fallback);
+      const label = currencyCode ? `${definition.label} (${currencyCode})` : definition.label;
+
+      categories.push(label);
+      data.push(numericValue ?? 0);
+      if (numericValue !== null) {
+        hasData = true;
+      }
+    }
+
+    this.financialChartHasData = hasData;
+    this.financialChartCategories = hasData ? categories : undefined;
+    this.financialChartSeries = hasData ? [{ name: 'القيمة', data }] : undefined;
+  }
+
   private extractFirstError(errors: unknown): string | null {
     if (!Array.isArray(errors)) {
       return null;
@@ -367,10 +463,11 @@ export class OnlineDashboardComponent implements OnInit {
 
   private pickCurrencyCode(
     metrics?: DashboardOverviewMetricsDto | null,
-    candidateKeys: (keyof DashboardOverviewMetricsDto | string)[] = []
+    candidateKeys: (keyof DashboardOverviewMetricsDto | string)[] = [],
+    fallbackCurrency?: string
   ): string | undefined {
     if (!metrics) {
-      return undefined;
+      return fallbackCurrency;
     }
 
     for (const key of candidateKeys) {
@@ -385,7 +482,7 @@ export class OnlineDashboardComponent implements OnInit {
       return fallback.trim();
     }
 
-    return undefined;
+    return fallbackCurrency;
   }
 
   private formatMetricValue(
