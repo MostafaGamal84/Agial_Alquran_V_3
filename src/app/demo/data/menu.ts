@@ -588,7 +588,7 @@ export const menus: Navigation[] = [
         icon: '#custom-bill',
         role: [
           UserTypesEnum.Admin.toString(),
-          // UserTypesEnum.Manager.toString(),
+          UserTypesEnum.Manager.toString(),
           UserTypesEnum.BranchLeader.toString(),
           // UserTypesEnum.Student.toString(),
           // UserTypesEnum.Teacher.toString()
