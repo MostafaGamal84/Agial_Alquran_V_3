@@ -110,20 +110,7 @@
     </app-card>
   </div>
 
-  <div class="col-lg-5 col-md-12" *ngIf="projectOverviewEntries.length">
-    <app-card [cardTitle]="'نظرة عامة على المشروع' | translate" [padding]="0" cardClass="metric-list">
-      <ul class="list-group list-group-flush">
-        @for (item of projectOverviewEntries; track item.key) {
-          <li class="list-group-item">
-            <span class="metric-label">{{ item.label | translate }}</span>
-            <span class="metric-value">{{ item.value }}</span>
-          </li>
-        }
-      </ul>
-    </app-card>
-  </div>
-
-  <div class="col-lg-7 col-md-12">
+  <div class="col-12">
     <app-card [cardTitle]="'الدورات القادمة' | translate" [padding]="0" cardClass="upcoming-course">
       <ul class="list-group list-group-flush">
         <li class="list-group-item" *ngIf="upcomingLoading">

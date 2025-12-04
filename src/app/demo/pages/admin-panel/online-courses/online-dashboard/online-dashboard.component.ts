@@ -16,7 +16,6 @@ import {
   DashboardOverviewDto,
   DashboardOverviewMetricsDto,
   DashboardOverviewMonthlyRevenuePointDto,
-  DashboardOverviewProjectOverviewDto,
   DashboardOverviewService,
   DashboardOverviewTransactionDto
 } from 'src/app/@theme/services/dashboard-overview.service';
@@ -29,12 +28,6 @@ interface DashboardSummaryCard {
   value: string;
   percentage?: string | null;
   percentageClass?: string;
-}
-
-interface DashboardOverviewListEntry {
-  key: string;
-  label: string;
-  value: string;
 }
 
 interface DashboardTransactionView {
@@ -83,7 +76,6 @@ export class OnlineDashboardComponent implements OnInit {
   summaryCards: DashboardSummaryCard[] = [];
   roleMetricCards: DashboardSummaryCard[] = [];
   financialMetricCards: DashboardSummaryCard[] = [];
-  projectOverviewEntries: DashboardOverviewListEntry[] = [];
   transactionsView: DashboardTransactionView[] = [];
 
   monthlyRevenueSeries?: ApexAxisChartSeries;
@@ -143,7 +135,6 @@ export class OnlineDashboardComponent implements OnInit {
     this.summaryCards = [];
     this.roleMetricCards = [];
     this.financialMetricCards = [];
-    this.projectOverviewEntries = [];
     this.transactionsView = [];
     this.monthlyRevenueSeries = undefined;
     this.monthlyRevenueCategories = undefined;
@@ -169,7 +160,6 @@ export class OnlineDashboardComponent implements OnInit {
     this.financialMetricCards = this.buildFinancialMetricCards(data.metrics);
 
     const charts = data.charts;
-    this.projectOverviewEntries = this.buildProjectOverviewEntries(charts?.projectOverview);
     this.transactionsView = this.buildTransactionsView(charts?.transactions);
     this.buildMonthlyRevenueChart(charts?.monthlyRevenue);
     this.buildFinancialChart(data.metrics);
@@ -326,31 +316,6 @@ export class OnlineDashboardComponent implements OnInit {
         value: this.formatMetricValue(rawValue, 'currency', currencyCode)
       } satisfies DashboardSummaryCard;
     });
-  }
-
-  private buildProjectOverviewEntries(projectOverview?: DashboardOverviewProjectOverviewDto | null): DashboardOverviewListEntry[] {
-    const definitions = [
-      { key: 'totalCircles', label: 'إجمالي الحلقات' },
-      { key: 'activeCircles', label: 'الحلقات النشطة' },
-      { key: 'teachers', label: 'المعلمون' },
-      { key: 'students', label: 'الطلاب' },
-      { key: 'reports', label: 'التقارير' }
-    ];
-
-    return definitions
-      .map((definition) => {
-        const numericValue = this.coerceNumber(projectOverview ? projectOverview[definition.key] : undefined);
-        if (numericValue === null) {
-          return null;
-        }
-
-        return {
-          key: definition.key,
-          label: definition.label,
-          value: this.formatNumber(numericValue)
-        } satisfies DashboardOverviewListEntry;
-      })
-      .filter((entry): entry is DashboardOverviewListEntry => !!entry);
   }
 
   private buildTransactionsView(transactions?: DashboardOverviewTransactionDto[] | null): DashboardTransactionView[] {
