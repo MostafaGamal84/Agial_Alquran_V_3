@@ -727,6 +727,10 @@ export class ReportAddComponent implements OnInit {
     return Number.isFinite(parsed) ? parsed : undefined;
   }
 
+  compareById(option: unknown, value: unknown): boolean {
+    return this.toNumber(option) === this.toNumber(value);
+  }
+
   private toString(value: unknown): string | undefined {
     if (value === null || value === undefined || value === '') return undefined;
     return String(value);

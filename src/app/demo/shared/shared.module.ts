@@ -49,6 +49,7 @@ import { CustomTranslateLoader } from './custom-translate-loader';
 import { CardComponent } from 'src/app/@theme/components/card/card.component';
 import { OpenSelectOnTypeDirective } from './directives/open-select-on-type.directive';
 import { AutoTranslateDirective } from './directives/auto-translate.directive';
+import { NormalizeSelectCompareDirective } from './directives/normalize-select-compare.directive';
 
 const MaterialModules = [
   MatToolbarModule,
@@ -105,7 +106,8 @@ const MaterialModules = [
     }),
     CardComponent,
     OpenSelectOnTypeDirective,
-    AutoTranslateDirective
+    AutoTranslateDirective,
+    NormalizeSelectCompareDirective
   ],
   exports: [
     CommonModule,
@@ -116,7 +118,8 @@ const MaterialModules = [
     TranslateModule,
     CardComponent,
     OpenSelectOnTypeDirective,
-    AutoTranslateDirective
+    AutoTranslateDirective,
+    NormalizeSelectCompareDirective
   ]
 })
 export class SharedModule {}
