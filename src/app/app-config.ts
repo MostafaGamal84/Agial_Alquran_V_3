@@ -10,4 +10,4 @@ export class AbleProConfig {
   static i18n = 'ar'; // en, fr, ro, cn, ar
 }
 
-export const DASHBOARD_PATH = '/dashboard/default';
+export const DASHBOARD_PATH = '/online-course/dashboard';
