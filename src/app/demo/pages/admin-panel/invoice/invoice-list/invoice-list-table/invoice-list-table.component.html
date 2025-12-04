@@ -75,7 +75,7 @@
               <i class="f-20 ti ti-eye text-accent-500"></i>
             </a>
           </li>
-          @if (element.status === 'unpaid') {
+          @if (element.status === 'unpaid' || element.status === 'overdue') {
             <li class="list-inline-item">
               <a
                 href="javascript:"
