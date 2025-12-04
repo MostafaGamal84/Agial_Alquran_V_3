@@ -637,7 +637,7 @@ export class OnlineDashboardComponent implements OnInit {
     const normalized = typeof value === 'string' ? value.trim().toLowerCase() : '';
 
     switch (normalized) {
-      case 'paid':
+      case 'completed':
         return this.translate.instant('Paid');
       case 'pending':
         return this.translate.instant('Pending');
