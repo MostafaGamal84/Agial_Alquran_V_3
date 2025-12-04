@@ -148,24 +148,24 @@
 
   <div class="col-12" *ngIf="transactionsView.length">
     <app-card [cardTitle]="'المعاملات الأخيرة' | translate" padding="0">
-      <div class="table-responsive">
+      <div class="table-responsive transactions-table">
         <table class="table table-hover m-b-0">
           <thead>
             <tr>
-              <th class="text-nowrap">{{ 'الطالب' | translate }}</th>
-              <th class="text-nowrap">{{ 'المبلغ' | translate }}</th>
-              <th class="text-nowrap">{{ 'التاريخ' | translate }}</th>
-              <th class="text-nowrap">{{ 'الحالة' | translate }}</th>
+              <th>{{ 'الطالب' | translate }}</th>
+              <th>{{ 'المبلغ' | translate }}</th>
+              <th>{{ 'التاريخ' | translate }}</th>
+              <th>{{ 'الحالة' | translate }}</th>
             </tr>
           </thead>
           <tbody>
             @for (transaction of transactionsView; track transaction.key) {
               <tr>
-                <td class="text-nowrap">{{ transaction.student }}</td>
-                <td class="text-nowrap">{{ transaction.amount }}</td>
-                <td class="text-nowrap">{{ transaction.date }}</td>
-                <td class="text-nowrap">
-                  <span class="{{ transaction.statusClass }}">{{ transaction.status | translate }}</span>
+                <td class="student-cell">{{ transaction.student }}</td>
+                <td class="amount-cell">{{ transaction.amount }}</td>
+                <td class="date-cell">{{ transaction.date }}</td>
+                <td>
+                  <span class="status-pill {{ transaction.statusClass }}">{{ transaction.status }}</span>
                 </td>
               </tr>
             }
