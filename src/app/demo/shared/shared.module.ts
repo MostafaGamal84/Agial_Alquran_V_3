@@ -50,7 +50,6 @@ import { CardComponent } from 'src/app/@theme/components/card/card.component';
 import { OpenSelectOnTypeDirective } from './directives/open-select-on-type.directive';
 import { AutoTranslateDirective } from './directives/auto-translate.directive';
 import { NormalizeSelectCompareDirective } from './directives/normalize-select-compare.directive';
-import { normalizeSelectCompare } from './utils/select-compare';
 
 const MaterialModules = [
   MatToolbarModule,
@@ -121,12 +120,6 @@ const MaterialModules = [
     OpenSelectOnTypeDirective,
     AutoTranslateDirective,
     NormalizeSelectCompareDirective
-  ],
-  providers: [
-    {
-      provide: MAT_SELECT_CONFIG,
-      useValue: { compareWith: normalizeSelectCompare }
-    }
   ]
 })
 export class SharedModule {}
