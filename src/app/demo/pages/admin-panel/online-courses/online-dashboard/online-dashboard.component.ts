@@ -295,37 +295,6 @@ export class OnlineDashboardComponent implements OnInit {
         background: 'bg-warning-50 text-warning-600',
         currencyKeys: ['incomingUsdCurrencyCode'],
         fallbackCurrency: 'USD'
-      },
-      {
-        key: 'netProfit',
-        label: 'صافي الأرباح',
-        icon: '#custom-status-up',
-        background: 'bg-info-50 text-info-700',
-        currencyKeys: ['netProfitCurrencyCode', 'netIncomeCurrencyCode', 'currencyCode']
-      },
-      {
-        key: 'netProfitEgp',
-        label: 'صافي الأرباح (الجنيه)',
-        icon: '#custom-dollar-square',
-        background: 'bg-primary-50 text-primary-600',
-        currencyKeys: ['netProfitEgpCurrencyCode'],
-        fallbackCurrency: 'EGP'
-      },
-      {
-        key: 'netProfitSar',
-        label: 'صافي الأرباح (الريال)',
-        icon: '#custom-global',
-        background: 'bg-success-50 text-success-600',
-        currencyKeys: ['netProfitSarCurrencyCode'],
-        fallbackCurrency: 'SAR'
-      },
-      {
-        key: 'netProfitUsd',
-        label: 'صافي الأرباح (الدولار)',
-        icon: '#custom-dollar-circle',
-        background: 'bg-warning-50 text-warning-600',
-        currencyKeys: ['netProfitUsdCurrencyCode'],
-        fallbackCurrency: 'USD'
       }
     ];
 
@@ -408,11 +377,7 @@ export class OnlineDashboardComponent implements OnInit {
       { key: 'outgoing', label: 'الصادر', currencyKeys: ['outgoingCurrencyCode', 'currencyCode'], fallback: 'EGP' },
       { key: 'incomingEgp', label: 'الوارد (الجنيه)', currencyKeys: ['incomingEgpCurrencyCode'], fallback: 'EGP' },
       { key: 'incomingSar', label: 'الوارد (الريال)', currencyKeys: ['incomingSarCurrencyCode'], fallback: 'SAR' },
-      { key: 'incomingUsd', label: 'الوارد (الدولار)', currencyKeys: ['incomingUsdCurrencyCode'], fallback: 'USD' },
-      { key: 'netProfit', label: 'صافي الأرباح', currencyKeys: ['netProfitCurrencyCode', 'netIncomeCurrencyCode', 'currencyCode'] },
-      { key: 'netProfitEgp', label: 'صافي الأرباح (الجنيه)', currencyKeys: ['netProfitEgpCurrencyCode'], fallback: 'EGP' },
-      { key: 'netProfitSar', label: 'صافي الأرباح (الريال)', currencyKeys: ['netProfitSarCurrencyCode'], fallback: 'SAR' },
-      { key: 'netProfitUsd', label: 'صافي الأرباح (الدولار)', currencyKeys: ['netProfitUsdCurrencyCode'], fallback: 'USD' }
+      { key: 'incomingUsd', label: 'الوارد (الدولار)', currencyKeys: ['incomingUsdCurrencyCode'], fallback: 'USD' }
     ];
 
     const data: number[] = [];
