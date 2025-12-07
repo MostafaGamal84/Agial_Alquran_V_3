@@ -550,6 +550,12 @@
   "All Students": "جميع الطلاب",
   "Date": "التاريخ",
   "No Reports Found": "لا توجد تقارير",
+  "Attendance": {
+    "Attended": "حضر",
+    "ExcusedAbsence": "غياب بعذر",
+    "UnexcusedAbsence": "غياب بدون عذر",
+    "Unknown": "غير معروف"
+  },
   "Select page of reports": "اختر صفحة من التقارير",
   "Membership List": "قائمة العضويات",
   "Not Available": "غير متوفر",

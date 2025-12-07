@@ -16,7 +16,6 @@ import {
   DashboardOverviewDto,
   DashboardOverviewMetricsDto,
   DashboardOverviewMonthlyRevenuePointDto,
-  DashboardOverviewProjectOverviewDto,
   DashboardOverviewService,
   DashboardOverviewTransactionDto
 } from 'src/app/@theme/services/dashboard-overview.service';
@@ -29,12 +28,6 @@ interface DashboardSummaryCard {
   value: string;
   percentage?: string | null;
   percentageClass?: string;
-}
-
-interface DashboardOverviewListEntry {
-  key: string;
-  label: string;
-  value: string;
 }
 
 interface DashboardTransactionView {
@@ -83,7 +76,6 @@ export class OnlineDashboardComponent implements OnInit {
   summaryCards: DashboardSummaryCard[] = [];
   roleMetricCards: DashboardSummaryCard[] = [];
   financialMetricCards: DashboardSummaryCard[] = [];
-  projectOverviewEntries: DashboardOverviewListEntry[] = [];
   transactionsView: DashboardTransactionView[] = [];
 
   monthlyRevenueSeries?: ApexAxisChartSeries;
@@ -143,7 +135,6 @@ export class OnlineDashboardComponent implements OnInit {
     this.summaryCards = [];
     this.roleMetricCards = [];
     this.financialMetricCards = [];
-    this.projectOverviewEntries = [];
     this.transactionsView = [];
     this.monthlyRevenueSeries = undefined;
     this.monthlyRevenueCategories = undefined;
@@ -169,7 +160,6 @@ export class OnlineDashboardComponent implements OnInit {
     this.financialMetricCards = this.buildFinancialMetricCards(data.metrics);
 
     const charts = data.charts;
-    this.projectOverviewEntries = this.buildProjectOverviewEntries(charts?.projectOverview);
     this.transactionsView = this.buildTransactionsView(charts?.transactions);
     this.buildMonthlyRevenueChart(charts?.monthlyRevenue);
     this.buildFinancialChart(data.metrics);
@@ -305,13 +295,6 @@ export class OnlineDashboardComponent implements OnInit {
         background: 'bg-warning-50 text-warning-600',
         currencyKeys: ['incomingUsdCurrencyCode'],
         fallbackCurrency: 'USD'
-      },
-      {
-        key: 'netProfit',
-        label: 'صافي الأرباح',
-        icon: '#custom-status-up',
-        background: 'bg-info-50 text-info-700',
-        currencyKeys: ['netProfitCurrencyCode', 'netIncomeCurrencyCode', 'currencyCode']
       }
     ];
 
@@ -326,31 +309,6 @@ export class OnlineDashboardComponent implements OnInit {
         value: this.formatMetricValue(rawValue, 'currency', currencyCode)
       } satisfies DashboardSummaryCard;
     });
-  }
-
-  private buildProjectOverviewEntries(projectOverview?: DashboardOverviewProjectOverviewDto | null): DashboardOverviewListEntry[] {
-    const definitions = [
-      { key: 'totalCircles', label: 'إجمالي الحلقات' },
-      { key: 'activeCircles', label: 'الحلقات النشطة' },
-      { key: 'teachers', label: 'المعلمون' },
-      { key: 'students', label: 'الطلاب' },
-      { key: 'reports', label: 'التقارير' }
-    ];
-
-    return definitions
-      .map((definition) => {
-        const numericValue = this.coerceNumber(projectOverview ? projectOverview[definition.key] : undefined);
-        if (numericValue === null) {
-          return null;
-        }
-
-        return {
-          key: definition.key,
-          label: definition.label,
-          value: this.formatNumber(numericValue)
-        } satisfies DashboardOverviewListEntry;
-      })
-      .filter((entry): entry is DashboardOverviewListEntry => !!entry);
   }
 
   private buildTransactionsView(transactions?: DashboardOverviewTransactionDto[] | null): DashboardTransactionView[] {
@@ -419,8 +377,7 @@ export class OnlineDashboardComponent implements OnInit {
       { key: 'outgoing', label: 'الصادر', currencyKeys: ['outgoingCurrencyCode', 'currencyCode'], fallback: 'EGP' },
       { key: 'incomingEgp', label: 'الوارد (الجنيه)', currencyKeys: ['incomingEgpCurrencyCode'], fallback: 'EGP' },
       { key: 'incomingSar', label: 'الوارد (الريال)', currencyKeys: ['incomingSarCurrencyCode'], fallback: 'SAR' },
-      { key: 'incomingUsd', label: 'الوارد (الدولار)', currencyKeys: ['incomingUsdCurrencyCode'], fallback: 'USD' },
-      { key: 'netProfit', label: 'صافي الأرباح', currencyKeys: ['netProfitCurrencyCode', 'netIncomeCurrencyCode', 'currencyCode'] }
+      { key: 'incomingUsd', label: 'الوارد (الدولار)', currencyKeys: ['incomingUsdCurrencyCode'], fallback: 'USD' }
     ];
 
     const data: number[] = [];
@@ -672,17 +629,17 @@ export class OnlineDashboardComponent implements OnInit {
     const normalized = typeof value === 'string' ? value.trim().toLowerCase() : '';
 
     switch (normalized) {
-      case 'paid':
-        return 'مدفوع';
+      case 'completed':
+        return this.translate.instant('Paid');
       case 'pending':
-        return 'قيد الانتظار';
+        return this.translate.instant('Pending');
       case 'failed':
-        return 'فشل';
+        return this.translate.instant('Failed');
       case 'cancelled':
       case 'canceled':
-        return 'ملغي';
+        return this.translate.instant('Cancelled');
       default:
-        return 'حالة غير معروفة';
+        return this.translate.instant('Unknown Status');
     }
   }
 
@@ -701,15 +658,19 @@ export class OnlineDashboardComponent implements OnInit {
   private getStatusClass(status?: string | null): string {
     const normalized = typeof status === 'string' ? status.trim().toLowerCase() : '';
 
-    if (normalized === 'paid') {
-      return 'badge bg-light-success text-success-500';
+    if (normalized === 'completed') {
+      return 'status-pill--success';
     }
 
     if (normalized === 'pending') {
-      return 'badge bg-light-warning text-warning-500';
+      return 'status-pill--warning';
     }
 
-    return 'badge bg-light-secondary text-muted';
+    if (normalized === 'failed' || normalized === 'cancelled' || normalized === 'canceled') {
+      return 'status-pill--danger';
+    }
+
+    return 'status-pill--muted';
   }
 
   private toTitleCase(value: string): string {
