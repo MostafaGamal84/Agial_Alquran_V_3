@@ -10,16 +10,23 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { BrowserModule, bootstrapApplication } from '@angular/platform-browser';
 import { GuestModule } from './app/demo/layout/front';
 import { AppComponent } from './app/app.component';
+import { MAT_SELECT_CONFIG, MatSelectConfig } from '@angular/material/select';
+import { normalizeSelectCompare } from './app/demo/shared/utils/select-compare';
 
 if (environment.production) {
   enableProdMode();
 }
+
+const matSelectConfig: MatSelectConfig = {
+  compareWith: normalizeSelectCompare
+};
 
 bootstrapApplication(AppComponent, {
   providers: [
     importProvidersFrom(AppRoutingModule, SharedModule, BrowserModule, GuestModule),
     { provide: HTTP_INTERCEPTORS, useClass: BasicAuthInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
+    { provide: MAT_SELECT_CONFIG, useValue: matSelectConfig },
     [provideHttpClient(withInterceptorsFromDi())],
     provideAnimations()
   ]
