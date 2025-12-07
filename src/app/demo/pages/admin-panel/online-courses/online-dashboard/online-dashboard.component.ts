@@ -693,7 +693,7 @@ export class OnlineDashboardComponent implements OnInit {
   private getStatusClass(status?: string | null): string {
     const normalized = typeof status === 'string' ? status.trim().toLowerCase() : '';
 
-    if (normalized === 'paid') {
+    if (normalized === 'completed') {
       return 'status-pill--success';
     }
 
