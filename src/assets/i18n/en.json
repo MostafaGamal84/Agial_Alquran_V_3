@@ -376,6 +376,12 @@
   "All Students": "All students",
   "Date": "Date",
   "No Reports Found": "No reports found",
+  "Attendance": {
+    "Attended": "Attended",
+    "ExcusedAbsence": "Excused absence",
+    "UnexcusedAbsence": "Unexcused absence",
+    "Unknown": "Unknown"
+  },
   "Select page of reports": "Select page of reports",
   "Membership List": "Membership list",
   "Not Available": "Not available",

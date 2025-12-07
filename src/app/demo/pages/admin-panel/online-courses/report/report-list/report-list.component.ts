@@ -24,6 +24,7 @@ import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { AttendStatusEnum } from 'src/app/@theme/types/AttendStatusEnum';
 import { RESIDENCY_GROUP_OPTIONS, ResidencyGroupFilter } from 'src/app/@theme/types/residency-group';
 import { matchesResidencyGroup } from 'src/app/@theme/utils/nationality.utils';
+import { TranslateService } from '@ngx-translate/core';
 
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
@@ -47,6 +48,7 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
   private fb = inject(FormBuilder);
   private toast = inject(ToastService);
   private auth = inject(AuthenticationService);
+  private translate = inject(TranslateService);
 
   readonly paginator = viewChild.required(MatPaginator);
 
@@ -390,16 +392,21 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
-  getStatusLabel(status?: number | null): string {
+  getStatusConfig(status?: number | null): { label: string; class: string } {
+    const defaultConfig = {
+      label: this.translate.instant('Attendance.Unknown'),
+      class: 'status-pill--muted'
+    };
+
     switch (status) {
       case AttendStatusEnum.Attended:
-        return 'حضر';
+        return { label: this.translate.instant('Attendance.Attended'), class: 'status-pill--success' };
       case AttendStatusEnum.ExcusedAbsence:
-        return 'غياب بعذر';
+        return { label: this.translate.instant('Attendance.ExcusedAbsence'), class: 'status-pill--warning' };
       case AttendStatusEnum.UnexcusedAbsence:
-        return 'غياب بدون عذر';
+        return { label: this.translate.instant('Attendance.UnexcusedAbsence'), class: 'status-pill--danger' };
       default:
-        return '—';
+        return defaultConfig;
     }
   }
 

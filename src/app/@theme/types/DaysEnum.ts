@@ -1,11 +1,11 @@
 export enum DaysEnum {
-  Saturday = 1,
-  Sunday = 2,
-  Monday = 3,
-  Tuesday = 4,
-  Wednesday = 5,
-  Thursday = 6,
-  Friday = 7
+  السبت = 1,
+  الاحد = 2,
+  الاثنين = 3,
+  الثلاثاء = 4,
+  الاربعاء = 5,
+  الخميس = 6,
+  الجمعة = 7
 }
 
 export interface DayOption {
@@ -28,13 +28,13 @@ export interface DayDto {
 export type DayValue = DaysEnum | number | string | DayDto | null | undefined;
 
 export const DAY_OPTIONS: DayOption[] = [
-  { label: 'السبت', value: DaysEnum.Saturday },
-  { label: 'الاحد', value: DaysEnum.Sunday },
-  { label: 'الاثنين', value: DaysEnum.Monday },
-  { label: 'الثلاثاء', value: DaysEnum.Tuesday },
-  { label: 'الاربعاء', value: DaysEnum.Wednesday },
-  { label: 'الخميس', value: DaysEnum.Thursday },
-  { label: 'الجمعة', value: DaysEnum.Friday }
+  { label: 'السبت', value: DaysEnum.السبت },
+  { label: 'الاحد', value: DaysEnum.الاحد },
+  { label: 'الاثنين', value: DaysEnum.الاثنين },
+  { label: 'الثلاثاء', value: DaysEnum.الثلاثاء },
+  { label: 'الاربعاء', value: DaysEnum.الاربعاء },
+  { label: 'الخميس', value: DaysEnum.الخميس },
+  { label: 'الجمعة', value: DaysEnum.الجمعة }
 ];
 
 export const DAY_LABELS = new Map<DaysEnum, string>(
