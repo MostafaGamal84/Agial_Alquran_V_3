@@ -638,16 +638,16 @@ export class OnlineDashboardComponent implements OnInit {
 
     switch (normalized) {
       case 'paid':
-        return 'مدفوع';
+        return this.translate.instant('Paid');
       case 'pending':
-        return 'قيد الانتظار';
+        return this.translate.instant('Pending');
       case 'failed':
-        return 'فشل';
+        return this.translate.instant('Failed');
       case 'cancelled':
       case 'canceled':
-        return 'ملغي';
+        return this.translate.instant('Cancelled');
       default:
-        return 'حالة غير معروفة';
+        return this.translate.instant('Unknown Status');
     }
   }
 
@@ -667,14 +667,18 @@ export class OnlineDashboardComponent implements OnInit {
     const normalized = typeof status === 'string' ? status.trim().toLowerCase() : '';
 
     if (normalized === 'paid') {
-      return 'badge bg-light-success text-success-500';
+      return 'status-pill--success';
     }
 
     if (normalized === 'pending') {
-      return 'badge bg-light-warning text-warning-500';
+      return 'status-pill--warning';
     }
 
-    return 'badge bg-light-secondary text-muted';
+    if (normalized === 'failed' || normalized === 'cancelled' || normalized === 'canceled') {
+      return 'status-pill--danger';
+    }
+
+    return 'status-pill--muted';
   }
 
   private toTitleCase(value: string): string {
