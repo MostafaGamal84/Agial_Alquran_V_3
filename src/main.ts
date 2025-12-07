@@ -16,6 +16,10 @@ if (environment.production) {
   enableProdMode();
 }
 
+const matSelectConfig: MatSelectConfig = {
+  compareWith: normalizeSelectCompare
+};
+
 bootstrapApplication(AppComponent, {
   providers: [
     importProvidersFrom(AppRoutingModule, SharedModule, BrowserModule, GuestModule),

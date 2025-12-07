@@ -110,75 +110,75 @@
     </app-card>
   </div>
 
-  <div class="col-lg-5 col-md-12" *ngIf="projectOverviewEntries.length">
-    <app-card [cardTitle]="'نظرة عامة على المشروع' | translate" [padding]="0" cardClass="metric-list">
-      <ul class="list-group list-group-flush">
-        @for (item of projectOverviewEntries; track item.key) {
-          <li class="list-group-item">
-            <span class="metric-label">{{ item.label | translate }}</span>
-            <span class="metric-value">{{ item.value }}</span>
-          </li>
-        }
-      </ul>
-    </app-card>
-  </div>
-
-  <div class="col-lg-7 col-md-12">
+  <div class="col-12">
     <app-card [cardTitle]="'الدورات القادمة' | translate" [padding]="0" cardClass="upcoming-course">
-      <ul class="list-group list-group-flush">
-        <li class="list-group-item" *ngIf="upcomingLoading">
-          <div class="flex align-item-center">{{ 'جاري تحميل الحلقات القادمة…' | translate }}</div>
-        </li>
-        <li class="list-group-item" *ngIf="!upcomingLoading && !upcomingCircles.length">
-          <div class="flex align-item-center">{{ 'لا توجد حلقات قادمة' | translate }}</div>
-        </li>
+      <div class="upcoming-table">
+        <div class="upcoming-row upcoming-header">
+          <div class="col-course">{{ 'الحلقة' | translate }}</div>
+          <div class="col-schedule">{{ 'الجدول' | translate }}</div>
+          <div class="col-managers">{{ 'المديرون' | translate }}</div>
+          <div class="col-teacher">{{ 'المعلم' | translate }}</div>
+        </div>
+
+        <div class="upcoming-row" *ngIf="upcomingLoading">
+          <div class="col-full">{{ 'جاري تحميل الحلقات القادمة…' | translate }}</div>
+        </div>
+
+        <div class="upcoming-row" *ngIf="!upcomingLoading && !upcomingCircles.length">
+          <div class="col-full">{{ 'لا توجد حلقات قادمة' | translate }}</div>
+        </div>
+
         @for (circle of upcomingCircles; track circle?.id ?? circle?.name ?? circle) {
-          <li class="list-group-item">
-            <div class="flex align-item-center">
-              <div class="flex-shrink-0 flex">
+          <div class="upcoming-row">
+            <div class="col-course">
+              <div class="course-info">
                 <div class="avatar avatar-s bg-primary-50 text-primary-500 f-w-600">
                   {{ getCircleInitials(circle.name) }}
                 </div>
-              </div>
-              <div class="flex-grow-1 m-x-15">
-                <div class="f-14 f-w-600">{{ circle.name || ('حلقة بدون اسم' | translate) }}</div>
-                <div class="text-muted f-12">
-                  {{ getUpcomingScheduleLabel(circle) || ('الجدول غير محدد' | translate) }}
+                <div class="course-text">
+                  <div class="course-name">{{ circle.name || ('حلقة بدون اسم' | translate) }}</div>
+                  <div class="course-meta">{{ getUpcomingScheduleLabel(circle) || ('الجدول غير محدد' | translate) }}</div>
                 </div>
-                <div class="text-muted f-12" *ngIf="getUpcomingManagersLabel(circle) as managers">
-                  {{ 'المديرون' | translate }}: {{ managers }}
-                </div>
-              </div>
-              <div class="flex-shrink-0" *ngIf="getUpcomingTeacherName(circle) as teacher">
-                <span class="badge bg-light-primary text-primary-500 f-12">{{ teacher }}</span>
               </div>
             </div>
-          </li>
+            <div class="col-schedule text-muted">
+              {{ getUpcomingScheduleLabel(circle) || ('الجدول غير محدد' | translate) }}
+            </div>
+            <div class="col-managers text-muted">
+              {{ getUpcomingManagersLabel(circle) || '—' }}
+            </div>
+            <div class="col-teacher">
+              <ng-container *ngIf="getUpcomingTeacherName(circle) as teacher; else teacherPlaceholder">
+                <span class="teacher-pill">{{ teacher }}</span>
+              </ng-container>
+              <ng-template #teacherPlaceholder>—</ng-template>
+            </div>
+          </div>
         }
-      </ul>
+      </div>
     </app-card>
   </div>
 
   <div class="col-12" *ngIf="transactionsView.length">
     <app-card [cardTitle]="'المعاملات الأخيرة' | translate" padding="0">
-      <div class="table-responsive">
+      <div class="table-responsive transactions-table">
         <table class="table table-hover m-b-0">
           <thead>
             <tr>
-              <th class="text-nowrap">{{ 'الطالب' | translate }}</th>
-              <th class="text-nowrap">{{ 'المبلغ' | translate }}</th>
-              <th class="text-nowrap">{{ 'التاريخ' | translate }}</th>
-              <th class="text-nowrap">{{ 'الحالة' | translate }}</th>
+              <th>{{ 'الطالب' | translate }}</th>
+              <th>{{ 'المبلغ' | translate }}</th>
+              <th>{{ 'التاريخ' | translate }}</th>
+              <th>{{ 'الحالة' | translate }}</th>
             </tr>
           </thead>
           <tbody>
             @for (transaction of transactionsView; track transaction.key) {
               <tr>
-                <td class="text-nowrap">{{ transaction.student }}</td>
-                <td class="text-nowrap">{{ transaction.amount }}</td>
-                <td class="text-nowrap">{{ transaction.date }}</td>
-                <td class="text-nowrap">
-                  <span class="{{ transaction.statusClass }}">{{ transaction.status | translate }}</span>
+                <td class="student-cell">{{ transaction.student }}</td>
+                <td class="amount-cell">{{ transaction.amount }}</td>
+                <td class="date-cell">{{ transaction.date }}</td>
+                <td>
+                  <span class="status-pill {{ transaction.statusClass }}">{{ transaction.status }}</span>
                 </td>
               </tr>
             }

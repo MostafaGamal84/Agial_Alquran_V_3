@@ -10,7 +10,7 @@
         <!-- Supervisor selector (Admin + BranchManager فقط - وضع الإضافة فقط) -->
         <div class="col-md-6" *ngIf="showSupervisorSelector">
           <mat-form-field appearance="outline" class="w-100">
-            <mat-label>{{ 'Supervisor' | translate }}</mat-label>
+            <mat-label>{{ 'المشرف' | translate }}</mat-label>
             <mat-select
               formControlName="managerId"
               [disabled]="isLoadingManagers || lockManagerSelection"
@@ -18,7 +18,7 @@
               (selectionChange)="onManagerChange($event.value)"
             >
               <mat-option *ngFor="let manager of managers" [value]="manager.id">
-                {{ manager.fullName || manager.email || ('Supervisor #' + manager.id) }}
+                {{ manager.fullName || manager.email || ('المشرف #' + manager.id) }}
               </mat-option>
             </mat-select>
           </mat-form-field>

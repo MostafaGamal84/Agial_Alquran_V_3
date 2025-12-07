@@ -28,6 +28,12 @@ export interface DashboardOverviewMetricsDto {
   incomingUsdCurrencyCode?: string | null;
   netProfit?: number | null;
   netProfitCurrencyCode?: string | null;
+  netProfitEgp?: number | null;
+  netProfitEgpCurrencyCode?: string | null;
+  netProfitSar?: number | null;
+  netProfitSarCurrencyCode?: string | null;
+  netProfitUsd?: number | null;
+  netProfitUsdCurrencyCode?: string | null;
   branchManagersCount?: number | null;
   supervisorsCount?: number | null;
   teachersCount?: number | null;
