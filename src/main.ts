@@ -1,7 +1,11 @@
 import { enableProdMode, importProvidersFrom } from '@angular/core';
 
 import { environment } from './environments/environment';
-import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  HTTP_INTERCEPTORS,
+  provideHttpClient,
+  withInterceptorsFromDi
+} from '@angular/common/http';
 import { BasicAuthInterceptor } from 'src/app/@theme/helpers/basic-auth.interceptor';
 import { ErrorInterceptor } from 'src/app/@theme/helpers/error.interceptor';
 import { AppRoutingModule } from './app/app-routing.module';
@@ -11,14 +15,14 @@ import { BrowserModule, bootstrapApplication } from '@angular/platform-browser';
 import { GuestModule } from './app/demo/layout/front';
 import { AppComponent } from './app/app.component';
 import { MAT_SELECT_CONFIG, MatSelectConfig } from '@angular/material/select';
-import { normalizeSelectCompare } from './app/demo/shared/utils/select-compare';
 
 if (environment.production) {
   enableProdMode();
 }
 
+// مافيش compareWith هنا خالص
 const matSelectConfig: MatSelectConfig = {
-  // compareWith: normalizeSelectCompare
+  // ممكن تحط أي إعداد تاني لو حابب
 };
 
 bootstrapApplication(AppComponent, {
@@ -27,7 +31,7 @@ bootstrapApplication(AppComponent, {
     { provide: HTTP_INTERCEPTORS, useClass: BasicAuthInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     { provide: MAT_SELECT_CONFIG, useValue: matSelectConfig },
-    [provideHttpClient(withInterceptorsFromDi())],
+    provideHttpClient(withInterceptorsFromDi()),
     provideAnimations()
   ]
 }).catch((err) => console.error(err));

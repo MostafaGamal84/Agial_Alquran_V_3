@@ -47,7 +47,7 @@ export class ReportAddComponent implements OnInit {
   private reportId?: number;
   private preselectedStudentId?: number;
 
-  // عشان نستخدمهم في الـ HTML
+  // enums
   UserTypesEnum = UserTypesEnum;
   AttendStatusEnum = AttendStatusEnum;
 
@@ -74,6 +74,11 @@ export class ReportAddComponent implements OnInit {
   private profileBranchId?: number;
 
   private readonly userFilter: FilteredResultRequestDto = { lookupOnly: true };
+
+  // 🔴 المتغيرات الجديدة بدل formControlName
+  selectedManagerId: number | null = null;
+  selectedTeacherId: number | null = null;
+  selectedStudentId: number | null = null;
 
   surahList = Object.keys(QuranSurahEnum)
     .filter((key) => isNaN(Number(key)))
@@ -117,26 +122,26 @@ export class ReportAddComponent implements OnInit {
       (this.auth.currentUserValue as any)?.user?.userTypeId ??
       (this.auth.currentUserValue as any)?.userTypeId ??
       this.currentUser?.userTypeId ??
-      this.auth.getRole(); // مثال: "3" أو "4"
+      this.auth.getRole();
 
     const n = Number(raw);
     return Number.isFinite(n) ? n : 0;
   }
 
   get isSystemManager(): boolean {
-    return this.userTypeNumber === Number(UserTypesEnum.Admin); // "1"
+    return this.userTypeNumber === Number(UserTypesEnum.Admin);
   }
 
   get isBranchManager(): boolean {
-    return this.userTypeNumber === Number(UserTypesEnum.BranchLeader); // "2"
+    return this.userTypeNumber === Number(UserTypesEnum.BranchLeader);
   }
 
   get isSupervisor(): boolean {
-    return this.userTypeNumber === Number(UserTypesEnum.Manager); // "3"
+    return this.userTypeNumber === Number(UserTypesEnum.Manager);
   }
 
   get isTeacher(): boolean {
-    return this.userTypeNumber === Number(UserTypesEnum.Teacher); // "4"
+    return this.userTypeNumber === Number(UserTypesEnum.Teacher);
   }
 
   // ================================
@@ -149,33 +154,16 @@ export class ReportAddComponent implements OnInit {
       this.submitLabel = 'Update';
     }
 
-    console.log('[ReportAdd] init role info', {
-      currentUser: this.currentUser,
-      userTypeId: this.currentUser?.userTypeId,
-      authRole: this.auth.getRole(),
-      userTypeNumber: this.userTypeNumber,
-      isSystemManager: this.isSystemManager,
-      isBranchManager: this.isBranchManager,
-      isSupervisor: this.isSupervisor,
-      isTeacher: this.isTeacher
-    });
-
     this.buildForm();
     this.toggleFields();
 
     if (this.mode === 'add') {
-      // وضع الإضافة ➜ شغّل سيناريوهات اختيار مشرف/معلم/حلقة/طالب
       this.initAddMode();
       this.initializeSelectionFlow();
     } else {
-      // وضع التعديل ➜ تحميل بيانات التقرير فقط وتعديلها
       this.initUpdateMode();
-
-      // قفل العلاقات (مش ظاهرة في الـ UI لكن للتأكيد)
-      this.reportForm.get('managerId')?.disable({ emitEvent: false });
-      this.reportForm.get('teacherId')?.disable({ emitEvent: false });
+      // في وضع التعديل، ممكن تخليهم disabled لو حابب
       this.reportForm.get('circleId')?.disable({ emitEvent: false });
-      this.reportForm.get('studentId')?.disable({ emitEvent: false });
     }
   }
 
@@ -198,10 +186,11 @@ export class ReportAddComponent implements OnInit {
 
       creationTime: [new Date(), Validators.required],
 
+      // نسيبهم في الفورم لو محتاجينهم، بس مش نعتمد عليهم في الـ UI
       managerId: [null],
-      teacherId: [null, Validators.required],
+      teacherId: [null],
       circleId: [null, Validators.required],
-      studentId: [null, Validators.required],
+      studentId: [null],
       attendStatueId: []
     });
   }
@@ -209,8 +198,9 @@ export class ReportAddComponent implements OnInit {
   private initAddMode(): void {
     const course = history.state.circle as CircleDto | undefined;
     if (course) {
+      const teacherId = course.teacherId ?? course.teacher?.id ?? null;
+      this.selectedTeacherId = teacherId ?? null;
       this.reportForm.patchValue({
-        teacherId: course.teacherId ?? course.teacher?.id,
         circleId: course.id
       });
     }
@@ -218,7 +208,7 @@ export class ReportAddComponent implements OnInit {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (id) {
       this.preselectedStudentId = id;
-      this.reportForm.get('studentId')?.setValue(id);
+      this.selectedStudentId = id;
     }
   }
 
@@ -242,7 +232,7 @@ export class ReportAddComponent implements OnInit {
   }
 
   // ================================
-  // ROLE-BASED FLOW (يُستخدم في وضع الإضافة فقط)
+  // ROLE-BASED FLOW (وضع الإضافة فقط)
   // ================================
   private initializeSelectionFlow(): void {
     // 4) Teacher
@@ -251,19 +241,14 @@ export class ReportAddComponent implements OnInit {
       this.lockTeacherSelection = true;
       this.lockCircleSelection = true;
 
-      const teacherCtrl = this.reportForm.get('teacherId');
-      teacherCtrl?.clearValidators();
-      teacherCtrl?.updateValueAndValidity();
+      const teacherId = this.getUserId() ?? null;
+      this.selectedTeacherId = teacherId;
 
-      const teacherId = this.getUserId();
       if (teacherId) {
-        this.reportForm.patchValue({ teacherId }, { emitEvent: false });
         this.loadCirclesForTeacher(teacherId, true);
       } else {
         this.loadTeacherProfileAndPrefill();
       }
-      console.log('[ReportAdd] Teacher flow', { teacherId });
-
       return;
     }
 
@@ -271,16 +256,10 @@ export class ReportAddComponent implements OnInit {
     if (this.isSupervisor) {
       this.lockManagerSelection = true;
 
-      const supervisorId = this.getUserId();
+      const supervisorId = this.getUserId() ?? null;
       const branchId = this.getBranchId();
 
-      console.log('[ReportAdd] Supervisor flow', { supervisorId, branchId });
-
-      if (supervisorId) {
-        this.reportForm.patchValue({ managerId: supervisorId }, { emitEvent: false });
-      } else {
-        this.reportForm.patchValue({ managerId: null }, { emitEvent: false });
-      }
+      this.selectedManagerId = supervisorId;
 
       this.loadTeachersForManager(
         supervisorId ?? 0,
@@ -293,26 +272,15 @@ export class ReportAddComponent implements OnInit {
       return;
     }
 
-    const existingTeacherId = this.toNumber(this.reportForm.get('teacherId')?.value);
-
-    // 2) Branch Manager
-    if (this.isBranchManager) {
-      console.log('[ReportAdd] BranchManager flow');
-      this.loadManagers(true, existingTeacherId);
-      return;
-    }
-
-    // 1) System Admin
-    if (this.isSystemManager) {
-      console.log('[ReportAdd] SystemManager flow');
-      this.loadManagers(true, existingTeacherId);
+    // 2) Branch Manager + 1) System Admin
+    if (this.isBranchManager || this.isSystemManager) {
+      this.loadManagers(true, this.selectedTeacherId);
       return;
     }
 
     // Fallback
-    console.log('[ReportAdd] Fallback flow');
-    if (existingTeacherId) {
-      this.loadTeachersForManager(0, existingTeacherId, true);
+    if (this.selectedTeacherId) {
+      this.loadTeachersForManager(0, this.selectedTeacherId, true);
     } else {
       this.loadManagers();
     }
@@ -328,8 +296,9 @@ export class ReportAddComponent implements OnInit {
           this.profileIdFallback = teacherId ?? undefined;
           this.profileBranchId = branchId ?? undefined;
 
+          this.selectedTeacherId = teacherId ?? null;
+
           if (teacherId) {
-            this.reportForm.patchValue({ teacherId }, { emitEvent: false });
             this.loadCirclesForTeacher(teacherId, true);
             return;
           }
@@ -347,12 +316,10 @@ export class ReportAddComponent implements OnInit {
   // UI VISIBILITY
   // ================================
   get showSupervisorSelector(): boolean {
-    // مدير نظام + مدير فرع فقط وفي وضع الإضافة فقط
     return this.mode === 'add' && (this.isSystemManager || this.isBranchManager);
   }
 
   get showTeacherSelector(): boolean {
-    // مدير نظام + مدير فرع + مشرف وفي وضع الإضافة فقط
     return (
       this.mode === 'add' &&
       (this.isSystemManager || this.isBranchManager || this.isSupervisor)
@@ -360,10 +327,9 @@ export class ReportAddComponent implements OnInit {
   }
 
   get showCircleSelector(): boolean {
-    return false; // الحلقة دايمًا auto
+    return false;
   }
 
-  // جديد: إظهار الطالب في وضع الإضافة فقط
   get showStudentSelector(): boolean {
     return this.mode === 'add';
   }
@@ -377,20 +343,20 @@ export class ReportAddComponent implements OnInit {
     const branchId =
       this.isBranchManager || this.isSupervisor ? this.getBranchId() ?? 0 : 0;
 
-    console.log('[ReportAdd] loadManagers', { branchId });
-
     this.lookupService
       .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Manager), 0, 0, branchId)
       .subscribe({
         next: (res) => {
-          this.managers = res.isSuccess ? res.data.items : [];
+          const items = res.isSuccess ? res.data.items : [];
+          this.managers = items.map((m: any) => ({
+            ...m,
+            id: this.toNumber(m.id) ?? m.id
+          }));
           this.isLoadingManagers = false;
 
-          console.log('[ReportAdd] managers loaded', this.managers);
-
-          if (autoSelectFirst && this.managers.length > 0) {
+          if (autoSelectFirst && this.managers.length > 0 && this.selectedManagerId == null) {
             const managerId = this.toNumber(this.managers[0].id) ?? 0;
-            this.reportForm.patchValue({ managerId }, { emitEvent: false });
+            this.selectedManagerId = managerId;
             this.onManagerChange(managerId, true, teacherId ?? null);
           }
         },
@@ -401,11 +367,24 @@ export class ReportAddComponent implements OnInit {
       });
   }
 
-  onManagerChange(managerId: number | null, initial = false, teacherId?: number | null): void {
-    console.log('[ReportAdd] onManagerChange', { managerId, initial, teacherId });
+  // ================================
+  // SELECTION HANDLERS
+  // ================================
+  onManagerSelectionChange(rawValue: any): void {
+    const id = this.toNumber(rawValue) ?? null;
+    this.selectedManagerId = id;
+    this.onManagerChange(id, false, null);
+  }
 
+  private onManagerChange(
+    managerId: number | null,
+    initial = false,
+    teacherId?: number | null
+  ): void {
     if (!initial) {
-      this.reportForm.patchValue({ teacherId: null, circleId: null, studentId: null });
+      this.selectedTeacherId = null;
+      this.selectedStudentId = null;
+      this.reportForm.patchValue({ circleId: null });
     }
     this.circles = [];
     this.students = [];
@@ -413,16 +392,11 @@ export class ReportAddComponent implements OnInit {
 
     if (managerId === null || managerId === undefined) return;
 
-    const existingTeacherId =
-      teacherId ?? this.toNumber(this.reportForm.get('teacherId')?.value);
     const branchId = this.isSupervisor || this.isBranchManager ? this.getBranchId() : undefined;
 
-    this.loadTeachersForManager(managerId, existingTeacherId, true, branchId);
+    this.loadTeachersForManager(managerId, teacherId ?? this.selectedTeacherId, true, branchId);
   }
 
-  // ================================
-  // LOAD TEACHERS
-  // ================================
   private loadTeachersForManager(
     managerId: number,
     teacherId?: number | null,
@@ -435,12 +409,6 @@ export class ReportAddComponent implements OnInit {
     const effectiveManagerId =
       managerId || (this.isSupervisor ? this.getUserId() ?? 0 : 0);
 
-    console.log('[ReportAdd] loadTeachersForManager', {
-      managerId,
-      effectiveManagerId,
-      branchId
-    });
-
     this.lookupService
       .getUsersForSelects(
         this.userFilter,
@@ -451,26 +419,24 @@ export class ReportAddComponent implements OnInit {
       )
       .subscribe({
         next: (res) => {
-          this.teachers = res.isSuccess ? res.data.items : [];
+          const items = res.isSuccess ? res.data.items : [];
+          this.teachers = items.map((t: any) => ({
+            ...t,
+            id: this.toNumber(t.id) ?? t.id
+          }));
           this.isLoadingTeachers = false;
 
-          console.log('[ReportAdd] teachers loaded', this.teachers);
-
-          const existingId =
-            teacherId ?? this.toNumber(this.reportForm.get('teacherId')?.value);
+          const existingId = teacherId ?? this.selectedTeacherId ?? undefined;
 
           if (existingId && this.teachers.some((t) => this.toNumber(t.id) === existingId)) {
-            this.reportForm.patchValue({ teacherId: existingId }, { emitEvent: false });
+            this.selectedTeacherId = existingId;
             if (loadCircles) {
               this.loadCirclesForTeacher(existingId, true);
             }
           } else if (autoSelectFirst && this.teachers.length === 1) {
             const firstTeacherId = this.toNumber(this.teachers[0].id);
             if (firstTeacherId) {
-              this.reportForm.patchValue(
-                { teacherId: firstTeacherId },
-                { emitEvent: false }
-              );
+              this.selectedTeacherId = firstTeacherId;
               if (loadCircles) {
                 this.loadCirclesForTeacher(firstTeacherId, true);
               }
@@ -484,13 +450,15 @@ export class ReportAddComponent implements OnInit {
       });
   }
 
-  // ================================
-  // TEACHER CHANGE
-  // ================================
-  onTeacherChange(teacherId: number | null): void {
-    console.log('[ReportAdd] onTeacherChange', { teacherId });
+  onTeacherSelectionChange(rawValue: any): void {
+    const id = this.toNumber(rawValue) ?? null;
+    this.selectedTeacherId = id;
+    this.onTeacherChange(id);
+  }
 
-    this.reportForm.patchValue({ circleId: null, studentId: null });
+  private onTeacherChange(teacherId: number | null): void {
+    this.selectedStudentId = null;
+    this.reportForm.patchValue({ circleId: null });
     this.circles = [];
     this.students = [];
 
@@ -498,34 +466,32 @@ export class ReportAddComponent implements OnInit {
 
     const teacher = this.teachers.find((t) => this.toNumber(t.id) === teacherId);
     if (teacher?.managerId && !this.isSupervisor) {
-      const mgrId = this.toNumber(teacher.managerId);
+      const mgrId = this.toNumber((teacher as any).managerId);
       if (mgrId) {
-        this.reportForm.patchValue({ managerId: mgrId }, { emitEvent: false });
+        this.selectedManagerId = mgrId;
       }
     }
 
     this.loadCirclesForTeacher(teacherId, true);
   }
 
+  onStudentSelectionChange(rawValue: any): void {
+    const id = this.toNumber(rawValue) ?? null;
+    this.selectedStudentId = id;
+  }
+
   // ================================
-  // LOAD CIRCLES BY TEACHER
+  // LOAD CIRCLES & STUDENTS
   // ================================
   private loadCirclesForTeacher(teacherId: number, autoSelect = false): void {
     this.isLoadingCircles = true;
 
     const effectiveTeacherId = teacherId || this.getUserId() || 0;
 
-    console.log('[ReportAdd] loadCirclesForTeacher', {
-      teacherId,
-      effectiveTeacherId
-    });
-
     this.circleService.getAll(this.userFilter, undefined, effectiveTeacherId).subscribe({
       next: (res) => {
         this.circles = res.isSuccess ? res.data.items : [];
         this.isLoadingCircles = false;
-
-        console.log('[ReportAdd] circles loaded', this.circles);
 
         if (autoSelect && this.circles.length > 0) {
           const currentCircle = this.toNumber(this.reportForm.get('circleId')?.value);
@@ -547,16 +513,10 @@ export class ReportAddComponent implements OnInit {
     });
   }
 
-  // ================================
-  // LOAD STUDENTS BY CIRCLE
-  // ================================
   onCircleChange(circleId: number | null): void {
-    console.log('[ReportAdd] onCircleChange', { circleId });
+    const existingStudentId = this.selectedStudentId ?? this.preselectedStudentId ?? undefined;
 
-    const existingStudentId =
-      this.toNumber(this.reportForm.get('studentId')?.value) ?? this.preselectedStudentId;
-
-    this.reportForm.patchValue({ studentId: null });
+    this.selectedStudentId = null;
     this.students = [];
 
     if (!circleId) return;
@@ -565,10 +525,8 @@ export class ReportAddComponent implements OnInit {
 
     this.circleService.get(circleId).subscribe({
       next: (res) => {
-        console.log('[ReportAdd] circle details', res);
-
         if (res.isSuccess && res.data?.students) {
-          const selectedTeacherId = this.toNumber(this.reportForm.get('teacherId')?.value);
+          const selectedTeacherId = this.selectedTeacherId ?? undefined;
 
           const relevantStudents = selectedTeacherId
             ? res.data.students.filter((student: any) => {
@@ -579,17 +537,14 @@ export class ReportAddComponent implements OnInit {
 
           const mapped = relevantStudents
             .map((student: any) => this.mapStudent(student))
-            .filter(
-              (s): s is { id: number; name: string } =>
-                !!s
-            );
+            .filter((s): s is { id: number; name: string } => !!s);
 
           const unique = new Map(mapped.map((s) => [s.id, s]));
           this.students = Array.from(unique.values());
 
           const targetStudent = existingStudentId;
           if (targetStudent && this.students.some((s) => s.id === targetStudent)) {
-            this.reportForm.patchValue({ studentId: targetStudent }, { emitEvent: false });
+            this.selectedStudentId = targetStudent;
             this.preselectedStudentId = undefined;
           }
         }
@@ -671,20 +626,6 @@ export class ReportAddComponent implements OnInit {
   // ================================
   // UTILITIES
   // ================================
-  getAttendStatusLabel(value: any): string {
-    const v = Number(value);
-    switch (v) {
-      case AttendStatusEnum.Attended:
-        return 'حضر';
-      case AttendStatusEnum.ExcusedAbsence:
-        return 'تغيب بعذر';
-      case AttendStatusEnum.UnexcusedAbsence:
-        return 'تغيب بدون عذر';
-      default:
-        return '';
-    }
-  }
-
   private resolveStatus(report: ReportState): AttendStatusEnum | undefined {
     const rawStatus = this.toNumber(
       report.attendStatueId ??
@@ -725,10 +666,6 @@ export class ReportAddComponent implements OnInit {
     if (typeof value === 'number') return Number.isFinite(value) ? value : undefined;
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : undefined;
-  }
-
-  compareById(option: unknown, value: unknown): boolean {
-    return this.toNumber(option) === this.toNumber(value);
   }
 
   private toString(value: unknown): string | undefined {
@@ -800,7 +737,11 @@ export class ReportAddComponent implements OnInit {
     this.assignIfDefined(patch, 'distantPast', this.toString(report.distantPast));
     this.assignIfDefined(patch, 'distantPastRate', this.toString(report.distantPastRate));
     this.assignIfDefined(patch, 'farthestPast', this.toString(report.farthestPast));
-    this.assignIfDefined(patch, 'farthestPastRate', this.toString(report.farthestPastRate));
+    this.assignIfDefined(
+      patch,
+      'farthestPastRate',
+      this.toString(report.farthestPastRate)
+    );
     this.assignIfDefined(
       patch,
       'theWordsQuranStranger',
@@ -813,12 +754,14 @@ export class ReportAddComponent implements OnInit {
     const studentId = this.extractEntityId(report, 'student');
     const teacherId = this.extractEntityId(report, 'teacher');
 
-    this.assignIfDefined(patch, 'circleId', circleId);
-    this.assignIfDefined(patch, 'studentId', studentId);
-    this.assignIfDefined(patch, 'teacherId', teacherId);
-
+    if (circleId !== undefined) {
+      patch.circleId = circleId;
+    }
     if (studentId !== undefined) {
-      this.preselectedStudentId = studentId;
+      this.selectedStudentId = studentId;
+    }
+    if (teacherId !== undefined) {
+      this.selectedTeacherId = teacherId;
     }
 
     this.reportForm.patchValue(patch, { emitEvent: false });
@@ -842,12 +785,18 @@ export class ReportAddComponent implements OnInit {
       return;
     }
 
-    const formValue = this.reportForm.getRawValue() as CircleReportAddDto & {
-      managerId?: number;
-    };
-    const { managerId: _managerId, ...model } = formValue;
+    const formValue = this.reportForm.getRawValue() as CircleReportAddDto;
 
-    if (this.isTeacher && (!model.teacherId || model.teacherId === 0)) {
+    const model: CircleReportAddDto = {
+      ...formValue,
+      teacherId: this.selectedTeacherId ?? undefined,
+      studentId: this.selectedStudentId ?? undefined,
+      // managerId لو محتاجينه فى الـ DTO ممكن تضيفه هنا
+      // managerId: this.selectedManagerId ?? undefined,
+      id: this.reportId
+    } as CircleReportAddDto;
+
+    if (!model.teacherId) {
       const currentTeacherId = this.getUserId();
       if (currentTeacherId) {
         model.teacherId = currentTeacherId;
@@ -870,7 +819,8 @@ export class ReportAddComponent implements OnInit {
             this.toast.error(this.translate.instant('Unable to update report'));
           }
         },
-        error: () => this.toast.error(this.translate.instant('Error updating report'))
+        error: () =>
+          this.toast.error(this.translate.instant('Error updating report'))
       });
     } else {
       this.service.create(model).subscribe({
@@ -882,18 +832,22 @@ export class ReportAddComponent implements OnInit {
             this.toggleFields();
             this.selectedStatus = undefined;
 
+            this.selectedManagerId = null;
+            this.selectedTeacherId = null;
+            this.selectedStudentId = null;
+
             const defaults: Partial<CircleReportAddDto> = { creationTime: new Date() };
 
             if (this.isTeacher) {
               const teacherId = this.getUserId();
-              this.loadCirclesForTeacher(teacherId ?? 0, true);
+              if (teacherId) {
+                this.selectedTeacherId = teacherId;
+                this.loadCirclesForTeacher(teacherId, true);
+              }
             } else if (this.isSupervisor) {
               const supervisorId = this.getUserId();
               if (supervisorId) {
-                this.reportForm.patchValue(
-                  { managerId: supervisorId },
-                  { emitEvent: false }
-                );
+                this.selectedManagerId = supervisorId;
                 this.onManagerChange(supervisorId, true);
               } else {
                 this.onManagerChange(0, true);
@@ -909,7 +863,8 @@ export class ReportAddComponent implements OnInit {
             this.toast.error(this.translate.instant('Unable to create report'));
           }
         },
-        error: () => this.toast.error(this.translate.instant('Error creating report'))
+        error: () =>
+          this.toast.error(this.translate.instant('Error creating report'))
       });
     }
   }

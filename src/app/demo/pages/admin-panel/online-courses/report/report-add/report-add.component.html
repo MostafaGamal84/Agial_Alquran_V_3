@@ -11,50 +11,61 @@
         <div class="col-md-6" *ngIf="showSupervisorSelector">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>{{ 'المشرف' | translate }}</mat-label>
+
+            <!-- ⬅️ التحكم عن طريق selectedManagerId مش formControlName -->
             <mat-select
-              formControlName="managerId"
+              [value]="selectedManagerId"
               [disabled]="isLoadingManagers || lockManagerSelection"
-              [compareWith]="compareById"
-              (selectionChange)="onManagerChange($event.value)"
+              (selectionChange)="onManagerSelectionChange($event.value)"
             >
               <mat-option *ngFor="let manager of managers" [value]="manager.id">
                 {{ manager.fullName || manager.email || ('المشرف #' + manager.id) }}
               </mat-option>
             </mat-select>
           </mat-form-field>
+
+          <!-- debug اختيارى -->
+          <p class="text-danger">selectedManagerId = {{ selectedManagerId | json }}</p>
         </div>
 
         <!-- Teacher selector (Admin + BranchManager + Supervisor - وضع الإضافة فقط) -->
         <div class="col-md-6" *ngIf="showTeacherSelector">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>{{ 'Teacher' | translate }}</mat-label>
+
+            <!-- ⬅️ التحكم عن طريق selectedTeacherId -->
             <mat-select
-              formControlName="teacherId"
+              [value]="selectedTeacherId"
               [disabled]="isLoadingTeachers || lockTeacherSelection"
-              [compareWith]="compareById"
-              (selectionChange)="onTeacherChange($event.value)"
+              (selectionChange)="onTeacherSelectionChange($event.value)"
             >
               <mat-option *ngFor="let teacher of teachers" [value]="teacher.id">
                 {{ teacher.fullName || teacher.email || ('Teacher #' + teacher.id) }}
               </mat-option>
             </mat-select>
           </mat-form-field>
+
+          <p class="text-primary">selectedTeacherId = {{ selectedTeacherId | json }}</p>
         </div>
 
         <!-- Student (نظهره في وضع الإضافة فقط) -->
         <div class="col-md-6" *ngIf="showStudentSelector">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>{{ 'Student' | translate }}</mat-label>
+
+            <!-- ⬅️ التحكم عن طريق selectedStudentId -->
             <mat-select
-              formControlName="studentId"
+              [value]="selectedStudentId"
               [disabled]="isLoadingStudents || !reportForm.get('circleId')?.value"
-              [compareWith]="compareById"
+              (selectionChange)="onStudentSelectionChange($event.value)"
             >
               <mat-option *ngFor="let student of students" [value]="student.id">
                 {{ student.name }}
               </mat-option>
             </mat-select>
           </mat-form-field>
+
+          <!-- <p class="text-success">selectedStudentId = {{ selectedStudentId | json }}</p> -->
         </div>
 
         <!-- Attend Status -->
@@ -63,12 +74,9 @@
             <mat-label>{{ 'Attend Status' | translate }}</mat-label>
             <mat-select
               formControlName="attendStatueId"
-              [compareWith]="compareById"
               (selectionChange)="onStatusChange($event.value)"
             >
-              <mat-option [value]="AttendStatusEnum.Attended">
-                حضر
-              </mat-option>
+              <mat-option [value]="AttendStatusEnum.Attended">حضر</mat-option>
               <mat-option [value]="AttendStatusEnum.ExcusedAbsence">
                 تغيب بعذر
               </mat-option>
@@ -98,7 +106,7 @@
           <div class="col-md-6">
             <mat-form-field appearance="outline" class="w-100">
               <mat-label>{{ 'New Surah' | translate }}</mat-label>
-              <mat-select formControlName="newId" [compareWith]="compareById">
+              <mat-select formControlName="newId">
                 <mat-option *ngFor="let s of surahList" [value]="s.id">
                   {{ s.name }}
                 </mat-option>
