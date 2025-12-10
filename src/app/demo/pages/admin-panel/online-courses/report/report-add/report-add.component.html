@@ -7,87 +7,78 @@
         (ngSubmit)="onSubmit()"
         class="row"
       >
-        <!-- Supervisor selector (Admin + BranchManager فقط - وضع الإضافة فقط) -->
         <div class="col-md-6" *ngIf="showSupervisorSelector">
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>{{ 'المشرف' | translate }}</mat-label>
-
-            <!-- ⬅️ التحكم عن طريق selectedManagerId مش formControlName -->
-            <mat-select
-              [value]="selectedManagerId"
-              [disabled]="isLoadingManagers || lockManagerSelection"
-              (selectionChange)="onManagerSelectionChange($event.value)"
-            >
-              <mat-option *ngFor="let manager of managers" [value]="manager.id">
-                {{ manager.fullName || manager.email || ('المشرف #' + manager.id) }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <!-- debug اختيارى -->
+          <label class="form-label">{{ 'المشرف' | translate }}</label>
+          <p-dropdown
+            class="w-100"
+            [options]="managers"
+            optionValue="id"
+            [ngModel]="selectedManagerId"
+            (onChange)="onManagerSelectionChange($event.value)"
+            [disabled]="isLoadingManagers || lockManagerSelection"
+            [filter]="true"
+            placeholder="{{ 'المشرف' | translate }}"
+          >
+            <ng-template pTemplate="selectedItem" let-manager>
+              {{ manager?.fullName || manager?.email || ('المشرف #' + manager?.id) }}
+            </ng-template>
+            <ng-template let-manager pTemplate="item">
+              {{ manager.fullName || manager.email || ('المشرف #' + manager.id) }}
+            </ng-template>
+          </p-dropdown>
           <p class="text-danger">selectedManagerId = {{ selectedManagerId | json }}</p>
         </div>
 
-        <!-- Teacher selector (Admin + BranchManager + Supervisor - وضع الإضافة فقط) -->
         <div class="col-md-6" *ngIf="showTeacherSelector">
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>{{ 'Teacher' | translate }}</mat-label>
-
-            <!-- ⬅️ التحكم عن طريق selectedTeacherId -->
-            <mat-select
-              [value]="selectedTeacherId"
-              [disabled]="isLoadingTeachers || lockTeacherSelection"
-              (selectionChange)="onTeacherSelectionChange($event.value)"
-            >
-              <mat-option *ngFor="let teacher of teachers" [value]="teacher.id">
-                {{ teacher.fullName || teacher.email || ('Teacher #' + teacher.id) }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-
+          <label class="form-label">{{ 'Teacher' | translate }}</label>
+          <p-dropdown
+            class="w-100"
+            [options]="teachers"
+            optionValue="id"
+            [ngModel]="selectedTeacherId"
+            (onChange)="onTeacherSelectionChange($event.value)"
+            [disabled]="isLoadingTeachers || lockTeacherSelection"
+            [filter]="true"
+            placeholder="{{ 'Teacher' | translate }}"
+          >
+            <ng-template pTemplate="selectedItem" let-teacher>
+              {{ teacher?.fullName || teacher?.email || ('Teacher #' + teacher?.id) }}
+            </ng-template>
+            <ng-template let-teacher pTemplate="item">
+              {{ teacher.fullName || teacher.email || ('Teacher #' + teacher.id) }}
+            </ng-template>
+          </p-dropdown>
           <p class="text-primary">selectedTeacherId = {{ selectedTeacherId | json }}</p>
         </div>
 
-        <!-- Student (نظهره في وضع الإضافة فقط) -->
         <div class="col-md-6" *ngIf="showStudentSelector">
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>{{ 'Student' | translate }}</mat-label>
-
-            <!-- ⬅️ التحكم عن طريق selectedStudentId -->
-            <mat-select
-              [value]="selectedStudentId"
-              [disabled]="isLoadingStudents || !reportForm.get('circleId')?.value"
-              (selectionChange)="onStudentSelectionChange($event.value)"
-            >
-              <mat-option *ngFor="let student of students" [value]="student.id">
-                {{ student.name }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <!-- <p class="text-success">selectedStudentId = {{ selectedStudentId | json }}</p> -->
+          <label class="form-label">{{ 'Student' | translate }}</label>
+          <p-dropdown
+            class="w-100"
+            [options]="students"
+            optionLabel="name"
+            optionValue="id"
+            [ngModel]="selectedStudentId"
+            (onChange)="onStudentSelectionChange($event.value)"
+            [disabled]="isLoadingStudents || !reportForm.get('circleId')?.value"
+            [filter]="true"
+            placeholder="{{ 'Student' | translate }}"
+          ></p-dropdown>
         </div>
 
-        <!-- Attend Status -->
         <div class="col-md-6">
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>{{ 'Attend Status' | translate }}</mat-label>
-            <mat-select
-              formControlName="attendStatueId"
-              (selectionChange)="onStatusChange($event.value)"
-            >
-              <mat-option [value]="AttendStatusEnum.Attended">حضر</mat-option>
-              <mat-option [value]="AttendStatusEnum.ExcusedAbsence">
-                تغيب بعذر
-              </mat-option>
-              <mat-option [value]="AttendStatusEnum.UnexcusedAbsence">
-                تغيب بدون عذر
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
+          <label class="form-label">{{ 'Attend Status' | translate }}</label>
+          <p-dropdown
+            class="w-100"
+            formControlName="attendStatueId"
+            [options]="attendStatusOptions"
+            optionLabel="label"
+            optionValue="value"
+            (onChange)="onStatusChange($event.value)"
+            placeholder="{{ 'Attend Status' | translate }}"
+          ></p-dropdown>
         </div>
 
-        <!-- Minutes (للحضور أو الغياب بدون عذر) -->
         <div
           class="col-md-6"
           *ngIf="
@@ -101,17 +92,18 @@
           </mat-form-field>
         </div>
 
-        <!-- باقي الحقول تظهر فقط عند الحضور -->
         <ng-container *ngIf="selectedStatus === AttendStatusEnum.Attended">
           <div class="col-md-6">
-            <mat-form-field appearance="outline" class="w-100">
-              <mat-label>{{ 'New Surah' | translate }}</mat-label>
-              <mat-select formControlName="newId">
-                <mat-option *ngFor="let s of surahList" [value]="s.id">
-                  {{ s.name }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
+            <label class="form-label">{{ 'New Surah' | translate }}</label>
+            <p-dropdown
+              class="w-100"
+              formControlName="newId"
+              [options]="surahList"
+              optionLabel="name"
+              optionValue="id"
+              [filter]="true"
+              placeholder="{{ 'New Surah' | translate }}"
+            ></p-dropdown>
           </div>
 
           <div class="col-md-6">

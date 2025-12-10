@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
+import { DropdownModule } from 'primeng/dropdown';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
@@ -28,7 +29,7 @@ type ReportState = Partial<CircleReportAddDto> & Partial<CircleReportListDto>;
 @Component({
   selector: 'app-report-add',
   standalone: true,
-  imports: [CommonModule, SharedModule],
+  imports: [CommonModule, SharedModule, DropdownModule],
   templateUrl: './report-add.component.html',
   styleUrl: './report-add.component.scss'
 })
@@ -60,6 +61,11 @@ export class ReportAddComponent implements OnInit {
   teachers: LookUpUserDto[] = [];
   circles: CircleDto[] = [];
   students: { id: number; name: string }[] = [];
+  attendStatusOptions = [
+    { label: 'حضر', value: AttendStatusEnum.Attended },
+    { label: 'تغيب بعذر', value: AttendStatusEnum.ExcusedAbsence },
+    { label: 'تغيب بدون عذر', value: AttendStatusEnum.UnexcusedAbsence }
+  ];
 
   isLoadingManagers = false;
   isLoadingTeachers = false;
