@@ -356,7 +356,8 @@ export class ReportAddComponent implements OnInit {
           const items = res.isSuccess ? res.data.items : [];
           this.managers = items.map((m: any) => ({
             ...m,
-            id: this.toNumber(m.id) ?? m.id
+            id: this.toNumber(m.id) ?? m.id,
+            displayName: this.buildDisplayName(m, 'المشرف')
           }));
           this.isLoadingManagers = false;
 
@@ -428,7 +429,8 @@ export class ReportAddComponent implements OnInit {
           const items = res.isSuccess ? res.data.items : [];
           this.teachers = items.map((t: any) => ({
             ...t,
-            id: this.toNumber(t.id) ?? t.id
+            id: this.toNumber(t.id) ?? t.id,
+            displayName: this.buildDisplayName(t, 'Teacher')
           }));
           this.isLoadingTeachers = false;
 
@@ -632,6 +634,18 @@ export class ReportAddComponent implements OnInit {
   // ================================
   // UTILITIES
   // ================================
+  private buildDisplayName(user: Partial<LookUpUserDto>, fallbackLabel: string): string {
+    const id = this.toNumber(user.id);
+    const suffix = id ? ` #${id}` : '';
+
+    return (
+      user.fullName ||
+      (user as any).name ||
+      (user as any).email ||
+      `${fallbackLabel}${suffix}`
+    );
+  }
+
   private resolveStatus(report: ReportState): AttendStatusEnum | undefined {
     const rawStatus = this.toNumber(
       report.attendStatueId ??
