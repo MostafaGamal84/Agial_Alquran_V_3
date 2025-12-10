@@ -2,7 +2,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -27,7 +27,7 @@ import { isEgyptianNationality } from 'src/app/@theme/utils/nationality.utils';
 
 @Component({
   selector: 'app-user-edit',
-  imports: [CommonModule, SharedModule, NgxMaskDirective, DropdownModule, MultiSelectModule],
+  imports: [CommonModule, SharedModule, NgxMaskDirective, SelectModule, MultiSelectModule],
   templateUrl: './user-edit.component.html',
   styleUrl: './user-edit.component.scss',
   providers: [provideNgxMask()]

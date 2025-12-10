@@ -16,22 +16,45 @@ import { GuestModule } from './app/demo/layout/front';
 import { AppComponent } from './app/app.component';
 import { MAT_SELECT_CONFIG, MatSelectConfig } from '@angular/material/select';
 
+// 👇 الجديد: إعدادات PrimeNG + الثيم
+import { providePrimeNG } from 'primeng/config';
+import Aura from '@primeuix/themes/aura'; // ممكن تغيره لاحقاً لأي ثيم آخر من @primeuix/themes
+
 if (environment.production) {
   enableProdMode();
 }
 
-// مافيش compareWith هنا خالص
+// إعدادات mat-select العامة (مفيش compareWith هنا زي ما انت كاتب)
 const matSelectConfig: MatSelectConfig = {
-  // ممكن تحط أي إعداد تاني لو حابب
+  // تقدر تضيف إعدادات لو محتاج مثلاً: disableOptionCentering: true
 };
 
 bootstrapApplication(AppComponent, {
   providers: [
     importProvidersFrom(AppRoutingModule, SharedModule, BrowserModule, GuestModule),
+
+    // ✅ Interceptors
     { provide: HTTP_INTERCEPTORS, useClass: BasicAuthInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
+
+    // ✅ إعدادات mat-select العامة
     { provide: MAT_SELECT_CONFIG, useValue: matSelectConfig },
+
+    // ✅ HttpClient
     provideHttpClient(withInterceptorsFromDi()),
-    provideAnimations()
+
+    // ✅ Animations (مطلوبة لـ PrimeNG و Angular Material)
+    provideAnimations(),
+
+    // ✅ PrimeNG Config + Theme
+    providePrimeNG({
+      theme: {
+        preset: Aura
+        // تقدر تضيف options هنا لو حابب
+        // options: {
+        //   darkModeSelector: '.app-dark'
+        // }
+      }
+    })
   ]
 }).catch((err) => console.error(err));

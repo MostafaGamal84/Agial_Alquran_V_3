@@ -9,7 +9,7 @@
       >
         <div class="col-md-6" *ngIf="showSupervisorSelector">
           <label class="form-label">{{ 'المشرف' | translate }}</label>
-          <p-dropdown
+          <p-select
             class="w-100"
             [options]="managers"
             optionValue="id"
@@ -25,13 +25,13 @@
             <ng-template let-manager pTemplate="item">
               {{ manager.fullName || manager.email || ('المشرف #' + manager.id) }}
             </ng-template>
-          </p-dropdown>
+          </p-select>
           <p class="text-danger">selectedManagerId = {{ selectedManagerId | json }}</p>
         </div>
 
         <div class="col-md-6" *ngIf="showTeacherSelector">
           <label class="form-label">{{ 'Teacher' | translate }}</label>
-          <p-dropdown
+          <p-select
             class="w-100"
             [options]="teachers"
             optionValue="id"
@@ -47,13 +47,13 @@
             <ng-template let-teacher pTemplate="item">
               {{ teacher.fullName || teacher.email || ('Teacher #' + teacher.id) }}
             </ng-template>
-          </p-dropdown>
+          </p-select>
           <p class="text-primary">selectedTeacherId = {{ selectedTeacherId | json }}</p>
         </div>
 
         <div class="col-md-6" *ngIf="showStudentSelector">
           <label class="form-label">{{ 'Student' | translate }}</label>
-          <p-dropdown
+          <p-select
             class="w-100"
             [options]="students"
             optionLabel="name"
@@ -63,12 +63,12 @@
             [disabled]="isLoadingStudents || !reportForm.get('circleId')?.value"
             [filter]="true"
             placeholder="{{ 'Student' | translate }}"
-          ></p-dropdown>
+          ></p-select>
         </div>
 
         <div class="col-md-6">
           <label class="form-label">{{ 'Attend Status' | translate }}</label>
-          <p-dropdown
+          <p-select
             class="w-100"
             formControlName="attendStatueId"
             [options]="attendStatusOptions"
@@ -76,7 +76,7 @@
             optionValue="value"
             (onChange)="onStatusChange($event.value)"
             placeholder="{{ 'Attend Status' | translate }}"
-          ></p-dropdown>
+          ></p-select>
         </div>
 
         <div
@@ -95,7 +95,7 @@
         <ng-container *ngIf="selectedStatus === AttendStatusEnum.Attended">
           <div class="col-md-6">
             <label class="form-label">{{ 'New Surah' | translate }}</label>
-            <p-dropdown
+            <p-select
               class="w-100"
               formControlName="newId"
               [options]="surahList"
@@ -103,7 +103,7 @@
               optionValue="id"
               [filter]="true"
               placeholder="{{ 'New Surah' | translate }}"
-            ></p-dropdown>
+            ></p-select>
           </div>
 
           <div class="col-md-6">

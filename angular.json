@@ -26,9 +26,7 @@
             "inlineStyleLanguage": "scss",
             "assets": ["src/favicon.ico", "src/assets"],
             "styles": [
-              "node_modules/primeng/resources/themes/lara-light-blue/theme.css",
-              "node_modules/primeng/resources/primeng.min.css",
-              "node_modules/primeicons/primeicons.css",
+               "node_modules/primeicons/primeicons.css",
               "src/styles.scss",
               "src/app/@theme/styles/material-overrides.scss"
             ],

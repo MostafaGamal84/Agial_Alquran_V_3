@@ -25,7 +25,7 @@
           <div class="col-md-6 mb-3">
             <label class="form-label d-block">Mobile</label>
             <div class="d-flex gap-2 align-items-start">
-              <p-dropdown
+              <p-select
                 class="flex-shrink-0"
                 styleClass="w-100"
                 [options]="countries"
@@ -34,7 +34,7 @@
                 formControlName="mobileCountryDialCode"
                 (onChange)="onCountryCodeChange('mobileCountryDialCode')"
                 placeholder="+1"
-              ></p-dropdown>
+              ></p-select>
               <mat-form-field appearance="outline" class="w-100 m-b-10">
                 <input
                   matInput
@@ -56,7 +56,7 @@
           <div class="col-md-6 mb-3">
             <label class="form-label d-block">Second Mobile</label>
             <div class="d-flex gap-2 align-items-start">
-              <p-dropdown
+              <p-select
                 class="flex-shrink-0"
                 styleClass="w-100"
                 [options]="countries"
@@ -65,7 +65,7 @@
                 formControlName="secondMobileCountryDialCode"
                 (onChange)="onCountryCodeChange('secondMobileCountryDialCode')"
                 placeholder="+1"
-              ></p-dropdown>
+              ></p-select>
               <mat-form-field appearance="outline" class="w-100 m-b-10">
                 <input
                   matInput
@@ -83,7 +83,7 @@
 
           <div class="col-md-6 mb-3">
             <label class="form-label">Nationality</label>
-            <p-dropdown
+            <p-select
               class="w-100"
               formControlName="nationalityId"
               [options]="nationalities"
@@ -91,7 +91,7 @@
               optionValue="id"
               placeholder="Select Nationality"
               [filter]="true"
-            ></p-dropdown>
+            ></p-select>
             @if (basicInfoForm.get('nationalityId')?.touched && basicInfoForm.get('nationalityId')?.invalid) {
               <div class="text-danger small">Nationality id is required</div>
             }
@@ -99,7 +99,7 @@
 
           <div class="col-md-6 mb-3">
             <label class="form-label">Place of residence</label>
-            <p-dropdown
+            <p-select
               class="w-100"
               formControlName="residentId"
               [options]="nationalities"
@@ -107,7 +107,7 @@
               optionValue="id"
               placeholder="Select place of residence"
               [filter]="true"
-            ></p-dropdown>
+            ></p-select>
             @if (basicInfoForm.get('residentId')?.touched && basicInfoForm.get('residentId')?.invalid) {
               <div class="text-danger small">Place of residence is required</div>
             }
@@ -115,7 +115,7 @@
 
           <div class="col-md-6 mb-3">
             <label class="form-label">Governorate</label>
-            <p-dropdown
+            <p-select
               class="w-100"
               formControlName="governorateId"
               [options]="governorates"
@@ -123,7 +123,7 @@
               optionValue="id"
               placeholder="Select Governorate"
               [filter]="true"
-            ></p-dropdown>
+            ></p-select>
             @if (basicInfoForm.get('governorateId')?.touched && basicInfoForm.get('governorateId')?.invalid) {
               <div class="text-danger small">{{ 'EgyptGovernorateRequiredMessage' | translate }}</div>
             }
@@ -131,14 +131,14 @@
 
           <div class="col-md-6 mb-3">
             <label class="form-label">Branch</label>
-            <p-dropdown
+            <p-select
               class="w-100"
               formControlName="branchId"
               [options]="Branch"
               optionLabel="label"
               optionValue="id"
               placeholder="Select Branch"
-            ></p-dropdown>
+            ></p-select>
             @if (basicInfoForm.get('branchId')?.touched && basicInfoForm.get('branchId')?.invalid) {
               <div class="text-danger small">Branch id is required</div>
             }
@@ -188,7 +188,7 @@
           @if (isTeacher) {
             <div class="col-md-6 mb-3">
               <label class="form-label">Manager</label>
-              <p-dropdown
+              <p-select
                 class="w-100"
                 formControlName="managerId"
                 [options]="managers"
@@ -196,7 +196,7 @@
                 optionValue="id"
                 [filter]="true"
                 [disabled]="true"
-              ></p-dropdown>
+              ></p-select>
             </div>
             <div class="col-md-6 mb-3">
               <label class="form-label">Students</label>
@@ -213,7 +213,7 @@
             </div>
             <div class="col-md-6 mb-3">
               <label class="form-label">Circle</label>
-              <p-dropdown
+              <p-select
                 class="w-100"
                 formControlName="circleId"
                 [options]="circles"
@@ -221,14 +221,14 @@
                 optionValue="id"
                 [filter]="true"
                 [disabled]="!basicInfoForm.get('managerId')?.value"
-              ></p-dropdown>
+              ></p-select>
             </div>
           }
 
           @if (isStudent) {
             <div class="col-md-6 mb-3">
               <label class="form-label">Teacher</label>
-              <p-dropdown
+              <p-select
                 class="w-100"
                 formControlName="teacherId"
                 [options]="teachers"
@@ -237,11 +237,11 @@
                 [filter]="true"
                 [disabled]="!basicInfoForm.get('managerId')?.value"
                 (onChange)="onTeacherChange($event.value)"
-              ></p-dropdown>
+              ></p-select>
             </div>
             <div class="col-md-6 mb-3">
               <label class="form-label">Manager</label>
-              <p-dropdown
+              <p-select
                 class="w-100"
                 formControlName="managerId"
                 [options]="managers"
@@ -249,11 +249,11 @@
                 optionValue="id"
                 [filter]="true"
                 (onChange)="onManagerChange($event.value)"
-              ></p-dropdown>
+              ></p-select>
             </div>
             <div class="col-md-6 mb-3">
               <label class="form-label">Circle</label>
-              <p-dropdown
+              <p-select
                 class="w-100"
                 formControlName="circleId"
                 [options]="circles"
@@ -261,7 +261,7 @@
                 optionValue="id"
                 [filter]="true"
                 [disabled]="true"
-              ></p-dropdown>
+              ></p-select>
             </div>
           }
           <div class="col-md-12 text-end">
