@@ -13,8 +13,12 @@ export function normalizeSelectCompare(option: any, value: any): boolean {
         (x as any).id ??
         (x as any).value ??
         (x as any).key ??
-        (x as any)._id ??
-        x;
+        (x as any)._id;
+
+      // لو مافيش مفتاح معروف رجّع نفس القيمة عشان نتجنّب اللانهاية
+      if (possible === undefined) {
+        return x;
+      }
 
       return normalize(possible);
     }
