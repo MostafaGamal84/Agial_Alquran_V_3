@@ -92,6 +92,7 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
     }
 
     if (this.isManager) {
+      this.triggerInitialTeacherLoad(managersControl);
       this.resolveManagerFromProfile();
     }
 
@@ -292,6 +293,26 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
     if (triggerLoad && this.lastLoadedManagerId !== managerId) {
       this.loadTeachers(managerId);
     }
+  }
+
+  private triggerInitialTeacherLoad(control: AbstractControl | null): void {
+    if (!this.isManager) {
+      return;
+    }
+
+    const rawManagerId = control?.value;
+    const resolvedManagerId =
+      typeof rawManagerId === 'number'
+        ? rawManagerId
+        : this.currentManagerId ?? this.managerFallback?.id ?? this.resolveCurrentManagerId();
+
+    if (resolvedManagerId !== null) {
+      this.applyManagerSelection(control, resolvedManagerId, true);
+      return;
+    }
+
+    // fall back to loading without a resolved manager to at least populate teachers
+    this.loadTeachers(null);
   }
 
   private resolveManagerFromProfile(): void {
