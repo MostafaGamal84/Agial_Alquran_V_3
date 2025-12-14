@@ -139,7 +139,10 @@ export class ReportAddComponent implements OnInit, OnDestroy {
     this.initRoleFlow();              // ✅ مهم
 
     if (this.mode === 'update' && this.reportId) {
-      this.loadReportForEdit(this.reportId);
+      const patchedFromState = this.tryPatchFromState(this.reportId);
+      if (!patchedFromState) {
+        this.loadReportForEdit(this.reportId);
+      }
     }
   }
 
@@ -615,6 +618,34 @@ export class ReportAddComponent implements OnInit, OnDestroy {
           this.router.navigate(['../'], { relativeTo: this.route });
         }
       });
+  }
+
+  /**
+   * If the navigation state already carries the report (from the list), hydrate the form
+   * without making another API request. This prevents a failing fetch (404) when the
+   * details endpoint is unavailable but the list already has the necessary data.
+   */
+  private tryPatchFromState(id: number): boolean {
+    const navigationState = (this.router.getCurrentNavigation()?.extras?.state as any) ?? {};
+    const historyState = (typeof history !== 'undefined' ? (history.state as any) : {}) ?? {};
+    const candidate = navigationState.report ?? historyState.report;
+
+    if (!candidate || Number(candidate.id) !== Number(id)) {
+      return false;
+    }
+
+    const hydrated: CircleReportAddDto & { managerId?: number | null; studentName?: string } = {
+      ...candidate,
+      // normalize ids from possible nested objects
+      circleId: candidate.circleId ?? candidate.circle?.id ?? null,
+      studentId: candidate.studentId ?? candidate.student?.id ?? null,
+      teacherId: candidate.teacherId ?? candidate.teacher?.id ?? null,
+      attendStatueId: candidate.attendStatueId ?? candidate.attendStatusId ?? null,
+      creationTime: candidate.creationTime ? new Date(candidate.creationTime) : new Date()
+    };
+
+    this.patchReport(hydrated);
+    return true;
   }
 
   private patchReport(report: CircleReportAddDto & { managerId?: number | null; studentName?: string }): void {
