@@ -115,7 +115,7 @@ export class AuthenticationService {
   public getRole(): UserTypesEnum | null {
     try {
       const u = this.currentUserSignal();
-      return u?.user?.role ?? null;
+      return this.mapRoleToEnum(u?.user?.role);
     } catch (err) {
       console.error('Error retrieving user role', err);
       return null;

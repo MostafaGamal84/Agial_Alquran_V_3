@@ -92,6 +92,7 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
     }
 
     if (this.isManager) {
+      this.triggerInitialTeacherLoad(managersControl);
       this.resolveManagerFromProfile();
     }
 
@@ -294,6 +295,26 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
     }
   }
 
+  private triggerInitialTeacherLoad(control: AbstractControl | null): void {
+    if (!this.isManager) {
+      return;
+    }
+
+    const rawManagerId = control?.value;
+    const resolvedManagerId =
+      typeof rawManagerId === 'number'
+        ? rawManagerId
+        : this.currentManagerId ?? this.managerFallback?.id ?? this.resolveCurrentManagerId();
+
+    if (resolvedManagerId !== null) {
+      this.applyManagerSelection(control, resolvedManagerId, true);
+      return;
+    }
+
+    // fall back to loading without a resolved manager to at least populate teachers
+    this.loadTeachers(null);
+  }
+
   private resolveManagerFromProfile(): void {
     this.userService
       .getProfile()
@@ -347,7 +368,8 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
     const teacherControl = this.circleForm.get('teacherId');
     const studentsControl = this.circleForm.get('studentsIds');
 
-    this.lastLoadedManagerId = managerId ?? null;
+    const effectiveManagerId = managerId ?? this.currentManagerId ?? 0;
+    this.lastLoadedManagerId = effectiveManagerId;
 
     this.teachers = [];
     teacherControl?.reset(null, { emitEvent: false });
@@ -357,12 +379,12 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
     studentsControl?.reset([], { emitEvent: false });
     studentsControl?.disable({ emitEvent: false });
 
-    if (!managerId) {
-      return;
-    }
-
     this.lookup
-      .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Teacher), managerId)
+      .getUsersForSelects(
+        this.userFilter,
+        Number(UserTypesEnum.Teacher),
+        effectiveManagerId
+      )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res) => {
