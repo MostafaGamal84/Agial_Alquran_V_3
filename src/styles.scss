@@ -1,5 +1,6 @@
 @use '@angular/material' as mat;
 @include mat.core();
+@import "~@ng-select/ng-select/themes/default.theme.css";
 
 // from third party packages
 @import 'node_modules/ngx-owl-carousel-o/lib/styles/prebuilt-themes/owl.carousel.min.css';

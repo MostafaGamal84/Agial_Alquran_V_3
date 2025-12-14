@@ -29,6 +29,7 @@
     "@fontsource-variable/cairo": "^5.2.7",
     "@iplab/ngx-file-upload": "19.0.3",
     "@narik/custom-validators": "13.0.0",
+    "@ng-select/ng-select": "^21.1.2",
     "@ngx-translate/core": "16.0.4",
     "@ngx-translate/http-loader": "16.0.1",
     "@primeuix/themes": "^2.0.2",

@@ -1,77 +1,164 @@
-<form class="row" [formGroup]="reportForm" (ngSubmit)="onSubmit()">
+<form class="grid" [formGroup]="reportForm" (ngSubmit)="onSubmit()">
 
-  <div class="col-md-6">
-    <app-smart-select
-      label="المشرف"
+  <!-- Supervisor -->
+  <div class="field" *ngIf="showSupervisorSelector">
+    <label class="lbl">{{ 'المشرف'  }}</label>
+    <ng-select
+      formControlName="managerId"
       [items]="managers"
-      labelKey="name"
-      valueKey="id"
-      [value]="reportForm.get('managerId')?.value"
-      (valueChange)="onManagerChanged($event)"
+      bindLabel="displayName"
+      bindValue="id"
+      [loading]="isLoadingManagers"
+      [searchable]="true"
+      [clearable]="true"
+      [trackByFn]="trackById"
       [disabled]="lockManagerSelection"
-      [loading]="isLoadingManagers">
-    </app-smart-select>
+      placeholder="{{ 'المشرف'  }}"
+    ></ng-select>
   </div>
 
-  <div class="col-md-6">
-    <app-smart-select
-      label="المعلم"
+  <!-- Teacher -->
+  <div class="field" *ngIf="showTeacherSelector">
+    <label class="lbl">{{ 'Teacher'  }}</label>
+    <ng-select
+      formControlName="teacherId"
       [items]="teachers"
-      labelKey="name"
-      valueKey="id"
-      [value]="reportForm.get('teacherId')?.value"
-      (valueChange)="onTeacherChanged($event)"
+      bindLabel="displayName"
+      bindValue="id"
+      [loading]="isLoadingTeachers"
+      [searchable]="true"
+      [clearable]="true"
+      [trackByFn]="trackById"
       [disabled]="lockTeacherSelection"
-      [loading]="isLoadingTeachers">
-    </app-smart-select>
+      placeholder="{{ 'Teacher'  }}"
+    ></ng-select>
+
+    <div class="err" *ngIf="isInvalid('teacherId')">{{ errorText('teacherId') }}</div>
   </div>
 
-  <div class="col-md-6">
-    <app-smart-select
-      label="طالب"
+  <!-- Student -->
+  <div class="field">
+    <label class="lbl">{{ 'Student'  }}</label>
+    <ng-select
+      formControlName="studentId"
       [items]="students"
-      labelKey="name"
-      valueKey="id"
-      [value]="reportForm.get('studentId')?.value"
-      (valueChange)="reportForm.patchValue({ studentId: $event }, { emitEvent:false })"
-      [loading]="isLoadingStudents">
-    </app-smart-select>
+      bindLabel="name"
+      bindValue="id"
+      [loading]="isLoadingStudents"
+      [searchable]="true"
+      [clearable]="true"
+      [trackByFn]="trackById"
+      [disabled]="!reportForm.get('circleId')?.value"
+      placeholder="{{ 'Student'  }}"
+    ></ng-select>
+
+    <div class="err" *ngIf="isInvalid('studentId')">{{ errorText('studentId') }}</div>
   </div>
 
-  <div class="col-md-6">
-    <app-smart-select
-      label="حالة الحضور"
+  <!-- Status -->
+  <div class="field">
+    <label class="lbl">{{ 'Attend Status'  }}</label>
+    <ng-select
+      formControlName="attendStatueId"
       [items]="attendStatusOptions"
-      labelKey="label"
-      valueKey="value"
-      [value]="reportForm.get('attendStatueId')?.value"
-      (valueChange)="onStatusChanged($event)">
-    </app-smart-select>
+      bindLabel="label"
+      bindValue="value"
+      [searchable]="false"
+      [clearable]="true"
+      placeholder="{{ 'Attend Status'  }}"
+    ></ng-select>
+
+    <div class="err" *ngIf="isInvalid('attendStatueId')">{{ errorText('attendStatueId') }}</div>
   </div>
 
-  <div class="col-md-6" *ngIf="reportForm.get('attendStatueId')?.value === 3">
-    <input class="form-control" type="number" formControlName="minutes" placeholder="الدقائق" />
+  <!-- Minutes -->
+  <div class="field" *ngIf="selectedStatus === AttendStatusEnum.Attended || selectedStatus === AttendStatusEnum.UnexcusedAbsence">
+    <label class="lbl">{{ 'Minutes'  }}</label>
+    <input class="inp" type="number" formControlName="minutes" />
+    <div class="err" *ngIf="isInvalid('minutes')">{{ errorText('minutes') }}</div>
   </div>
 
-  <!-- باقي حقول التقرير -->
-  <div class="col-md-6">
-    <app-smart-select
-      label="السورة الجديدة"
-      [items]="surahList"
-      labelKey="name"
-      valueKey="id"
-      [value]="reportForm.get('newId')?.value"
-      (valueChange)="reportForm.patchValue({ newId: $event }, { emitEvent:false })">
-    </app-smart-select>
-  </div>
+  <!-- Attended extra fields -->
+  <ng-container *ngIf="selectedStatus === AttendStatusEnum.Attended">
 
-  <div class="col-12">
-    <textarea class="form-control" formControlName="other" placeholder="ملاحظات أخرى"></textarea>
-  </div>
+    <div class="field">
+      <label class="lbl">{{ 'New Surah'  }}</label>
+      <ng-select
+        formControlName="newId"
+        [items]="surahList"
+        bindLabel="name"
+        bindValue="id"
+        [searchable]="true"
+        [clearable]="true"
+        placeholder="{{ 'New Surah'  }}"
+      ></ng-select>
+    </div>
 
-  <div class="col-12 mt-3">
-    <button class="btn btn-primary" type="submit" [disabled]="isSubmitting">
-      إنشاء التقرير
+    <div class="field">
+      <label class="lbl">{{ 'New From'  }}</label>
+      <input class="inp" formControlName="newFrom" />
+    </div>
+
+    <div class="field">
+      <label class="lbl">{{ 'New To'  }}</label>
+      <input class="inp" formControlName="newTo" />
+    </div>
+
+    <div class="field">
+      <label class="lbl">{{ 'New Rate'  }}</label>
+      <input class="inp" formControlName="newRate" />
+    </div>
+
+    <div class="field">
+      <label class="lbl">{{ 'Recent Past'  }}</label>
+      <input class="inp" formControlName="recentPast" />
+    </div>
+
+    <div class="field">
+      <label class="lbl">{{ 'Recent Past Rate'  }}</label>
+      <input class="inp" formControlName="recentPastRate" />
+    </div>
+
+    <div class="field">
+      <label class="lbl">{{ 'Distant Past'  }}</label>
+      <input class="inp" formControlName="distantPast" />
+    </div>
+
+    <div class="field">
+      <label class="lbl">{{ 'Distant Past Rate'  }}</label>
+      <input class="inp" formControlName="distantPastRate" />
+    </div>
+
+    <div class="field">
+      <label class="lbl">{{ 'Farthest Past'  }}</label>
+      <input class="inp" formControlName="farthestPast" />
+    </div>
+
+    <div class="field">
+      <label class="lbl">{{ 'Farthest Past Rate'  }}</label>
+      <input class="inp" formControlName="farthestPastRate" />
+    </div>
+
+    <div class="field">
+      <label class="lbl">{{ 'The Words of the Quran Stranger'  }}</label>
+      <input class="inp" formControlName="theWordsQuranStranger" />
+    </div>
+
+    <div class="field">
+      <label class="lbl">{{ 'Intonation'  }}</label>
+      <input class="inp" formControlName="intonation" />
+    </div>
+
+    <div class="field span-2">
+      <label class="lbl">{{ 'Other Notes'  }}</label>
+      <textarea class="inp ta" formControlName="other"></textarea>
+    </div>
+
+  </ng-container>
+
+  <div class="actions">
+    <button class="btn" type="submit" [disabled]="isSubmitting">
+      {{ 'Create'  }}
     </button>
   </div>
 
