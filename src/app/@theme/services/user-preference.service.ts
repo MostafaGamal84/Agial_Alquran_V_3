@@ -55,7 +55,7 @@ export class UserPreferenceService {
 
   private getStorageKey(): string | null {
     const currentUser = this.authService.currentUserValue;
-    const identifier = currentUser?.user?.id?.trim() || currentUser?.user?.email?.trim();
+    const identifier = currentUser?.user?.id|| currentUser?.user?.email?.trim();
     if (identifier) {
       return `${this.storagePrefix}:${identifier}`;
     }

@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -36,7 +36,6 @@ export class ReportAddComponent implements OnInit, OnDestroy {
 
   reportForm!: FormGroup;
 
-  // enums
   AttendStatusEnum = AttendStatusEnum;
   UserTypesEnum = UserTypesEnum;
 
@@ -102,14 +101,14 @@ export class ReportAddComponent implements OnInit, OnDestroy {
     return this.userTypeNumber === Number(UserTypesEnum.Teacher);
   }
 
+  // ===== UI flags =====
   get showSupervisorSelector(): boolean {
+    // Admin + Branch Manager only
     return this.isSystemManager || this.isBranchManager;
   }
   get showTeacherSelector(): boolean {
+    // Admin + Branch Manager + Supervisor
     return this.isSystemManager || this.isBranchManager || this.isSupervisor;
-  }
-  get showStudentSelector(): boolean {
-    return true;
   }
 
   private getUserId(): number | null {
@@ -124,8 +123,13 @@ export class ReportAddComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.buildForm();
+    this.applyRoleBasedValidators();   // ✅ مهم
     this.wireFormReactions();
-    this.initRoleFlow();
+    this.initRoleFlow();              // ✅ مهم
+    console.log('userTypeNumber:', this.userTypeNumber);
+console.log('isSupervisor:', this.isSupervisor);
+console.log('myId:', this.getUserId());
+console.log('currentUser:', this.currentUser);
   }
 
   ngOnDestroy(): void {
@@ -133,12 +137,15 @@ export class ReportAddComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  // =========================
+  // Form
+  // =========================
   private buildForm(): void {
     this.reportForm = this.fb.group({
       // selectors
-      managerId: [null, Validators.required],
-      teacherId: [null, Validators.required],
-      circleId: [null, Validators.required], // auto from teacher
+      managerId: [null],
+      teacherId: [null],
+      circleId: [null, Validators.required],
       studentId: [null, Validators.required],
 
       attendStatueId: [null, Validators.required],
@@ -146,7 +153,7 @@ export class ReportAddComponent implements OnInit, OnDestroy {
       // minutes
       minutes: [null],
 
-      // attended fields (زي أول فورم)
+      // attended fields
       newId: [null],
       newFrom: [''],
       newTo: [''],
@@ -165,16 +172,47 @@ export class ReportAddComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * ✅ هنا بنطبق "البيزنس":
+   * - Admin/Branch: managerId required + teacherId required
+   * - Supervisor: managerId ثابت (مقفول) + teacherId required
+   * - Teacher: teacherId ثابت (مقفول) + managerId غير مطلوب
+   */
+  private applyRoleBasedValidators(): void {
+    const manager = this.reportForm.get('managerId');
+    const teacher = this.reportForm.get('teacherId');
+
+    manager?.clearValidators();
+    teacher?.clearValidators();
+
+    if (this.isSystemManager || this.isBranchManager) {
+      manager?.setValidators([Validators.required]);
+      teacher?.setValidators([Validators.required]);
+    } else if (this.isSupervisor) {
+      manager?.setValidators([Validators.required]);
+      teacher?.setValidators([Validators.required]);
+    } else if (this.isTeacher) {
+      // managerId not required
+      teacher?.setValidators([Validators.required]);
+    }
+
+    manager?.updateValueAndValidity({ emitEvent: false });
+    teacher?.updateValueAndValidity({ emitEvent: false });
+  }
+
+  // =========================
+  // Wiring Cascades
+  // =========================
   private wireFormReactions(): void {
     // Manager -> Teachers
     this.reportForm.get('managerId')!.valueChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe((managerId) => {
         // reset below
-        this.reportForm.patchValue(
-          { teacherId: null, circleId: null, studentId: null },
-          { emitEvent: false }
-        );
+        this.setValueSilent('teacherId', null);
+        this.setValueSilent('circleId', null);
+        this.setValueSilent('studentId', null);
+
         this.teachers = [];
         this.circles = [];
         this.students = [];
@@ -182,11 +220,13 @@ export class ReportAddComponent implements OnInit, OnDestroy {
         if (managerId) this.loadTeachersForManager(Number(managerId));
       });
 
-    // Teacher -> Circle auto -> Students
+    // Teacher -> Circle -> Students
     this.reportForm.get('teacherId')!.valueChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe((teacherId) => {
-        this.reportForm.patchValue({ circleId: null, studentId: null }, { emitEvent: false });
+        this.setValueSilent('circleId', null);
+        this.setValueSilent('studentId', null);
+
         this.circles = [];
         this.students = [];
 
@@ -197,42 +237,66 @@ export class ReportAddComponent implements OnInit, OnDestroy {
     this.reportForm.get('circleId')!.valueChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe((circleId) => {
-        this.reportForm.patchValue({ studentId: null }, { emitEvent: false });
+        this.setValueSilent('studentId', null);
         this.students = [];
 
         if (circleId) this.loadStudentsForCircle(Number(circleId));
       });
 
-    // Status -> rules
+    // Status rules
     this.reportForm.get('attendStatueId')!.valueChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe((st) => this.applyStatusRules(st));
   }
 
-  private initRoleFlow(): void {
-    if (this.isTeacher) {
-      this.lockManagerSelection = true;
-      this.lockTeacherSelection = true;
-      this.reportForm.get('managerId')?.disable({ emitEvent: false });
-      const myId = this.getUserId();
-      this.reportForm.patchValue({ teacherId: myId }, { emitEvent: true });
-      this.reportForm.get('teacherId')?.disable({ emitEvent: false });
-      return;
-    }
+  /**
+   * ✅ مهم جداً:
+   * بدل patchValue مع disabled controls ونستنى valueChanges،
+   * هنا بننفذ سلسلة التحميل يدويًا حسب الدور.
+   */
+ private initRoleFlow(): void {
+  const myId = this.getUserId();
 
-    if (this.isSupervisor) {
-      this.lockManagerSelection = true;
-      this.reportForm.get('managerId')?.disable({ emitEvent: false });
-      const myId = this.getUserId();
-      this.reportForm.patchValue({ managerId: myId }, { emitEvent: true });
-      return;
-    }
+  // ===== Teacher =====
+  if (this.isTeacher) {
+    this.lockManagerSelection = true;
+    this.lockTeacherSelection = true;
 
-    // Admin / Branch Manager
-    this.loadManagers();
+    // teacher ثابت
+    this.reportForm.get('teacherId')?.enable({ emitEvent: false });
+    this.reportForm.get('teacherId')?.setValue(myId, { emitEvent: false });
+    this.reportForm.get('teacherId')?.disable({ emitEvent: false });
+
+    // manager مش مطلوب هنا
+    this.reportForm.get('managerId')?.setValue(null, { emitEvent: false });
+    this.reportForm.get('managerId')?.disable({ emitEvent: false });
+
+    // ✅ مهم: نحمّل الحلقات مباشرة (بدون valueChanges)
+    if (myId) this.loadCirclesForTeacher(Number(myId));
+    return;
   }
 
-  // ===== loaders (endpoints القديمة) =====
+  // ===== Supervisor =====
+  if (this.isSupervisor) {
+    this.lockManagerSelection = true;
+
+    // manager ثابت = نفسه
+    this.reportForm.get('managerId')?.enable({ emitEvent: false });
+    this.reportForm.get('managerId')?.setValue(myId, { emitEvent: false });
+    this.reportForm.get('managerId')?.disable({ emitEvent: false });
+
+    // ✅ مهم: نحمّل المعلمين مباشرة (ده اللي هينادي GetUsersForSelects)
+    if (myId) this.loadTeachersForManager(Number(myId));
+    return;
+  }
+
+  // ===== Admin / Branch =====
+  this.loadManagers();
+}
+
+  // =========================
+  // Loaders
+  // =========================
   private loadManagers(): void {
     this.isLoadingManagers = true;
 
@@ -272,8 +336,9 @@ export class ReportAddComponent implements OnInit, OnDestroy {
           }));
           this.isLoadingTeachers = false;
 
+          // لو فيه معلم واحد: اختاره تلقائيًا
           if (this.teachers.length === 1) {
-            this.reportForm.patchValue({ teacherId: this.teachers[0].id }, { emitEvent: true });
+            this.reportForm.get('teacherId')?.setValue(this.teachers[0].id, { emitEvent: true });
           }
         },
         error: () => {
@@ -296,14 +361,17 @@ export class ReportAddComponent implements OnInit, OnDestroy {
             id: Number(c.id),
             name: c.name || c.title || `Circle #${c.id}`
           }));
+
+          // ✅ حسب البيزنس: ممكن الحلقة تتحدد تلقائيًا
           const firstCircle = this.circles?.[0]?.id ?? null;
-          this.reportForm.patchValue({ circleId: firstCircle }, { emitEvent: true });
+          this.reportForm.get('circleId')?.setValue(firstCircle, { emitEvent: true });
+
           this.isLoadingCircles = false;
         },
         error: () => {
           this.circles = [];
           this.isLoadingCircles = false;
-          this.reportForm.patchValue({ circleId: null }, { emitEvent: false });
+          this.setValueSilent('circleId', null);
         }
       });
   }
@@ -320,13 +388,13 @@ export class ReportAddComponent implements OnInit, OnDestroy {
           const mapped = list
             .map((s: any) => {
               const id = Number(s.studentId ?? s.id);
-              const name = s?.student?.fullName || s?.fullName || s?.name || (id ? `Student #${id}` : null);
+              const name =
+                s?.student?.fullName || s?.fullName || s?.name || (id ? `Student #${id}` : null);
               if (!id || !name) return null;
               return { id, name };
             })
             .filter(Boolean) as { id: number; name: string }[];
 
-          // unique
           const unique = new Map<number, { id: number; name: string }>();
           mapped.forEach((x) => unique.set(x.id, x));
           this.students = Array.from(unique.values());
@@ -334,7 +402,7 @@ export class ReportAddComponent implements OnInit, OnDestroy {
           this.isLoadingStudents = false;
 
           if (this.students.length === 1) {
-            this.reportForm.patchValue({ studentId: this.students[0].id }, { emitEvent: false });
+            this.reportForm.get('studentId')?.setValue(this.students[0].id, { emitEvent: false });
           }
         },
         error: () => {
@@ -344,7 +412,9 @@ export class ReportAddComponent implements OnInit, OnDestroy {
       });
   }
 
-  // ===== status rules (زي فورمك) =====
+  // =========================
+  // Status rules
+  // =========================
   private evaluationFields(): string[] {
     return [
       'newId',
@@ -366,11 +436,13 @@ export class ReportAddComponent implements OnInit, OnDestroy {
   private applyStatusRules(status: any): void {
     const st = Number(status);
     this.selectedStatus =
-      st === AttendStatusEnum.Attended || st === AttendStatusEnum.ExcusedAbsence || st === AttendStatusEnum.UnexcusedAbsence
+      st === AttendStatusEnum.Attended ||
+      st === AttendStatusEnum.ExcusedAbsence ||
+      st === AttendStatusEnum.UnexcusedAbsence
         ? (st as AttendStatusEnum)
         : null;
 
-    // disable all first
+    // disable all evaluation fields
     for (const k of this.evaluationFields()) {
       const c = this.reportForm.get(k);
       if (!c) continue;
@@ -400,7 +472,9 @@ export class ReportAddComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ===== validation helpers =====
+  // =========================
+  // Validation helpers
+  // =========================
   isInvalid(name: string): boolean {
     const c = this.reportForm.get(name);
     return !!c && c.invalid && (c.touched || c.dirty);
@@ -413,7 +487,9 @@ export class ReportAddComponent implements OnInit, OnDestroy {
     return this.translate.instant('قيمة غير صحيحة');
   }
 
-  // ===== submit =====
+  // =========================
+  // Submit
+  // =========================
   onSubmit(): void {
     if (this.reportForm.invalid) {
       this.reportForm.markAllAsTouched();
@@ -429,6 +505,10 @@ export class ReportAddComponent implements OnInit, OnDestroy {
         if (res.isSuccess) {
           this.toast.success(this.translate.instant('Report created successfully'));
           this.reportForm.reset({ creationTime: new Date() }, { emitEvent: false });
+
+          // ✅ بعد reset لازم نعيد تطبيق قواعد الدور + reload flow
+          this.applyRoleBasedValidators();
+          this.initRoleFlow();
         } else if ((res as any).errors?.length) {
           (res as any).errors.forEach((e: any) => this.toast.error(e.message));
         } else {
@@ -442,5 +522,12 @@ export class ReportAddComponent implements OnInit, OnDestroy {
     });
   }
 
+  // =========================
+  // Utils
+  // =========================
   trackById = (_: number, x: any) => x?.id;
+
+  private setValueSilent(name: string, value: any): void {
+    this.reportForm.get(name)?.setValue(value, { emitEvent: false });
+  }
 }

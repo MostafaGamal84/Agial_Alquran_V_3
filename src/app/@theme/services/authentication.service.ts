@@ -37,6 +37,7 @@ interface VerifyCodeData {
   token: string;
   refreshToken: string;
   username: string;
+  userId:  string ;
   role: number | string | null; // can come as number or string from backend
 }
 
@@ -158,7 +159,7 @@ export class AuthenticationService {
               serviceToken: res.data.token,
               refreshToken: res.data.refreshToken,
               user: {
-                id: '',                 // set if your API returns it elsewhere
+                id: res.data.userId,                 // set if your API returns it elsewhere
                 email: body.email ?? '',// we keep the email we verified
                 password: '',           // never store real password
                 name: res.data.username,
