@@ -487,7 +487,7 @@ export class ReportAddComponent implements OnInit, OnDestroy {
     ];
   }
 
-  private applyStatusRules(status: any): void {
+  private applyStatusRules(status: any, options?: { preserveValues?: boolean }): void {
     const st = Number(status);
     this.selectedStatus =
       st === AttendStatusEnum.Attended ||
@@ -502,14 +502,18 @@ export class ReportAddComponent implements OnInit, OnDestroy {
       if (!c) continue;
       c.disable({ emitEvent: false });
       c.clearValidators();
-      c.setValue(null, { emitEvent: false });
+      if (!options?.preserveValues) {
+        c.setValue(null, { emitEvent: false });
+      }
       c.updateValueAndValidity({ emitEvent: false });
     }
 
     const minutes = this.reportForm.get('minutes');
     minutes?.disable({ emitEvent: false });
     minutes?.clearValidators();
-    minutes?.setValue(null, { emitEvent: false });
+    if (!options?.preserveValues) {
+      minutes?.setValue(null, { emitEvent: false });
+    }
     minutes?.updateValueAndValidity({ emitEvent: false });
 
     if (this.selectedStatus === AttendStatusEnum.Attended) {
@@ -724,7 +728,7 @@ export class ReportAddComponent implements OnInit, OnDestroy {
     );
 
     if (report.attendStatueId !== undefined && report.attendStatueId !== null) {
-      this.applyStatusRules(report.attendStatueId);
+      this.applyStatusRules(report.attendStatueId, { preserveValues: true });
     }
 
     if (this.mode === 'update') {
