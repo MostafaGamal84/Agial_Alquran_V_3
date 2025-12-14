@@ -74,6 +74,13 @@ export class ReportAddComponent implements OnInit, OnDestroy {
   mode: 'add' | 'update' = 'add';
   reportId: number | null = null;
 
+  readonlyLabels: { manager: string; teacher: string; circle: string; student: string } = {
+    manager: '',
+    teacher: '',
+    circle: '',
+    student: ''
+  };
+
   lockManagerSelection = false;
   lockTeacherSelection = false;
 
@@ -144,6 +151,7 @@ export class ReportAddComponent implements OnInit, OnDestroy {
         this.loadReportForEdit(this.reportId);
       }
     }
+
   }
 
   ngOnDestroy(): void {
@@ -592,8 +600,39 @@ export class ReportAddComponent implements OnInit, OnDestroy {
   // =========================
   trackById = (_: number, x: any) => x?.id;
 
+  get managerDisplayName(): string {
+    const id = this.reportForm.get('managerId')?.value;
+    const fromList = this.managers.find((m) => m.id === id)?.displayName;
+    return fromList ?? this.readonlyLabels.manager ?? '';
+  }
+
+  get teacherDisplayName(): string {
+    const id = this.reportForm.get('teacherId')?.value;
+    const fromList = this.teachers.find((t) => t.id === id)?.displayName;
+    return fromList ?? this.readonlyLabels.teacher ?? '';
+  }
+
+  get circleDisplayName(): string {
+    const id = this.reportForm.get('circleId')?.value;
+    const fromList = this.circles.find((c) => c.id === id)?.name;
+    return fromList ?? this.readonlyLabels.circle ?? '';
+  }
+
+  get studentDisplayName(): string {
+    const id = this.reportForm.get('studentId')?.value;
+    const fromList = this.students.find((s) => s.id === id)?.name;
+    return fromList ?? this.readonlyLabels.student ?? '';
+  }
+
   private setValueSilent(name: string, value: any): void {
     this.reportForm.get(name)?.setValue(value, { emitEvent: false });
+  }
+
+  private lockEditSelectors(): void {
+    this.reportForm.get('managerId')?.disable({ emitEvent: false });
+    this.reportForm.get('teacherId')?.disable({ emitEvent: false });
+    this.reportForm.get('circleId')?.disable({ emitEvent: false });
+    this.reportForm.get('studentId')?.disable({ emitEvent: false });
   }
 
   private loadReportForEdit(id: number): void {
@@ -649,6 +688,8 @@ export class ReportAddComponent implements OnInit, OnDestroy {
   }
 
   private patchReport(report: CircleReportAddDto & { managerId?: number | null; studentName?: string }): void {
+    this.captureReadonlyLabels(report);
+
     // hydrate selection lists with current report path
     const managerId = (report as any).managerId ?? null;
     const teacherId = report.teacherId ?? null;
@@ -685,5 +726,21 @@ export class ReportAddComponent implements OnInit, OnDestroy {
     if (report.attendStatueId !== undefined && report.attendStatueId !== null) {
       this.applyStatusRules(report.attendStatueId);
     }
+
+    if (this.mode === 'update') {
+      this.lockEditSelectors();
+    }
+  }
+
+  private captureReadonlyLabels(report: any): void {
+    const resolveName = (x: any): string =>
+      x?.fullName ?? x?.name ?? x?.title ?? x?.email ?? x?.studentName ?? '';
+
+    this.readonlyLabels = {
+      manager: resolveName(report.manager) ?? report.managerName ?? '',
+      teacher: resolveName(report.teacher) ?? report.teacherName ?? '',
+      circle: resolveName(report.circle) ?? report.circleName ?? '',
+      student: resolveName(report.student) ?? report.studentName ?? ''
+    };
   }
 }
