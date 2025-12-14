@@ -1,0 +1,51 @@
+<div class="smart-select" [class.is-disabled]="disabled">
+  <label class="ss-label" *ngIf="label">{{ label }}</label>
+
+  <button
+    type="button"
+    class="ss-trigger"
+    [disabled]="disabled"
+    (click)="toggle()"
+  >
+    <span class="ss-value" [class.is-placeholder]="value == null">
+      {{ selectedLabel }}
+    </span>
+
+    <span class="ss-right">
+      <span class="ss-loading" *ngIf="loading"></span>
+      <span class="ss-arrow" [class.open]="open">▾</span>
+    </span>
+  </button>
+
+  <div class="ss-panel" *ngIf="open">
+    <div class="ss-search">
+      <input
+        type="text"
+        class="ss-input"
+        placeholder="بحث..."
+        [(ngModel)]="query"
+        (click)="$event.stopPropagation()"
+      />
+    </div>
+
+    <div class="ss-options">
+      <button type="button" class="ss-option ss-clear" (click)="clear()">
+        — بدون اختيار —
+      </button>
+
+      <button
+        type="button"
+        class="ss-option"
+        *ngFor="let it of filtered"
+        (click)="select(it[valueKey])"
+      >
+        <span>{{ it[labelKey] }}</span>
+        <span class="ss-check" *ngIf="Number(it[valueKey]) === Number(value)">✓</span>
+      </button>
+
+      <div class="ss-empty" *ngIf="!filtered.length && !loading">
+        لا توجد نتائج
+      </div>
+    </div>
+  </div>
+</div>
