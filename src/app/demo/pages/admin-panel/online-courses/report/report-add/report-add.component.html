@@ -36,6 +36,25 @@
     <div class="err" *ngIf="isInvalid('teacherId')">{{ errorText('teacherId') }}</div>
   </div>
 
+  <!-- Circle -->
+  <div class="field">
+    <label class="lbl">{{ 'Circle' }}</label>
+    <ng-select
+      formControlName="circleId"
+      [items]="circles"
+      bindLabel="name"
+      bindValue="id"
+      [loading]="isLoadingCircles"
+      [searchable]="true"
+      [clearable]="true"
+      [trackByFn]="trackById"
+      [disabled]="!reportForm.get('teacherId')?.value"
+      placeholder="{{ 'Circle' }}"
+    ></ng-select>
+
+    <div class="err" *ngIf="isInvalid('circleId')">{{ errorText('circleId') }}</div>
+  </div>
+
   <!-- Student -->
   <div class="field">
     <label class="lbl">{{ 'Student'  }}</label>

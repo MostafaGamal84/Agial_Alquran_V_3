@@ -64,6 +64,7 @@ export class ReportAddComponent implements OnInit, OnDestroy {
   // loading/locks
   isLoadingManagers = false;
   isLoadingTeachers = false;
+  isLoadingCircles = false;
   isLoadingStudents = false;
   isSubmitting = false;
 
@@ -280,17 +281,25 @@ export class ReportAddComponent implements OnInit, OnDestroy {
   }
 
   private loadCirclesForTeacher(teacherId: number): void {
+    this.isLoadingCircles = true;
+
     this.circleService
       .getAll(this.userFilter, undefined, teacherId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res) => {
-          this.circles = res.isSuccess ? res.data.items : [];
+          const items = res.isSuccess ? res.data.items : [];
+          this.circles = items.map((c: any) => ({
+            id: Number(c.id),
+            name: c.name || c.title || `Circle #${c.id}`
+          }));
           const firstCircle = this.circles?.[0]?.id ?? null;
           this.reportForm.patchValue({ circleId: firstCircle }, { emitEvent: true });
+          this.isLoadingCircles = false;
         },
         error: () => {
           this.circles = [];
+          this.isLoadingCircles = false;
           this.reportForm.patchValue({ circleId: null }, { emitEvent: false });
         }
       });
