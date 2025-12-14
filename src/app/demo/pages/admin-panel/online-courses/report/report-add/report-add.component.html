@@ -15,6 +15,8 @@
       [disabled]="lockManagerSelection"
       placeholder="{{ 'المشرف'  }}"
     ></ng-select>
+
+    <div class="err" *ngIf="isInvalid('managerId')">{{ errorText('managerId') }}</div>
   </div>
 
   <!-- Teacher -->
@@ -91,7 +93,7 @@
   </div>
 
   <!-- Minutes -->
-  <div class="field" *ngIf="selectedStatus === AttendStatusEnum.Attended || selectedStatus === AttendStatusEnum.UnexcusedAbsence">
+  <div class="field" *ngIf="selectedStatus === AttendStatusEnum.UnexcusedAbsence">
     <label class="lbl">{{ 'Minutes'  }}</label>
     <input class="inp" type="number" formControlName="minutes" />
     <div class="err" *ngIf="isInvalid('minutes')">{{ errorText('minutes') }}</div>

@@ -136,8 +136,8 @@ export class ReportAddComponent implements OnInit, OnDestroy {
   private buildForm(): void {
     this.reportForm = this.fb.group({
       // selectors
-      managerId: [null],
-      teacherId: [null],
+      managerId: [null, Validators.required],
+      teacherId: [null, Validators.required],
       circleId: [null, Validators.required], // auto from teacher
       studentId: [null, Validators.required],
 
@@ -213,13 +213,16 @@ export class ReportAddComponent implements OnInit, OnDestroy {
     if (this.isTeacher) {
       this.lockManagerSelection = true;
       this.lockTeacherSelection = true;
+      this.reportForm.get('managerId')?.disable({ emitEvent: false });
       const myId = this.getUserId();
       this.reportForm.patchValue({ teacherId: myId }, { emitEvent: true });
+      this.reportForm.get('teacherId')?.disable({ emitEvent: false });
       return;
     }
 
     if (this.isSupervisor) {
       this.lockManagerSelection = true;
+      this.reportForm.get('managerId')?.disable({ emitEvent: false });
       const myId = this.getUserId();
       this.reportForm.patchValue({ managerId: myId }, { emitEvent: true });
       return;
@@ -342,9 +345,8 @@ export class ReportAddComponent implements OnInit, OnDestroy {
   }
 
   // ===== status rules (زي فورمك) =====
-  private allDynamicFields(): string[] {
+  private evaluationFields(): string[] {
     return [
-      'minutes',
       'newId',
       'newFrom',
       'newTo',
@@ -369,23 +371,29 @@ export class ReportAddComponent implements OnInit, OnDestroy {
         : null;
 
     // disable all first
-    for (const k of this.allDynamicFields()) {
+    for (const k of this.evaluationFields()) {
       const c = this.reportForm.get(k);
       if (!c) continue;
       c.disable({ emitEvent: false });
       c.clearValidators();
+      c.setValue(null, { emitEvent: false });
       c.updateValueAndValidity({ emitEvent: false });
     }
 
+    const minutes = this.reportForm.get('minutes');
+    minutes?.disable({ emitEvent: false });
+    minutes?.clearValidators();
+    minutes?.setValue(null, { emitEvent: false });
+    minutes?.updateValueAndValidity({ emitEvent: false });
+
     if (this.selectedStatus === AttendStatusEnum.Attended) {
-      for (const k of this.allDynamicFields()) {
+      for (const k of this.evaluationFields()) {
         this.reportForm.get(k)?.enable({ emitEvent: false });
       }
       return;
     }
 
     if (this.selectedStatus === AttendStatusEnum.UnexcusedAbsence) {
-      const minutes = this.reportForm.get('minutes');
       minutes?.enable({ emitEvent: false });
       minutes?.setValidators([Validators.required]);
       minutes?.updateValueAndValidity({ emitEvent: false });
