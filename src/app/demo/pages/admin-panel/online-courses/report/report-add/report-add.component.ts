@@ -1,7 +1,8 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 import { NgSelectModule } from '@ng-select/ng-select';
 
@@ -19,7 +20,7 @@ import { QuranSurahEnum } from 'src/app/@theme/types/QuranSurahEnum';
 @Component({
   selector: 'app-report-add',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NgSelectModule],
+  imports: [CommonModule, ReactiveFormsModule, NgSelectModule, RouterModule],
   templateUrl: './report-add.component.html',
   styleUrl: './report-add.component.scss'
 })
@@ -31,6 +32,8 @@ export class ReportAddComponent implements OnInit, OnDestroy {
   private auth = inject(AuthenticationService);
   private toast = inject(ToastService);
   private translate = inject(TranslateService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
   private destroy$ = new Subject<void>();
 
@@ -66,6 +69,17 @@ export class ReportAddComponent implements OnInit, OnDestroy {
   isLoadingCircles = false;
   isLoadingStudents = false;
   isSubmitting = false;
+
+  // mode
+  mode: 'add' | 'update' = 'add';
+  reportId: number | null = null;
+
+  readonlyLabels: { manager: string; teacher: string; circle: string; student: string } = {
+    manager: '',
+    teacher: '',
+    circle: '',
+    student: ''
+  };
 
   lockManagerSelection = false;
   lockTeacherSelection = false;
@@ -122,14 +136,22 @@ export class ReportAddComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.mode = this.route.snapshot.data?.['mode'] === 'update' ? 'update' : 'add';
+    const id = Number(this.route.snapshot.paramMap.get('id'));
+    this.reportId = Number.isFinite(id) ? id : null;
+
     this.buildForm();
     this.applyRoleBasedValidators();   // ✅ مهم
     this.wireFormReactions();
     this.initRoleFlow();              // ✅ مهم
-    console.log('userTypeNumber:', this.userTypeNumber);
-console.log('isSupervisor:', this.isSupervisor);
-console.log('myId:', this.getUserId());
-console.log('currentUser:', this.currentUser);
+
+    if (this.mode === 'update' && this.reportId) {
+      const patchedFromState = this.tryPatchFromState(this.reportId);
+      if (!patchedFromState) {
+        this.loadReportForEdit(this.reportId);
+      }
+    }
+
   }
 
   ngOnDestroy(): void {
@@ -320,7 +342,10 @@ console.log('currentUser:', this.currentUser);
       });
   }
 
-  private loadTeachersForManager(managerId: number): void {
+  private loadTeachersForManager(
+    managerId: number,
+    options?: { preselectTeacherId?: number | null; preselectCircleId?: number | null; preselectStudentId?: number | null }
+  ): void {
     this.isLoadingTeachers = true;
 
     this.lookupService
@@ -336,6 +361,20 @@ console.log('currentUser:', this.currentUser);
           }));
           this.isLoadingTeachers = false;
 
+          if (options?.preselectTeacherId) {
+            const exists = this.teachers.some((t) => t.id === options.preselectTeacherId);
+            if (exists) {
+              this.reportForm.get('teacherId')?.setValue(options.preselectTeacherId, { emitEvent: false });
+              if (options.preselectCircleId) {
+                this.loadCirclesForTeacher(options.preselectTeacherId, {
+                  preselectCircleId: options.preselectCircleId,
+                  preselectStudentId: options.preselectStudentId
+                });
+              }
+              return;
+            }
+          }
+
           // لو فيه معلم واحد: اختاره تلقائيًا
           if (this.teachers.length === 1) {
             this.reportForm.get('teacherId')?.setValue(this.teachers[0].id, { emitEvent: true });
@@ -348,7 +387,10 @@ console.log('currentUser:', this.currentUser);
       });
   }
 
-  private loadCirclesForTeacher(teacherId: number): void {
+  private loadCirclesForTeacher(
+    teacherId: number,
+    options?: { preselectCircleId?: number | null; preselectStudentId?: number | null }
+  ): void {
     this.isLoadingCircles = true;
 
     this.circleService
@@ -364,7 +406,17 @@ console.log('currentUser:', this.currentUser);
 
           // ✅ حسب البيزنس: ممكن الحلقة تتحدد تلقائيًا
           const firstCircle = this.circles?.[0]?.id ?? null;
-          this.reportForm.get('circleId')?.setValue(firstCircle, { emitEvent: true });
+          if (options?.preselectCircleId) {
+            const exists = this.circles.some((c) => c.id === options.preselectCircleId);
+            const valueToSet = exists ? options.preselectCircleId : firstCircle;
+            this.reportForm.get('circleId')?.setValue(valueToSet, { emitEvent: false });
+
+            if (valueToSet) {
+              this.loadStudentsForCircle(Number(valueToSet), options.preselectStudentId ?? null);
+            }
+          } else {
+            this.reportForm.get('circleId')?.setValue(firstCircle, { emitEvent: true });
+          }
 
           this.isLoadingCircles = false;
         },
@@ -376,7 +428,7 @@ console.log('currentUser:', this.currentUser);
       });
   }
 
-  private loadStudentsForCircle(circleId: number): void {
+  private loadStudentsForCircle(circleId: number, preselectStudentId: number | null = null): void {
     this.isLoadingStudents = true;
 
     this.circleService
@@ -401,7 +453,9 @@ console.log('currentUser:', this.currentUser);
 
           this.isLoadingStudents = false;
 
-          if (this.students.length === 1) {
+          if (preselectStudentId && this.students.some((s) => s.id === preselectStudentId)) {
+            this.reportForm.get('studentId')?.setValue(preselectStudentId, { emitEvent: false });
+          } else if (this.students.length === 1) {
             this.reportForm.get('studentId')?.setValue(this.students[0].id, { emitEvent: false });
           }
         },
@@ -433,7 +487,7 @@ console.log('currentUser:', this.currentUser);
     ];
   }
 
-  private applyStatusRules(status: any): void {
+  private applyStatusRules(status: any, options?: { preserveValues?: boolean }): void {
     const st = Number(status);
     this.selectedStatus =
       st === AttendStatusEnum.Attended ||
@@ -448,14 +502,18 @@ console.log('currentUser:', this.currentUser);
       if (!c) continue;
       c.disable({ emitEvent: false });
       c.clearValidators();
-      c.setValue(null, { emitEvent: false });
+      if (!options?.preserveValues) {
+        c.setValue(null, { emitEvent: false });
+      }
       c.updateValueAndValidity({ emitEvent: false });
     }
 
     const minutes = this.reportForm.get('minutes');
     minutes?.disable({ emitEvent: false });
     minutes?.clearValidators();
-    minutes?.setValue(null, { emitEvent: false });
+    if (!options?.preserveValues) {
+      minutes?.setValue(null, { emitEvent: false });
+    }
     minutes?.updateValueAndValidity({ emitEvent: false });
 
     if (this.selectedStatus === AttendStatusEnum.Attended) {
@@ -499,11 +557,22 @@ console.log('currentUser:', this.currentUser);
     const model = this.reportForm.getRawValue() as CircleReportAddDto;
 
     this.isSubmitting = true;
-    this.service.create(model).pipe(takeUntil(this.destroy$)).subscribe({
+    const request$ = this.mode === 'update' ? this.service.update({ ...model, id: this.reportId ?? undefined }) : this.service.create(model);
+
+    request$.pipe(takeUntil(this.destroy$)).subscribe({
       next: (res) => {
         this.isSubmitting = false;
         if (res.isSuccess) {
-          this.toast.success(this.translate.instant('Report created successfully'));
+          const successMessage =
+            this.mode === 'update'
+              ? this.translate.instant('Report updated successfully')
+              : this.translate.instant('Report created successfully');
+          this.toast.success(successMessage);
+
+          if (this.mode === 'update') {
+            return;
+          }
+
           this.reportForm.reset({ creationTime: new Date() }, { emitEvent: false });
 
           // ✅ بعد reset لازم نعيد تطبيق قواعد الدور + reload flow
@@ -512,12 +581,20 @@ console.log('currentUser:', this.currentUser);
         } else if ((res as any).errors?.length) {
           (res as any).errors.forEach((e: any) => this.toast.error(e.message));
         } else {
-          this.toast.error(this.translate.instant('Unable to create report'));
+          const fallbackMessage =
+            this.mode === 'update'
+              ? this.translate.instant('Unable to update report')
+              : this.translate.instant('Unable to create report');
+          this.toast.error(fallbackMessage);
         }
       },
       error: () => {
         this.isSubmitting = false;
-        this.toast.error(this.translate.instant('Error creating report'));
+        const errorMessage =
+          this.mode === 'update'
+            ? this.translate.instant('Error updating report')
+            : this.translate.instant('Error creating report');
+        this.toast.error(errorMessage);
       }
     });
   }
@@ -527,7 +604,147 @@ console.log('currentUser:', this.currentUser);
   // =========================
   trackById = (_: number, x: any) => x?.id;
 
+  get managerDisplayName(): string {
+    const id = this.reportForm.get('managerId')?.value;
+    const fromList = this.managers.find((m) => m.id === id)?.displayName;
+    return fromList ?? this.readonlyLabels.manager ?? '';
+  }
+
+  get teacherDisplayName(): string {
+    const id = this.reportForm.get('teacherId')?.value;
+    const fromList = this.teachers.find((t) => t.id === id)?.displayName;
+    return fromList ?? this.readonlyLabels.teacher ?? '';
+  }
+
+  get circleDisplayName(): string {
+    const id = this.reportForm.get('circleId')?.value;
+    const fromList = this.circles.find((c) => c.id === id)?.name;
+    return fromList ?? this.readonlyLabels.circle ?? '';
+  }
+
+  get studentDisplayName(): string {
+    const id = this.reportForm.get('studentId')?.value;
+    const fromList = this.students.find((s) => s.id === id)?.name;
+    return fromList ?? this.readonlyLabels.student ?? '';
+  }
+
   private setValueSilent(name: string, value: any): void {
     this.reportForm.get(name)?.setValue(value, { emitEvent: false });
+  }
+
+  private lockEditSelectors(): void {
+    this.reportForm.get('managerId')?.disable({ emitEvent: false });
+    this.reportForm.get('teacherId')?.disable({ emitEvent: false });
+    this.reportForm.get('circleId')?.disable({ emitEvent: false });
+    this.reportForm.get('studentId')?.disable({ emitEvent: false });
+  }
+
+  private loadReportForEdit(id: number): void {
+    this.isSubmitting = true;
+    this.service
+      .get(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          this.isSubmitting = false;
+          if (!res.isSuccess || !res.data) {
+            this.toast.error(this.translate.instant('Unable to load report'));
+            this.router.navigate(['../'], { relativeTo: this.route });
+            return;
+          }
+
+          this.patchReport(res.data);
+        },
+        error: () => {
+          this.isSubmitting = false;
+          this.toast.error(this.translate.instant('Unable to load report'));
+          this.router.navigate(['../'], { relativeTo: this.route });
+        }
+      });
+  }
+
+  /**
+   * If the navigation state already carries the report (from the list), hydrate the form
+   * without making another API request. This prevents a failing fetch (404) when the
+   * details endpoint is unavailable but the list already has the necessary data.
+   */
+  private tryPatchFromState(id: number): boolean {
+    const navigationState = (this.router.getCurrentNavigation()?.extras?.state as any) ?? {};
+    const historyState = (typeof history !== 'undefined' ? (history.state as any) : {}) ?? {};
+    const candidate = navigationState.report ?? historyState.report;
+
+    if (!candidate || Number(candidate.id) !== Number(id)) {
+      return false;
+    }
+
+    const hydrated: CircleReportAddDto & { managerId?: number | null; studentName?: string } = {
+      ...candidate,
+      // normalize ids from possible nested objects
+      circleId: candidate.circleId ?? candidate.circle?.id ?? null,
+      studentId: candidate.studentId ?? candidate.student?.id ?? null,
+      teacherId: candidate.teacherId ?? candidate.teacher?.id ?? null,
+      attendStatueId: candidate.attendStatueId ?? candidate.attendStatusId ?? null,
+      creationTime: candidate.creationTime ? new Date(candidate.creationTime) : new Date()
+    };
+
+    this.patchReport(hydrated);
+    return true;
+  }
+
+  private patchReport(report: CircleReportAddDto & { managerId?: number | null; studentName?: string }): void {
+    this.captureReadonlyLabels(report);
+
+    // hydrate selection lists with current report path
+    const managerId = (report as any).managerId ?? null;
+    const teacherId = report.teacherId ?? null;
+    const circleId = report.circleId ?? null;
+    const studentId = report.studentId ?? null;
+
+    if (managerId && (this.isSystemManager || this.isBranchManager || this.isSupervisor)) {
+      this.reportForm.get('managerId')?.enable({ emitEvent: false });
+      this.reportForm.get('managerId')?.setValue(managerId, { emitEvent: false });
+      this.loadTeachersForManager(managerId, {
+        preselectTeacherId: teacherId,
+        preselectCircleId: circleId,
+        preselectStudentId: studentId
+      });
+    } else if (teacherId && (this.isTeacher || this.isSupervisor || this.isSystemManager || this.isBranchManager)) {
+      this.reportForm.get('teacherId')?.enable({ emitEvent: false });
+      this.reportForm.get('teacherId')?.setValue(teacherId, { emitEvent: false });
+      this.loadCirclesForTeacher(teacherId, { preselectCircleId: circleId, preselectStudentId: studentId });
+    }
+
+    if (circleId && !teacherId) {
+      this.reportForm.get('circleId')?.setValue(circleId, { emitEvent: false });
+      this.loadStudentsForCircle(circleId, studentId);
+    }
+
+    this.reportForm.patchValue(
+      {
+        ...report,
+        creationTime: report.creationTime ? new Date(report.creationTime) : new Date()
+      },
+      { emitEvent: false }
+    );
+
+    if (report.attendStatueId !== undefined && report.attendStatueId !== null) {
+      this.applyStatusRules(report.attendStatueId, { preserveValues: true });
+    }
+
+    if (this.mode === 'update') {
+      this.lockEditSelectors();
+    }
+  }
+
+  private captureReadonlyLabels(report: any): void {
+    const resolveName = (x: any): string =>
+      x?.fullName ?? x?.name ?? x?.title ?? x?.email ?? x?.studentName ?? '';
+
+    this.readonlyLabels = {
+      manager: resolveName(report.manager) ?? report.managerName ?? '',
+      teacher: resolveName(report.teacher) ?? report.teacherName ?? '',
+      circle: resolveName(report.circle) ?? report.circleName ?? '',
+      student: resolveName(report.student) ?? report.studentName ?? ''
+    };
   }
 }
