@@ -347,7 +347,8 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
     const teacherControl = this.circleForm.get('teacherId');
     const studentsControl = this.circleForm.get('studentsIds');
 
-    this.lastLoadedManagerId = managerId ?? null;
+    const effectiveManagerId = managerId ?? this.currentManagerId ?? 0;
+    this.lastLoadedManagerId = effectiveManagerId;
 
     this.teachers = [];
     teacherControl?.reset(null, { emitEvent: false });
@@ -357,12 +358,12 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
     studentsControl?.reset([], { emitEvent: false });
     studentsControl?.disable({ emitEvent: false });
 
-    if (!managerId) {
-      return;
-    }
-
     this.lookup
-      .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Teacher), managerId)
+      .getUsersForSelects(
+        this.userFilter,
+        Number(UserTypesEnum.Teacher),
+        effectiveManagerId
+      )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res) => {
