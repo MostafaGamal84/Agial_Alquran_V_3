@@ -17,19 +17,10 @@
       <!-- Supervisor -->
       <ng-container *ngIf="mode === 'add'; else managerReadonly">
         <div class="field" *ngIf="showSupervisorSelector">
-          <label class="lbl">{{ 'المشرف'  }}</label>
-          <ng-select
-            formControlName="managerId"
-            [items]="managers"
-            bindLabel="displayName"
-            bindValue="id"
-            [loading]="isLoadingManagers"
-            [searchable]="true"
-            [clearable]="true"
-            [trackByFn]="trackById"
-            [disabled]="lockManagerSelection"
-            placeholder="{{ 'المشرف'  }}"
-          ></ng-select>
+          <label class="lbl">{{ 'المشرف' }}</label>
+          <ng-select formControlName="managerId" [items]="managers" bindLabel="displayName" bindValue="id"
+            [loading]="isLoadingManagers" [searchable]="true" [clearable]="true" [trackByFn]="trackById"
+            [disabled]="lockManagerSelection" placeholder="{{ 'المشرف'  }}"></ng-select>
 
           <div class="err" *ngIf="isInvalid('managerId')">{{ errorText('managerId') }}</div>
         </div>
@@ -44,19 +35,10 @@
       <!-- Teacher -->
       <ng-container *ngIf="mode === 'add'; else teacherReadonly">
         <div class="field" *ngIf="showTeacherSelector">
-          <label class="lbl">{{ 'Teacher'  }}</label>
-          <ng-select
-            formControlName="teacherId"
-            [items]="teachers"
-            bindLabel="displayName"
-            bindValue="id"
-            [loading]="isLoadingTeachers"
-            [searchable]="true"
-            [clearable]="true"
-            [trackByFn]="trackById"
-            [disabled]="lockTeacherSelection"
-            placeholder="{{ 'Teacher'  }}"
-          ></ng-select>
+          <label class="lbl">{{ 'Teacher' }}</label>
+          <ng-select formControlName="teacherId" [items]="teachers" bindLabel="displayName" bindValue="id"
+            [loading]="isLoadingTeachers" [searchable]="true" [clearable]="true" [trackByFn]="trackById"
+            [disabled]="lockTeacherSelection" placeholder="{{ 'Teacher'  }}"></ng-select>
 
           <div class="err" *ngIf="isInvalid('teacherId')">{{ errorText('teacherId') }}</div>
         </div>
@@ -72,18 +54,9 @@
       <ng-container *ngIf="mode === 'add'; else circleReadonly">
         <div class="field">
           <label class="lbl">{{ 'Circle' }}</label>
-          <ng-select
-            formControlName="circleId"
-            [items]="circles"
-            bindLabel="name"
-            bindValue="id"
-            [loading]="isLoadingCircles"
-            [searchable]="true"
-            [clearable]="true"
-            [trackByFn]="trackById"
-            [disabled]="!reportForm.get('teacherId')?.value"
-            placeholder="{{ 'Circle' }}"
-          ></ng-select>
+          <ng-select formControlName="circleId" [items]="circles" bindLabel="name" bindValue="id"
+            [loading]="isLoadingCircles" [searchable]="true" [clearable]="true" [trackByFn]="trackById"
+            [disabled]="!reportForm.get('teacherId')?.value" placeholder="{{ 'Circle' }}"></ng-select>
 
           <div class="err" *ngIf="isInvalid('circleId')">{{ errorText('circleId') }}</div>
         </div>
@@ -98,19 +71,10 @@
       <!-- Student -->
       <ng-container *ngIf="mode === 'add'; else studentReadonly">
         <div class="field">
-          <label class="lbl">{{ 'Student'  }}</label>
-          <ng-select
-            formControlName="studentId"
-            [items]="students"
-            bindLabel="name"
-            bindValue="id"
-            [loading]="isLoadingStudents"
-            [searchable]="true"
-            [clearable]="true"
-            [trackByFn]="trackById"
-            [disabled]="!reportForm.get('circleId')?.value"
-            placeholder="{{ 'Student'  }}"
-          ></ng-select>
+          <label class="lbl">{{ 'Student' }}</label>
+          <ng-select formControlName="studentId" [items]="students" bindLabel="name" bindValue="id"
+            [loading]="isLoadingStudents" [searchable]="true" [clearable]="true" [trackByFn]="trackById"
+            [disabled]="!reportForm.get('circleId')?.value" placeholder="{{ 'Student'  }}"></ng-select>
 
           <div class="err" *ngIf="isInvalid('studentId')">{{ errorText('studentId') }}</div>
         </div>
@@ -124,23 +88,16 @@
 
       <!-- Status -->
       <div class="field">
-        <label class="lbl">{{ 'Attend Status'  }}</label>
-        <ng-select
-          formControlName="attendStatueId"
-          [items]="attendStatusOptions"
-          bindLabel="label"
-          bindValue="value"
-          [searchable]="false"
-          [clearable]="true"
-          placeholder="{{ 'Attend Status'  }}"
-        ></ng-select>
+        <label class="lbl">{{ 'Attend Status' }}</label>
+        <ng-select formControlName="attendStatueId" [items]="attendStatusOptions" bindLabel="label" bindValue="value"
+          [searchable]="false" [clearable]="true" placeholder="{{ 'Attend Status'  }}"></ng-select>
 
         <div class="err" *ngIf="isInvalid('attendStatueId')">{{ errorText('attendStatueId') }}</div>
       </div>
 
       <!-- Minutes -->
-      <div class="field">
-        <label class="lbl">{{ 'Minutes'  }}</label>
+      <div class="field" *ngIf="selectedStatus !== AttendStatusEnum.ExcusedAbsence">
+        <label class="lbl">{{ 'Minutes' }}</label>
         <input class="inp" type="number" formControlName="minutes" />
         <div class="err" *ngIf="isInvalid('minutes')">{{ errorText('minutes') }}</div>
       </div>
@@ -149,75 +106,68 @@
       <ng-container *ngIf="selectedStatus === AttendStatusEnum.Attended">
 
         <div class="field">
-          <label class="lbl">{{ 'New Surah'  }}</label>
-          <ng-select
-            formControlName="newId"
-            [items]="surahList"
-            bindLabel="name"
-            bindValue="id"
-            [searchable]="true"
-            [clearable]="true"
-            placeholder="{{ 'New Surah'  }}"
-          ></ng-select>
+          <label class="lbl">{{ 'New Surah' }}</label>
+          <ng-select formControlName="newId" [items]="surahList" bindLabel="name" bindValue="id" [searchable]="true"
+            [clearable]="true" placeholder="{{ 'New Surah'  }}"></ng-select>
         </div>
 
         <div class="field">
-          <label class="lbl">{{ 'New From'  }}</label>
+          <label class="lbl">{{ 'New From' }}</label>
           <input class="inp" formControlName="newFrom" />
         </div>
 
         <div class="field">
-          <label class="lbl">{{ 'New To'  }}</label>
+          <label class="lbl">{{ 'New To' }}</label>
           <input class="inp" formControlName="newTo" />
         </div>
 
         <div class="field">
-          <label class="lbl">{{ 'New Rate'  }}</label>
+          <label class="lbl">{{ 'New Rate' }}</label>
           <input class="inp" formControlName="newRate" />
         </div>
 
         <div class="field">
-          <label class="lbl">{{ 'Recent Past'  }}</label>
+          <label class="lbl">{{ 'Recent Past' }}</label>
           <input class="inp" formControlName="recentPast" />
         </div>
 
         <div class="field">
-          <label class="lbl">{{ 'Recent Past Rate'  }}</label>
+          <label class="lbl">{{ 'Recent Past Rate' }}</label>
           <input class="inp" formControlName="recentPastRate" />
         </div>
 
         <div class="field">
-          <label class="lbl">{{ 'Distant Past'  }}</label>
+          <label class="lbl">{{ 'Distant Past' }}</label>
           <input class="inp" formControlName="distantPast" />
         </div>
 
         <div class="field">
-          <label class="lbl">{{ 'Distant Past Rate'  }}</label>
+          <label class="lbl">{{ 'Distant Past Rate' }}</label>
           <input class="inp" formControlName="distantPastRate" />
         </div>
 
         <div class="field">
-          <label class="lbl">{{ 'Farthest Past'  }}</label>
+          <label class="lbl">{{ 'Farthest Past' }}</label>
           <input class="inp" formControlName="farthestPast" />
         </div>
 
         <div class="field">
-          <label class="lbl">{{ 'Farthest Past Rate'  }}</label>
+          <label class="lbl">{{ 'Farthest Past Rate' }}</label>
           <input class="inp" formControlName="farthestPastRate" />
         </div>
 
         <div class="field">
-          <label class="lbl">{{ 'The Words of the Quran Stranger'  }}</label>
+          <label class="lbl">{{ 'The Words of the Quran Stranger' }}</label>
           <input class="inp" formControlName="theWordsQuranStranger" />
         </div>
 
         <div class="field">
-          <label class="lbl">{{ 'Intonation'  }}</label>
+          <label class="lbl">{{ 'Intonation' }}</label>
           <input class="inp" formControlName="intonation" />
         </div>
 
         <div class="field span-2">
-          <label class="lbl">{{ 'Other Notes'  }}</label>
+          <label class="lbl">{{ 'Other Notes' }}</label>
           <textarea class="inp ta" formControlName="other"></textarea>
         </div>
 
