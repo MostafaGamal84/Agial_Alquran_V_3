@@ -509,11 +509,8 @@ export class ReportAddComponent implements OnInit, OnDestroy {
     }
 
     const minutes = this.reportForm.get('minutes');
-    minutes?.disable({ emitEvent: false });
+    minutes?.enable({ emitEvent: false });
     minutes?.clearValidators();
-    if (!options?.preserveValues) {
-      minutes?.setValue(null, { emitEvent: false });
-    }
     minutes?.updateValueAndValidity({ emitEvent: false });
 
     if (this.selectedStatus === AttendStatusEnum.Attended) {
