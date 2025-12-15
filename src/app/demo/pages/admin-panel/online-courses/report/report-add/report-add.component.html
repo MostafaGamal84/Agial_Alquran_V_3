@@ -139,7 +139,7 @@
       </div>
 
       <!-- Minutes -->
-      <div class="field" *ngIf="selectedStatus === AttendStatusEnum.UnexcusedAbsence">
+      <div class="field">
         <label class="lbl">{{ 'Minutes'  }}</label>
         <input class="inp" type="number" formControlName="minutes" />
         <div class="err" *ngIf="isInvalid('minutes')">{{ errorText('minutes') }}</div>
