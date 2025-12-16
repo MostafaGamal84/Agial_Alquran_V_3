@@ -587,5 +587,22 @@
   "Pending": "Pending",
   "Failed": "Failed",
   "Unknown Status": "Unknown Status",
-  "Yes": "Yes"
+  "Yes": "Yes",
+  "Page Not Found": "Page Not Found",
+  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do": "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do",
+  "eiusmod tempor incididunt ut labore et dolore magna aliqua.": "eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+  "Back To Home": "Back To Home",
+  "Error Unauthorized": "Error Unauthorized",
+  "Your authorization failed.": "Your authorization failed.",
+  "Please try refreshing the page and fill in the correct login details.": "Please try refreshing the page and fill in the correct login details.",
+  "Internal Server Error": "Internal Server Error",
+  "Server error 500. we fixing the problem. please": "Server error 500. we fixing the problem. please",
+  "try again at a later stage.": "try again at a later stage.",
+  "Coming Soon": "Coming Soon",
+  "Something new is on its way": "Something new is on its way",
+  "Placeholder": "Placeholder",
+  "Notify Me": "Notify Me",
+  "Under Construction": "Under Construction",
+  "Hey! Please check out this site later. We are doing": "Hey! Please check out this site later. We are doing",
+  "some maintenance on it right now.": "some maintenance on it right now."
 }
