@@ -694,5 +694,22 @@
   "Unable to create report": "تعذر إنشاء التقرير",
   "Unable to update report": "تعذر تحديث التقرير",
   "Update": "تحديث",
-  "Update Circle Report": "تحديث تقرير الحلقة"
+  "Update Circle Report": "تحديث تقرير الحلقة",
+  "Page Not Found": "الصفحة غير موجودة",
+  "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do": "عذرًا، الصفحة التي تبحث عنها غير متاحة.",
+  "eiusmod tempor incididunt ut labore et dolore magna aliqua.": "يرجى العودة إلى الصفحة الرئيسية أو المحاولة لاحقًا.",
+  "Back To Home": "العودة إلى الصفحة الرئيسية",
+  "Error Unauthorized": "خطأ في الصلاحيات",
+  "Your authorization failed.": "فشلت عملية التحقق من الصلاحيات.",
+  "Please try refreshing the page and fill in the correct login details.": "يرجى تحديث الصفحة وإدخال بيانات تسجيل الدخول الصحيحة.",
+  "Internal Server Error": "خطأ داخلي في الخادم",
+  "Server error 500. we fixing the problem. please": "حدث خطأ في الخادم (500). نحن نعمل على إصلاح المشكلة، يرجى",
+  "try again at a later stage.": "المحاولة مرة أخرى لاحقًا.",
+  "Coming Soon": "قريبًا",
+  "Something new is on its way": "شيء جديد قادم في الطريق",
+  "Placeholder": "أدخل بريدك الإلكتروني",
+  "Notify Me": "أعلمني",
+  "Under Construction": "قيد الإنشاء",
+  "Hey! Please check out this site later. We are doing": "مرحبًا! يرجى زيارة الموقع لاحقًا، نحن نقوم",
+  "some maintenance on it right now.": "ببعض أعمال الصيانة في الوقت الحالي."
 }
