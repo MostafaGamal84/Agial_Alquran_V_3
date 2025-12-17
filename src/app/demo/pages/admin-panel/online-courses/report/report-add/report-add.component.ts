@@ -606,7 +606,7 @@ export class ReportAddComponent implements OnInit, OnDestroy {
   // =========================
   private toDate(value: unknown): Date | null {
     if (!value) return null;
-    const date = value instanceof Date ? value : new Date(value);
+    const date = value instanceof Date ? value : new Date(value as string | number);
     return Number.isNaN(date.getTime()) ? null : date;
   }
 

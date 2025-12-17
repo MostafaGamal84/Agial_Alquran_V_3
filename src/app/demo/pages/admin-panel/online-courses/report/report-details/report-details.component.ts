@@ -70,10 +70,12 @@ export class ReportDetailsComponent implements OnInit {
     this.service.get(id).subscribe({
       next: (res) => {
         if (res.isSuccess && res.data) {
+          const { creationTime, ...data } = res.data;
           const merged: ReportDetails = {
             ...stateReport,
-            ...res.data,
-            id
+            ...data,
+            id,
+            ...(creationTime !== null && { creationTime })
           };
           this.report = merged;
         } else if (stateReport) {
