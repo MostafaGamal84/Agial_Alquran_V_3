@@ -2,8 +2,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { SelectModule } from 'primeng/select';
-import { MultiSelectModule } from 'primeng/multiselect';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -27,7 +25,7 @@ import { isEgyptianNationality } from 'src/app/@theme/utils/nationality.utils';
 
 @Component({
   selector: 'app-user-edit',
-  imports: [CommonModule, SharedModule, NgxMaskDirective, SelectModule, MultiSelectModule],
+  imports: [CommonModule, SharedModule, NgxMaskDirective],
   templateUrl: './user-edit.component.html',
   styleUrl: './user-edit.component.scss',
   providers: [provideNgxMask()]
@@ -393,7 +391,8 @@ export class UserEditComponent implements OnInit {
     }
   }
 
-  onTeachersChange(teacherIds: number[]) {
+  onTeachersChange(selection: number[] | number | null) {
+    const teacherIds = Array.isArray(selection) ? selection : selection ? [selection] : [];
     if (!this.isManager) {
       return;
     }

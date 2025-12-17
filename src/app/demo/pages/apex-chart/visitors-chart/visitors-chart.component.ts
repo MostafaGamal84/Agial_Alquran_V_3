@@ -21,6 +21,12 @@ export class VisitorsChartComponent {
   themeService = inject(ThemeLayoutService);
 
   chartOptions: Partial<ApexOptions>;
+  rangeOptions = [
+    { label: 'اليوم', value: 'today' },
+    { label: 'أسبوعيًا', value: 'week' },
+    { label: 'شهريًا', value: 'month' }
+  ];
+  selectType = 'month';
 
   constructor() {
     this.chartOptions = {

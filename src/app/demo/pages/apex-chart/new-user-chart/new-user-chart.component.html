@@ -1,11 +1,15 @@
 <app-card [showHeader]="false">
   <div class="flex align-item-center justify-content-between">
     <div class="f-16 f-w-600">New Users</div>
-    <select class="form-select-sm">
-      <option>اليوم</option>
-      <option>أسبوعيًا</option>
-      <option selected>شهريًا</option>
-    </select>
+    <ng-select
+      class="form-select-sm"
+      [items]="rangeOptions"
+      bindLabel="label"
+      bindValue="value"
+      [(ngModel)]="selectType"
+      [searchable]="false"
+      [clearable]="false"
+    ></ng-select>
   </div>
   <div class="m-t-15">
     <div id="chart">

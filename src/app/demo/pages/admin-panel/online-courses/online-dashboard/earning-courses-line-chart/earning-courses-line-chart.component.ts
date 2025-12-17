@@ -23,6 +23,11 @@ export class EarningCoursesLineChartComponent implements OnInit {
   // public props
   chartOptions!: Partial<ApexOptions>;
   selectType: string = 'اليوم';
+  rangeOptions = [
+    { label: 'اليوم', value: 'اليوم' },
+    { label: 'أسبوعيًا', value: 'الأسبوع' },
+    { label: 'شهريًا', value: 'الشهر' }
+  ];
 
   // constructor
   constructor() {

@@ -218,6 +218,40 @@ ul {
   border-color: var(--accent-300);
 }
 
+.ng-select.form-select-sm,
+.ng-select.select-item {
+  width: auto;
+  min-width: 130px;
+}
+
+.ng-select.form-select-sm .ng-select-container,
+.ng-select.select-item .ng-select-container {
+  min-height: 38px;
+  border-radius: 8px;
+  border: 1px solid var(--accent-300);
+  background-color: var(--accent-400);
+  color: var(--accent-900);
+  box-shadow: none;
+  padding: 0 0.75rem;
+}
+
+.ng-select.form-select-sm .ng-value-container .ng-value-label,
+.ng-select.select-item .ng-value-container .ng-value-label,
+.ng-select.form-select-sm .ng-placeholder,
+.ng-select.select-item .ng-placeholder {
+  color: inherit;
+}
+
+.ng-select.form-select-sm .ng-arrow,
+.ng-select.select-item .ng-arrow {
+  border-color: var(--accent-900) transparent transparent;
+}
+
+.ng-select.form-select-sm.ng-select-opened .ng-arrow,
+.ng-select.select-item.ng-select-opened .ng-arrow {
+  border-color: transparent transparent var(--accent-900);
+}
+
 // end
 
 // all table in user status in use

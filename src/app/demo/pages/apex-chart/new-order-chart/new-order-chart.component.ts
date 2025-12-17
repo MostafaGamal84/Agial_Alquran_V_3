@@ -23,6 +23,12 @@ export class NewOrderChartComponent {
   // public props
   chartOptions: Partial<ApexOptions>;
   chartOptionColor = ['var(--primary-500)'];
+  rangeOptions = [
+    { label: 'اليوم', value: 'today' },
+    { label: 'أسبوعيًا', value: 'week' },
+    { label: 'شهريًا', value: 'month' }
+  ];
+  selectType = 'month';
 
   // constructor
   constructor() {

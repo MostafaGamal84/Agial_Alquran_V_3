@@ -25,16 +25,16 @@
           <div class="col-md-6 mb-3">
             <label class="form-label d-block">Mobile</label>
             <div class="d-flex gap-2 align-items-start">
-              <p-select
-                class="flex-shrink-0"
-                styleClass="w-100"
-                [options]="countries"
-                optionLabel="name"
-                optionValue="dialCode"
+              <ng-select
+                class="flex-shrink-0 w-100"
+                [items]="countries"
+                bindLabel="name"
+                bindValue="dialCode"
                 formControlName="mobileCountryDialCode"
-                (onChange)="onCountryCodeChange('mobileCountryDialCode')"
+                (change)="onCountryCodeChange('mobileCountryDialCode')"
                 placeholder="+1"
-              ></p-select>
+                [searchable]="true"
+              ></ng-select>
               <mat-form-field appearance="outline" class="w-100 m-b-10">
                 <input
                   matInput
@@ -56,16 +56,16 @@
           <div class="col-md-6 mb-3">
             <label class="form-label d-block">Second Mobile</label>
             <div class="d-flex gap-2 align-items-start">
-              <p-select
-                class="flex-shrink-0"
-                styleClass="w-100"
-                [options]="countries"
-                optionLabel="name"
-                optionValue="dialCode"
+              <ng-select
+                class="flex-shrink-0 w-100"
+                [items]="countries"
+                bindLabel="name"
+                bindValue="dialCode"
                 formControlName="secondMobileCountryDialCode"
-                (onChange)="onCountryCodeChange('secondMobileCountryDialCode')"
+                (change)="onCountryCodeChange('secondMobileCountryDialCode')"
                 placeholder="+1"
-              ></p-select>
+                [searchable]="true"
+              ></ng-select>
               <mat-form-field appearance="outline" class="w-100 m-b-10">
                 <input
                   matInput
@@ -83,15 +83,15 @@
 
           <div class="col-md-6 mb-3">
             <label class="form-label">Nationality</label>
-            <p-select
+            <ng-select
               class="w-100"
               formControlName="nationalityId"
-              [options]="nationalities"
-              optionLabel="name"
-              optionValue="id"
+              [items]="nationalities"
+              bindLabel="name"
+              bindValue="id"
               placeholder="Select Nationality"
-              [filter]="true"
-            ></p-select>
+              [searchable]="true"
+            ></ng-select>
             @if (basicInfoForm.get('nationalityId')?.touched && basicInfoForm.get('nationalityId')?.invalid) {
               <div class="text-danger small">Nationality id is required</div>
             }
@@ -99,15 +99,15 @@
 
           <div class="col-md-6 mb-3">
             <label class="form-label">Place of residence</label>
-            <p-select
+            <ng-select
               class="w-100"
               formControlName="residentId"
-              [options]="nationalities"
-              optionLabel="name"
-              optionValue="id"
+              [items]="nationalities"
+              bindLabel="name"
+              bindValue="id"
               placeholder="Select place of residence"
-              [filter]="true"
-            ></p-select>
+              [searchable]="true"
+            ></ng-select>
             @if (basicInfoForm.get('residentId')?.touched && basicInfoForm.get('residentId')?.invalid) {
               <div class="text-danger small">Place of residence is required</div>
             }
@@ -115,15 +115,15 @@
 
           <div class="col-md-6 mb-3">
             <label class="form-label">Governorate</label>
-            <p-select
+            <ng-select
               class="w-100"
               formControlName="governorateId"
-              [options]="governorates"
-              optionLabel="name"
-              optionValue="id"
+              [items]="governorates"
+              bindLabel="name"
+              bindValue="id"
               placeholder="Select Governorate"
-              [filter]="true"
-            ></p-select>
+              [searchable]="true"
+            ></ng-select>
             @if (basicInfoForm.get('governorateId')?.touched && basicInfoForm.get('governorateId')?.invalid) {
               <div class="text-danger small">{{ 'EgyptGovernorateRequiredMessage' | translate }}</div>
             }
@@ -131,14 +131,15 @@
 
           <div class="col-md-6 mb-3">
             <label class="form-label">Branch</label>
-            <p-select
+            <ng-select
               class="w-100"
               formControlName="branchId"
-              [options]="Branch"
-              optionLabel="label"
-              optionValue="id"
+              [items]="Branch"
+              bindLabel="label"
+              bindValue="id"
               placeholder="Select Branch"
-            ></p-select>
+              [searchable]="false"
+            ></ng-select>
             @if (basicInfoForm.get('branchId')?.touched && basicInfoForm.get('branchId')?.invalid) {
               <div class="text-danger small">Branch id is required</div>
             }
@@ -147,121 +148,129 @@
           @if (isManager) {
             <div class="col-md-6 mb-3">
               <label class="form-label">Teachers</label>
-              <p-multiSelect
+              <ng-select
                 class="w-100"
-                defaultLabel="Select Teachers"
                 formControlName="teacherIds"
-                [options]="teachers"
-                optionLabel="fullName"
-                optionValue="id"
-                [filter]="true"
-                (onChange)="onTeachersChange($event.value)"
-              ></p-multiSelect>
+                [items]="teachers"
+                bindLabel="fullName"
+                bindValue="id"
+                [multiple]="true"
+                [closeOnSelect]="false"
+                [searchable]="true"
+                placeholder="Select Teachers"
+                (change)="onTeachersChange($event)"
+              ></ng-select>
             </div>
             <div class="col-md-6 mb-3">
               <label class="form-label">Students</label>
-              <p-multiSelect
+              <ng-select
                 class="w-100"
-                defaultLabel="Select Students"
                 formControlName="studentIds"
-                [options]="students"
-                optionLabel="fullName"
-                optionValue="id"
-                [filter]="true"
-              ></p-multiSelect>
+                [items]="students"
+                bindLabel="fullName"
+                bindValue="id"
+                [multiple]="true"
+                [closeOnSelect]="false"
+                [searchable]="true"
+                placeholder="Select Students"
+              ></ng-select>
             </div>
             <div class="col-md-6 mb-3">
               <label class="form-label">Circles</label>
-              <p-multiSelect
+              <ng-select
                 class="w-100"
-                defaultLabel="Select Circles"
                 formControlName="circleIds"
-                [options]="circles"
-                optionLabel="name"
-                optionValue="id"
-                [filter]="true"
+                [items]="circles"
+                bindLabel="name"
+                bindValue="id"
+                [multiple]="true"
+                [closeOnSelect]="false"
+                [searchable]="true"
+                placeholder="Select Circles"
                 [disabled]="true"
-              ></p-multiSelect>
+              ></ng-select>
             </div>
           }
 
           @if (isTeacher) {
             <div class="col-md-6 mb-3">
               <label class="form-label">Manager</label>
-              <p-select
+              <ng-select
                 class="w-100"
                 formControlName="managerId"
-                [options]="managers"
-                optionLabel="fullName"
-                optionValue="id"
-                [filter]="true"
+                [items]="managers"
+                bindLabel="fullName"
+                bindValue="id"
+                [searchable]="true"
                 [disabled]="true"
-              ></p-select>
+              ></ng-select>
             </div>
             <div class="col-md-6 mb-3">
               <label class="form-label">Students</label>
-              <p-multiSelect
+              <ng-select
                 class="w-100"
-                defaultLabel="Select Students"
                 formControlName="studentIds"
-                [options]="students"
-                optionLabel="fullName"
-                optionValue="id"
-                [filter]="true"
+                [items]="students"
+                bindLabel="fullName"
+                bindValue="id"
+                [multiple]="true"
+                [closeOnSelect]="false"
+                [searchable]="true"
+                placeholder="Select Students"
                 [disabled]="!basicInfoForm.get('managerId')?.value"
-              ></p-multiSelect>
+              ></ng-select>
             </div>
             <div class="col-md-6 mb-3">
               <label class="form-label">Circle</label>
-              <p-select
+              <ng-select
                 class="w-100"
                 formControlName="circleId"
-                [options]="circles"
-                optionLabel="name"
-                optionValue="id"
-                [filter]="true"
+                [items]="circles"
+                bindLabel="name"
+                bindValue="id"
+                [searchable]="true"
                 [disabled]="!basicInfoForm.get('managerId')?.value"
-              ></p-select>
+              ></ng-select>
             </div>
           }
 
           @if (isStudent) {
             <div class="col-md-6 mb-3">
               <label class="form-label">Teacher</label>
-              <p-select
+              <ng-select
                 class="w-100"
                 formControlName="teacherId"
-                [options]="teachers"
-                optionLabel="fullName"
-                optionValue="id"
-                [filter]="true"
+                [items]="teachers"
+                bindLabel="fullName"
+                bindValue="id"
+                [searchable]="true"
                 [disabled]="!basicInfoForm.get('managerId')?.value"
-                (onChange)="onTeacherChange($event.value)"
-              ></p-select>
+                (change)="onTeacherChange($event.value)"
+              ></ng-select>
             </div>
             <div class="col-md-6 mb-3">
               <label class="form-label">Manager</label>
-              <p-select
+              <ng-select
                 class="w-100"
                 formControlName="managerId"
-                [options]="managers"
-                optionLabel="fullName"
-                optionValue="id"
-                [filter]="true"
-                (onChange)="onManagerChange($event.value)"
-              ></p-select>
+                [items]="managers"
+                bindLabel="fullName"
+                bindValue="id"
+                [searchable]="true"
+                (change)="onManagerChange($event.value)"
+              ></ng-select>
             </div>
             <div class="col-md-6 mb-3">
               <label class="form-label">Circle</label>
-              <p-select
+              <ng-select
                 class="w-100"
                 formControlName="circleId"
-                [options]="circles"
-                optionLabel="name"
-                optionValue="id"
-                [filter]="true"
+                [items]="circles"
+                bindLabel="name"
+                bindValue="id"
+                [searchable]="true"
                 [disabled]="true"
-              ></p-select>
+              ></ng-select>
             </div>
           }
           <div class="col-md-12 text-end">

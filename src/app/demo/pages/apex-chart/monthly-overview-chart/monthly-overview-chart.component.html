@@ -3,11 +3,15 @@
     <div class="col-lg-7 col-xl-8">
       <ul class="list-inline m-b-15">
         <li class="list-inline-item">
-          <select class="select-item">
-            <option>اليوم</option>
-            <option>أسبوعيًا</option>
-            <option selected>شهريًا</option>
-          </select>
+          <ng-select
+            class="select-item"
+            [items]="rangeOptions"
+            bindLabel="label"
+            bindValue="value"
+            [(ngModel)]="selectType"
+            [searchable]="false"
+            [clearable]="false"
+          ></ng-select>
         </li>
         <li class="list-inline-item">
           <a href="javascript:" class="avatar avatar-s border">

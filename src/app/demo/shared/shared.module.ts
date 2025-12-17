@@ -42,6 +42,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 // third party import
 import { NgScrollbarModule } from 'ngx-scrollbar';
+import { NgSelectModule } from '@ng-select/ng-select';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 
 // project import
@@ -98,6 +99,7 @@ const MaterialModules = [
     FormsModule,
     ReactiveFormsModule,
     NgScrollbarModule,
+    NgSelectModule,
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
@@ -115,6 +117,7 @@ const MaterialModules = [
     FormsModule,
     ReactiveFormsModule,
     NgScrollbarModule,
+    NgSelectModule,
     TranslateModule,
     CardComponent,
     OpenSelectOnTypeDirective,

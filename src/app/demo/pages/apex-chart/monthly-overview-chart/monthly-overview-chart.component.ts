@@ -23,6 +23,12 @@ export class MonthlyOverviewChartComponent {
   // public props
   chartOptions: Partial<ApexOptions>;
   overOptionsColor = ['var(--primary-500)', 'var(--primary-200)'];
+  rangeOptions = [
+    { label: 'اليوم', value: 'today' },
+    { label: 'أسبوعيًا', value: 'week' },
+    { label: 'شهريًا', value: 'month' }
+  ];
+  selectType = 'month';
 
   // constructor
   constructor() {

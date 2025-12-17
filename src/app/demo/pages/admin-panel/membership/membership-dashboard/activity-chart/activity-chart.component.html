@@ -1,11 +1,16 @@
 <app-card [showHeader]="false">
   <div class="flex align-item-start justify-content-between m-b-15">
     <div class="f-16 f-w-600">Activity</div>
-    <select class="form-select-sm" [(ngModel)]="selectType" (change)="onOptionSelected()">
-      <option value="today">اليوم</option>
-      <option value="week">أسبوعيًا</option>
-      <option value="month">شهريًا</option>
-    </select>
+    <ng-select
+      class="form-select-sm"
+      [items]="rangeOptions"
+      bindLabel="label"
+      bindValue="value"
+      [(ngModel)]="selectType"
+      (change)="onOptionSelected()"
+      [searchable]="false"
+      [clearable]="false"
+    ></ng-select>
   </div>
   <div id="chart">
     <apx-chart

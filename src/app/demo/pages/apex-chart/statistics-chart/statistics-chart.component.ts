@@ -24,6 +24,11 @@ export class StatisticsChartComponent implements OnInit {
   chartOptions!: Partial<ApexOptions>;
   selectType: string = 'today';
   chartColors = ['#faad14', '#4680ff'];
+  rangeOptions = [
+    { label: 'اليوم', value: 'today' },
+    { label: 'أسبوعيًا', value: 'week' },
+    { label: 'شهريًا', value: 'month' }
+  ];
   readonly height = input.required<number>();
   readonly chartTitle = input<string>('Statistics');
   readonly chartSubtitle = input<string | null | undefined>('Revenue and Sales');

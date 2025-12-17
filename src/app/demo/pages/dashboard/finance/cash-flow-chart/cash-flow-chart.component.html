@@ -7,11 +7,16 @@
         <span class="user-status bg-success-500 text-white">5.44%</span>
       </p>
     </div>
-    <select class="form-select-sm" [(ngModel)]="selectType" (change)="onOptionSelected()">
-      <option value="today">اليوم</option>
-      <option value="week">أسبوعيًا</option>
-      <option value="month">شهريًا</option>
-    </select>
+    <ng-select
+      class="form-select-sm"
+      [items]="rangeOptions"
+      bindLabel="label"
+      bindValue="value"
+      [(ngModel)]="selectType"
+      (change)="onOptionSelected()"
+      [searchable]="false"
+      [clearable]="false"
+    ></ng-select>
   </div>
   <div id="courses">
     <apx-chart

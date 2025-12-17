@@ -23,6 +23,11 @@ export class CashFlowChartComponent implements OnInit {
   // public props
   chartOptions!: Partial<ApexOptions>;
   selectType = 'month';
+  rangeOptions = [
+    { label: 'اليوم', value: 'today' },
+    { label: 'أسبوعيًا', value: 'week' },
+    { label: 'شهريًا', value: 'month' }
+  ];
 
   // constructor
   constructor() {
