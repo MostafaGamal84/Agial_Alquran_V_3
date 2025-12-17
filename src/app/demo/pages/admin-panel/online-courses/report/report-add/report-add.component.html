@@ -86,6 +86,13 @@
         </div>
       </ng-template>
 
+      <!-- Creation time (optional) -->
+      <div class="field">
+        <label class="lbl">{{ 'تاريخ التقرير (اختياري)' }}</label>
+        <input class="inp" type="datetime-local" formControlName="creationTime" [max]="creationTimeMax" />
+        <p class="hint">{{ 'اترك الحقل فارغًا لاستخدام وقت رفع التقرير تلقائيًا' }}</p>
+      </div>
+
       <!-- Status -->
       <div class="field">
         <label class="lbl">{{ 'Attend Status' }}</label>

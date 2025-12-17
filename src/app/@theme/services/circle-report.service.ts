@@ -22,7 +22,7 @@ export interface CircleReportAddDto {
   theWordsQuranStranger?: string;
   intonation?: string;
   other?: string;
-  creationTime: Date;
+  creationTime?: Date | string | null;
   circleId?: number;
   studentId?: number;
   teacherId?: number;
@@ -132,4 +132,3 @@ export class CircleReportService {
       .pipe(map((response) => normalizePagedResult(response, { skipCount: filter.skipCount })));
   }
 }
-

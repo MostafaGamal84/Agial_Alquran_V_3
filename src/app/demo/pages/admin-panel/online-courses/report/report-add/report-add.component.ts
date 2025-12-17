@@ -190,7 +190,7 @@ export class ReportAddComponent implements OnInit, OnDestroy {
       intonation: [''],
       other: [''],
 
-      creationTime: [new Date(), Validators.required]
+      creationTime: ['']
     });
   }
 
@@ -551,7 +551,12 @@ export class ReportAddComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const model = this.reportForm.getRawValue() as CircleReportAddDto;
+    const rawModel = this.reportForm.getRawValue() as CircleReportAddDto & {
+      creationTime?: string | Date | null;
+    };
+    const creationTime = this.resolveCreationTime(rawModel.creationTime);
+
+    const model: CircleReportAddDto = { ...rawModel, creationTime };
 
     this.isSubmitting = true;
     const request$ = this.mode === 'update' ? this.service.update({ ...model, id: this.reportId ?? undefined }) : this.service.create(model);
@@ -570,7 +575,7 @@ export class ReportAddComponent implements OnInit, OnDestroy {
             return;
           }
 
-          this.reportForm.reset({ creationTime: new Date() }, { emitEvent: false });
+          this.reportForm.reset({ creationTime: '' }, { emitEvent: false });
 
           // ✅ بعد reset لازم نعيد تطبيق قواعد الدور + reload flow
           this.applyRoleBasedValidators();
@@ -599,6 +604,30 @@ export class ReportAddComponent implements OnInit, OnDestroy {
   // =========================
   // Utils
   // =========================
+  private toDate(value: unknown): Date | null {
+    if (!value) return null;
+    const date = value instanceof Date ? value : new Date(value);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  private toDateTimeLocalString(value: unknown): string {
+    const date = this.toDate(value);
+    if (!date) return '';
+
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const year = date.getFullYear();
+    const month = pad(date.getMonth() + 1);
+    const day = pad(date.getDate());
+    const hours = pad(date.getHours());
+    const minutes = pad(date.getMinutes());
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+
+  private resolveCreationTime(rawValue: unknown): Date {
+    return this.toDate(rawValue) ?? new Date();
+  }
+
   trackById = (_: number, x: any) => x?.id;
 
   get managerDisplayName(): string {
@@ -623,6 +652,10 @@ export class ReportAddComponent implements OnInit, OnDestroy {
     const id = this.reportForm.get('studentId')?.value;
     const fromList = this.students.find((s) => s.id === id)?.name;
     return fromList ?? this.readonlyLabels.student ?? '';
+  }
+
+  get creationTimeMax(): string {
+    return this.toDateTimeLocalString(new Date());
   }
 
   private setValueSilent(name: string, value: any): void {
@@ -681,7 +714,7 @@ export class ReportAddComponent implements OnInit, OnDestroy {
       studentId: candidate.studentId ?? candidate.student?.id ?? null,
       teacherId: candidate.teacherId ?? candidate.teacher?.id ?? null,
       attendStatueId: candidate.attendStatueId ?? candidate.attendStatusId ?? null,
-      creationTime: candidate.creationTime ? new Date(candidate.creationTime) : new Date()
+      creationTime: candidate.creationTime ?? null
     };
 
     this.patchReport(hydrated);
@@ -719,7 +752,7 @@ export class ReportAddComponent implements OnInit, OnDestroy {
     this.reportForm.patchValue(
       {
         ...report,
-        creationTime: report.creationTime ? new Date(report.creationTime) : new Date()
+        creationTime: this.toDateTimeLocalString(report.creationTime)
       },
       { emitEvent: false }
     );
