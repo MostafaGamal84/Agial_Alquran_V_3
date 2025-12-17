@@ -142,25 +142,28 @@ export class AdminComponent implements OnInit, AfterViewInit {
       UserTypesEnum.Student.toString()
     ]
   ): Navigation[] {
-    return menus.map((item) => {
-      const itemRoles = item.role && item.role.length ? item.role : parentRoles;
-      const filteredItem: Navigation = {
-        ...item,
-        role: itemRoles,
-        disabled: !userRoles.some((role) => itemRoles.includes(role))
-      };
+    return menus
+      .map((item) => {
+        const itemRoles = item.role && item.role.length ? item.role : parentRoles;
+        const isAllowed = userRoles.some((role) => itemRoles.includes(role));
 
-      if (filteredItem.children) {
-        filteredItem.children = this.RoleBaseFilterMenu(
-          filteredItem.children,
-          userRoles,
-          itemRoles
-        );
-      }
+        if (!isAllowed) {
+          return null;
+        }
 
-      return filteredItem;
+        const filteredChildren = item.children
+          ? this.RoleBaseFilterMenu(item.children, userRoles, itemRoles)
+          : undefined;
 
-    });
+        const filteredItem: Navigation = {
+          ...item,
+          role: itemRoles,
+          children: filteredChildren
+        };
+
+        return filteredItem;
+      })
+      .filter((item): item is Navigation => item !== null);
   }
 
   /**

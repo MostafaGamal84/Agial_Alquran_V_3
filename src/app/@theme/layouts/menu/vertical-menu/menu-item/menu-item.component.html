@@ -1,4 +1,4 @@
-@if (!item().hidden) {
+@if (!item().hidden && isEnabled) {
   @if (item().url && !item().external) {
     <li
       [ngClass]="item().classes!"
@@ -13,31 +13,16 @@
         (click)="toggleMenu($event)"
         [routerLinkActive]="['active']"
       >
-        @if (!isEnabled) {
+        @if (item().icon) {
           <span class="coded-micon">
             <svg class="pc-icon">
-              <use xlink:href="assets/fonts/custom-icon.svg#custom-lock"></use>
+              <use attr.xlink:href="assets/fonts/custom-icon.svg{{ item().icon }}"></use>
             </svg>
           </span>
-        } @else {
-          @if (item().icon) {
-            <span class="coded-micon">
-              <svg class="pc-icon">
-                <use attr.xlink:href="assets/fonts/custom-icon.svg{{ item().icon }}"></use>
-              </svg>
-            </span>
-          }
         }
         @if (item().icon) {
           <span class="coded-mtext">{{ item().title | translate }}</span>
         } @else {
-          @if (!isEnabled) {
-            <span class="coded-micon">
-              <svg class="pc-icon">
-                <use attr.xlink:href="assets/fonts/custom-icon.svg{{ item().icon }}"></use>
-              </svg>
-            </span>
-          }
           {{ item().title | translate }}
         }
       </a>
