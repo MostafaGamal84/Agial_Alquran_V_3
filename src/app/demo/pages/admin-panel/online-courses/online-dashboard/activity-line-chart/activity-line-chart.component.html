@@ -3,11 +3,16 @@
     <div>
       <div class="f-16 f-w-600 m-b-5">النشاط</div>
     </div>
-    <select class="form-select-sm" [(ngModel)]="selectType" (change)="onOptionSelected()">
-      <option value="اليوم">اليوم</option>
-      <option value="الأسبوع">أسبوعيًا</option>
-      <option value="الشهر">شهريًا</option>
-    </select>
+    <ng-select
+      class="form-select-sm"
+      [items]="rangeOptions"
+      bindLabel="label"
+      bindValue="value"
+      [(ngModel)]="selectType"
+      (change)="onOptionSelected()"
+      [searchable]="false"
+      [clearable]="false"
+    ></ng-select>
   </div>
   <div id="chart">
     <apx-chart

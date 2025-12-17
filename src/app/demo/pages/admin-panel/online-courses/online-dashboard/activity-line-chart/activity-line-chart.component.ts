@@ -24,6 +24,11 @@ export class ActivityLineChartComponent implements OnInit {
   chartOptions!: Partial<ApexOptions>;
   selectType: string = 'اليوم';
   themeColors = ['#52c41a', '#1677ff'];
+  rangeOptions = [
+    { label: 'اليوم', value: 'اليوم' },
+    { label: 'أسبوعيًا', value: 'الأسبوع' },
+    { label: 'شهريًا', value: 'الشهر' }
+  ];
 
   // constructor
   constructor() {

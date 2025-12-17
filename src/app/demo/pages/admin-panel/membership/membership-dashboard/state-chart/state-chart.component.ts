@@ -17,6 +17,11 @@ export class StateChartComponent implements OnInit {
   // public props
   chartOptions!: Partial<ApexOptions>;
   selectType: string = 'today';
+  rangeOptions = [
+    { label: 'اليوم', value: 'today' },
+    { label: 'أسبوعيًا', value: 'week' },
+    { label: 'شهريًا', value: 'month' }
+  ];
 
   // life cycle hook
   ngOnInit(): void {

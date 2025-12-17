@@ -22,6 +22,12 @@ export class NewUserChartComponent {
 
   //public props
   chartOptions: Partial<ApexOptions>;
+  rangeOptions = [
+    { label: 'اليوم', value: 'today' },
+    { label: 'أسبوعيًا', value: 'week' },
+    { label: 'شهريًا', value: 'month' }
+  ];
+  selectType = 'month';
 
   // constructor
   constructor() {
