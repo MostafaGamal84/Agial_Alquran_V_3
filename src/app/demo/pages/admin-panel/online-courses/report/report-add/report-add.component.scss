@@ -159,16 +159,31 @@
   border:1px solid rgba(255,255,255,.10);
   background: rgba(0,0,0,.25);
   color:#fff;
+  font-family: inherit;
 }
 :host ::ng-deep .ng-dropdown-panel{
   border-radius:12px;
   overflow:hidden;
-  background: rgba(10,14,18,.98);
+  background: #0b1017;
   border:1px solid rgba(255,255,255,.10);
+  color: #fff;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.45);
+  font-family: inherit;
+}
+:host ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items{
+  background: #0b1017;
+  font-family: inherit;
 }
 :host ::ng-deep .ng-option{
-  color:#fff;
+  color:#e5e7eb;
+  background: transparent;
+  font-family: inherit;
 }
 :host ::ng-deep .ng-option:hover{
   background: rgba(255,255,255,.06);
+}
+:host ::ng-deep .ng-option-selected,
+:host ::ng-deep .ng-option.ng-option-marked {
+  background: rgba(59,130,246,.16);
+  color: #fff;
 }
