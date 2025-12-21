@@ -23,21 +23,24 @@
           </div>
         </div>
         <div class="right-panel">
-          <section class="section" *ngIf="detailEntries.length">
-            <h6 class="section-title">{{ 'Personal Details' | translate }}</h6>
-            <hr />
+          <mat-accordion *ngIf="detailEntries.length || s.branchId !== undefined">
+            <mat-expansion-panel [expanded]="true">
+              <mat-expansion-panel-header>
+                <mat-panel-title>{{ 'Personal Details' | translate }}</mat-panel-title>
+              </mat-expansion-panel-header>
 
-            <div class="detail-grid">
-              <div class="detail-item" *ngIf="s.branchId !== undefined">
-                <span class="label">{{ 'Branch' | translate }}:</span>
-                <span>{{ getBranchLabel(s.branchId) }}</span>
+              <div class="detail-grid">
+                <div class="detail-item" *ngIf="s.branchId !== undefined">
+                  <span class="label">{{ 'Branch' | translate }}:</span>
+                  <span>{{ getBranchLabel(s.branchId) }}</span>
+                </div>
+                <div class="detail-item" *ngFor="let entry of detailEntries">
+                  <span class="label">{{ getLabel(entry[0]) | translate }}:</span>
+                  <span>{{ formatValue(entry[0], entry[1]) }}</span>
+                </div>
               </div>
-              <div class="detail-item" *ngFor="let entry of detailEntries">
-                <span class="label">{{ getLabel(entry[0]) | translate }}:</span>
-                <span>{{ formatValue(entry[0], entry[1]) }}</span>
-              </div>
-            </div>
-          </section>
+            </mat-expansion-panel>
+          </mat-accordion>
         </div>
       </div>
     </div>

@@ -39,15 +39,18 @@
             </div>
           </section> -->
 
-          <section class="section" *ngIf="students.length">
-            <h6 class="section-title">{{ 'الطلاب' | translate }}</h6>
-            <hr />
+          <mat-accordion *ngIf="students.length">
+            <mat-expansion-panel>
+              <mat-expansion-panel-header>
+                <mat-panel-title>{{ 'الطلاب' | translate }}</mat-panel-title>
+              </mat-expansion-panel-header>
 
-            <div class="relation-item" *ngFor="let s of students">
-              <span class="relation-name">{{ s.fullName }}</span>
-              <span class="relation-phone">{{ s.mobile }}</span>
-            </div>
-          </section>
+              <div class="relation-item" *ngFor="let s of students">
+                <span class="relation-name">{{ s.fullName }}</span>
+                <span class="relation-phone">{{ s.mobile }}</span>
+              </div>
+            </mat-expansion-panel>
+          </mat-accordion>
         </div>
       </div>
     </div>
