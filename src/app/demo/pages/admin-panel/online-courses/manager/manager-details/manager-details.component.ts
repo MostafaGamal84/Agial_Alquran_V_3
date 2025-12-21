@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
+import { MatExpansionModule } from '@angular/material/expansion';
 import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scrollbar';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -28,7 +29,7 @@ interface ContactEntry {
 @Component({
   selector: 'app-manager-details',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule, NgxScrollbar, TranslateModule],
+  imports: [CommonModule, MatDialogModule, MatButtonModule, MatExpansionModule, NgxScrollbar, TranslateModule],
   templateUrl: './manager-details.component.html',
   styleUrl: './manager-details.component.scss'
 })

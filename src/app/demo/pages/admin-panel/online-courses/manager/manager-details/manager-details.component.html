@@ -24,46 +24,56 @@
           </div>
         </div>
         <div class="right-panel">
-          <!-- <section class="section" *ngIf="detailEntries.length">
-            <h6 class="section-title">{{ 'البيانات الشخصية' | translate }}</h6>
-            <hr />
-            <div class="detail-grid">
-              <div class="detail-item" *ngIf="m.branchId !== undefined">
-                <span class="label">{{ 'الفرع' | translate }}:</span>
-                <span>{{ getBranchLabel(m.branchId) }}</span>
+          <mat-accordion>
+            <mat-expansion-panel [expanded]="true" *ngIf="m.branchId !== undefined || detailEntries.length">
+              <mat-expansion-panel-header>
+                <mat-panel-title>{{ 'البيانات الشخصية' | translate }}</mat-panel-title>
+              </mat-expansion-panel-header>
+
+              <div class="detail-grid">
+                <div class="detail-item" *ngIf="m.branchId !== undefined">
+                  <span class="label">{{ 'الفرع' | translate }}:</span>
+                  <span>{{ getBranchLabel(m.branchId) }}</span>
+                </div>
+                <div class="detail-item" *ngFor="let entry of detailEntries">
+                  <span class="label">{{ formatLabel(entry[0]) | translate }}:</span>
+                  <span>{{ formatValue(entry[0], entry[1]) }}</span>
+                </div>
               </div>
-              <div class="detail-item" *ngFor="let entry of detailEntries">
-                <span class="label">{{ formatLabel(entry[0]) | translate }}:</span>
-                <span>{{ formatValue(entry[0], entry[1]) }}</span>
+            </mat-expansion-panel>
+
+            <mat-expansion-panel *ngIf="teachers.length">
+              <mat-expansion-panel-header>
+                <mat-panel-title>{{ 'المعلمون' | translate }}</mat-panel-title>
+              </mat-expansion-panel-header>
+
+              <div class="relation-item" *ngFor="let t of teachers">
+                <span class="relation-name">{{ t.fullName }}</span>
+                <span class="relation-phone">{{ t.mobile }}</span>
               </div>
-            </div>
-          </section> -->
+            </mat-expansion-panel>
 
-          <section class="section" *ngIf="teachers.length">
-            <h6 class="section-title">{{ 'المعلمين' | translate }}</h6>
-            <hr />
-            <div class="relation-item" *ngFor="let t of teachers">
-              <span class="relation-name">{{ t.fullName }}</span>
-              <span class="relation-phone">{{ t.mobile }}</span>
-            </div>
-          </section>
+            <mat-expansion-panel *ngIf="students.length">
+              <mat-expansion-panel-header>
+                <mat-panel-title>{{ 'الطلاب' | translate }}</mat-panel-title>
+              </mat-expansion-panel-header>
 
-          <section class="section" *ngIf="students.length">
-            <h6 class="section-title">{{ 'الطلاب' | translate }}</h6>
-            <hr />
-            <div class="relation-item" *ngFor="let s of students">
-              <span class="relation-name">{{ s.fullName }}</span>
-              <span class="relation-phone">{{ s.mobile }}</span>
-            </div>
-          </section>
+              <div class="relation-item" *ngFor="let s of students">
+                <span class="relation-name">{{ s.fullName }}</span>
+                <span class="relation-phone">{{ s.mobile }}</span>
+              </div>
+            </mat-expansion-panel>
 
-          <section class="section" *ngIf="managerCircles.length">
-            <h6 class="section-title">{{ 'الحلقات' | translate }}</h6>
-            <hr />
-            <div class="relation-item" *ngFor="let c of managerCircles">
-              <span class="relation-name">{{ c.circle }}</span>
-            </div>
-          </section>
+            <mat-expansion-panel *ngIf="managerCircles.length">
+              <mat-expansion-panel-header>
+                <mat-panel-title>{{ 'الحلقات' | translate }}</mat-panel-title>
+              </mat-expansion-panel-header>
+
+              <div class="relation-item" *ngFor="let c of managerCircles">
+                <span class="relation-name">{{ c.circle }}</span>
+              </div>
+            </mat-expansion-panel>
+          </mat-accordion>
         </div>
       </div>
     </div>
