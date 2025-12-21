@@ -24,22 +24,24 @@
           </div>
         </div>
         <div class="right-panel">
-          <!-- <section class="section" *ngIf="detailEntries.length">
-            <h6 class="section-title">{{ 'البيانات الشخصية' | translate }}</h6>
-            <hr />
-            <div class="detail-grid">
-              <div class="detail-item" *ngIf="m.branchId !== undefined">
-                <span class="label">{{ 'الفرع' | translate }}:</span>
-                <span>{{ getBranchLabel(m.branchId) }}</span>
-              </div>
-              <div class="detail-item" *ngFor="let entry of detailEntries">
-                <span class="label">{{ formatLabel(entry[0]) | translate }}:</span>
-                <span>{{ formatValue(entry[0], entry[1]) }}</span>
-              </div>
-            </div>
-          </section> -->
-
           <mat-accordion>
+            <mat-expansion-panel [expanded]="true" *ngIf="m.branchId !== undefined || detailEntries.length">
+              <mat-expansion-panel-header>
+                <mat-panel-title>{{ 'البيانات الشخصية' | translate }}</mat-panel-title>
+              </mat-expansion-panel-header>
+
+              <div class="detail-grid">
+                <div class="detail-item" *ngIf="m.branchId !== undefined">
+                  <span class="label">{{ 'الفرع' | translate }}:</span>
+                  <span>{{ getBranchLabel(m.branchId) }}</span>
+                </div>
+                <div class="detail-item" *ngFor="let entry of detailEntries">
+                  <span class="label">{{ formatLabel(entry[0]) | translate }}:</span>
+                  <span>{{ formatValue(entry[0], entry[1]) }}</span>
+                </div>
+              </div>
+            </mat-expansion-panel>
+
             <mat-expansion-panel *ngIf="teachers.length">
               <mat-expansion-panel-header>
                 <mat-panel-title>{{ 'المعلمون' | translate }}</mat-panel-title>
