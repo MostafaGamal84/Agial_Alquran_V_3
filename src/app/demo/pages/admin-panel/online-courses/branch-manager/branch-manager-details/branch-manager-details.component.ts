@@ -115,8 +115,8 @@ export class BranchManagerDetailsComponent {
     const raw = inject<{ data?: ManagerVM } | ManagerVM | null>(MAT_DIALOG_DATA);
 
     // ✅ لو الداتا جاية بالشكل: {isSuccess, errors, data}
-    const data = raw && 'data' in raw ? raw.data : raw;
-    this.setData(data ?? undefined);
+    const data = raw && typeof raw === 'object' && 'data' in raw ? raw.data : (raw as ManagerVM | null);
+    this.setData(data);
   }
 
   setData(data?: ManagerVM | null): void {
