@@ -9,9 +9,15 @@
 </div>
 
 <mat-dialog-content class="dialog-content">
-  <app-scrollbar [customStyle]="{ maxHeight: 'calc(100vh - 155px)', position: 'relative' }">
 
-    <div class="wrap" *ngIf="vm as m">
+  <div class="loading-state" *ngIf="loading">
+    <mat-spinner diameter="48"></mat-spinner>
+    <div class="loading-text">جاري تحميل البيانات...</div>
+  </div>
+
+  <app-scrollbar *ngIf="!loading && vm as m" [customStyle]="{ maxHeight: 'calc(100vh - 155px)', position: 'relative' }">
+
+    <div class="wrap">
 
       <!-- ====== Header Card ====== -->
       <section class="card hero">
