@@ -1,48 +1,97 @@
-<div class="manager-details-header" mat-dialog-title>
-  <div class="flex align-item-center justify-content-between">
-    <div class="f-w-700 f-16">{{ 'Student Details' | translate }}</div>
-    <button mat-icon-button class="avatar avatar-s modal-close" mat-dialog-close>
-      <i class="ti ti-x f-20"></i>
+<div class="dialog-head" mat-dialog-title>
+  <div class="head-row">
+    <div class="title">بيانات الطالب</div>
+
+    <button mat-icon-button class="close-btn" mat-dialog-close aria-label="إغلاق">
+      <i class="ti ti-x"></i>
     </button>
   </div>
 </div>
-<mat-dialog-content class="p-0">
-  <app-scrollbar [customStyle]="{ maxHeight: 'calc(100vh - 155px)', position: 'relative' }">
-    <div class="dialog-body">
-      <div class="details-wrapper" *ngIf="student as s">
-        <div class="left-panel">
-          <div class="avatar avatar-xl m-b-10">
-            <i class="ti ti-user f-24"></i>
+
+<mat-dialog-content class="dialog-content">
+
+  <div class="loading-state" *ngIf="loading">
+    <mat-spinner diameter="48"></mat-spinner>
+    <div class="loading-text">جاري تحميل البيانات...</div>
+  </div>
+
+  <app-scrollbar *ngIf="!loading && vm as s" [customStyle]="{ maxHeight: 'calc(100vh - 155px)', position: 'relative' }">
+
+    <div class="wrap">
+
+      <!-- ====== Header Card ====== -->
+      <section class="card hero">
+        <div class="hero-left">
+          <div class="avatar">
+            <i class="ti ti-user"></i>
           </div>
-          <h5 class="m-b-10">{{ s.fullName }}</h5>
-          <div class="contact-list">
-            <div class="contact-item" *ngFor="let c of contactEntries">
-              <i [class]="c.icon"></i>
-              <span class="contact-value">{{ c.value }}</span>
+
+          <div class="hero-meta">
+            <div class="name">{{ s.fullName || '—' }}</div>
+
+            <div class="sub">
+              <span class="pill">
+                <i class="ti ti-building-store"></i>
+                {{ getBranchLabel(s.branchId) }}
+              </span>
+
+              <span class="pill" *ngIf="s.inactive !== undefined" [class.is-inactive]="!!s.inactive">
+                <i class="ti" [class.ti-circle-check]="!s.inactive" [class.ti-circle-x]="!!s.inactive"></i>
+                {{ s.inactive ? 'غير نشط' : 'نشط' }}
+              </span>
             </div>
           </div>
         </div>
-        <div class="right-panel">
-          <mat-accordion *ngIf="detailEntries.length || s.branchId !== undefined">
-            <mat-expansion-panel [expanded]="true">
-              <mat-expansion-panel-header>
-                <mat-panel-title>{{ 'Personal Details' | translate }}</mat-panel-title>
-              </mat-expansion-panel-header>
 
-              <div class="detail-grid">
-                <div class="detail-item" *ngIf="s.branchId !== undefined">
-                  <span class="label">{{ 'Branch' | translate }}:</span>
-                  <span>{{ getBranchLabel(s.branchId) }}</span>
-                </div>
-                <div class="detail-item" *ngFor="let entry of detailEntries">
-                  <span class="label">{{ getLabel(entry[0]) | translate }}:</span>
-                  <span>{{ formatValue(entry[0], entry[1]) }}</span>
-                </div>
-              </div>
-            </mat-expansion-panel>
-          </mat-accordion>
+        <div class="hero-right" *ngIf="statEntries.length">
+          <div class="mini" *ngFor="let st of statEntries">
+            <div class="mini-k">{{ st.label }}</div>
+            <div class="mini-v">{{ st.value || '—' }}</div>
+          </div>
         </div>
-      </div>
+      </section>
+
+      <!-- ====== Contact Card ====== -->
+      <section class="card" *ngIf="contactEntries.length">
+        <div class="card-title">
+          <i class="ti ti-address-book"></i>
+          بيانات التواصل
+        </div>
+
+        <div class="contact-grid">
+          <a class="contact-item"
+             *ngFor="let c of contactEntries"
+             [href]="c.href || null"
+             [class.is-link]="!!c.href"
+             (click)="$event.stopPropagation()">
+
+            <div class="c-ico"><i [class]="c.icon"></i></div>
+            <div class="c-body">
+              <div class="c-label">{{ c.label }}</div>
+              <div class="c-value">{{ c.value || '—' }}</div>
+            </div>
+
+            <i class="ti ti-external-link hint" *ngIf="c.href"></i>
+          </a>
+        </div>
+      </section>
+
+      <!-- ====== Details Card ====== -->
+      <section class="card" *ngIf="detailEntries.length">
+        <div class="card-title">
+          <i class="ti ti-id"></i>
+          البيانات الأساسية
+        </div>
+
+        <div class="kv-grid">
+          <div class="kv" *ngFor="let e of detailEntries">
+            <div class="k">{{ e.label }}</div>
+            <div class="v">{{ e.value }}</div>
+          </div>
+        </div>
+      </section>
+
     </div>
+
   </app-scrollbar>
 </mat-dialog-content>
