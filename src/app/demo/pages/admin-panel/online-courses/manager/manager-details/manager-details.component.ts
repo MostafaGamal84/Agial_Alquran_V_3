@@ -1,140 +1,270 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
-import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatButtonModule } from '@angular/material/button';
 import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scrollbar';
-import { TranslateModule } from '@ngx-translate/core';
+import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 
 interface Person {
   fullName?: string;
   mobile?: string;
-  [key: string]: unknown;
 }
 
 interface Circle {
-  circleId?: number;
   circle?: string;
-  [key: string]: unknown;
+  circleId?: number;
+}
+
+interface DetailEntry {
+  key: string;
+  label: string;
+  value: string;
 }
 
 interface ContactEntry {
   key: string;
-  value: unknown;
+  label: string;
+  value: string;
   icon: string;
+  href?: string;
 }
+
+type ManagerVM = {
+  id?: number;
+  fullName?: string;
+  email?: string;
+  mobile?: string;
+  secondMobile?: string;
+  nationality?: string;
+  nationalityId?: number;
+  resident?: string;
+  residentId?: number;
+  governorate?: string;
+  governorateId?: number;
+  branchId?: number;
+  teacherId?: number;
+  teacherName?: string;
+  managerId?: number;
+  managerName?: string;
+  circleId?: number;
+  circleName?: string;
+  gender?: string;
+  userName?: string;
+  identityNumber?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  inactive?: boolean;
+
+  managers?: unknown[];
+  teachers?: Person[];
+  students?: Person[];
+  managerCircles?: Circle[];
+};
 
 @Component({
   selector: 'app-manager-details',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule, MatExpansionModule, NgxScrollbar, TranslateModule],
+  imports: [
+    CommonModule,
+    MatDialogModule,
+    MatProgressSpinnerModule,
+    MatButtonModule,
+    MatExpansionModule,
+    NgxScrollbar
+  ],
   templateUrl: './manager-details.component.html',
   styleUrl: './manager-details.component.scss'
 })
 export class ManagerDetailsComponent {
-  manager?: Record<string, unknown>;
+  loading = true;
+  vm?: ManagerVM;
+
   teachers: Person[] = [];
   students: Person[] = [];
   managerCircles: Circle[] = [];
+
   contactEntries: ContactEntry[] = [];
-  detailEntries: [string, unknown][] = [];
-  private readonly labelTranslationMap: Record<string, string> = {
-    branchId: 'Branch',
-    gender: 'Gender',
-    userName: 'Username',
-    createdAt: 'Created At',
-    updatedAt: 'Updated At',
-    managerName: 'Manager Name',
-    circleName: 'Circle Name',
-    identityNumber: 'Identity Number',
-    residentId: 'Resident ID',
-    nationality: 'Nationality',
-    nationalityId: 'Nationality',
-    governorate: 'Governorate',
-    governorateId: 'Governorate'
-  };
+  detailEntries: DetailEntry[] = [];
+  statEntries: Array<{ label: string; value: string | undefined }> = [];
 
   Branch = [
     { id: BranchesEnum.Mens, label: 'الرجال' },
     { id: BranchesEnum.Women, label: 'النساء' }
   ];
 
+  /** خريطة أسماء الحقول -> عربي */
+  private readonly labelMap: Record<string, string> = {
+    id: 'المعرّف',
+    fullName: 'الاسم الكامل',
+    email: 'البريد الإلكتروني',
+    mobile: 'رقم الجوال',
+    secondMobile: 'جوال إضافي',
+    nationality: 'الجنسية',
+    nationalityId: 'معرّف الجنسية',
+    resident: 'الإقامة',
+    residentId: 'معرّف الإقامة',
+    governorate: 'المحافظة',
+    governorateId: 'معرّف المحافظة',
+    branchId: 'الفرع',
+    teacherId: 'معرّف المعلم',
+    teacherName: 'اسم المعلم',
+    managerId: 'معرّف المشرف',
+    managerName: 'اسم المشرف',
+    circleId: 'معرّف الحلقة',
+    circleName: 'اسم الحلقة',
+    gender: 'النوع',
+    userName: 'اسم المستخدم',
+    identityNumber: 'رقم الهوية',
+    createdAt: 'تاريخ الإنشاء',
+    updatedAt: 'آخر تحديث',
+    inactive: 'الحالة'
+  };
+
   constructor() {
-    const user = inject<Record<string, unknown>>(MAT_DIALOG_DATA);
-    if (user) {
-      this.manager = user;
-      const raw = user as Record<string, unknown>;
-      this.teachers = Array.isArray(raw['teachers']) ? (raw['teachers'] as Person[]) : [];
-      this.students = Array.isArray(raw['students']) ? (raw['students'] as Person[]) : [];
-      this.managerCircles = Array.isArray(raw['managerCircles'])
-        ? (raw['managerCircles'] as Circle[])
-        : [];
+    const raw = inject<{ data?: ManagerVM } | ManagerVM | null>(MAT_DIALOG_DATA);
 
-      const contactKeys = ['email', 'mobile', 'secondMobile'];
-      this.contactEntries = contactKeys
-        .filter((k) => raw[k] !== undefined && raw[k] !== null)
-        .map((k) => ({ key: k, value: raw[k], icon: this.getContactIcon(k) }));
-
-      const exclude = [
-        'fullName',
-        'teachers',
-        'students',
-        'managerCircles',
-        'managers',
-        'teacherName',
-        'managerName',
-        ...contactKeys
-      ];
-
-      this.detailEntries = Object.entries(user).filter(
-        ([key, value]) =>
-          !exclude.includes(key) &&
-          !/id$/i.test(key) &&
-          key.toLowerCase() !== 'id' &&
-          !Array.isArray(value) &&
-          (typeof value !== 'object' || value === null)
-      );
-    }
+    // ✅ لو الداتا جاية بالشكل: {isSuccess, errors, data}
+    const data = raw && 'data' in raw ? raw.data : raw;
+    this.setData(data ?? undefined);
   }
 
+  setData(data?: ManagerVM | null): void {
+    this.vm = undefined;
+    this.loading = !data;
 
-  getBranchLabel(id: number | undefined): string {
-    return this.Branch.find((b) => b.id === id)?.label || String(id ?? '');
+    this.teachers = [];
+    this.students = [];
+    this.managerCircles = [];
+    this.contactEntries = [];
+    this.detailEntries = [];
+    this.statEntries = [];
+
+    if (!data) return;
+
+    this.vm = data;
+    this.loading = false;
+
+    // قوائم العلاقات (حسب الريسبونس عندك)
+    this.teachers = Array.isArray(data.teachers) ? data.teachers : [];
+    this.students = Array.isArray(data.students) ? data.students : [];
+    this.managerCircles = Array.isArray(data.managerCircles) ? data.managerCircles : [];
+
+    // بيانات موجزة في الأعلى
+    this.statEntries = this.buildStatEntries([
+      { key: 'managerName', label: 'المشرف' },
+      { key: 'teacherName', label: 'المعلم' },
+      { key: 'circleName', label: 'الحلقة' }
+    ], data);
+
+    // ===== Contacts =====
+    const contactKeys: Array<keyof ManagerVM> = ['email', 'mobile', 'secondMobile'];
+
+    this.contactEntries = contactKeys
+      .map((k) => {
+        const value = (data[k] ?? '').toString().trim();
+        if (!value) return null;
+
+        const icon = this.getContactIcon(k as string);
+        const label = this.labelMap[k as string] ?? this.humanizeKey(k as string);
+
+        const href =
+          k === 'email' ? `mailto:${value}` :
+          (k === 'mobile' || k === 'secondMobile') ? this.buildWhatsAppLink(value) :
+          undefined;
+
+        return { key: k as string, label, value, icon, href } as ContactEntry;
+      })
+      .filter(Boolean) as ContactEntry[];
+
+    // ===== Details (من غير الـ contacts + من غير القوائم) =====
+    const exclude = new Set<string>([
+      // ما نعرضهمش هنا لأنهم ظاهرين فوق أو قوائم
+      'teachers', 'students', 'managers', 'managerCircles',
+      'email', 'mobile', 'secondMobile',
+      'fullName', 'managerName', 'teacherName', 'circleName'
+    ]);
+
+    const preferredOrder = [
+      'nationality',
+      'resident',
+      'governorate',
+      'gender',
+      'userName',
+      'identityNumber',
+      'teacherName',
+      'managerName',
+      'circleName',
+      'nationalityId',
+      'residentId',
+      'governorateId',
+      'teacherId',
+      'managerId',
+      'circleId',
+      'createdAt',
+      'updatedAt',
+      'id'
+    ];
+
+    const entries = Object.entries(data as Record<string, unknown>)
+      .filter(([key]) => !exclude.has(key))
+      .filter(([, val]) => val !== null && val !== undefined)
+      .filter(([, val]) => typeof val !== 'object' && !Array.isArray(val))
+      .map(([key, val]) => ({
+        key,
+        label: this.labelMap[key] ?? this.humanizeKey(key),
+        value: this.formatValue(key, val)
+      }));
+
+    // ترتيب لطيف
+    this.detailEntries = entries.sort((a, b) => {
+      const ai = preferredOrder.indexOf(a.key);
+      const bi = preferredOrder.indexOf(b.key);
+      const ax = ai === -1 ? 999 : ai;
+      const bx = bi === -1 ? 999 : bi;
+      return ax - bx;
+    });
   }
 
-
-  formatValue(key: string, value: unknown): unknown {
-    if (key === 'branchId') {
-      return this.getBranchLabel(typeof value === 'number' ? value : undefined);
-    }
-    return value;
+  getBranchLabel(id: unknown): string {
+    const item = this.Branch.find(b => b.id === id);
+    return item ? item.label : (id === null || id === undefined ? '—' : String(id));
   }
 
-  formatLabel(key: string): string {
-    return this.labelTranslationMap[key] ?? this.humanizeKey(key);
+  private buildStatEntries(
+    pairs: Array<{ key: keyof ManagerVM; label: string }>,
+    data: ManagerVM
+  ): Array<{ label: string; value: string | undefined }> {
+    return pairs
+      .map((p) => ({ label: p.label, value: (data[p.key] ?? '') as string | undefined }))
+      .filter((p) => !!(p.value && p.value.toString().trim()));
+  }
+
+  private formatValue(key: string, val: unknown): string {
+    if (key === 'inactive') return val ? 'غير نشط' : 'نشط';
+    if (key === 'branchId') return this.getBranchLabel(val);
+    return String(val);
   }
 
   private humanizeKey(key: string): string {
-    const spaced = key
+    // fallback لو ظهر حقل جديد
+    return key
       .replace(/([A-Z])/g, ' $1')
-      .replace(/[_-]+/g, ' ')
+      .replace(/_/g, ' ')
       .trim();
-    if (!spaced) {
-      return key;
-    }
-    return spaced.charAt(0).toUpperCase() + spaced.slice(1);
   }
 
   private getContactIcon(key: string): string {
-    const icons: Record<string, string> = {
+    return {
       email: 'ti ti-mail',
-      mobile: 'ti ti-phone',
-      secondMobile: 'ti ti-phone'
-    };
-    return icons[key] || 'ti ti-circle';
+      mobile: 'ti ti-brand-whatsapp',
+      secondMobile: 'ti ti-brand-whatsapp'
+    }[key] ?? 'ti ti-circle';
+  }
+
+  buildWhatsAppLink(phone: string): string | undefined {
+    const digits = phone.replace(/[^\d]/g, '');
+    return digits ? `https://wa.me/${digits}` : undefined;
   }
 }
-
-
