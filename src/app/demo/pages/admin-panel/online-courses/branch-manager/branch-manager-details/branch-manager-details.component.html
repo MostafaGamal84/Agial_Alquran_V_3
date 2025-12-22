@@ -119,9 +119,9 @@
                 </div>
                 <a class="row-action"
                    *ngIf="t.mobile"
-                   [href]="'tel:' + t.mobile"
+                   [href]="buildWhatsAppLink(t.mobile)"
                    (click)="$event.stopPropagation()">
-                  اتصال
+                  واتساب
                 </a>
               </div>
             </div>
@@ -144,9 +144,9 @@
                 </div>
                 <a class="row-action"
                    *ngIf="s.mobile"
-                   [href]="'tel:' + s.mobile"
+                   [href]="buildWhatsAppLink(s.mobile)"
                    (click)="$event.stopPropagation()">
-                  اتصال
+                  واتساب
                 </a>
               </div>
             </div>

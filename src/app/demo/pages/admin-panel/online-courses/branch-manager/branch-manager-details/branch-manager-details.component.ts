@@ -136,7 +136,7 @@ export class BranchManagerDetailsComponent {
 
         const href =
           k === 'email' ? `mailto:${value}` :
-          (k === 'mobile' || k === 'secondMobile') ? `tel:${value}` :
+          (k === 'mobile' || k === 'secondMobile') ? this.buildWhatsAppLink(value) :
           undefined;
 
         return { key: k as string, label, value, icon, href } as ContactEntry;
@@ -208,8 +208,13 @@ export class BranchManagerDetailsComponent {
   private getContactIcon(key: string): string {
     return {
       email: 'ti ti-mail',
-      mobile: 'ti ti-phone',
-      secondMobile: 'ti ti-phone'
+      mobile: 'ti ti-brand-whatsapp',
+      secondMobile: 'ti ti-brand-whatsapp'
     }[key] ?? 'ti ti-circle';
+  }
+
+  buildWhatsAppLink(phone: string): string | undefined {
+    const digits = phone.replace(/[^\d]/g, '');
+    return digits ? `https://wa.me/${digits}` : undefined;
   }
 }
