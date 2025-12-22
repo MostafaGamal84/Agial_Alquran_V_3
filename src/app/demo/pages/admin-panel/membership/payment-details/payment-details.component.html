@@ -1,47 +1,66 @@
 <h2 mat-dialog-title>تفاصيل الفاتورة</h2>
+
 <div mat-dialog-content>
-  <div class="payment-item">
-    <strong>رقم الفاتورة:</strong>
-    <span>{{ data.invoiceId }}</span>
+  <div class="loading-container" *ngIf="isLoading">
+    <mat-spinner diameter="32"></mat-spinner>
+    <span>جاري تحميل البيانات...</span>
   </div>
-  <div class="payment-item">
-    <strong>الباقة:</strong>
-    <span>{{ data.subscribe }}</span>
-  </div>
-  <div class="payment-item">
-    <strong>الاسم:</strong>
-    <span>{{ data.userName }}</span>
-  </div>
-  <div class="payment-item">
-    <strong>البريد الالكتروني:</strong>
-    <span>{{ data.userEmail }}</span>
-  </div>
-  <div class="payment-item">
-    <strong>تاريخ انشاء الفاتورة:</strong>
-    <span>{{ data.createDate ? (data.createDate | date: 'short') : 'N/A' }}</span>
-  </div>
-  <div class="payment-item">
-    <strong>مستحق حتى:</strong>
-    <span>{{ data.dueDate ? (data.dueDate | date: 'short') : 'N/A' }}</span>
-  </div>
-  <div class="payment-item">
-    <strong>تاريخ السداد:</strong>
-    <span>{{ data.paymentDate ? (data.paymentDate | date: 'short') : 'N/A' }}</span>
-  </div>
-  <div class="payment-item">
-    <strong>المبلغ:</strong>
-    <span>{{ data.amount }}</span>
-  </div>
-  <div class="payment-item">
-    <strong>العملة:</strong>
-    <span>{{ currencyLabel }}</span>
-  </div>
-  <div class="payment-item">
-    <strong>حالة الدفع:</strong>
-    <span>{{ data.statusText }}</span>
-  </div>
+
+  <ng-container *ngIf="!isLoading">
+    <ng-container *ngIf="payment; else errorState">
+      <div class="payment-item">
+        <strong>رقم الفاتورة:</strong>
+        <span>{{ payment.invoiceId }}</span>
+      </div>
+      <div class="payment-item">
+        <strong>الباقة:</strong>
+        <span>{{ payment.subscribe }}</span>
+      </div>
+      <div class="payment-item">
+        <strong>الاسم:</strong>
+        <span>{{ payment.userName }}</span>
+      </div>
+      <div class="payment-item">
+        <strong>البريد الالكتروني:</strong>
+        <span>{{ payment.userEmail }}</span>
+      </div>
+      <div class="payment-item">
+        <strong>تاريخ انشاء الفاتورة:</strong>
+        <span>{{ payment.createDate ? (payment.createDate | date: 'short') : 'N/A' }}</span>
+      </div>
+      <div class="payment-item">
+        <strong>مستحق حتى:</strong>
+        <span>{{ payment.dueDate ? (payment.dueDate | date: 'short') : 'N/A' }}</span>
+      </div>
+      <div class="payment-item">
+        <strong>تاريخ السداد:</strong>
+        <span>{{ payment.paymentDate ? (payment.paymentDate | date: 'short') : 'N/A' }}</span>
+      </div>
+      <div class="payment-item">
+        <strong>المبلغ:</strong>
+        <span>{{ payment.amount }}</span>
+      </div>
+      <div class="payment-item">
+        <strong>العملة:</strong>
+        <span>{{ currencyLabel }}</span>
+      </div>
+      <div class="payment-item">
+        <strong>حالة الدفع:</strong>
+        <span>{{ payment.statusText }}</span>
+      </div>
+    </ng-container>
+
+    <ng-template #errorState>
+      <div class="loading-container error">
+        <span>تعذر تحميل تفاصيل الفاتورة.</span>
+      </div>
+    </ng-template>
+  </ng-container>
 </div>
+
 <div mat-dialog-actions align="end">
-  <button mat-button color="primary" (click)="viewInvoice()">عرض الفاتورة</button>
+  <button mat-button color="primary" (click)="viewInvoice()" [disabled]="isLoading || !payment">
+    عرض الفاتورة
+  </button>
   <button mat-button mat-dialog-close>اغلاق</button>
 </div>
