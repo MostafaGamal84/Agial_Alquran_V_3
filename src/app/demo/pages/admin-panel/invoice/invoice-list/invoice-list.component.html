@@ -130,7 +130,9 @@
               [search]="searchTerm"
               [nationalityId]="selectedNationalityId"
               [residentGroup]="selectedResidencyGroup"
+              [refreshToken]="refreshToken"
               (countChange)="onTableCount('all', $event)"
+              (paymentUpdated)="handlePaymentUpdated()"
             />
           </div>
         </mat-tab>
@@ -150,7 +152,9 @@
               [search]="searchTerm"
               [nationalityId]="selectedNationalityId"
               [residentGroup]="selectedResidencyGroup"
+              [refreshToken]="refreshToken"
               (countChange)="onTableCount('paid', $event)"
+              (paymentUpdated)="handlePaymentUpdated()"
             />
 
           </div>
@@ -171,7 +175,9 @@
               [search]="searchTerm"
               [nationalityId]="selectedNationalityId"
               [residentGroup]="selectedResidencyGroup"
+              [refreshToken]="refreshToken"
               (countChange)="onTableCount('unpaid', $event)"
+              (paymentUpdated)="handlePaymentUpdated()"
             />
 
           </div>
@@ -192,7 +198,9 @@
               [search]="searchTerm"
               [nationalityId]="selectedNationalityId"
               [residentGroup]="selectedResidencyGroup"
+              [refreshToken]="refreshToken"
               (countChange)="onTableCount('overdue', $event)"
+              (paymentUpdated)="handlePaymentUpdated()"
             />
 
           </div>
@@ -213,7 +221,9 @@
               [search]="searchTerm"
               [nationalityId]="selectedNationalityId"
               [residentGroup]="selectedResidencyGroup"
+              [refreshToken]="refreshToken"
               (countChange)="onTableCount('cancelled', $event)"
+              (paymentUpdated)="handlePaymentUpdated()"
             />
 
           </div>
