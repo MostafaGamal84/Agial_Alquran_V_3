@@ -112,8 +112,8 @@ export class TeacherDetailsComponent {
   constructor() {
     const raw = inject<{ data?: TeacherVM } | TeacherVM | null>(MAT_DIALOG_DATA);
 
-    const data = raw && 'data' in raw ? raw.data : raw;
-    this.setData(data ?? undefined);
+    const data = raw && typeof raw === 'object' && 'data' in raw ? raw.data : (raw as TeacherVM | null);
+    this.setData(data);
   }
 
   setData(data?: TeacherVM | null): void {
@@ -159,7 +159,10 @@ export class TeacherDetailsComponent {
     const exclude = new Set<string>([
       'students', 'managers',
       'email', 'mobile', 'secondMobile',
-      'fullName', 'managerName', 'circleName'
+      'fullName', 'managerName', 'circleName',  'residentId',
+      'governorateId',
+      'teacherId',
+      'managerId',      'identityNumber',
     ]);
 
     const preferredOrder = [

@@ -164,7 +164,10 @@ export class BranchManagerDetailsComponent {
       // ما نعرضهمش هنا لأنهم ظاهرين فوق أو قوائم
       'teachers', 'students', 'managers', 'managerCircles',
       'email', 'mobile', 'secondMobile',
-      'fullName'
+      'fullName',  'residentId',
+      'governorateId',
+      'teacherId',
+      'managerId',      'identityNumber',
     ]);
 
     const preferredOrder = [
