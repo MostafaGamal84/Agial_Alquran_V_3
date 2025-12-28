@@ -57,7 +57,9 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
   @Input() search = '';
   @Input() nationalityId: number | null = null;
   @Input() residentGroup: ResidencyGroupFilter = 'all';
+  @Input() refreshToken = 0;
   @Output() countChange = new EventEmitter<number>();
+  @Output() paymentUpdated = new EventEmitter<void>();
   private studentPaymentService = inject(StudentPaymentService);
   private dialog = inject(MatDialog);
 
@@ -92,7 +94,8 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
       changes['month'] ||
       changes['compareMonth'] ||
       changes['nationalityId'] ||
-      changes['residentGroup']
+      changes['residentGroup'] ||
+      changes['refreshToken']
     ) {
       this.pageIndex = 0;
       this.loadData();
@@ -126,6 +129,7 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
         dialogRef.afterClosed().subscribe((updated) => {
           if (updated) {
             this.loadData();
+            this.paymentUpdated.emit();
           }
         });
       }
