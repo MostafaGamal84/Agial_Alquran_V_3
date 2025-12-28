@@ -122,7 +122,12 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
   openPaymentEdit(id: number) {
     this.studentPaymentService.getPayment(id).subscribe((res) => {
       if (res.isSuccess && res.data) {
-        this.dialog.open(PaymentEditComponent, { data: res.data });
+        const dialogRef = this.dialog.open(PaymentEditComponent, { data: res.data });
+        dialogRef.afterClosed().subscribe((updated) => {
+          if (updated) {
+            this.loadData();
+          }
+        });
       }
     });
   }
