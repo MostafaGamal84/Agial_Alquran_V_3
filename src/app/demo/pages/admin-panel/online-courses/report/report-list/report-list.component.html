@@ -137,6 +137,15 @@
                           <i class="ti ti-edit-circle f-18"></i>
                         </a>
                       </li>
+                      <li class="list-inline-item m-r-10" [matTooltip]="'واتساب' | translate">
+                        <button
+                          type="button"
+                          class="avatar avatar-xs text-muted"
+                          (click)="onSendWhatsApp(element)"
+                        >
+                          <i class="ti ti-brand-whatsapp f-18"></i>
+                        </button>
+                      </li>
                     </ul>
                   </div>
                 </td>

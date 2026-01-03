@@ -1,18 +1,24 @@
 import { AfterViewInit, Component, OnDestroy, OnInit, inject, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDialog, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
+  CircleReportAddDto,
   CircleReportListDto,
   CircleReportService
 } from 'src/app/@theme/services/circle-report.service';
 import { CircleDto, CircleService, CircleStudentDto } from 'src/app/@theme/services/circle.service';
 import {
+  ApiResponse,
   FilteredResultRequestDto,
   LookupService,
   LookUpUserDto,
@@ -22,11 +28,12 @@ import { ToastService } from 'src/app/@theme/services/toast.service';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { AttendStatusEnum } from 'src/app/@theme/types/AttendStatusEnum';
+import { QuranSurahEnum } from 'src/app/@theme/types/QuranSurahEnum';
 import { RESIDENCY_GROUP_OPTIONS, ResidencyGroupFilter } from 'src/app/@theme/types/residency-group';
 import { matchesResidencyGroup } from 'src/app/@theme/utils/nationality.utils';
 import { TranslateService } from '@ngx-translate/core';
 
-import { Subject } from 'rxjs';
+import { Subject, forkJoin, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 
@@ -37,7 +44,17 @@ interface StudentOption {
 
 @Component({
   selector: 'app-report-list',
-  imports: [CommonModule, SharedModule, RouterModule, LoadingOverlayComponent],
+  imports: [
+    CommonModule,
+    SharedModule,
+    RouterModule,
+    LoadingOverlayComponent,
+    MatDialogModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    ReactiveFormsModule
+  ],
   templateUrl: './report-list.component.html',
   styleUrl: './report-list.component.scss'
 })
@@ -49,6 +66,7 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
   private toast = inject(ToastService);
   private auth = inject(AuthenticationService);
   private translate = inject(TranslateService);
+  private dialog = inject(MatDialog);
 
   readonly paginator = viewChild.required(MatPaginator);
 
@@ -419,5 +437,211 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
       return '—';
     }
     return date.toLocaleString();
+  }
+
+  getTeacherDisplay(report: CircleReportListDto): string {
+    return (
+      (report.teacherName as string | undefined) ||
+      (report['teacher'] as string | undefined) ||
+      (report['teacherFullName'] as string | undefined) ||
+      (typeof report.teacherId === 'number' ? `Teacher #${report.teacherId}` : '')
+    );
+  }
+
+  onSendWhatsApp(report: CircleReportListDto): void {
+    const reportId = Number(report.id);
+    if (!Number.isFinite(reportId)) {
+      return;
+    }
+
+    const studentId = report.studentId ? Number(report.studentId) : null;
+    const reportDetails$ = this.reportService.get(reportId);
+    const studentDetails$ = studentId ? this.lookupService.getUserDetails(studentId) : of(null);
+
+    this.isLoading = true;
+    forkJoin({ report: reportDetails$, student: studentDetails$ }).subscribe({
+      next: ({ report: reportResponse, student: studentResponse }) => {
+        this.isLoading = false;
+        if (!reportResponse?.isSuccess || !reportResponse.data) {
+          this.toast.error(this.translate.instant('Unable to load report'));
+          return;
+        }
+
+        const payload = this.buildWhatsAppPayload(
+          report,
+          reportResponse.data,
+          this.extractStudentPhone(studentResponse)
+        );
+        this.openWhatsAppDialog(payload);
+      },
+      error: () => {
+        this.isLoading = false;
+        this.toast.error(this.translate.instant('Unable to load report'));
+      }
+    });
+  }
+
+  private extractStudentPhone(
+    response: ApiResponse<LookUpUserDto> | null
+  ): string | null {
+    if (!response?.isSuccess || !response.data) {
+      return null;
+    }
+    return response.data.mobile || null;
+  }
+
+  private buildWhatsAppPayload(
+    report: CircleReportListDto,
+    details: CircleReportAddDto,
+    phone: string | null
+  ): WhatsAppDialogPayload {
+    const studentName = this.getStudentDisplay(report) || this.translate.instant('طالب');
+    const circleName = this.getCircleDisplay(report) || '—';
+    const teacherName = this.getTeacherDisplay(report) || '—';
+    const statusLabel = this.getStatusConfig(details.attendStatueId ?? report.attendStatueId).label;
+    const minutes = details.minutes ?? report.minutes ?? '—';
+
+    const header = `تقرير الطالب ${studentName}\nالحلقة: ${circleName}\nالمعلم: ${teacherName}\nالحالة: ${statusLabel}\nالدقائق: ${minutes}`;
+    const attendedDetails =
+      Number(details.attendStatueId) === AttendStatusEnum.Attended
+        ? this.buildAttendedDetails(details)
+        : '';
+    const message = attendedDetails ? `${header}\n${attendedDetails}` : header;
+
+    return {
+      studentName,
+      phone,
+      message
+    };
+  }
+
+  private buildAttendedDetails(model: CircleReportAddDto): string {
+    const lines: string[] = [];
+    const surahName = this.getSurahName(model.newId);
+
+    if (surahName) {
+      lines.push(`السورة الجديدة: ${surahName}`);
+    }
+    if (model.newFrom) {
+      lines.push(`الجديد من: ${model.newFrom}`);
+    }
+    if (model.newTo) {
+      lines.push(`الجديد إلى: ${model.newTo}`);
+    }
+    if (model.newRate) {
+      lines.push(`تقييم الجديد: ${model.newRate}`);
+    }
+    if (model.recentPast) {
+      lines.push(`الماضي القريب: ${model.recentPast}`);
+    }
+    if (model.recentPastRate) {
+      lines.push(`تقييم الماضي القريب: ${model.recentPastRate}`);
+    }
+    if (model.distantPast) {
+      lines.push(`الماضي البعيد: ${model.distantPast}`);
+    }
+    if (model.distantPastRate) {
+      lines.push(`تقييم الماضي البعيد: ${model.distantPastRate}`);
+    }
+    if (model.farthestPast) {
+      lines.push(`الأبعد: ${model.farthestPast}`);
+    }
+    if (model.farthestPastRate) {
+      lines.push(`تقييم الأبعد: ${model.farthestPastRate}`);
+    }
+    if (model.theWordsQuranStranger) {
+      lines.push(`غريب القرآن: ${model.theWordsQuranStranger}`);
+    }
+    if (model.intonation) {
+      lines.push(`التجويد: ${model.intonation}`);
+    }
+    if (model.other) {
+      lines.push(`ملاحظات: ${model.other}`);
+    }
+
+    return lines.join('\n');
+  }
+
+  private getSurahName(value?: number | null): string | null {
+    if (!value) {
+      return null;
+    }
+    const key = (Object.keys(QuranSurahEnum) as Array<keyof typeof QuranSurahEnum>).find(
+      (k) => QuranSurahEnum[k] === Number(value)
+    );
+    return key ? String(key) : null;
+  }
+
+  private openWhatsAppDialog(payload: WhatsAppDialogPayload): void {
+    const dialogRef = this.dialog.open(ReportWhatsAppDialogComponent, {
+      data: payload,
+      width: '420px'
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (!result?.phone) {
+        return;
+      }
+      this.launchWhatsApp(result.phone, payload.message);
+    });
+  }
+
+  private launchWhatsApp(phone: string, message: string): void {
+    const url = message
+      ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
+      : `https://wa.me/${phone}`;
+    window.open(url, '_blank');
+  }
+}
+
+interface WhatsAppDialogPayload {
+  studentName: string;
+  phone: string | null;
+  message: string;
+}
+
+@Component({
+  selector: 'app-report-whatsapp-dialog',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule],
+  template: `
+    <h2 mat-dialog-title>إرسال التقرير عبر واتساب</h2>
+    <mat-dialog-content>
+      <p>تأكد من رقم الطالب <strong>{{ data.studentName }}</strong> قبل الإرسال.</p>
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>رقم واتساب</mat-label>
+        <input matInput [formControl]="phoneControl" placeholder="مثال: 201234567890" />
+        <mat-error *ngIf="phoneControl.hasError('required')">رقم الواتساب مطلوب</mat-error>
+      </mat-form-field>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button type="button" (click)="onCancel()">إلغاء</button>
+      <button mat-flat-button color="primary" type="button" (click)="onSend()" [disabled]="phoneControl.invalid">
+        إرسال واتساب
+      </button>
+    </mat-dialog-actions>
+  `
+})
+export class ReportWhatsAppDialogComponent {
+  private dialogRef = inject(MatDialogRef<ReportWhatsAppDialogComponent>);
+  readonly data = inject<WhatsAppDialogPayload>(MAT_DIALOG_DATA);
+
+  phoneControl = new FormControl(this.data.phone ?? '', { validators: [Validators.required], nonNullable: true });
+
+  onCancel(): void {
+    this.dialogRef.close(null);
+  }
+
+  onSend(): void {
+    const normalized = this.normalizePhone(this.phoneControl.value);
+    if (!normalized) {
+      this.phoneControl.setErrors({ required: true });
+      return;
+    }
+    this.dialogRef.close({ phone: normalized });
+  }
+
+  private normalizePhone(value: string): string {
+    return (value ?? '').replace(/\D/g, '');
   }
 }
