@@ -568,8 +568,13 @@ export class ReportAddComponent implements OnInit, OnDestroy {
     const minutes = model.minutes ?? '—';
     const circleName = this.circleDisplayName || '—';
     const teacherName = this.teacherDisplayName || '—';
+    const header = `تقرير الطالب ${studentName}\nالحلقة: ${circleName}\nالمعلم: ${teacherName}\nالحالة: ${statusLabel}\nالدقائق: ${minutes}`;
+    const attendedDetails =
+      Number(model.attendStatueId) === AttendStatusEnum.Attended
+        ? this.buildAttendedDetails(model)
+        : '';
 
-    const message = `تقرير الطالب ${studentName}\nالحلقة: ${circleName}\nالمعلم: ${teacherName}\nالحالة: ${statusLabel}\nالدقائق: ${minutes}`;
+    const message = attendedDetails ? `${header}\n${attendedDetails}` : header;
 
     return {
       studentName,
@@ -597,6 +602,53 @@ export class ReportAddComponent implements OnInit, OnDestroy {
       ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
       : `https://wa.me/${phone}`;
     window.open(url, '_blank');
+  }
+
+  private buildAttendedDetails(model: CircleReportAddDto): string {
+    const lines: string[] = [];
+    const surahName = this.surahList.find((s) => s.id === Number(model.newId))?.name;
+
+    if (surahName) {
+      lines.push(`السورة الجديدة: ${surahName}`);
+    }
+    if (model.newFrom) {
+      lines.push(`الجديد من: ${model.newFrom}`);
+    }
+    if (model.newTo) {
+      lines.push(`الجديد إلى: ${model.newTo}`);
+    }
+    if (model.newRate) {
+      lines.push(`تقييم الجديد: ${model.newRate}`);
+    }
+    if (model.recentPast) {
+      lines.push(`الماضي القريب: ${model.recentPast}`);
+    }
+    if (model.recentPastRate) {
+      lines.push(`تقييم الماضي القريب: ${model.recentPastRate}`);
+    }
+    if (model.distantPast) {
+      lines.push(`الماضي البعيد: ${model.distantPast}`);
+    }
+    if (model.distantPastRate) {
+      lines.push(`تقييم الماضي البعيد: ${model.distantPastRate}`);
+    }
+    if (model.farthestPast) {
+      lines.push(`الأبعد: ${model.farthestPast}`);
+    }
+    if (model.farthestPastRate) {
+      lines.push(`تقييم الأبعد: ${model.farthestPastRate}`);
+    }
+    if (model.theWordsQuranStranger) {
+      lines.push(`غريب القرآن: ${model.theWordsQuranStranger}`);
+    }
+    if (model.intonation) {
+      lines.push(`التجويد: ${model.intonation}`);
+    }
+    if (model.other) {
+      lines.push(`ملاحظات: ${model.other}`);
+    }
+
+    return lines.join('\n');
   }
 
   // =========================
