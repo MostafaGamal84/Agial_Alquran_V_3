@@ -115,14 +115,11 @@
                   <div class="row-title">{{ t.fullName || '—' }}</div>
                   <div class="row-sub">{{ t.mobile || '—' }}</div>
                 </div>
-                <a class="row-action row-action--website"
+               <a class="row-action"
                    *ngIf="t.mobile"
-                   [href]="academyWebsiteUrl"
-                   target="_blank"
-                   rel="noopener"
+                   [href]="buildWhatsAppLink(t.mobile)"
                    (click)="$event.stopPropagation()">
-                  <i class="ti ti-world"></i>
-                  موقع الأكاديمية
+                  واتساب
                 </a>
               </div>
             </div>
@@ -143,14 +140,11 @@
                   <div class="row-title">{{ s.fullName || '—' }}</div>
                   <div class="row-sub">{{ s.mobile || '—' }}</div>
                 </div>
-                <a class="row-action row-action--website"
-                   *ngIf="s.mobile"
-                   [href]="academyWebsiteUrl"
-                   target="_blank"
-                   rel="noopener"
+              <a class="row-action"
+                   *ngIf="t.mobile"
+                   [href]="buildWhatsAppLink(t.mobile)"
                    (click)="$event.stopPropagation()">
-                  <i class="ti ti-world"></i>
-                  موقع الأكاديمية
+                  واتساب
                 </a>
               </div>
             </div>
