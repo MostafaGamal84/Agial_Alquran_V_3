@@ -26,9 +26,13 @@ export interface ApiResponse<T> {
 }
 
 interface LoginData {
-  email: string;
-  code: string;
-  passwordIsCorrect: boolean;
+  token: string;
+  refreshToken: string;
+  username: string;
+  fullName?: string | null;
+  role: number | string | null;
+  userId: number | string;
+  branchId?: number | null;
 }
 
 type LoginResponse = ApiResponse<LoginData>;
@@ -37,11 +41,13 @@ interface VerifyCodeData {
   token: string;
   refreshToken: string;
   username: string;
-  userId:  string ;
+  userId: string;
   role: number | string | null; // can come as number or string from backend
 }
 
 type VerifyCodeResponse = ApiResponse<VerifyCodeData>;
+
+type AuthSessionData = LoginData | VerifyCodeData;
 
 interface ResetPasswordPayload {
   email: string;
@@ -140,9 +146,8 @@ export class AuthenticationService {
     return this.http.post<LoginResponse>(`${environment.apiUrl}/api/Account/Login`, { email, password })
       .pipe(
         tap((res) => {
-          // If backend uses 2FA/verification, keep email to use in verify step
           if (res.isSuccess && res.data) {
-            this.pendingEmail = email;
+            this.setSessionFromAuth(res.data, email);
           }
         })
       );
@@ -155,23 +160,7 @@ export class AuthenticationService {
       .pipe(
         tap((res) => {
           if (res.isSuccess && res.data) {
-            const user: User = {
-              serviceToken: res.data.token,
-              refreshToken: res.data.refreshToken,
-              user: {
-                id: res.data.userId,                 // set if your API returns it elsewhere
-                email: body.email ?? '',// we keep the email we verified
-                password: '',           // never store real password
-                name: res.data.username,
-                role: this.mapRoleToEnum(res.data.role)
-              }
-            };
-            // persist
-            localStorage.setItem(this.storageKey, JSON.stringify(user));
-            this.currentUserSignal.set(user);
-            this.isLogin = true;
-            this.pendingEmail = null;
-            this.pendingCode = null;
+            this.setSessionFromAuth(res.data, body.email ?? '');
           }
         })
       );
@@ -212,5 +201,24 @@ export class AuthenticationService {
     // Update the signal to null
     this.currentUserSignal.set(null);
     this.router.navigate(['/login']);
+  }
+
+  private setSessionFromAuth(data: AuthSessionData, email: string) {
+    const user: User = {
+      serviceToken: data.token,
+      refreshToken: data.refreshToken,
+      user: {
+        id: String(data.userId),
+        email,
+        password: '',
+        name: ('fullName' in data && data.fullName) ? data.fullName : data.username,
+        role: this.mapRoleToEnum(data.role)
+      }
+    };
+    localStorage.setItem(this.storageKey, JSON.stringify(user));
+    this.currentUserSignal.set(user);
+    this.isLogin = true;
+    this.pendingEmail = null;
+    this.pendingCode = null;
   }
 }
