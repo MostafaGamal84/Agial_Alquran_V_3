@@ -7,9 +7,13 @@
   </div>
 </div>
 <mat-dialog-content class="p-0">
-  <app-scrollbar [customStyle]="{ maxHeight: 'calc(100vh - 155px)', position: 'relative' }">
+  <div class="loading-state" *ngIf="loading">
+    <mat-spinner diameter="48"></mat-spinner>
+    <div class="loading-text">{{ 'Loading data...' | translate }}</div>
+  </div>
+  <app-scrollbar *ngIf="!loading && student as s" [customStyle]="{ maxHeight: 'calc(100vh - 155px)', position: 'relative' }">
     <div class="dialog-body">
-      <div class="details-wrapper" *ngIf="student as s">
+      <div class="details-wrapper">
         <div class="left-panel">
           <div class="avatar avatar-xl m-b-10">
             <i class="ti ti-user f-24"></i>

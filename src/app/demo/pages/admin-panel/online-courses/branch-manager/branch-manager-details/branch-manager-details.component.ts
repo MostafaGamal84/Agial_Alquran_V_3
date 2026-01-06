@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
 import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scrollbar';
@@ -51,7 +52,7 @@ type ManagerVM = {
   circleName?: string;
   inactive?: boolean;
 
-  managers?: any[];
+  managers?: unknown[];
   teachers?: Person[];
   students?: Person[];
   managerCircles?: Circle[];
@@ -63,6 +64,7 @@ type ManagerVM = {
   imports: [
     CommonModule,
     MatDialogModule,
+    MatProgressSpinnerModule,
     MatButtonModule,
     MatExpansionModule,
     NgxScrollbar
@@ -71,6 +73,7 @@ type ManagerVM = {
   styleUrl: './branch-manager-details.component.scss'
 })
 export class BranchManagerDetailsComponent {
+  loading = true;
   vm?: ManagerVM;
 
   teachers: Person[] = [];
@@ -109,14 +112,27 @@ export class BranchManagerDetailsComponent {
   };
 
   constructor() {
-    const raw = inject<any>(MAT_DIALOG_DATA);
+    const raw = inject<{ data?: ManagerVM } | ManagerVM | null>(MAT_DIALOG_DATA);
 
     // ✅ لو الداتا جاية بالشكل: {isSuccess, errors, data}
-    const data: ManagerVM = raw?.data ? raw.data : raw;
+    const data = raw && 'data' in raw ? raw.data : raw;
+    this.setData(data ?? undefined);
+  }
+
+  setData(data?: ManagerVM | null): void {
+    this.vm = undefined;
+    this.loading = !data;
+
+    this.teachers = [];
+    this.students = [];
+    this.managerCircles = [];
+    this.contactEntries = [];
+    this.detailEntries = [];
 
     if (!data) return;
 
     this.vm = data;
+    this.loading = false;
 
     // قوائم العلاقات (حسب الريسبونس عندك)
     this.teachers = Array.isArray(data.teachers) ? data.teachers : [];
@@ -167,8 +183,8 @@ export class BranchManagerDetailsComponent {
       'id'
     ];
 
-    const entries = Object.entries(data as Record<string, any>)
-      .filter(([key, val]) => !exclude.has(key))
+    const entries = Object.entries(data as Record<string, unknown>)
+      .filter(([key]) => !exclude.has(key))
       .filter(([, val]) => val !== null && val !== undefined)
       .filter(([, val]) => typeof val !== 'object' && !Array.isArray(val))
       .map(([key, val]) => ({
@@ -192,7 +208,7 @@ export class BranchManagerDetailsComponent {
     return item ? item.label : (id === null || id === undefined ? '—' : String(id));
   }
 
-  private formatValue(key: string, val: any): string {
+  private formatValue(key: string, val: unknown): string {
     if (key === 'inactive') return val ? 'غير نشط' : 'نشط';
     return String(val);
   }

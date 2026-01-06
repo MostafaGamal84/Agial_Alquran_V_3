@@ -2,6 +2,20 @@
   padding: clamp(16px, 4vw, 32px);
 }
 
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 20px;
+  color: var(--text-secondary, #6c757d);
+
+  .loading-text {
+    font-weight: 700;
+  }
+}
+
 .details-wrapper {
   display: flex;
   flex-wrap: wrap;
@@ -186,4 +200,3 @@
     margin-bottom: 4px;
   }
 }
-

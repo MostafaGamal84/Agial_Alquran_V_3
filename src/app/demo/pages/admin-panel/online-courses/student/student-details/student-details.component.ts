@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TranslateModule } from '@ngx-translate/core';
 import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scrollbar';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
@@ -15,11 +16,19 @@ interface ContactEntry {
 @Component({
   selector: 'app-student-details',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule, NgxScrollbar, TranslateModule],
+  imports: [
+    CommonModule,
+    MatDialogModule,
+    MatProgressSpinnerModule,
+    MatButtonModule,
+    NgxScrollbar,
+    TranslateModule
+  ],
   templateUrl: './student-details.component.html',
   styleUrl: './student-details.component.scss'
 })
 export class StudentDetailsComponent {
+  loading = true;
   student?: Record<string, unknown>;
   contactEntries: ContactEntry[] = [];
   detailEntries: [string, unknown][] = [];
@@ -44,27 +53,39 @@ export class StudentDetailsComponent {
   ];
 
   constructor() {
-    const user = inject<Record<string, unknown>>(MAT_DIALOG_DATA);
-    if (user) {
-      this.student = user;
-      const raw = user as Record<string, unknown>;
+    const raw = inject<Record<string, unknown> | { data?: Record<string, unknown> } | null>(MAT_DIALOG_DATA);
+    const data = raw && typeof raw === 'object' && 'data' in raw ? raw.data : raw;
+    this.setData(data ?? undefined);
+  }
 
-      const contactKeys = ['email', 'mobile', 'secondMobile'];
-      this.contactEntries = contactKeys
-        .filter((k) => raw[k] !== undefined && raw[k] !== null)
-        .map((k) => ({ key: k, value: raw[k], icon: this.getContactIcon(k) }));
+  setData(data?: Record<string, unknown> | null): void {
+    this.student = undefined;
+    this.loading = !data;
+    this.contactEntries = [];
+    this.detailEntries = [];
 
-      const exclude = ['fullName', 'students', 'teachers', 'managers', ...contactKeys];
-      this.detailEntries = Object.entries(user).filter(
-        ([key, value]) =>
-          !exclude.includes(key) &&
-          !/id$/i.test(key) &&
-          key.toLowerCase() !== 'id' &&
-
-          !Array.isArray(value) &&
-          (typeof value !== 'object' || value === null)
-      );
+    if (!data) {
+      return;
     }
+
+    this.student = data;
+    this.loading = false;
+    const raw = data as Record<string, unknown>;
+
+    const contactKeys = ['email', 'mobile', 'secondMobile'];
+    this.contactEntries = contactKeys
+      .filter((k) => raw[k] !== undefined && raw[k] !== null)
+      .map((k) => ({ key: k, value: raw[k], icon: this.getContactIcon(k) }));
+
+    const exclude = ['fullName', 'students', 'teachers', 'managers', ...contactKeys];
+    this.detailEntries = Object.entries(data).filter(
+      ([key, value]) =>
+        !exclude.includes(key) &&
+        !/id$/i.test(key) &&
+        key.toLowerCase() !== 'id' &&
+        !Array.isArray(value) &&
+        (typeof value !== 'object' || value === null)
+    );
   }
 
   getBranchLabel(id: number | undefined): string {

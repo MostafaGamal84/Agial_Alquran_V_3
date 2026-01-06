@@ -86,19 +86,24 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
   }
 
   managerDetails(manager: LookUpUserDto): void {
+    const dialogRef = this.dialog.open(ManagerDetailsComponent, {
+      width: '800px',
+      maxWidth: '95vw'
+    });
+
     this.lookupService.getUserDetails(manager.id).subscribe({
       next: (res) => {
         if (res.isSuccess && res.data) {
-          this.dialog.open(ManagerDetailsComponent, {
-            width: '800px',
-            maxWidth: '95vw',
-            data: res.data
-          });
+          dialogRef.componentInstance?.setData(res.data);
           return;
         }
+        dialogRef.close();
         this.toast.error('Failed to load manager details');
       },
-      error: () => this.toast.error('Failed to load manager details')
+      error: () => {
+        dialogRef.close();
+        this.toast.error('Failed to load manager details');
+      }
     });
   }
 
