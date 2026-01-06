@@ -20,6 +20,9 @@ import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { TeacherDetailsComponent } from '../teacher-details/teacher-details.component';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 import { ToastService } from 'src/app/@theme/services/toast.service';
+import { UserService } from 'src/app/@theme/services/user.service';
+import { DisableUserConfirmDialogComponent } from '../../student/student-list/student-list.disable-user-confirm-dialog.component';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-teacher-list',
@@ -29,7 +32,9 @@ import { ToastService } from 'src/app/@theme/services/toast.service';
 })
 export class TeacherListComponent implements OnInit, AfterViewInit {
   private lookupService = inject(LookupService);
+  private userService = inject(UserService);
   private toast = inject(ToastService);
+  private translate = inject(TranslateService);
   dialog = inject(MatDialog);
 
   // public props
@@ -38,6 +43,7 @@ export class TeacherListComponent implements OnInit, AfterViewInit {
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
   isLoading = false;
+  private pendingTeacherIds = new Set<number>();
 
   // paginator
 readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
@@ -99,6 +105,55 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
       },
       error: () => this.toast.error('Failed to load teacher details')
     });
+  }
+
+  confirmDisable(teacher: LookUpUserDto): void {
+    if (this.isProcessing(teacher.id)) {
+      return;
+    }
+
+    const dialogRef = this.dialog.open(DisableUserConfirmDialogComponent, {
+      data: { fullName: teacher.fullName }
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (confirmed) {
+        this.disableTeacher(teacher);
+      }
+    });
+  }
+
+  isProcessing(teacherId: number): boolean {
+    return this.pendingTeacherIds.has(teacherId);
+  }
+
+  private disableTeacher(teacher: LookUpUserDto): void {
+    if (this.pendingTeacherIds.has(teacher.id)) {
+      return;
+    }
+
+    this.pendingTeacherIds.add(teacher.id);
+
+    this.userService
+      .disableUser(teacher.id, false)
+      .pipe(finalize(() => this.pendingTeacherIds.delete(teacher.id)))
+      .subscribe({
+        next: (res) => {
+          if (res.isSuccess) {
+            this.dataSource.data = this.dataSource.data.filter((item) => item.id !== teacher.id);
+            this.totalCount = Math.max(this.totalCount - 1, 0);
+            this.toast.success(this.translate.instant('Teacher disabled successfully'));
+            return;
+          }
+
+          if (res.errors?.length) {
+            res.errors.forEach((error) => this.toast.error(error.message));
+          } else {
+            this.toast.error(this.translate.instant('Failed to disable teacher'));
+          }
+        },
+        error: () => this.toast.error(this.translate.instant('Failed to disable teacher'))
+      });
   }
 
   // life cycle event
