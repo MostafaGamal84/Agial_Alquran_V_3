@@ -75,6 +75,7 @@ export class OnlineDashboardComponent implements OnInit {
   overviewError: string | null = null;
   overviewRoleLabel: string | null = null;
   overviewRangeDescription: string | null = null;
+  isTeacher = false;
 
   summaryCards: DashboardSummaryCard[] = [];
   roleMetricCards: DashboardSummaryCard[] = [];
@@ -147,6 +148,7 @@ export class OnlineDashboardComponent implements OnInit {
     this.financialChartHasData = false;
     this.overviewRoleLabel = null;
     this.overviewRangeDescription = null;
+    this.isTeacher = false;
   }
 
   private applyOverviewData(data?: DashboardOverviewDto | null): void {
@@ -155,6 +157,7 @@ export class OnlineDashboardComponent implements OnInit {
       return;
     }
 
+    this.isTeacher = this.isTeacherRole(data.role);
     this.overviewRoleLabel = this.formatRole(data.role);
     this.overviewRangeDescription = this.buildRangeDescription(data.rangeStart, data.rangeEnd, data.rangeLabel);
 
@@ -166,6 +169,15 @@ export class OnlineDashboardComponent implements OnInit {
     this.transactionsView = this.buildTransactionsView(charts?.transactions);
     this.buildMonthlyRevenueChart(charts?.monthlyRevenue);
     this.buildFinancialChart(data.metrics);
+  }
+
+  get visibleRoleMetricCards(): DashboardSummaryCard[] {
+    if (!this.isTeacher) {
+      return this.roleMetricCards;
+    }
+
+    const allowedKeys = new Set(['studentsCount', 'circlesCount', 'reportsCount']);
+    return this.roleMetricCards.filter((card) => allowedKeys.has(card.key));
   }
 
   private buildSummaryCards(metrics?: DashboardOverviewMetricsDto | null): DashboardSummaryCard[] {
@@ -280,7 +292,7 @@ export class OnlineDashboardComponent implements OnInit {
     ];
 
     return definitions
-      .map((definition) => {
+      .map<DashboardSummaryCard | null>((definition) => {
         const numericValue = this.coerceNumber(metrics ? metrics[definition.key] : undefined);
         if (numericValue === null) {
           return null;
@@ -739,6 +751,15 @@ export class OnlineDashboardComponent implements OnInit {
       .trim();
 
     return this.toTitleCase(spaced);
+  }
+
+  private isTeacherRole(role?: string | null): boolean {
+    if (typeof role !== 'string') {
+      return false;
+    }
+
+    const normalized = role.trim().replace(/\s+|_/g, '').toLowerCase();
+    return normalized === 'teacher';
   }
 
   loadUpcomingCircles(take = 4): void {
