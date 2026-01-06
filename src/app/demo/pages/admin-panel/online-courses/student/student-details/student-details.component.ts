@@ -140,7 +140,15 @@ export class StudentDetailsComponent {
       'fullName', 'managerName', 'teacherName', 'circleName',  'residentId',
       'governorateId',
       'teacherId',
-      'managerId',      'identityNumber',
+      'managerId',   'nationalityId',
+      'residentId',
+      'governorateId',
+      'managerId',
+      'teacherId',
+      'circleId',
+      'createdAt',
+      'updatedAt',
+      'id','branchId','inactive',   'identityNumber',
     ]);
 
     const preferredOrder = [

@@ -162,7 +162,9 @@ export class TeacherDetailsComponent {
       'fullName', 'managerName', 'circleName',  'residentId',
       'governorateId',
       'teacherId',
-      'managerId',      'identityNumber',
+      'managerId',  'branchId','nationalityId',
+      'residentId',
+      'governorateId', 'circleId', 'inactive', 'id',   'identityNumber',
     ]);
 
     const preferredOrder = [

@@ -187,7 +187,7 @@ export class ManagerDetailsComponent {
       'residentId',
       'governorateId',
       'teacherId',
-      'managerId',      'identityNumber',
+      'managerId',  'inactive',     'id', 'branchId',  'identityNumber',
 
     ]);
 

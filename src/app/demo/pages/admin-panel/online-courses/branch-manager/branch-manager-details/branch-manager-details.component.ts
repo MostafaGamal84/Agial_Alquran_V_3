@@ -167,14 +167,7 @@ export class BranchManagerDetailsComponent {
       'fullName',  'residentId',
       'governorateId',
       'teacherId',
-      'managerId',      'identityNumber',
-    ]);
-
-    const preferredOrder = [
-      'nationality',
-      'resident',
-      'governorate',
-      'teacherName',
+      'managerId',    'teacherName',
       'managerName',
       'circleName',
       'nationalityId',
@@ -183,7 +176,13 @@ export class BranchManagerDetailsComponent {
       'teacherId',
       'managerId',
       'circleId',
-      'id'
+      'id',  'inactive', 'identityNumber','branchId',
+    ]);
+
+    const preferredOrder = [
+      'nationality',
+      'resident',
+      'governorate',
     ];
 
     const entries = Object.entries(data as Record<string, unknown>)
