@@ -41,16 +41,6 @@ export const DAY_LABELS = new Map<DaysEnum, string>(
   DAY_OPTIONS.map((option) => [option.value, option.label])
 );
 
-const EN_DAY_LOOKUP: Record<string, DaysEnum> = {
-  saturday: DaysEnum.السبت,
-  sunday: DaysEnum.الاحد,
-  monday: DaysEnum.الاثنين,
-  tuesday: DaysEnum.الثلاثاء,
-  wednesday: DaysEnum.الاربعاء,
-  thursday: DaysEnum.الخميس,
-  friday: DaysEnum.الجمعة
-};
-
 export function coerceDayValue(value: DayValue): DaysEnum | undefined {
   if (value === null || value === undefined) {
     return undefined;
@@ -96,11 +86,6 @@ export function coerceDayValue(value: DayValue): DaysEnum | undefined {
     return numericValue as DaysEnum;
   }
 
-  const englishMatch = EN_DAY_LOOKUP[trimmed.toLowerCase()];
-  if (englishMatch) {
-    return englishMatch;
-  }
-
   const matchedOption = DAY_OPTIONS.find(
     (option) => option.label.toLowerCase() === trimmed.toLowerCase()
   );
@@ -140,3 +125,4 @@ export function formatDayValue(value?: DayValue): string {
 
   return '';
 }
+
