@@ -14,12 +14,12 @@
     </app-card>
   </div>
 
-  @if (!overviewLoading && roleMetricCards.length) {
+  @if (!overviewLoading && visibleRoleMetricCards.length) {
     <div class="col-12">
       <h5 class="section-title">{{ 'إحصائيات الأدوار' | translate }}</h5>
     </div>
 
-    @for (metric of roleMetricCards; track metric.key) {
+    @for (metric of visibleRoleMetricCards; track metric.key) {
       <div class="col-lg-3 col-md-6">
         <ng-container *ngIf="metric.link; else staticRoleCard">
           <a class="role-metric-link" [routerLink]="metric.link">
@@ -57,7 +57,7 @@
     }
   }
 
-  @if (!overviewLoading && financialMetricCards.length) {
+  @if (!isTeacher && !overviewLoading && financialMetricCards.length) {
     <div class="col-12">
       <h5 class="section-title">{{ 'المعاملات المالية' | translate }}</h5>
     </div>
@@ -81,7 +81,7 @@
     }
   }
 
-  @if (!overviewLoading && !summaryCards.length && overviewLoaded) {
+  @if (!isTeacher && !overviewLoading && !summaryCards.length && overviewLoaded) {
     <div class="col-12">
       <app-card [showHeader]="false" [padding]="20">
         <div class="text-muted">{{ 'لا توجد إحصائيات للوحة التحكم في هذه المدة.' | translate }}</div>
@@ -89,7 +89,7 @@
     </div>
   }
 
-  <div class="col-12" *ngIf="overviewLoaded && (overviewRoleLabel || overviewRangeDescription)">
+  <div class="col-12" *ngIf="!isTeacher && overviewLoaded && (overviewRoleLabel || overviewRangeDescription)">
     <div class="text-muted f-12 m-b-20">
       <span *ngIf="overviewRoleLabel"><strong>{{ 'الدور' | translate }}:</strong> {{ overviewRoleLabel }}</span>
       <span *ngIf="overviewRoleLabel && overviewRangeDescription"> · </span>
@@ -97,7 +97,7 @@
     </div>
   </div>
 
-  <div class="col-12" *ngIf="financialChartHasData">
+  <div class="col-12" *ngIf="!isTeacher && financialChartHasData">
     <app-statistics-chart
       [height]="260"
       [chartTitle]="'تحليل المعاملات المالية' | translate"
@@ -107,13 +107,13 @@
       [showRangeSelector]="false"
     />
   </div>
-  <div class="col-12" *ngIf="!financialChartHasData && financialMetricCards.length && overviewLoaded">
+  <div class="col-12" *ngIf="!isTeacher && !financialChartHasData && financialMetricCards.length && overviewLoaded">
     <app-card [showHeader]="false" [padding]="24">
       <div class="text-muted">{{ 'لا توجد بيانات مالية متاحة لهذه المدة.' | translate }}</div>
     </app-card>
   </div>
 
-  <div class="col-lg-7 col-md-12" *ngIf="monthlyRevenueHasData">
+  <div class="col-lg-7 col-md-12" *ngIf="!isTeacher && monthlyRevenueHasData">
     <app-statistics-chart
       [height]="300"
       [chartTitle]="'الإيرادات الشهرية' | translate"
@@ -123,7 +123,7 @@
       [showRangeSelector]="false"
     />
   </div>
-  <div class="col-lg-7 col-md-12" *ngIf="!monthlyRevenueHasData && overviewLoaded">
+  <div class="col-lg-7 col-md-12" *ngIf="!isTeacher && !monthlyRevenueHasData && overviewLoaded">
     <app-card [showHeader]="false" [padding]="24">
       <div class="text-muted">{{ 'لا توجد بيانات للإيرادات الشهرية في هذه المدة.' | translate }}</div>
     </app-card>
@@ -178,7 +178,7 @@
     </app-card>
   </div>
 
-  <div class="col-12" *ngIf="transactionsView.length">
+  <div class="col-12" *ngIf="!isTeacher && transactionsView.length">
     <app-card [cardTitle]="'المعاملات الأخيرة' | translate" padding="0">
       <div class="table-responsive transactions-table">
         <table class="table table-hover m-b-0">
@@ -207,7 +207,7 @@
     </app-card>
   </div>
 
-  <div class="col-12" *ngIf="overviewLoaded && !transactionsView.length">
+  <div class="col-12" *ngIf="!isTeacher && overviewLoaded && !transactionsView.length">
     <app-card [showHeader]="false" [padding]="20">
       <div class="text-muted">{{ 'لا توجد معاملات حديثة لهذه المدة.' | translate }}</div>
     </app-card>
