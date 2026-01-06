@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { TranslateModule } from '@ngx-translate/core';
 import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scrollbar';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 
@@ -55,15 +57,15 @@ type StudentVM = {
     MatDialogModule,
     MatProgressSpinnerModule,
     MatButtonModule,
-    NgxScrollbar
+    NgxScrollbar,
+    TranslateModule
   ],
   templateUrl: './student-details.component.html',
   styleUrl: './student-details.component.scss'
 })
 export class StudentDetailsComponent {
   loading = true;
-  vm?: StudentVM;
-
+  student?: Record<string, unknown>;
   contactEntries: ContactEntry[] = [];
   detailEntries: DetailEntry[] = [];
   statEntries: Array<{ label: string; value: string | undefined }> = [];
@@ -92,95 +94,39 @@ export class StudentDetailsComponent {
   ];
 
   constructor() {
-    const raw = inject<{ data?: StudentVM } | StudentVM | null>(MAT_DIALOG_DATA);
-    const data = raw && typeof raw === 'object' && 'data' in raw ? raw.data : (raw as StudentVM | null);
-    this.setData(data);
+    const raw = inject<Record<string, unknown> | { data?: Record<string, unknown> } | null>(MAT_DIALOG_DATA);
+    const data = raw && typeof raw === 'object' && 'data' in raw ? raw.data : raw;
+    this.setData(data ?? undefined);
   }
 
-  setData(data?: StudentVM | null): void {
-    this.vm = undefined;
+  setData(data?: Record<string, unknown> | null): void {
+    this.student = undefined;
     this.loading = !data;
-
     this.contactEntries = [];
     this.detailEntries = [];
-    this.statEntries = [];
 
-    if (!data) return;
+    if (!data) {
+      return;
+    }
 
-    this.vm = data;
+    this.student = data;
     this.loading = false;
+    const raw = data as Record<string, unknown>;
 
-    this.statEntries = this.buildStatEntries([
-      { key: 'managerName', label: 'المشرف' },
-      { key: 'teacherName', label: 'المعلم' },
-      { key: 'circleName', label: 'الحلقة' }
-    ], data);
-
-    const contactKeys: Array<keyof StudentVM> = ['email', 'mobile', 'secondMobile'];
-
+    const contactKeys = ['email', 'mobile', 'secondMobile'];
     this.contactEntries = contactKeys
-      .map((k) => {
-        const value = (data[k] ?? '').toString().trim();
-        if (!value) return null;
+      .filter((k) => raw[k] !== undefined && raw[k] !== null)
+      .map((k) => ({ key: k, value: raw[k], icon: this.getContactIcon(k) }));
 
-        const icon = this.getContactIcon(k as string);
-        const label = this.labelMap[k as string] ?? this.humanizeKey(k as string);
-
-        const href =
-          k === 'email' ? `mailto:${value}` :
-          (k === 'mobile' || k === 'secondMobile') ? this.buildWhatsAppLink(value) :
-          undefined;
-
-        return { key: k as string, label, value, icon, href } as ContactEntry;
-      })
-      .filter(Boolean) as ContactEntry[];
-
-    const exclude = new Set<string>([
-      'email', 'mobile', 'secondMobile',
-      'fullName', 'managerName', 'teacherName', 'circleName',  'residentId',
-      'governorateId',
-      'teacherId',
-      'managerId',      'identityNumber',
-    ]);
-
-    const preferredOrder = [
-      'nationality',
-      'resident',
-      'governorate',
-      'gender',
-      'userName',
-      'identityNumber',
-      'managerName',
-      'teacherName',
-      'circleName',
-      'nationalityId',
-      'residentId',
-      'governorateId',
-      'managerId',
-      'teacherId',
-      'circleId',
-      'createdAt',
-      'updatedAt',
-      'id'
-    ];
-
-    const entries = Object.entries(data as Record<string, unknown>)
-      .filter(([key]) => !exclude.has(key))
-      .filter(([, val]) => val !== null && val !== undefined)
-      .filter(([, val]) => typeof val !== 'object' && !Array.isArray(val))
-      .map(([key, val]) => ({
-        key,
-        label: this.labelMap[key] ?? this.humanizeKey(key),
-        value: this.formatValue(key, val)
-      }));
-
-    this.detailEntries = entries.sort((a, b) => {
-      const ai = preferredOrder.indexOf(a.key);
-      const bi = preferredOrder.indexOf(b.key);
-      const ax = ai === -1 ? 999 : ai;
-      const bx = bi === -1 ? 999 : bi;
-      return ax - bx;
-    });
+    const exclude = ['fullName', 'students', 'teachers', 'managers', ...contactKeys];
+    this.detailEntries = Object.entries(data).filter(
+      ([key, value]) =>
+        !exclude.includes(key) &&
+        !/id$/i.test(key) &&
+        key.toLowerCase() !== 'id' &&
+        !Array.isArray(value) &&
+        (typeof value !== 'object' || value === null)
+    );
   }
 
   getBranchLabel(id: unknown): string {

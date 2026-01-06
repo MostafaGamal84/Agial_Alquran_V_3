@@ -85,19 +85,24 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
   }
 
   teacherDetails(teacher: LookUpUserDto): void {
+    const dialogRef = this.dialog.open(TeacherDetailsComponent, {
+      width: '800px',
+      maxWidth: '95vw'
+    });
+
     this.lookupService.getUserDetails(teacher.id).subscribe({
       next: (res) => {
         if (res.isSuccess && res.data) {
-          this.dialog.open(TeacherDetailsComponent, {
-            width: '800px',
-            maxWidth: '95vw',
-            data: res.data
-          });
+          dialogRef.componentInstance?.setData(res.data);
           return;
         }
+        dialogRef.close();
         this.toast.error('Failed to load teacher details');
       },
-      error: () => this.toast.error('Failed to load teacher details')
+      error: () => {
+        dialogRef.close();
+        this.toast.error('Failed to load teacher details');
+      }
     });
   }
 
