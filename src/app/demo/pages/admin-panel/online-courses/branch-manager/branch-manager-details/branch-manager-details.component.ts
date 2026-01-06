@@ -82,6 +82,7 @@ export class BranchManagerDetailsComponent {
 
   contactEntries: ContactEntry[] = [];
   detailEntries: DetailEntry[] = [];
+  readonly academyWebsiteUrl = 'https://ajyal-alquran.com/';
 
   Branch = [
     { id: BranchesEnum.Mens, label: 'الرجال' },
@@ -152,8 +153,8 @@ export class BranchManagerDetailsComponent {
 
         const href =
           k === 'email' ? `mailto:${value}` :
-          (k === 'mobile' || k === 'secondMobile') ? this.buildWhatsAppLink(value) :
-          undefined;
+            (k === 'mobile' || k === 'secondMobile') ? this.buildWhatsAppLink(value) :
+              undefined;
 
         return { key: k as string, label, value, icon, href } as ContactEntry;
       })
@@ -164,23 +165,25 @@ export class BranchManagerDetailsComponent {
       // ما نعرضهمش هنا لأنهم ظاهرين فوق أو قوائم
       'teachers', 'students', 'managers', 'managerCircles',
       'email', 'mobile', 'secondMobile',
-      'fullName'
+      'fullName', 'residentId',
+      'governorateId',
+      'teacherId',
+      'managerId', 'residentId',
+      'identityNumber', 'inactive', 'nationalityId',
+      'governorateId', 'branchId', 'circleId' ,   'teacherId',
+      'managerId',
+      'circleId',  'teacherName',
+      'managerName',
+      'circleName',
+
+      'id'
     ]);
 
     const preferredOrder = [
       'nationality',
       'resident',
       'governorate',
-      'teacherName',
-      'managerName',
-      'circleName',
-      'nationalityId',
-      'residentId',
-      'governorateId',
-      'teacherId',
-      'managerId',
-      'circleId',
-      'id'
+    
     ];
 
     const entries = Object.entries(data as Record<string, unknown>)

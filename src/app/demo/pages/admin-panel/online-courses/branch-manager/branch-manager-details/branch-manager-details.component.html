@@ -35,15 +35,15 @@
                 {{ getBranchLabel(m.branchId) }}
               </span>
 
-              <span class="pill" [class.is-inactive]="!!m.inactive">
+              <!-- <span class="pill" [class.is-inactive]="!!m.inactive">
                 <i class="ti" [class.ti-circle-check]="!m.inactive" [class.ti-circle-x]="!!m.inactive"></i>
                 {{ m.inactive ? 'غير نشط' : 'نشط' }}
-              </span>
+              </span> -->
             </div>
           </div>
         </div>
 
-        <div class="hero-right">
+        <!-- <div class="hero-right">
           <div class="mini">
             <div class="mini-k">المشرف</div>
             <div class="mini-v">{{ m.managerName || '—' }}</div>
@@ -56,7 +56,7 @@
             <div class="mini-k">الحلقة</div>
             <div class="mini-v">{{ m.circleName || '—' }}</div>
           </div>
-        </div>
+        </div> -->
       </section>
 
       <!-- ====== Contact Card ====== -->
@@ -123,11 +123,14 @@
                   <div class="row-title">{{ t.fullName || '—' }}</div>
                   <div class="row-sub">{{ t.mobile || '—' }}</div>
                 </div>
-                <a class="row-action"
+                <a class="row-action row-action--website"
                    *ngIf="t.mobile"
-                   [href]="buildWhatsAppLink(t.mobile)"
+                   [href]="academyWebsiteUrl"
+                   target="_blank"
+                   rel="noopener"
                    (click)="$event.stopPropagation()">
-                  واتساب
+                  <i class="ti ti-world"></i>
+                  موقع الأكاديمية
                 </a>
               </div>
             </div>
@@ -148,11 +151,14 @@
                   <div class="row-title">{{ s.fullName || '—' }}</div>
                   <div class="row-sub">{{ s.mobile || '—' }}</div>
                 </div>
-                <a class="row-action"
+                <a class="row-action row-action--website"
                    *ngIf="s.mobile"
-                   [href]="buildWhatsAppLink(s.mobile)"
+                   [href]="academyWebsiteUrl"
+                   target="_blank"
+                   rel="noopener"
                    (click)="$event.stopPropagation()">
-                  واتساب
+                  <i class="ti ti-world"></i>
+                  موقع الأكاديمية
                 </a>
               </div>
             </div>

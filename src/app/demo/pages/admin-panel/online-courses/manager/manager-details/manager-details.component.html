@@ -1,9 +1,9 @@
-<div class="manager-details-header" mat-dialog-title>
-  <div class="flex align-item-center justify-content-between">
-    <div class="f-w-700 f-16">{{ 'بيانات المشرف' | translate }}</div>
+<div class="dialog-head" mat-dialog-title>
+  <div class="head-row">
+    <div class="title">بيانات المشرف</div>
 
-    <button mat-icon-button class="avatar avatar-s modal-close" mat-dialog-close>
-      <i class="ti ti-x f-20"></i>
+    <button mat-icon-button class="close-btn" mat-dialog-close aria-label="إغلاق">
+      <i class="ti ti-x"></i>
     </button>
   </div>
 </div>
@@ -19,67 +19,159 @@
           <div class="avatar avatar-xl m-b-10">
             <i class="ti ti-user f-24"></i>
           </div>
-          <h5 class="m-b-10">{{ m.fullName }}</h5>
-          <div class="contact-list">
-            <div class="contact-item" *ngFor="let c of contactEntries">
-              <i [class]="c.icon"></i>
-              <span class="contact-value">{{ c.value }}</span>
+
+          <div class="hero-meta">
+            <div class="name">{{ m.fullName || '—' }}</div>
+
+            <div class="sub">
+              <span class="pill">
+                <i class="ti ti-building-store"></i>
+                {{ getBranchLabel(m.branchId) }}
+              </span>
+
+              <span class="pill" *ngIf="m.inactive !== undefined" [class.is-inactive]="!!m.inactive">
+                <i class="ti" [class.ti-circle-check]="!m.inactive" [class.ti-circle-x]="!!m.inactive"></i>
+                {{ m.inactive ? 'غير نشط' : 'نشط' }}
+              </span>
             </div>
           </div>
         </div>
-        <div class="right-panel">
-          <mat-accordion>
-            <mat-expansion-panel [expanded]="true" *ngIf="m.branchId !== undefined || detailEntries.length">
-              <mat-expansion-panel-header>
-                <mat-panel-title>{{ 'البيانات الشخصية' | translate }}</mat-panel-title>
-              </mat-expansion-panel-header>
 
-              <div class="detail-grid">
-                <div class="detail-item" *ngIf="m.branchId !== undefined">
-                  <span class="label">{{ 'الفرع' | translate }}:</span>
-                  <span>{{ getBranchLabel(m.branchId) }}</span>
-                </div>
-                <div class="detail-item" *ngFor="let entry of detailEntries">
-                  <span class="label">{{ formatLabel(entry[0]) | translate }}:</span>
-                  <span>{{ formatValue(entry[0], entry[1]) }}</span>
-                </div>
-              </div>
-            </mat-expansion-panel>
-
-            <mat-expansion-panel *ngIf="teachers.length">
-              <mat-expansion-panel-header>
-                <mat-panel-title>{{ 'المعلمون' | translate }}</mat-panel-title>
-              </mat-expansion-panel-header>
-
-              <div class="relation-item" *ngFor="let t of teachers">
-                <span class="relation-name">{{ t.fullName }}</span>
-                <span class="relation-phone">{{ t.mobile }}</span>
-              </div>
-            </mat-expansion-panel>
-
-            <mat-expansion-panel *ngIf="students.length">
-              <mat-expansion-panel-header>
-                <mat-panel-title>{{ 'الطلاب' | translate }}</mat-panel-title>
-              </mat-expansion-panel-header>
-
-              <div class="relation-item" *ngFor="let s of students">
-                <span class="relation-name">{{ s.fullName }}</span>
-                <span class="relation-phone">{{ s.mobile }}</span>
-              </div>
-            </mat-expansion-panel>
-
-            <mat-expansion-panel *ngIf="managerCircles.length">
-              <mat-expansion-panel-header>
-                <mat-panel-title>{{ 'الحلقات' | translate }}</mat-panel-title>
-              </mat-expansion-panel-header>
-
-              <div class="relation-item" *ngFor="let c of managerCircles">
-                <span class="relation-name">{{ c.circle }}</span>
-              </div>
-            </mat-expansion-panel>
-          </mat-accordion>
+        <div class="hero-right" *ngIf="statEntries.length">
+          <div class="mini" *ngFor="let s of statEntries">
+            <div class="mini-k">{{ s.label }}</div>
+            <div class="mini-v">{{ s.value || '—' }}</div>
+          </div>
         </div>
-      </div>
+      </section>
+
+      <!-- ====== Contact Card ====== -->
+      <section class="card" *ngIf="contactEntries.length">
+        <div class="card-title">
+          <i class="ti ti-address-book"></i>
+          بيانات التواصل
+        </div>
+
+        <div class="contact-grid">
+          <a class="contact-item"
+             *ngFor="let c of contactEntries"
+             [href]="c.href || null"
+             [class.is-link]="!!c.href"
+             (click)="$event.stopPropagation()">
+
+            <div class="c-ico"><i [class]="c.icon"></i></div>
+            <div class="c-body">
+              <div class="c-label">{{ c.label }}</div>
+              <div class="c-value">{{ c.value || '—' }}</div>
+            </div>
+
+            <i class="ti ti-external-link hint" *ngIf="c.href"></i>
+          </a>
+        </div>
+      </section>
+
+      <!-- ====== Details Card ====== -->
+      <section class="card" *ngIf="detailEntries.length">
+        <div class="card-title">
+          <i class="ti ti-id"></i>
+          البيانات الأساسية
+        </div>
+
+        <div class="kv-grid">
+          <div class="kv" *ngFor="let e of detailEntries">
+            <div class="k">{{ e.label }}</div>
+            <div class="v">{{ e.value }}</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== Lists ====== -->
+      <section class="card" *ngIf="teachers.length || students.length || managerCircles.length">
+        <div class="card-title">
+          <i class="ti ti-list-details"></i>
+          الارتباطات
+        </div>
+
+        <mat-accordion class="acc">
+
+          <!-- Teachers -->
+          <mat-expansion-panel *ngIf="teachers.length">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                المعلمون
+                <span class="count">{{ teachers.length }}</span>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <div class="rows">
+              <div class="row" *ngFor="let t of teachers">
+                <div class="row-main">
+                  <div class="row-title">{{ t.fullName || '—' }}</div>
+                  <div class="row-sub">{{ t.mobile || '—' }}</div>
+                </div>
+                <a class="row-action row-action--website"
+                   *ngIf="t.mobile"
+                   [href]="academyWebsiteUrl"
+                   target="_blank"
+                   rel="noopener"
+                   (click)="$event.stopPropagation()">
+                  <i class="ti ti-world"></i>
+                  موقع الأكاديمية
+                </a>
+              </div>
+            </div>
+          </mat-expansion-panel>
+
+          <!-- Students -->
+          <mat-expansion-panel *ngIf="students.length">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                الطلاب
+                <span class="count">{{ students.length }}</span>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <div class="rows">
+              <div class="row" *ngFor="let s of students">
+                <div class="row-main">
+                  <div class="row-title">{{ s.fullName || '—' }}</div>
+                  <div class="row-sub">{{ s.mobile || '—' }}</div>
+                </div>
+                <a class="row-action row-action--website"
+                   *ngIf="s.mobile"
+                   [href]="academyWebsiteUrl"
+                   target="_blank"
+                   rel="noopener"
+                   (click)="$event.stopPropagation()">
+                  <i class="ti ti-world"></i>
+                  موقع الأكاديمية
+                </a>
+              </div>
+            </div>
+          </mat-expansion-panel>
+
+          <!-- Circles -->
+          <mat-expansion-panel *ngIf="managerCircles.length">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                الحلقات
+                <span class="count">{{ managerCircles.length }}</span>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <div class="rows">
+              <div class="row" *ngFor="let c of managerCircles">
+                <div class="row-main">
+                  <div class="row-title">{{ c.circle || '—' }}</div>
+                </div>
+              </div>
+            </div>
+          </mat-expansion-panel>
+
+        </mat-accordion>
+      </section>
+
     </div>
+
   </app-scrollbar>
 </mat-dialog-content>

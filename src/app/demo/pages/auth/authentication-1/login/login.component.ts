@@ -14,6 +14,7 @@ import { CommonModule } from '@angular/common';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { TranslateService } from '@ngx-translate/core';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
+import { DASHBOARD_PATH } from 'src/app/app-config';
 
 interface Roles {
   name: string;
@@ -55,8 +56,8 @@ export class LoginComponent implements OnInit {
       }
     }
 
-    // get return url from route parameters or fall back to code verification
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/authentication-1/code-verify';
+    // get return url from route parameters or fall back to dashboard
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || DASHBOARD_PATH;
   }
 
   // convenience getter for easy access to form fields
@@ -79,22 +80,18 @@ export class LoginComponent implements OnInit {
       .subscribe({
         next: (res) => {
           this.loading = false;
-          if (res?.isSuccess && res?.data?.passwordIsCorrect) {
-            this.authenticationService.pendingEmail = res.data.email;
-            if (res.data.code) {
-              this.authenticationService.pendingCode = res.data.code;
-            }
-            this.toast.success(this.translate.instant('AUTH.LOGIN.Success'));
+          if (res?.isSuccess && res?.data) {
+            this.toast.success('تم تسجيل الدخول بنجاح');
             this.router.navigateByUrl(this.returnUrl);
           } else if (res?.errors?.length && res.errors[0].message) {
             this.toast.error(res.errors[0].message);
           } else {
-            this.toast.error(this.translate.instant('AUTH.LOGIN.Failure'));
+            this.toast.error('فشل تسجيل الدخول');
           }
         },
         error: () => {
           this.loading = false;
-          this.toast.error(this.translate.instant('AUTH.LOGIN.Failure'));
+          this.toast.error('فشل تسجيل الدخول');
         }
       });
   }

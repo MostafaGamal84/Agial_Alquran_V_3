@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TranslateModule } from '@ngx-translate/core';
@@ -9,9 +10,44 @@ import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 
 interface ContactEntry {
   key: string;
-  value: unknown;
+  label: string;
+  value: string;
   icon: string;
+  href?: string;
 }
+
+interface DetailEntry {
+  key: string;
+  label: string;
+  value: string;
+}
+
+type StudentVM = {
+  id?: number;
+  fullName?: string;
+  email?: string;
+  mobile?: string;
+  secondMobile?: string;
+  nationality?: string;
+  nationalityId?: number;
+  resident?: string;
+  residentId?: number;
+  governorate?: string;
+  governorateId?: number;
+  branchId?: number;
+  managerId?: number;
+  managerName?: string;
+  teacherId?: number;
+  teacherName?: string;
+  circleId?: number;
+  circleName?: string;
+  gender?: string;
+  userName?: string;
+  identityNumber?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  inactive?: boolean;
+};
 
 @Component({
   selector: 'app-student-details',
@@ -31,20 +67,25 @@ export class StudentDetailsComponent {
   loading = true;
   student?: Record<string, unknown>;
   contactEntries: ContactEntry[] = [];
-  detailEntries: [string, unknown][] = [];
+  detailEntries: DetailEntry[] = [];
+  statEntries: Array<{ label: string; value: string | undefined }> = [];
 
   private readonly labelMap: Record<string, string> = {
-    nationality: 'Nationality',
-    governorate: 'Governorate',
-    managerName: 'Manager Name',
-    circleName: 'Circle Name',
-    branchId: 'Branch',
-    gender: 'Gender',
-    userName: 'Username',
-    identityNumber: 'Identity Number',
-    residentId: 'Resident ID',
-    createdAt: 'Created At',
-    updatedAt: 'Updated At'
+    nationality: 'الجنسية',
+    governorate: 'المحافظة',
+    managerName: 'اسم المشرف',
+    teacherName: 'اسم المعلم',
+    circleName: 'اسم الحلقة',
+    branchId: 'الفرع',
+    gender: 'النوع',
+    userName: 'اسم المستخدم',
+    identityNumber: 'رقم الهوية',
+    residentId: 'معرّف الإقامة',
+    nationalityId: 'معرّف الجنسية',
+    governorateId: 'معرّف المحافظة',
+    createdAt: 'تاريخ الإنشاء',
+    updatedAt: 'آخر تحديث',
+    inactive: 'الحالة'
   };
 
   Branch = [
@@ -88,25 +129,30 @@ export class StudentDetailsComponent {
     );
   }
 
-  getBranchLabel(id: number | undefined): string {
-    return this.Branch.find((b) => b.id === id)?.label || String(id ?? '');
+  getBranchLabel(id: unknown): string {
+    const item = this.Branch.find(b => b.id === id);
+    return item ? item.label : (id === null || id === undefined ? '—' : String(id));
   }
 
-  formatValue(key: string, value: unknown): unknown {
-    if (key === 'branchId') {
-      return this.getBranchLabel(typeof value === 'number' ? value : undefined);
-    }
-    return value;
+  private buildStatEntries(
+    pairs: Array<{ key: keyof StudentVM; label: string }>,
+    data: StudentVM
+  ): Array<{ label: string; value: string | undefined }> {
+    return pairs
+      .map((p) => ({ label: p.label, value: (data[p.key] ?? '') as string | undefined }))
+      .filter((p) => !!(p.value && p.value.toString().trim()));
   }
 
-  getLabel(key: string): string {
-    return this.labelMap[key] ?? this.humanizeKey(key);
+  private formatValue(key: string, val: unknown): string {
+    if (key === 'inactive') return val ? 'غير نشط' : 'نشط';
+    if (key === 'branchId') return this.getBranchLabel(val);
+    return String(val);
   }
 
   private humanizeKey(key: string): string {
     const normalised = key
       .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
-      .replace(/[_-]+/g, ' ')
+      .replace(/_/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
 
@@ -120,9 +166,14 @@ export class StudentDetailsComponent {
   private getContactIcon(key: string): string {
     const icons: Record<string, string> = {
       email: 'ti ti-mail',
-      mobile: 'ti ti-phone',
-      secondMobile: 'ti ti-phone'
+      mobile: 'ti ti-brand-whatsapp',
+      secondMobile: 'ti ti-brand-whatsapp'
     };
     return icons[key] || 'ti ti-circle';
+  }
+
+  buildWhatsAppLink(phone: string): string | undefined {
+    const digits = phone.replace(/[^\d]/g, '');
+    return digits ? `https://wa.me/${digits}` : undefined;
   }
 }

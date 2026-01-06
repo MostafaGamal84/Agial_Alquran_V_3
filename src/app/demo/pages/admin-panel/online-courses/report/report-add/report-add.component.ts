@@ -1,10 +1,15 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 import { NgSelectModule } from '@ng-select/ng-select';
+
+import { MatDialog, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 import { CircleReportService, CircleReportAddDto } from 'src/app/@theme/services/circle-report.service';
 import { CircleService } from 'src/app/@theme/services/circle.service';
@@ -20,7 +25,7 @@ import { QuranSurahEnum } from 'src/app/@theme/types/QuranSurahEnum';
 @Component({
   selector: 'app-report-add',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NgSelectModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, NgSelectModule, RouterModule, MatDialogModule, MatButtonModule],
   templateUrl: './report-add.component.html',
   styleUrl: './report-add.component.scss'
 })
@@ -34,6 +39,7 @@ export class ReportAddComponent implements OnInit, OnDestroy {
   private translate = inject(TranslateService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private dialog = inject(MatDialog);
 
   private destroy$ = new Subject<void>();
 
@@ -47,7 +53,7 @@ export class ReportAddComponent implements OnInit, OnDestroy {
   // lists
   managers: any[] = [];
   teachers: any[] = [];
-  students: { id: number; name: string }[] = [];
+  students: { id: number; name: string; mobile?: string | null }[] = [];
   circles: any[] = [];
 
   attendStatusOptions = [
@@ -435,17 +441,18 @@ export class ReportAddComponent implements OnInit, OnDestroy {
       .get(circleId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (res) => {
-          const list = res.isSuccess && res.data?.students ? res.data.students : [];
-          const mapped = list
-            .map((s: any) => {
-              const id = Number(s.studentId ?? s.id);
-              const name =
-                s?.student?.fullName || s?.fullName || s?.name || (id ? `Student #${id}` : null);
-              if (!id || !name) return null;
-              return { id, name };
-            })
-            .filter(Boolean) as { id: number; name: string }[];
+      next: (res) => {
+        const list = res.isSuccess && res.data?.students ? res.data.students : [];
+        const mapped = list
+          .map((s: any) => {
+            const id = Number(s.studentId ?? s.id);
+            const name =
+              s?.student?.fullName || s?.fullName || s?.name || (id ? `Student #${id}` : null);
+            const mobile = s?.student?.mobile ?? s?.mobile ?? s?.phone ?? null;
+            if (!id || !name) return null;
+            return { id, name, mobile };
+          })
+          .filter(Boolean) as { id: number; name: string; mobile?: string | null }[];
 
           const unique = new Map<number, { id: number; name: string }>();
           mapped.forEach((x) => unique.set(x.id, x));
@@ -542,6 +549,108 @@ export class ReportAddComponent implements OnInit, OnDestroy {
     return this.translate.instant('قيمة غير صحيحة');
   }
 
+  private getWhatsAppPayload(model: CircleReportAddDto): WhatsAppDialogPayload | null {
+    if (this.mode === 'update') {
+      return null;
+    }
+
+    const studentId = Number(model.studentId ?? 0);
+    if (!studentId) {
+      return null;
+    }
+
+    const student = this.students.find((s) => s.id === studentId);
+    const studentName = student?.name ?? this.studentDisplayName ?? this.translate.instant('طالب');
+    const phone = student?.mobile ?? null;
+    const statusLabel =
+      this.attendStatusOptions.find((option) => option.value === Number(model.attendStatueId))?.label ??
+      this.translate.instant('غير محدد');
+    const minutes = model.minutes ?? '—';
+    const circleName = this.circleDisplayName || '—';
+    const teacherName = this.teacherDisplayName || '—';
+    const header = `تقرير الطالب ${studentName}\nالحلقة: ${circleName}\nالمعلم: ${teacherName}\nالحالة: ${statusLabel}\nالدقائق: ${minutes}`;
+    const attendedDetails =
+      Number(model.attendStatueId) === AttendStatusEnum.Attended
+        ? this.buildAttendedDetails(model)
+        : '';
+
+    const message = attendedDetails ? `${header}\n${attendedDetails}` : header;
+
+    return {
+      studentName,
+      phone,
+      message
+    };
+  }
+
+  private openWhatsAppDialog(payload: WhatsAppDialogPayload): void {
+    const dialogRef = this.dialog.open(ReportWhatsAppDialogComponent, {
+      data: payload,
+      width: '420px'
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (!result?.phone) {
+        return;
+      }
+      this.launchWhatsApp(result.phone, payload.message);
+    });
+  }
+
+  private launchWhatsApp(phone: string, message: string): void {
+    const url = message
+      ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
+      : `https://wa.me/${phone}`;
+    window.open(url, '_blank');
+  }
+
+  private buildAttendedDetails(model: CircleReportAddDto): string {
+    const lines: string[] = [];
+    const surahName = this.surahList.find((s) => s.id === Number(model.newId))?.name;
+
+    if (surahName) {
+      lines.push(`السورة الجديدة: ${surahName}`);
+    }
+    if (model.newFrom) {
+      lines.push(`الجديد من: ${model.newFrom}`);
+    }
+    if (model.newTo) {
+      lines.push(`الجديد إلى: ${model.newTo}`);
+    }
+    if (model.newRate) {
+      lines.push(`تقييم الجديد: ${model.newRate}`);
+    }
+    if (model.recentPast) {
+      lines.push(`الماضي القريب: ${model.recentPast}`);
+    }
+    if (model.recentPastRate) {
+      lines.push(`تقييم الماضي القريب: ${model.recentPastRate}`);
+    }
+    if (model.distantPast) {
+      lines.push(`الماضي البعيد: ${model.distantPast}`);
+    }
+    if (model.distantPastRate) {
+      lines.push(`تقييم الماضي البعيد: ${model.distantPastRate}`);
+    }
+    if (model.farthestPast) {
+      lines.push(`الأبعد: ${model.farthestPast}`);
+    }
+    if (model.farthestPastRate) {
+      lines.push(`تقييم الأبعد: ${model.farthestPastRate}`);
+    }
+    if (model.theWordsQuranStranger) {
+      lines.push(`غريب القرآن: ${model.theWordsQuranStranger}`);
+    }
+    if (model.intonation) {
+      lines.push(`التجويد: ${model.intonation}`);
+    }
+    if (model.other) {
+      lines.push(`ملاحظات: ${model.other}`);
+    }
+
+    return lines.join('\n');
+  }
+
   // =========================
   // Submit
   // =========================
@@ -557,6 +666,7 @@ export class ReportAddComponent implements OnInit, OnDestroy {
     const creationTime = this.resolveCreationTime(rawModel.creationTime);
 
     const model: CircleReportAddDto = { ...rawModel, creationTime };
+    const whatsappPayload = this.getWhatsAppPayload(model);
 
     this.isSubmitting = true;
     const request$ = this.mode === 'update' ? this.service.update({ ...model, id: this.reportId ?? undefined }) : this.service.create(model);
@@ -573,6 +683,10 @@ export class ReportAddComponent implements OnInit, OnDestroy {
 
           if (this.mode === 'update') {
             return;
+          }
+
+          if (whatsappPayload) {
+            this.openWhatsAppDialog(whatsappPayload);
           }
 
           this.reportForm.reset({ creationTime: '' }, { emitEvent: false });
@@ -776,5 +890,57 @@ export class ReportAddComponent implements OnInit, OnDestroy {
       circle: resolveName(report.circle) ?? report.circleName ?? '',
       student: resolveName(report.student) ?? report.studentName ?? ''
     };
+  }
+}
+
+interface WhatsAppDialogPayload {
+  studentName: string;
+  phone: string | null;
+  message: string;
+}
+
+@Component({
+  selector: 'app-report-whatsapp-dialog',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule],
+  template: `
+    <h2 mat-dialog-title>إرسال التقرير عبر واتساب</h2>
+    <mat-dialog-content>
+      <p>تأكد من رقم الطالب <strong>{{ data.studentName }}</strong> قبل الإرسال.</p>
+      <mat-form-field appearance="outline" class="w-100">
+        <mat-label>رقم واتساب</mat-label>
+        <input matInput [formControl]="phoneControl" placeholder="مثال: 201234567890" />
+        <mat-error *ngIf="phoneControl.hasError('required')">رقم الواتساب مطلوب</mat-error>
+      </mat-form-field>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button type="button" (click)="onCancel()">إلغاء</button>
+      <button mat-flat-button color="primary" type="button" (click)="onSend()" [disabled]="phoneControl.invalid">
+        إرسال واتساب
+      </button>
+    </mat-dialog-actions>
+  `
+})
+export class ReportWhatsAppDialogComponent {
+  private dialogRef = inject(MatDialogRef<ReportWhatsAppDialogComponent>);
+  readonly data = inject<WhatsAppDialogPayload>(MAT_DIALOG_DATA);
+
+  phoneControl = new FormControl(this.data.phone ?? '', { validators: [Validators.required], nonNullable: true });
+
+  onCancel(): void {
+    this.dialogRef.close(null);
+  }
+
+  onSend(): void {
+    const normalized = this.normalizePhone(this.phoneControl.value);
+    if (!normalized) {
+      this.phoneControl.setErrors({ required: true });
+      return;
+    }
+    this.dialogRef.close({ phone: normalized });
+  }
+
+  private normalizePhone(value: string): string {
+    return (value ?? '').replace(/\D/g, '');
   }
 }

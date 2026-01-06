@@ -92,6 +92,7 @@ export class InvoiceListComponent implements OnInit {
   residencyGroupOptions = RESIDENCY_GROUP_OPTIONS;
   selectedResidencyGroup: ResidencyGroupFilter = 'all';
   isLoading = false;
+  refreshToken = 0;
 
   ngOnInit(): void {
     this.searchTerm = this.route.snapshot.queryParamMap.get('search') ?? '';
@@ -230,5 +231,11 @@ export class InvoiceListComponent implements OnInit {
   onResidencyGroupChange(value: ResidencyGroupFilter | null): void {
     this.selectedResidencyGroup = value ?? 'all';
     this.tabCounts = { all: 0, paid: 0, unpaid: 0, overdue: 0, cancelled: 0 };
+  }
+
+  handlePaymentUpdated(): void {
+    this.refreshToken += 1;
+    this.tabCounts = { all: 0, paid: 0, unpaid: 0, overdue: 0, cancelled: 0 };
+    this.loadDashboard();
   }
 }
