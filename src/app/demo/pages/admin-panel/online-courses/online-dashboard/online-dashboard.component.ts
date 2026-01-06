@@ -234,7 +234,7 @@ export class OnlineDashboardComponent implements OnInit {
     const definitions = [
       {
         key: 'branchManagersCount',
-        label: 'مديرو الفروع',
+        label: 'مدير الفروع',
         icon: '#custom-layer',
         background: 'bg-primary-100 text-primary-600'
       },
