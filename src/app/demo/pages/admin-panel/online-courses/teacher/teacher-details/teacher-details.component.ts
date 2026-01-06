@@ -77,6 +77,7 @@ export class TeacherDetailsComponent {
   contactEntries: ContactEntry[] = [];
   detailEntries: DetailEntry[] = [];
   statEntries: Array<{ label: string; value: string | undefined }> = [];
+  readonly academyWebsiteUrl = 'https://ajyal-alquran.com/';
 
   Branch = [
     { id: BranchesEnum.Mens, label: 'الرجال' },
