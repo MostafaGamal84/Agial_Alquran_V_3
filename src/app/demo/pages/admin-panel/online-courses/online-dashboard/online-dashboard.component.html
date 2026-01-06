@@ -21,19 +21,38 @@
 
     @for (metric of roleMetricCards; track metric.key) {
       <div class="col-lg-3 col-md-6">
-        <app-card [showHeader]="false" [padding]="18" cardClass="role-metric-card">
-          <div class="flex align-item-center justify-content-between">
-            <div class="flex-grow-1">
-              <p class="m-b-5 f-w-600 text-muted">{{ metric.title | translate }}</p>
-              <div class="f-18 f-w-700">{{ metric.value }}</div>
+        <ng-container *ngIf="metric.link; else staticRoleCard">
+          <a class="role-metric-link" [routerLink]="metric.link">
+            <app-card [showHeader]="false" [padding]="18" cardClass="role-metric-card role-metric-card--clickable">
+              <div class="flex align-item-center justify-content-between">
+                <div class="flex-grow-1">
+                  <p class="m-b-5 f-w-600 text-muted">{{ metric.title | translate }}</p>
+                  <div class="f-18 f-w-700">{{ metric.value }}</div>
+                </div>
+                <div class="metric-icon {{ metric.background }}">
+                  <svg class="pc-icon">
+                    <use attr.xlink:href="assets/fonts/custom-icon.svg{{ metric.icon }}"></use>
+                  </svg>
+                </div>
+              </div>
+            </app-card>
+          </a>
+        </ng-container>
+        <ng-template #staticRoleCard>
+          <app-card [showHeader]="false" [padding]="18" cardClass="role-metric-card">
+            <div class="flex align-item-center justify-content-between">
+              <div class="flex-grow-1">
+                <p class="m-b-5 f-w-600 text-muted">{{ metric.title | translate }}</p>
+                <div class="f-18 f-w-700">{{ metric.value }}</div>
+              </div>
+              <div class="metric-icon {{ metric.background }}">
+                <svg class="pc-icon">
+                  <use attr.xlink:href="assets/fonts/custom-icon.svg{{ metric.icon }}"></use>
+                </svg>
+              </div>
             </div>
-            <div class="metric-icon {{ metric.background }}">
-              <svg class="pc-icon">
-                <use attr.xlink:href="assets/fonts/custom-icon.svg{{ metric.icon }}"></use>
-              </svg>
-            </div>
-          </div>
-        </app-card>
+          </app-card>
+        </ng-template>
       </div>
     }
   }
