@@ -295,7 +295,7 @@ export class OnlineDashboardComponent implements OnInit {
           link: definition.link
         } satisfies DashboardSummaryCard;
       })
-      .filter((entry): entry is DashboardSummaryCard => !!entry);
+      .filter((entry): entry is Omit<DashboardSummaryCard, 'percentage' | 'percentageClass'> & { link: string } => entry !== null);
   }
 
   private buildFinancialMetricCards(metrics?: DashboardOverviewMetricsDto | null): DashboardSummaryCard[] {
