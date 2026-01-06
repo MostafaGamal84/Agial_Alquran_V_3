@@ -1,6 +1,7 @@
 // angular import
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import type { ApexAxisChartSeries } from 'ng-apexcharts';
 
 // project import
@@ -28,6 +29,7 @@ interface DashboardSummaryCard {
   value: string;
   percentage?: string | null;
   percentageClass?: string;
+  link?: string;
 }
 
 interface DashboardTransactionView {
@@ -44,6 +46,7 @@ interface DashboardTransactionView {
   imports: [
     SharedModule,
     CommonModule,
+    RouterModule,
     StatisticsChartComponent,
     LoadingOverlayComponent
   ],
@@ -236,13 +239,44 @@ export class OnlineDashboardComponent implements OnInit {
         key: 'branchManagersCount',
         label: 'مديرو الفروع',
         icon: '#custom-layer',
-        background: 'bg-primary-100 text-primary-600'
+        background: 'bg-primary-100 text-primary-600',
+        link: '/online-course/branch-manager/list'
       },
-      { key: 'supervisorsCount', label: 'المشرفون', icon: '#custom-user-tick', background: 'bg-success-100 text-success-600' },
-      { key: 'teachersCount', label: 'المعلمون', icon: '#custom-teacher', background: 'bg-warning-100 text-warning-700' },
-      { key: 'studentsCount', label: 'الطلاب', icon: '#custom-profile-2user-outline', background: 'bg-info-100 text-info-700' },
-      { key: 'circlesCount', label: 'الحلقات', icon: '#custom-status-up', background: 'bg-secondary-100 text-secondary-700' },
-      { key: 'reportsCount', label: 'التقارير', icon: '#custom-document-text', background: 'bg-warn-100 text-warn-700' }
+      {
+        key: 'supervisorsCount',
+        label: 'المشرفون',
+        icon: '#custom-user-tick',
+        background: 'bg-success-100 text-success-600',
+        link: '/online-course/manager/list'
+      },
+      {
+        key: 'teachersCount',
+        label: 'المعلمون',
+        icon: '#custom-teacher',
+        background: 'bg-warning-100 text-warning-700',
+        link: '/online-course/teacher/list'
+      },
+      {
+        key: 'studentsCount',
+        label: 'الطلاب',
+        icon: '#custom-profile-2user-outline',
+        background: 'bg-info-100 text-info-700',
+        link: '/online-course/student/list'
+      },
+      {
+        key: 'circlesCount',
+        label: 'الحلقات',
+        icon: '#custom-status-up',
+        background: 'bg-secondary-100 text-secondary-700',
+        link: '/online-course/courses/view'
+      },
+      {
+        key: 'reportsCount',
+        label: 'التقارير',
+        icon: '#custom-document-text',
+        background: 'bg-warn-100 text-warn-700',
+        link: '/online-course/report/view'
+      }
     ];
 
     return definitions
@@ -257,7 +291,8 @@ export class OnlineDashboardComponent implements OnInit {
           title: definition.label,
           icon: definition.icon,
           background: definition.background,
-          value: this.formatNumber(numericValue)
+          value: this.formatNumber(numericValue),
+          link: definition.link
         } satisfies DashboardSummaryCard;
       })
       .filter((entry): entry is DashboardSummaryCard => !!entry);
