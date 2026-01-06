@@ -7,23 +7,17 @@
     </button>
   </div>
 </div>
-
-<mat-dialog-content class="dialog-content">
-
+<mat-dialog-content class="p-0">
   <div class="loading-state" *ngIf="loading">
     <mat-spinner diameter="48"></mat-spinner>
-    <div class="loading-text">جاري تحميل البيانات...</div>
+    <div class="loading-text">{{ 'Loading data...' | translate }}</div>
   </div>
-
-  <app-scrollbar *ngIf="!loading && vm as t" [customStyle]="{ maxHeight: 'calc(100vh - 155px)', position: 'relative' }">
-
-    <div class="wrap">
-
-      <!-- ====== Header Card ====== -->
-      <section class="card hero">
-        <div class="hero-left">
-          <div class="avatar">
-            <i class="ti ti-user"></i>
+  <app-scrollbar *ngIf="!loading && teacher as t" [customStyle]="{ maxHeight: 'calc(100vh - 155px)', position: 'relative' }">
+    <div class="dialog-body">
+      <div class="details-wrapper">
+        <div class="left-panel">
+          <div class="avatar avatar-xl m-b-10">
+            <i class="ti ti-user f-24"></i>
           </div>
 
           <div class="hero-meta">

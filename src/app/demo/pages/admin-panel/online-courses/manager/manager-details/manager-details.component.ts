@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
 import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scrollbar';
@@ -72,15 +73,15 @@ type ManagerVM = {
     MatProgressSpinnerModule,
     MatButtonModule,
     MatExpansionModule,
-    NgxScrollbar
+    NgxScrollbar,
+    TranslateModule
   ],
   templateUrl: './manager-details.component.html',
   styleUrl: './manager-details.component.scss'
 })
 export class ManagerDetailsComponent {
   loading = true;
-  vm?: ManagerVM;
-
+  manager?: Record<string, unknown>;
   teachers: Person[] = [];
   students: Person[] = [];
   managerCircles: Circle[] = [];
@@ -124,11 +125,57 @@ export class ManagerDetailsComponent {
   };
 
   constructor() {
-    const raw = inject<{ data?: ManagerVM } | ManagerVM | null>(MAT_DIALOG_DATA);
+    const raw = inject<Record<string, unknown> | { data?: Record<string, unknown> } | null>(MAT_DIALOG_DATA);
+    const data = raw && typeof raw === 'object' && 'data' in raw ? raw.data : raw;
+    this.setData(data ?? undefined);
+  }
 
-    // ✅ لو الداتا جاية بالشكل: {isSuccess, errors, data}
-    const data = raw && typeof raw === 'object' && 'data' in raw ? raw.data : (raw as ManagerVM | null);
-    this.setData(data);
+  setData(data?: Record<string, unknown> | null): void {
+    this.manager = undefined;
+    this.loading = !data;
+    this.teachers = [];
+    this.students = [];
+    this.managerCircles = [];
+    this.contactEntries = [];
+    this.detailEntries = [];
+
+    if (!data) {
+      return;
+    }
+
+    this.manager = data;
+    this.loading = false;
+    const raw = data as Record<string, unknown>;
+    this.teachers = Array.isArray(raw['teachers']) ? (raw['teachers'] as Person[]) : [];
+    this.students = Array.isArray(raw['students']) ? (raw['students'] as Person[]) : [];
+    this.managerCircles = Array.isArray(raw['managerCircles'])
+      ? (raw['managerCircles'] as Circle[])
+      : [];
+
+    const contactKeys = ['email', 'mobile', 'secondMobile'];
+    this.contactEntries = contactKeys
+      .filter((k) => raw[k] !== undefined && raw[k] !== null)
+      .map((k) => ({ key: k, value: raw[k], icon: this.getContactIcon(k) }));
+
+    const exclude = [
+      'fullName',
+      'teachers',
+      'students',
+      'managerCircles',
+      'managers',
+      'teacherName',
+      'managerName',
+      ...contactKeys
+    ];
+
+    this.detailEntries = Object.entries(data).filter(
+      ([key, value]) =>
+        !exclude.includes(key) &&
+        !/id$/i.test(key) &&
+        key.toLowerCase() !== 'id' &&
+        !Array.isArray(value) &&
+        (typeof value !== 'object' || value === null)
+    );
   }
 
   setData(data?: ManagerVM | null): void {
@@ -263,9 +310,5 @@ export class ManagerDetailsComponent {
       secondMobile: 'ti ti-brand-whatsapp'
     }[key] ?? 'ti ti-circle';
   }
-
-  buildWhatsAppLink(phone: string): string | undefined {
-    const digits = phone.replace(/[^\d]/g, '');
-    return digits ? `https://wa.me/${digits}` : undefined;
-  }
 }
+

@@ -16,27 +16,21 @@
   --website-bg-hover: #fecdd3;
 }
 
-:host-context(.dark),
-:host-context([data-theme='dark']) {
-  --text-primary: #f3f4f6;
-  --text-secondary: #9ca3af;
-  --card-bg: #0f172a;
-  --muted-bg: #111827;
-  --border-color: #1f2937;
-  --divider-color: #1f2937;
-  --accent-border: #1f2937;
-  --website-bg: #3f1d2d;
-  --website-border: #fb7185;
-  --website-text: #fecdd3;
-  --website-bg-hover: #4c1d2f;
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 20px;
+  color: var(--text-secondary, #6c757d);
+
+  .loading-text {
+    font-weight: 700;
+  }
 }
 
-/* Header */
-.dialog-head {
-  padding: 14px 16px;
-}
-
-.head-row {
+.details-wrapper {
   display: flex;
   align-items: center;
   justify-content: space-between;
