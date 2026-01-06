@@ -81,17 +81,17 @@ export class LoginComponent implements OnInit {
         next: (res) => {
           this.loading = false;
           if (res?.isSuccess && res?.data) {
-            this.toast.success(this.translate.instant('AUTH.LOGIN.Success'));
+            this.toast.success('تم تسجيل الدخول بنجاح');
             this.router.navigateByUrl(this.returnUrl);
           } else if (res?.errors?.length && res.errors[0].message) {
             this.toast.error(res.errors[0].message);
           } else {
-            this.toast.error(this.translate.instant('AUTH.LOGIN.Failure'));
+            this.toast.error('فشل تسجيل الدخول');
           }
         },
         error: () => {
           this.loading = false;
-          this.toast.error(this.translate.instant('AUTH.LOGIN.Failure'));
+          this.toast.error('فشل تسجيل الدخول');
         }
       });
   }
