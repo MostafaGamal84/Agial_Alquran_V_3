@@ -114,11 +114,14 @@
                   <div class="row-title">{{ s.fullName || '—' }}</div>
                   <div class="row-sub">{{ s.mobile || '—' }}</div>
                 </div>
-                <a class="row-action"
+                <a class="row-action row-action--website"
                    *ngIf="s.mobile"
-                   [href]="buildWhatsAppLink(s.mobile)"
+                   [href]="academyWebsiteUrl"
+                   target="_blank"
+                   rel="noopener"
                    (click)="$event.stopPropagation()">
-                  واتساب
+                  <i class="ti ti-world"></i>
+                  موقع الأكاديمية
                 </a>
               </div>
             </div>

@@ -10,6 +10,10 @@
   --border-color: #e5e7eb;
   --divider-color: #f1f1f1;
   --accent-border: #ececec;
+  --website-bg: #ffe4e6;
+  --website-border: #fb7185;
+  --website-text: #9f1239;
+  --website-bg-hover: #fecdd3;
 }
 
 :host-context(.dark),
@@ -21,6 +25,10 @@
   --border-color: #1f2937;
   --divider-color: #1f2937;
   --accent-border: #1f2937;
+  --website-bg: #3f1d2d;
+  --website-border: #fb7185;
+  --website-text: #fecdd3;
+  --website-bg-hover: #4c1d2f;
 }
 
 /* Header */
@@ -329,6 +337,23 @@
   background: var(--muted-bg);
   text-decoration: none;
   color: var(--text-primary);
+}
+
+.row-action--website {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-color: var(--website-border);
+  background: var(--website-bg);
+  color: var(--website-text);
+
+  &:hover {
+    background: var(--website-bg-hover);
+  }
+
+  i {
+    font-size: 14px;
+  }
 }
 
 /* Responsive tweaks */

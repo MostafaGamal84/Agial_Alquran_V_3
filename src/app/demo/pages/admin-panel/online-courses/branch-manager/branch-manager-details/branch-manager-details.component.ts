@@ -82,6 +82,7 @@ export class BranchManagerDetailsComponent {
 
   contactEntries: ContactEntry[] = [];
   detailEntries: DetailEntry[] = [];
+  readonly academyWebsiteUrl = 'https://ajyal-alquran.com/';
 
   Branch = [
     { id: BranchesEnum.Mens, label: 'الرجال' },
