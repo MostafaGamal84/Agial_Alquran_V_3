@@ -443,43 +443,25 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onSendWhatsApp(report: CircleReportListDto): void {
-    const reportId = Number(report.id);
-    if (!Number.isFinite(reportId)) {
+    if (!report) {
       return;
     }
 
-    const reportDetails$ = this.reportService.get(reportId);
-
-    this.isLoading = true;
-    reportDetails$.subscribe({
-      next: (reportResponse) => {
-        this.isLoading = false;
-        if (!reportResponse?.isSuccess || !reportResponse.data) {
-          this.toast.error(this.translate.instant('Unable to load report'));
-          return;
-        }
-
-        const payload = this.buildWhatsAppPayload(report, reportResponse.data);
-        this.openWhatsAppDialog(payload);
-      },
-      error: () => {
-        this.isLoading = false;
-        this.toast.error(this.translate.instant('Unable to load report'));
-      }
-    });
+    const payload = this.buildWhatsAppPayload(report);
+    this.openWhatsAppDialog(payload);
   }
 
-  private buildWhatsAppPayload(report: CircleReportListDto, details: CircleReportAddDto): WhatsAppDialogPayload {
+  private buildWhatsAppPayload(report: CircleReportListDto): WhatsAppDialogPayload {
     const studentName = this.getStudentDisplay(report) || this.translate.instant('طالب');
     const circleName = this.getCircleDisplay(report) || '—';
     const teacherName = this.getTeacherDisplay(report) || '—';
-    const statusLabel = this.getStatusConfig(details.attendStatueId ?? report.attendStatueId).label;
-    const minutes = details.minutes ?? report.minutes ?? '—';
+    const statusLabel = this.getStatusConfig(report.attendStatueId).label;
+    const minutes = report.minutes ?? '—';
 
     const header = `تقرير الطالب ${studentName}\nالحلقة: ${circleName}\nالمعلم: ${teacherName}\nالحالة: ${statusLabel}\nالدقائق: ${minutes}`;
     const attendedDetails =
-      Number(details.attendStatueId) === AttendStatusEnum.Attended
-        ? this.buildAttendedDetails(details)
+      Number(report.attendStatueId) === AttendStatusEnum.Attended
+        ? this.buildAttendedDetails(report as CircleReportAddDto)
         : '';
     const message = attendedDetails ? `${header}\n${attendedDetails}` : header;
 
