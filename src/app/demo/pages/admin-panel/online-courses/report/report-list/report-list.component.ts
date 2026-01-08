@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, OnDestroy, OnInit, inject, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
@@ -17,13 +17,7 @@ import {
   CircleReportService
 } from 'src/app/@theme/services/circle-report.service';
 import { CircleDto, CircleService, CircleStudentDto } from 'src/app/@theme/services/circle.service';
-import {
-  ApiResponse,
-  FilteredResultRequestDto,
-  LookupService,
-  LookUpUserDto,
-  NationalityDto
-} from 'src/app/@theme/services/lookup.service';
+import { FilteredResultRequestDto, LookupService, LookUpUserDto, NationalityDto } from 'src/app/@theme/services/lookup.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
@@ -33,7 +27,7 @@ import { RESIDENCY_GROUP_OPTIONS, ResidencyGroupFilter } from 'src/app/@theme/ty
 import { matchesResidencyGroup } from 'src/app/@theme/utils/nationality.utils';
 import { TranslateService } from '@ngx-translate/core';
 
-import { Subject, forkJoin, of } from 'rxjs';
+import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 
@@ -454,24 +448,18 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    const studentId = report.studentId ? Number(report.studentId) : null;
     const reportDetails$ = this.reportService.get(reportId);
-    const studentDetails$ = studentId ? this.lookupService.getUserDetails(studentId) : of(null);
 
     this.isLoading = true;
-    forkJoin({ report: reportDetails$, student: studentDetails$ }).subscribe({
-      next: ({ report: reportResponse, student: studentResponse }) => {
+    reportDetails$.subscribe({
+      next: (reportResponse) => {
         this.isLoading = false;
         if (!reportResponse?.isSuccess || !reportResponse.data) {
           this.toast.error(this.translate.instant('Unable to load report'));
           return;
         }
 
-        const payload = this.buildWhatsAppPayload(
-          report,
-          reportResponse.data,
-          this.extractStudentPhone(studentResponse)
-        );
+        const payload = this.buildWhatsAppPayload(report, reportResponse.data);
         this.openWhatsAppDialog(payload);
       },
       error: () => {
@@ -481,20 +469,7 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private extractStudentPhone(
-    response: ApiResponse<LookUpUserDto> | null
-  ): string | null {
-    if (!response?.isSuccess || !response.data) {
-      return null;
-    }
-    return response.data.mobile || null;
-  }
-
-  private buildWhatsAppPayload(
-    report: CircleReportListDto,
-    details: CircleReportAddDto,
-    phone: string | null
-  ): WhatsAppDialogPayload {
+  private buildWhatsAppPayload(report: CircleReportListDto, details: CircleReportAddDto): WhatsAppDialogPayload {
     const studentName = this.getStudentDisplay(report) || this.translate.instant('طالب');
     const circleName = this.getCircleDisplay(report) || '—';
     const teacherName = this.getTeacherDisplay(report) || '—';
@@ -510,7 +485,6 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     return {
       studentName,
-      phone,
       message
     };
   }
@@ -579,44 +553,36 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     dialogRef.afterClosed().subscribe((result) => {
-      if (!result?.phone) {
+      if (!result) {
         return;
       }
-      this.launchWhatsApp(result.phone, payload.message);
+      this.launchWhatsApp(payload.message);
     });
   }
 
-  private launchWhatsApp(phone: string, message: string): void {
-    const url = message
-      ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
-      : `https://wa.me/${phone}`;
+  private launchWhatsApp(message: string): void {
+    const url = message ? `https://wa.me/?text=${encodeURIComponent(message)}` : `https://wa.me/`;
     window.open(url, '_blank');
   }
 }
 
 interface WhatsAppDialogPayload {
   studentName: string;
-  phone: string | null;
   message: string;
 }
 
 @Component({
   selector: 'app-report-whatsapp-dialog',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule],
+  imports: [CommonModule, MatDialogModule, MatButtonModule],
   template: `
     <h2 mat-dialog-title>إرسال التقرير عبر واتساب</h2>
     <mat-dialog-content>
-      <p>تأكد من رقم الطالب <strong>{{ data.studentName }}</strong> قبل الإرسال.</p>
-      <mat-form-field appearance="outline" class="w-100">
-        <mat-label>رقم واتساب</mat-label>
-        <input matInput [formControl]="phoneControl" placeholder="مثال: 201234567890" />
-        <mat-error *ngIf="phoneControl.hasError('required')">رقم الواتساب مطلوب</mat-error>
-      </mat-form-field>
+      <p>سيتم فتح واتساب لاختيار جهة الاتصال الخاصة بالطالب <strong>{{ data.studentName }}</strong>.</p>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-button type="button" (click)="onCancel()">إلغاء</button>
-      <button mat-flat-button color="primary" type="button" (click)="onSend()" [disabled]="phoneControl.invalid">
+      <button mat-flat-button color="primary" type="button" (click)="onSend()">
         إرسال واتساب
       </button>
     </mat-dialog-actions>
@@ -626,22 +592,11 @@ export class ReportWhatsAppDialogComponent {
   private dialogRef = inject(MatDialogRef<ReportWhatsAppDialogComponent>);
   readonly data = inject<WhatsAppDialogPayload>(MAT_DIALOG_DATA);
 
-  phoneControl = new FormControl(this.data.phone ?? '', { validators: [Validators.required], nonNullable: true });
-
   onCancel(): void {
     this.dialogRef.close(null);
   }
 
   onSend(): void {
-    const normalized = this.normalizePhone(this.phoneControl.value);
-    if (!normalized) {
-      this.phoneControl.setErrors({ required: true });
-      return;
-    }
-    this.dialogRef.close({ phone: normalized });
-  }
-
-  private normalizePhone(value: string): string {
-    return (value ?? '').replace(/\D/g, '');
+    this.dialogRef.close(true);
   }
 }
