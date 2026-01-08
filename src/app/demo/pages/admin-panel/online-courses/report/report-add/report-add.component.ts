@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormControl, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
@@ -8,8 +8,6 @@ import { NgSelectModule } from '@ng-select/ng-select';
 
 import { MatDialog, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 
 import { CircleReportService, CircleReportAddDto } from 'src/app/@theme/services/circle-report.service';
 import { CircleService } from 'src/app/@theme/services/circle.service';
@@ -561,7 +559,6 @@ export class ReportAddComponent implements OnInit, OnDestroy {
 
     const student = this.students.find((s) => s.id === studentId);
     const studentName = student?.name ?? this.studentDisplayName ?? this.translate.instant('طالب');
-    const phone = student?.mobile ?? null;
     const statusLabel =
       this.attendStatusOptions.find((option) => option.value === Number(model.attendStatueId))?.label ??
       this.translate.instant('غير محدد');
@@ -578,7 +575,6 @@ export class ReportAddComponent implements OnInit, OnDestroy {
 
     return {
       studentName,
-      phone,
       message
     };
   }
@@ -590,17 +586,15 @@ export class ReportAddComponent implements OnInit, OnDestroy {
     });
 
     dialogRef.afterClosed().subscribe((result) => {
-      if (!result?.phone) {
+      if (!result) {
         return;
       }
-      this.launchWhatsApp(result.phone, payload.message);
+      this.launchWhatsApp(payload.message);
     });
   }
 
-  private launchWhatsApp(phone: string, message: string): void {
-    const url = message
-      ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}`
-      : `https://wa.me/${phone}`;
+  private launchWhatsApp(message: string): void {
+    const url = message ? `https://wa.me/?text=${encodeURIComponent(message)}` : `https://wa.me/`;
     window.open(url, '_blank');
   }
 
@@ -895,27 +889,21 @@ export class ReportAddComponent implements OnInit, OnDestroy {
 
 interface WhatsAppDialogPayload {
   studentName: string;
-  phone: string | null;
   message: string;
 }
 
 @Component({
   selector: 'app-report-whatsapp-dialog',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule],
+  imports: [CommonModule, MatDialogModule, MatButtonModule],
   template: `
     <h2 mat-dialog-title>إرسال التقرير عبر واتساب</h2>
     <mat-dialog-content>
-      <p>تأكد من رقم الطالب <strong>{{ data.studentName }}</strong> قبل الإرسال.</p>
-      <mat-form-field appearance="outline" class="w-100">
-        <mat-label>رقم واتساب</mat-label>
-        <input matInput [formControl]="phoneControl" placeholder="مثال: 201234567890" />
-        <mat-error *ngIf="phoneControl.hasError('required')">رقم الواتساب مطلوب</mat-error>
-      </mat-form-field>
+      <p>سيتم فتح واتساب لاختيار جهة الاتصال الخاصة بالطالب <strong>{{ data.studentName }}</strong>.</p>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-button type="button" (click)="onCancel()">إلغاء</button>
-      <button mat-flat-button color="primary" type="button" (click)="onSend()" [disabled]="phoneControl.invalid">
+      <button mat-flat-button color="primary" type="button" (click)="onSend()">
         إرسال واتساب
       </button>
     </mat-dialog-actions>
@@ -925,22 +913,11 @@ export class ReportWhatsAppDialogComponent {
   private dialogRef = inject(MatDialogRef<ReportWhatsAppDialogComponent>);
   readonly data = inject<WhatsAppDialogPayload>(MAT_DIALOG_DATA);
 
-  phoneControl = new FormControl(this.data.phone ?? '', { validators: [Validators.required], nonNullable: true });
-
   onCancel(): void {
     this.dialogRef.close(null);
   }
 
   onSend(): void {
-    const normalized = this.normalizePhone(this.phoneControl.value);
-    if (!normalized) {
-      this.phoneControl.setErrors({ required: true });
-      return;
-    }
-    this.dialogRef.close({ phone: normalized });
-  }
-
-  private normalizePhone(value: string): string {
-    return (value ?? '').replace(/\D/g, '');
+    this.dialogRef.close(true);
   }
 }
