@@ -75,7 +75,7 @@ export class CircleReportService {
       circleId?: number | null;
       studentId?: number | null;
       teacherId?: number | null;
-      nationalityId?: number | null;
+      residentId?: number | null;
       residentGroup?: ResidencyGroupFilter | null;
     }
   ): Observable<ApiResponse<PagedResultDto<CircleReportListDto>>> {
@@ -117,8 +117,8 @@ export class CircleReportService {
     if (options?.teacherId !== undefined && options?.teacherId !== null) {
       params = params.set('teacherId', options.teacherId.toString());
     }
-    if (options?.nationalityId && options?.nationalityId > 0) {
-      params = params.set('nationalityId', options.nationalityId.toString());
+    if (options?.residentId && options?.residentId > 0) {
+      params = params.set('residentId', options.residentId.toString());
     }
     if (options?.residentGroup && options.residentGroup !== 'all') {
       params = params.set('residentGroup', options.residentGroup);

@@ -54,6 +54,7 @@ export interface FilteredResultRequestDto {
   maxResultCount?: number;
   studentId?: number;
   nationalityId?: number;
+  residentId?: number;
   residentGroup?: ResidencyGroupFilter | null;
 }
 
@@ -139,7 +140,7 @@ export class LookupService {
     managerId = 0,
     teacherId = 0,
     branchId = 0,
-    nationalityId?: number | null,
+    residentId?: number | null,
     includeRelations = false
   ): Observable<ApiResponse<PagedResultDto<LookUpUserDto>>> {
     const role = this.auth.getRole();
@@ -188,8 +189,8 @@ export class LookupService {
       params = params.set('SortBy', filter.sortBy);
     }
 
-    if (nationalityId && nationalityId > 0) {
-      params = params.set('nationalityId', nationalityId.toString());
+    if (residentId && residentId > 0) {
+      params = params.set('residentId', residentId.toString());
     }
 
     if (hasActiveResidencyGroup(filter.residentGroup)) {

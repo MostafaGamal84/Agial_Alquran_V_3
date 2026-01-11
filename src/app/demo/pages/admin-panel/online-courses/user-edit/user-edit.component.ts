@@ -104,13 +104,13 @@ export class UserEditComponent implements OnInit {
     });
 
     this.basicInfoForm
-      .get('nationalityId')
-      ?.valueChanges.subscribe((nationalityId) => this.applyGovernorateRequirement(nationalityId));
+      .get('residentId')
+      ?.valueChanges.subscribe((residentId) => this.applyGovernorateRequirement(residentId));
 
     this.lookupService.getAllNationalities().subscribe((res) => {
       if (res.isSuccess) {
         this.nationalities = res.data;
-        this.applyGovernorateRequirement(this.basicInfoForm.get('nationalityId')?.value);
+        this.applyGovernorateRequirement(this.basicInfoForm.get('residentId')?.value);
       }
     });
 
@@ -161,7 +161,7 @@ export class UserEditComponent implements OnInit {
       branchId: this.currentUser.branchId
     });
 
-    this.applyGovernorateRequirement(this.currentUser.nationalityId);
+    this.applyGovernorateRequirement(this.currentUser.residentId ?? null);
 
     if (this.isManager || this.isTeacher || this.isStudent) {
       if (this.isManager) {
@@ -519,13 +519,13 @@ export class UserEditComponent implements OnInit {
     return null;
   }
 
-  private applyGovernorateRequirement(nationalityId: number | null): void {
+  private applyGovernorateRequirement(residentId: number | null): void {
     const governorateControl = this.basicInfoForm.get('governorateId');
     if (!governorateControl) {
       return;
     }
 
-    const nationality = this.nationalities.find((n) => n.id === Number(nationalityId)) ?? null;
+    const nationality = this.nationalities.find((n) => n.id === Number(residentId)) ?? null;
     if (isEgyptianNationality(nationality)) {
       governorateControl.setValidators([Validators.required]);
     } else {

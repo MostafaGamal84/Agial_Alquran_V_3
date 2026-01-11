@@ -67,13 +67,13 @@ export class TeacherAddComponent implements OnInit {
     });
 
     this.basicInfoForm
-      .get('nationalityId')
-      ?.valueChanges.subscribe((nationalityId) => this.updateGovernorateVisibility(nationalityId));
+      .get('residentId')
+      ?.valueChanges.subscribe((residentId) => this.updateGovernorateVisibility(residentId));
 
     this.lookupService.getAllNationalities().subscribe((res) => {
       if (res.isSuccess) {
         this.nationalities = res.data;
-        this.updateGovernorateVisibility(this.basicInfoForm.get('nationalityId')?.value);
+        this.updateGovernorateVisibility(this.basicInfoForm.get('residentId')?.value);
       }
     });
 
@@ -88,13 +88,13 @@ export class TeacherAddComponent implements OnInit {
     });
   }
 
-  private updateGovernorateVisibility(nationalityId: number | null): void {
+  private updateGovernorateVisibility(residentId: number | null): void {
     const governorateControl = this.basicInfoForm.get('governorateId');
     if (!governorateControl) {
       return;
     }
 
-    const nationality = this.nationalities.find((n) => n.id === Number(nationalityId)) ?? null;
+    const nationality = this.nationalities.find((n) => n.id === Number(residentId)) ?? null;
     this.showGovernorateSelect = isEgyptianNationality(nationality);
     if (!this.showGovernorateSelect) {
       governorateControl.setValue(null);

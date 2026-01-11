@@ -14,12 +14,12 @@
               </div>
               <div class="col-12 col-md-4">
                 <mat-form-field appearance="outline" class="w-100">
-                  <mat-label>{{ 'Nationality' | translate }}</mat-label>
+                  <mat-label>{{ 'Residency' | translate }}</mat-label>
                   <mat-select
-                    [value]="selectedNationalityId ?? null"
-                    (selectionChange)="onNationalityChange($event.value)"
+                    [value]="selectedResidentId ?? null"
+                    (selectionChange)="onResidencyChange($event.value)"
                   >
-                    <mat-option [value]="null">{{ 'All Nationalities' | translate }}</mat-option>
+                    <mat-option [value]="null">{{ 'All Residencies' | translate }}</mat-option>
                     <mat-option *ngFor="let nationality of nationalities" [value]="nationality.id">
                       {{ nationality.name }}
                     </mat-option>

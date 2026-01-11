@@ -68,7 +68,7 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     searchTerm: [''],
     circleId: [null],
     studentId: [null],
-    nationalityId: [null],
+    residentId: [null],
     residentGroup: ['all']
   });
 
@@ -90,7 +90,7 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private selectedCircleId?: number;
   private selectedStudentId?: number;
-  private selectedNationalityId?: number | null;
+  private selectedResidentId?: number | null;
   private selectedResidencyGroup: ResidencyGroupFilter = 'all';
   private readonly teacherId?: number;
 
@@ -127,9 +127,9 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
       .subscribe(() => this.applyFilters());
 
     this.filterForm
-      .get('nationalityId')
+      .get('residentId')
       ?.valueChanges.pipe(takeUntil(this.destroy$))
-      .subscribe((nationalityId) => this.onNationalityChange(nationalityId));
+      .subscribe((residentId) => this.onResidencyChange(residentId));
 
     this.filterForm
       .get('residentGroup')
@@ -186,7 +186,7 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
         0,
         0,
         0,
-        this.selectedNationalityId ?? undefined
+        this.selectedResidentId ?? undefined
       )
       .subscribe({
         next: (res) => {
@@ -194,7 +194,7 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
             const mapped = res.data.items
               .filter(
                 (s) =>
-                  this.matchesSelectedNationality(s.nationalityId) &&
+                  this.matchesSelectedResidentId(s.residentId) &&
                   this.matchesSelectedResidency(s.residentId)
               )
               .map((s) => this.mapLookupToStudentOption(s));
@@ -239,8 +239,8 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
           if (res.isSuccess && res.data?.students) {
             const mapped = res.data.students
               .filter((student) =>
-                this.matchesSelectedNationality(
-                  (student.student as LookUpUserDto | undefined)?.nationalityId
+                this.matchesSelectedResidentId(
+                  (student.student as LookUpUserDto | undefined)?.residentId
                 ) &&
                 this.matchesSelectedResidency(
                   (student.student as LookUpUserDto | undefined)?.residentId ?? null
@@ -294,8 +294,8 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loadReports();
   }
 
-  private onNationalityChange(nationalityId: number | null): void {
-    this.selectedNationalityId = nationalityId && nationalityId > 0 ? nationalityId : null;
+  private onResidencyChange(residentId: number | null): void {
+    this.selectedResidentId = residentId && residentId > 0 ? residentId : null;
     this.filterForm.patchValue({ studentId: null }, { emitEvent: false });
     this.students = [];
     this.loadAllStudents();
@@ -320,11 +320,11 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  private matchesSelectedNationality(nationalityId?: number | null): boolean {
-    if (!this.selectedNationalityId || this.selectedNationalityId <= 0) {
+  private matchesSelectedResidentId(residentId?: number | null): boolean {
+    if (!this.selectedResidentId || this.selectedResidentId <= 0) {
       return true;
     }
-    return nationalityId === this.selectedNationalityId;
+    return residentId === this.selectedResidentId;
   }
 
   private matchesSelectedResidency(residentId?: number | null): boolean {
@@ -363,7 +363,7 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
         circleId: this.selectedCircleId,
         studentId: this.selectedStudentId,
         teacherId: this.teacherId,
-        nationalityId: this.selectedNationalityId ?? undefined,
+        residentId: this.selectedResidentId ?? undefined,
         residentGroup: this.selectedResidencyGroup
       })
       .subscribe({

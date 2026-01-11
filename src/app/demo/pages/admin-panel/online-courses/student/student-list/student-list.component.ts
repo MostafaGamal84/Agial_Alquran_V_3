@@ -46,7 +46,7 @@ export class StudentListComponent implements OnInit, AfterViewInit {
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
   showInactive = false;
   nationalities: NationalityDto[] = [];
-  selectedNationalityId: number | null = null;
+  selectedResidentId: number | null = null;
   residencyGroupOptions = RESIDENCY_GROUP_OPTIONS;
   selectedResidencyGroup: ResidencyGroupFilter = 'all';
   private pendingStudentIds = new Set<number>();
@@ -102,7 +102,7 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
         0,
         0,
         0,
-        this.selectedNationalityId ?? undefined
+        this.selectedResidentId ?? undefined
       )
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
@@ -122,8 +122,8 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
       });
   }
 
-  onNationalityChange(value: number | null): void {
-    this.selectedNationalityId = value && value > 0 ? value : null;
+  onResidencyChange(value: number | null): void {
+    this.selectedResidentId = value && value > 0 ? value : null;
     this.filter.skipCount = 0;
     this.paginator().firstPage();
     this.loadStudents();

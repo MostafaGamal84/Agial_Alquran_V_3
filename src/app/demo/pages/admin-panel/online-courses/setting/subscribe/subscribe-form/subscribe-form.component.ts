@@ -45,7 +45,7 @@ export class SubscribeFormComponent implements OnInit {
   isEdit = false;
   types: SubscribeTypeDto[] = [];
   nationalities: NationalityDto[] = [];
-  selectedNationalityId: number | null = null;
+  selectedResidentId: number | null = null;
   isLoadingTypes = false;
   typeAvailabilityMessage: string | null = null;
 
@@ -91,8 +91,8 @@ export class SubscribeFormComponent implements OnInit {
     return this.translate.instant(getSubscribeTypeCategoryTranslationKey(group));
   }
 
-  onNationalityChange(nationalityId: number | null): void {
-    this.selectedNationalityId = nationalityId && nationalityId > 0 ? nationalityId : null;
+  onResidencyChange(residentId: number | null): void {
+    this.selectedResidentId = residentId && residentId > 0 ? residentId : null;
     this.loadSubscribeTypes();
   }
 
@@ -113,8 +113,8 @@ export class SubscribeFormComponent implements OnInit {
 
   private loadSubscribeTypes(): void {
     const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
-    if (this.selectedNationalityId) {
-      filter.nationalityId = this.selectedNationalityId;
+    if (this.selectedResidentId) {
+      filter.residentId = this.selectedResidentId;
     }
 
     this.isLoadingTypes = true;
@@ -134,8 +134,8 @@ export class SubscribeFormComponent implements OnInit {
         }
 
         if (this.types.length === 0) {
-          this.typeAvailabilityMessage = this.selectedNationalityId
-            ? this.translate.instant('No subscribe types are available for the selected nationality.')
+          this.typeAvailabilityMessage = this.selectedResidentId
+            ? this.translate.instant('No subscribe types are available for the selected residency.')
             : this.translate.instant('No subscribe types are currently available.');
         } else {
           this.typeAvailabilityMessage = null;

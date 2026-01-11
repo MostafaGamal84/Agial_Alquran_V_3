@@ -44,7 +44,7 @@ export class MembershipListComponent implements AfterViewInit, OnInit {
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
   nationalities: NationalityDto[] = [];
-  selectedNationalityId: number | null = null;
+  selectedResidentId: number | null = null;
   residencyGroupOptions = RESIDENCY_GROUP_OPTIONS;
   selectedResidencyGroup: ResidencyGroupFilter = 'all';
   isLoading = false;
@@ -71,7 +71,7 @@ export class MembershipListComponent implements AfterViewInit, OnInit {
     this.filter.residentGroup = this.selectedResidencyGroup;
     this.isLoading = true;
     this.service
-      .getStudents(this.filter, undefined, this.selectedNationalityId ?? undefined)
+      .getStudents(this.filter, undefined, this.selectedResidentId ?? undefined)
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe({
         next: (res) => {
@@ -99,8 +99,8 @@ export class MembershipListComponent implements AfterViewInit, OnInit {
     this.load();
   }
 
-  onNationalityChange(value: number | null): void {
-    this.selectedNationalityId = value && value > 0 ? value : null;
+  onResidencyChange(value: number | null): void {
+    this.selectedResidentId = value && value > 0 ? value : null;
     this.filter.skipCount = 0;
     this.paginator().firstPage();
     this.load();
@@ -170,4 +170,3 @@ export class MembershipListComponent implements AfterViewInit, OnInit {
     return 'foreign';
   }
 }
-

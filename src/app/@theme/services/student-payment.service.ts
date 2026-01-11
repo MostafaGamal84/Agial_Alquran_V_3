@@ -155,7 +155,7 @@ export class StudentPaymentService {
     dueFrom?: Date,
     dueTo?: Date,
     month?: Date,
-    nationalityId?: number | null
+    residentId?: number | null
   ): Observable<ApiResponse<PagedResultDto<StudentInvoiceDto>>> {
     let params = new HttpParams();
     if (filter.skipCount !== undefined) {
@@ -193,8 +193,8 @@ export class StudentPaymentService {
     if (month) {
       params = params.set('month', month.toISOString());
     }
-    if (nationalityId && nationalityId > 0) {
-      params = params.set('nationalityId', nationalityId.toString());
+    if (residentId && residentId > 0) {
+      params = params.set('residentId', residentId.toString());
     }
     if (filter.residentGroup && filter.residentGroup !== 'all') {
       params = params.set('residentGroup', filter.residentGroup);
