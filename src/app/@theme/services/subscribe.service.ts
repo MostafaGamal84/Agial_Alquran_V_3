@@ -180,7 +180,7 @@ export class SubscribeService {
     assignValue('sortingDirection', filter.sortingDirection);
     assignValue('sortBy', filter.sortBy);
     assignValue('studentId', filter.studentId);
-    assignValue('nationalityId', filter.nationalityId);
+    assignValue('residentId', filter.residentId);
 
     return this.http
       .post<ApiResponse<PagedResultDto<SubscribeTypeDto>>>(
@@ -190,4 +190,3 @@ export class SubscribeService {
       .pipe(map((response) => normalizePagedResult(response, { skipCount: filter.skipCount })));
   }
 }
-

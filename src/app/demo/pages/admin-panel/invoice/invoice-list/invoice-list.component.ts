@@ -88,7 +88,7 @@ export class InvoiceListComponent implements OnInit {
   };
   searchTerm = '';
   nationalities: NationalityDto[] = [];
-  selectedNationalityId: number | null = null;
+  selectedResidentId: number | null = null;
   residencyGroupOptions = RESIDENCY_GROUP_OPTIONS;
   selectedResidencyGroup: ResidencyGroupFilter = 'all';
   isLoading = false;
@@ -223,8 +223,8 @@ export class InvoiceListComponent implements OnInit {
     };
   }
 
-  onNationalityChange(value: number | null): void {
-    this.selectedNationalityId = value && value > 0 ? value : null;
+  onResidencyChange(value: number | null): void {
+    this.selectedResidentId = value && value > 0 ? value : null;
     this.tabCounts = { all: 0, paid: 0, unpaid: 0, overdue: 0, cancelled: 0 };
   }
 

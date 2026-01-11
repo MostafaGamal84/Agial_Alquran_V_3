@@ -40,7 +40,7 @@ export class SubscribeTypeComponent implements OnInit, AfterViewInit {
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
   nationalities: NationalityDto[] = [];
-  selectedNationalityId: number | null = null;
+  selectedResidentId: number | null = null;
   noResultsMessage: string | null = null;
   isLoading = false;
 
@@ -92,10 +92,10 @@ export class SubscribeTypeComponent implements OnInit, AfterViewInit {
     this.load();
   }
 
-  onNationalityChange(event: MatSelectChange) {
-    const nationalityId = Number(event.value ?? 0);
-    this.selectedNationalityId = Number.isFinite(nationalityId) && nationalityId > 0 ? nationalityId : null;
-    this.filter.nationalityId = this.selectedNationalityId ?? undefined;
+  onResidencyChange(event: MatSelectChange) {
+    const residentId = Number(event.value ?? 0);
+    this.selectedResidentId = Number.isFinite(residentId) && residentId > 0 ? residentId : null;
+    this.filter.residentId = this.selectedResidentId ?? undefined;
     this.filter.skipCount = 0;
     this.paginator().firstPage();
     this.load();
@@ -125,8 +125,8 @@ export class SubscribeTypeComponent implements OnInit, AfterViewInit {
   }
 
   private resolveNoResultsMessage(): string {
-    if (this.filter.nationalityId) {
-      return this.translate.instant('No subscribe types are available for the selected nationality.');
+    if (this.filter.residentId) {
+      return this.translate.instant('No subscribe types are available for the selected residency.');
     }
 
     if (this.filter.searchTerm) {

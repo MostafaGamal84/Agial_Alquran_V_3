@@ -20,12 +20,12 @@
     </div>
     <div class="col-md-6">
       <mat-form-field appearance="outline" class="w-100">
-        <mat-label>{{ 'Filter by nationality' | translate }}</mat-label>
+        <mat-label>{{ 'Filter by residency' | translate }}</mat-label>
         <mat-select
-          [value]="selectedNationalityId"
-          (selectionChange)="onNationalityChange($event.value)"
+          [value]="selectedResidentId"
+          (selectionChange)="onResidencyChange($event.value)"
         >
-          <mat-option [value]="null">{{ 'All nationalities' | translate }}</mat-option>
+          <mat-option [value]="null">{{ 'All Residencies' | translate }}</mat-option>
           <mat-option *ngFor="let nationality of nationalities" [value]="nationality.id">
             {{ nationality.name }}
           </mat-option>
