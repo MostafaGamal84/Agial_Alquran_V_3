@@ -1,19 +1,22 @@
 :host {
-  display: block;
+  display: block; font-family: 'Amiri Quran';
 }
 
 .loading-overlay {
   position: relative;
+  font-family: 'Amiri Quran';
 }
 
 .loading-overlay__content {
   transition: filter 0.2s ease, opacity 0.2s ease;
+  font-family: 'Amiri Quran';
 }
 
 .loading-overlay.loading .loading-overlay__content {
   filter: blur(2px);
   opacity: 0.55;
   pointer-events: none;
+  font-family: 'Amiri Quran';
 }
 
 .loading-overlay__backdrop {
@@ -26,6 +29,7 @@
   backdrop-filter: blur(2px);
   z-index: 1000;
   pointer-events: all;
+  font-family: 'Amiri Quran';
 }
 
 .hadith-view {
@@ -37,7 +41,7 @@
   color: #fff;
   box-shadow: 0 20px 60px rgba(9, 40, 69, 0.3);
   text-align: center;
-  font-family: 'Cairo', 'Rubik', 'Helvetica Neue', Arial, sans-serif;
+font-family: 'Amiri Quran';
   animation: hadithPulse 1.6s ease-in-out infinite;
 }
 
