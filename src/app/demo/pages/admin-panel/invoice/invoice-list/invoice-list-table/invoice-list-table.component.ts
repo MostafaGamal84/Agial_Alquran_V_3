@@ -55,7 +55,7 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
   @Input() month?: string;
   @Input() compareMonth?: string;
   @Input() search = '';
-  @Input() nationalityId: number | null = null;
+  @Input() residentId: number | null = null;
   @Input() residentGroup: ResidencyGroupFilter = 'all';
   @Input() refreshToken = 0;
   @Output() countChange = new EventEmitter<number>();
@@ -93,7 +93,7 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
       changes['tab'] ||
       changes['month'] ||
       changes['compareMonth'] ||
-      changes['nationalityId'] ||
+      changes['residentId'] ||
       changes['residentGroup'] ||
       changes['refreshToken']
     ) {
@@ -177,7 +177,7 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
             undefined,
             undefined,
             monthDate,
-            this.nationalityId ?? undefined
+            this.residentId ?? undefined
           )
         );
         requests.push(
@@ -190,7 +190,7 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
             undefined,
             undefined,
             monthDate,
-            this.nationalityId ?? undefined
+            this.residentId ?? undefined
           )
         );
       }
@@ -205,7 +205,7 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
             undefined,
             undefined,
             compareMonthDate,
-            this.nationalityId ?? undefined
+            this.residentId ?? undefined
           )
         );
         requests.push(
@@ -218,7 +218,7 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
             undefined,
             undefined,
             compareMonthDate,
-            this.nationalityId ?? undefined
+            this.residentId ?? undefined
           )
         );
       }
@@ -251,7 +251,7 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
             undefined,
             undefined,
             monthDate,
-            this.nationalityId ?? undefined
+            this.residentId ?? undefined
           )
         );
       }
@@ -266,7 +266,7 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
             undefined,
             undefined,
             compareMonthDate,
-            this.nationalityId ?? undefined
+            this.residentId ?? undefined
           )
         );
       }
