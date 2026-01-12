@@ -100,7 +100,7 @@
     <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
   </table>
   <mat-paginator
-    [pageSizeOptions]="[5, 10, 25, 100]"
+    [pageSizeOptions]="[5,10,500,1000]"
     [length]="totalCount"
     [pageIndex]="pageIndex"
     [pageSize]="pageSize"
