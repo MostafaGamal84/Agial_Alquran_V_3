@@ -75,7 +75,7 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
   displayedColumns: string[] = ['student', 'circle', 'status', 'creationTime', 'actions'];
   dataSource = new MatTableDataSource<CircleReportListDto>();
   totalCount = 0;
-  filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
+  filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 500 };
 
   circles: CircleDto[] = [];
   students: StudentOption[] = [];
