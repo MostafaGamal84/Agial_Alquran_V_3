@@ -50,14 +50,14 @@ export class LoginComponent implements OnInit {
       password: ['', Validators.required]
     });
 
-    if (window.location.pathname !== '/authentication-1/login') {
-      if (this.authenticationService.currentUserValue) {
-        this.router.navigate(['/']);
-      }
-    }
-
     // get return url from route parameters or fall back to dashboard
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || DASHBOARD_PATH;
+
+    if (this.authenticationService.isLoggedIn()) {
+      const targetUrl = this.returnUrl.startsWith('/login') ? DASHBOARD_PATH : this.returnUrl;
+      this.router.navigateByUrl(targetUrl, { replaceUrl: true });
+      return;
+    }
   }
 
   // convenience getter for easy access to form fields
