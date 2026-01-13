@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
-  AfterViewInit,
   Component,
   OnDestroy,
   OnInit,
@@ -10,7 +9,7 @@ import {
 } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
 import { MatDatepicker, MatDatepickerModule } from '@angular/material/datepicker';
 import {
@@ -139,7 +138,7 @@ class InvoicePrintContextError extends Error {
     MatTooltipModule,
     MatTableModule,
     MatSlideToggleModule,
-    MatPaginatorModule,
+    PaginatorModule,
     TranslateModule,
     LoadingOverlayComponent
   ],
@@ -155,7 +154,7 @@ class InvoicePrintContextError extends Error {
   ]
 })
 export class TeacherSalaryComponent
-  implements OnInit, AfterViewInit, OnDestroy
+  implements OnInit, OnDestroy
 {
 
   private teacherSalaryService = inject(TeacherSalaryService);
@@ -191,6 +190,10 @@ export class TeacherSalaryComponent
 
   readonly dataSource = new MatTableDataSource<TeacherSalaryInvoice>([]);
   displayedColumns: string[] = [];
+  totalCount = 0;
+  pageIndex = 0;
+  pageSize = 10;
+  private allInvoices: TeacherSalaryInvoice[] = [];
 
   teachers: LookUpUserDto[] = [];
   teacherLoading = false;
@@ -228,7 +231,6 @@ export class TeacherSalaryComponent
   readonly canGenerateInvoices = this.role === UserTypesEnum.Admin;
   readonly isTeacher = this.role === UserTypesEnum.Teacher;
 
-  @ViewChild(MatPaginator) paginator?: MatPaginator;
   @ViewChild('detailDrawer') detailDrawer?: MatDrawer;
 
   ngOnInit(): void {
@@ -256,12 +258,6 @@ export class TeacherSalaryComponent
 
     this.loadInvoices();
     this.loadMonthlySummary();
-  }
-
-  ngAfterViewInit(): void {
-    if (this.paginator) {
-      this.dataSource.paginator = this.paginator;
-    }
   }
 
   ngOnDestroy(): void {
@@ -849,9 +845,7 @@ export class TeacherSalaryComponent
   }
 
   private resetPaginator(): void {
-    if (this.paginator) {
-      this.paginator.firstPage();
-    }
+    this.pageIndex = 0;
   }
 
   private toMonthParam(month: Moment | null): string | null {
@@ -863,10 +857,9 @@ export class TeacherSalaryComponent
 
   private applyInvoices(invoices: TeacherSalaryInvoice[]): void {
     const sorted = [...invoices].sort((a, b) => this.compareByMonthDesc(a, b));
-    this.dataSource.data = sorted;
-    if (this.paginator) {
-      this.dataSource.paginator = this.paginator;
-    }
+    this.allInvoices = sorted;
+    this.totalCount = sorted.length;
+    this.updatePagedInvoices();
     if (this.selectedInvoice) {
       const updated = sorted.find((invoice) => invoice.id === this.selectedInvoice?.id);
       if (updated) {
@@ -875,6 +868,18 @@ export class TeacherSalaryComponent
         this.closeDetails();
       }
     }
+  }
+
+  onPageChange(event: PaginatorState): void {
+    this.pageIndex = event.page ?? 0;
+    this.pageSize = event.rows ?? this.pageSize;
+    this.updatePagedInvoices();
+  }
+
+  private updatePagedInvoices(): void {
+    const start = this.pageIndex * this.pageSize;
+    const end = start + this.pageSize;
+    this.dataSource.data = this.allInvoices.slice(start, end);
   }
 
   private compareByMonthDesc(

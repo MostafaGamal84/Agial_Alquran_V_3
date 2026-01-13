@@ -1,9 +1,9 @@
-import { AfterViewInit, Component, OnInit, inject, viewChild } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { PaginatorState } from 'primeng/paginator';
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { StudentSubscribeService, ViewStudentSubscribeReDto } from 'src/app/@theme/services/student-subscribe.service';
 import { FilteredResultRequestDto } from 'src/app/@theme/services/lookup.service';
@@ -20,7 +20,7 @@ import {
   templateUrl: './membership-view.component.html',
   styleUrl: './membership-view.component.scss'
 })
-export class MembershipViewComponent implements OnInit, AfterViewInit {
+export class MembershipViewComponent implements OnInit {
   private service = inject(StudentSubscribeService);
   private route = inject(ActivatedRoute);
   private paymentService = inject(StudentPaymentService);
@@ -30,12 +30,13 @@ export class MembershipViewComponent implements OnInit, AfterViewInit {
   dataSource = new MatTableDataSource<ViewStudentSubscribeReDto>();
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
+  pageIndex = 0;
+  pageSize = 10;
   studentId = 0;
 
   expandedElement: ViewStudentSubscribeReDto | null = null;
   paymentDetails: StudentPaymentDto | null = null;
   panelOpen = false;
-  readonly paginator = viewChild.required(MatPaginator);
 
   ngOnInit() {
     this.studentId = Number(this.route.snapshot.paramMap.get('id'));
@@ -56,12 +57,12 @@ export class MembershipViewComponent implements OnInit, AfterViewInit {
       });
   }
 
-  ngAfterViewInit() {
-    this.paginator().page.subscribe(() => {
-      this.filter.skipCount = this.paginator().pageIndex * this.paginator().pageSize;
-      this.filter.maxResultCount = this.paginator().pageSize;
-      this.load();
-    });
+  onPageChange(event: PaginatorState): void {
+    this.pageIndex = event.page ?? 0;
+    this.pageSize = event.rows ?? this.pageSize;
+    this.filter.skipCount = this.pageIndex * this.pageSize;
+    this.filter.maxResultCount = this.pageSize;
+    this.load();
   }
 
   togglePaymentDetails(element: ViewStudentSubscribeReDto) {
@@ -98,4 +99,3 @@ export class MembershipViewComponent implements OnInit, AfterViewInit {
     return getCurrencyLabel(currencyId);
   }
 }
-

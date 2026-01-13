@@ -233,6 +233,14 @@ body.dark {
   }
 }
 
+.app-paginator {
+  margin-top: 12px;
+
+  .p-paginator {
+    width: 100%;
+  }
+}
+
 /// adjust position when applying bade on custom elements
 
 .mat-badge-content {

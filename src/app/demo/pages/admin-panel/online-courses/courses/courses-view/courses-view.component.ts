@@ -1,12 +1,11 @@
 // angular import
-import { AfterViewInit, Component, OnInit, inject, viewChild } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { NgFor, NgIf } from '@angular/common';
 import { finalize } from 'rxjs/operators';
 
 // angular material
 import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
 import {
   MAT_DIALOG_DATA,
   MatDialog,
@@ -16,6 +15,7 @@ import {
   MatDialogTitle
 } from '@angular/material/dialog';
 import { MatButton } from '@angular/material/button';
+import { PaginatorState } from 'primeng/paginator';
 
 
 // project import
@@ -67,7 +67,7 @@ interface CourseParticipantsDialogOptions {
   templateUrl: './courses-view.component.html',
   styleUrl: './courses-view.component.scss'
 })
-export class CoursesViewComponent implements OnInit, AfterViewInit {
+export class CoursesViewComponent implements OnInit {
   private circleService = inject(CircleService);
   private dialog = inject(MatDialog);
   private toast = inject(ToastService);
@@ -78,9 +78,10 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
   dataSource = new MatTableDataSource<CircleViewModel>();
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
+  pageIndex = 0;
+  pageSize = 10;
   isLoading = false;
 
-  readonly paginator = viewChild.required(MatPaginator);
   isTeacherOrStudent = [UserTypesEnum.Teacher, UserTypesEnum.Student].includes(this.auth.getRole()!);
   ngOnInit() {
     this.loadCircles();
@@ -123,17 +124,17 @@ export class CoursesViewComponent implements OnInit, AfterViewInit {
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     this.filter.searchTerm = filterValue.trim().toLowerCase();
+    this.pageIndex = 0;
     this.filter.skipCount = 0;
-    this.paginator()?.firstPage();
     this.loadCircles();
   }
 
-  ngAfterViewInit() {
-    this.paginator().page.subscribe(() => {
-      this.filter.skipCount = this.paginator().pageIndex * this.paginator().pageSize;
-      this.filter.maxResultCount = this.paginator().pageSize;
-      this.loadCircles();
-    });
+  onPageChange(event: PaginatorState): void {
+    this.pageIndex = event.page ?? 0;
+    this.pageSize = event.rows ?? this.pageSize;
+    this.filter.skipCount = this.pageIndex * this.pageSize;
+    this.filter.maxResultCount = this.pageSize;
+    this.loadCircles();
   }
 
   deleteCircle(id: number) {
@@ -451,4 +452,3 @@ export class CourseParticipantsDialogComponent {
     return `${courseName} `;
   }
 }
-

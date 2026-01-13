@@ -99,12 +99,13 @@
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
     <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
   </table>
-  <mat-paginator
-    [pageSizeOptions]="[5, 10, 25, 100]"
-    [length]="totalCount"
-    [pageIndex]="pageIndex"
-    [pageSize]="pageSize"
-    (page)="onPageChange($event)"
-    [attr.aria-label]="'Select page of users' | translate"
-  ></mat-paginator>
+  <div class="app-paginator">
+    <p-paginator
+      [first]="pageIndex * pageSize"
+      [rows]="pageSize"
+      [totalRecords]="totalCount"
+      [rowsPerPageOptions]="[5, 10, 25, 100]"
+      (onPageChange)="onPageChange($event)"
+    ></p-paginator>
+  </div>
 </div>
