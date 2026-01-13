@@ -2,146 +2,143 @@
   <div class="row p-t-25">
     <div class="col-12">
       <app-card [cardTitle]="'تقارير الحلقات' | translate" padding="0" cardClass="sm-block">
-      <ng-template #headerOptionsTemplate>
-        <!-- <div class="table-options" *ngIf="canManageReports">
-          <button mat-flat-button color="primary" [routerLink]="['/online-course/report/add']">
-            <div class="flex align-item-center">
-              <i class="ti ti-plus f-18 m-r-5"></i>
-              {{ 'Add Report' | translate }}
-            </div>
-          </button>
-        </div> -->
-      </ng-template>
-      <div class="p-b-15">
-        <div class="table-containe table-reponsive">
-          <form [formGroup]="filterForm" class="filter-form" (ngSubmit)="onSearch()">
-            <div class="row g-3 p-15">
-              <div class="col-12 col-md-6 col-xl-3">
-                <mat-form-field appearance="outline" class="w-100">
-                  <mat-label>{{ 'بحث' | translate }}</mat-label>
-                  <input
-                    matInput
-                    [placeholder]="'بحث' | translate"
-                    formControlName="searchTerm"
-                    (keyup.enter)="onSearch()"
-                  />
-                  <button
-                    mat-icon-button
-                    matSuffix
-                    type="button"
-                    (click)="clearSearch()"
-                    *ngIf="filterForm.value.searchTerm"
-                    [attr.aria-label]="'ازاله البحث' | translate"
-                  >
-                    <mat-icon>اغلاق</mat-icon>
-                  </button>
-                </mat-form-field>
-              </div>
-              <div class="col-12 col-md-6 col-xl-3">
-                <mat-form-field appearance="outline" class="w-100">
-                  <mat-label>{{ 'الحلقة' | translate }}</mat-label>
-                  <mat-select formControlName="circleId" [disabled]="isLoadingStudents">
-                    <mat-option [value]="null">{{ 'كل الحلقات' | translate }}</mat-option>
-                    <mat-option *ngFor="let circle of circles" [value]="circle.id">
-                      {{ circle.name }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
-              <div class="col-12 col-md-6 col-xl-3">
-                <mat-form-field appearance="outline" class="w-100">
-                  <mat-label>{{ 'الطالب' | translate }}</mat-label>
-                  <mat-select formControlName="studentId" [disabled]="isLoadingStudents">
-                    <mat-option [value]="null">{{ 'كل الطلاب' | translate }}</mat-option>
-                    <mat-option *ngFor="let student of students" [value]="student.id">
-                      {{ student.name }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
-              <!-- <div class="col-12 col-md-6 col-xl-3">
-                <mat-form-field appearance="outline" class="w-100">
-                  <mat-label>{{ 'Residency' | translate }}</mat-label>
-                  <mat-select formControlName="residentId">
-                    <mat-option [value]="null">{{ 'All Residencies' | translate }}</mat-option>
-                    <mat-option *ngFor="let nationality of nationalities" [value]="nationality.id">
-                      {{ nationality.name }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div> -->
-              <div class="col-12 col-md-6 col-xl-3">
-                <mat-form-field appearance="outline" class="w-100">
-                  <mat-label>{{ 'الاقامة' | translate }}</mat-label>
-                  <mat-select formControlName="residentGroup">
-                    <mat-option *ngFor="let option of residencyGroupOptions" [value]="option.value">
-                      {{ option.translationKey | translate }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
-            </div>
-          </form>
-          <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>
-          <div class="table-responsive report-table-container">
-            <table mat-table [dataSource]="dataSource" class="mat-elevation-z8 report-table">
-              <ng-container matColumnDef="student">
-                <th mat-header-cell *matHeaderCellDef class="p-l-25">{{ 'طالب' | translate }}</th>
-                <td mat-cell *matCellDef="let element" class="p-l-25 text-nowrap student-cell">
-                  {{ getStudentDisplay(element) }}
-                </td>
-              </ng-container>
+        <ng-template #headerOptionsTemplate></ng-template>
 
-              <ng-container matColumnDef="circle">
-                <th mat-header-cell *matHeaderCellDef>{{ 'حلقة' | translate }}</th>
-                <td mat-cell *matCellDef="let element" class="text-nowrap circle-cell">
-                  {{ getCircleDisplay(element) }}
-                </td>
-              </ng-container>
+        <div class="p-b-15">
+          <div class="table-container table-responsive">
 
-              <ng-container matColumnDef="status">
-                <th mat-header-cell *matHeaderCellDef>{{ 'الحالة' | translate }}</th>
-                <td mat-cell *matCellDef="let element" class="text-nowrap status-cell">
-                  @let status = getStatusConfig(element.attendStatueId);
-                  <span class="status-pill {{ status.class }}">{{ status.label }}</span>
-                </td>
-              </ng-container>
+            <!-- FILTER FORM -->
+            <form [formGroup]="filterForm" class="filter-form" (ngSubmit)="onSearch()">
+              <div class="row g-3 p-15">
 
-              <ng-container matColumnDef="creationTime">
-                <th mat-header-cell *matHeaderCellDef>{{ 'التاريخ' | translate }}</th>
-                <td mat-cell *matCellDef="let element" class="text-nowrap date-cell">
-                  {{ formatDate(element.creationTime) }}
-                </td>
-              </ng-container>
+                <!-- Search -->
+                <div class="col-12 col-md-6 col-xl-3">
+                  <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>{{ 'بحث' | translate }}</mat-label>
+                    <input
+                      matInput
+                      [placeholder]="'بحث' | translate"
+                      formControlName="searchTerm"
+                      (keyup.enter)="onSearch()"
+                    />
+                    <button
+                      mat-icon-button
+                      matSuffix
+                      type="button"
+                      *ngIf="filterForm.value.searchTerm"
+                      (click)="clearSearch()"
+                      [attr.aria-label]="'ازاله البحث' | translate"
+                    >
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  </mat-form-field>
+                </div>
 
-              <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef class="text-center">{{ 'الاجراءات' | translate }}</th>
-                <td mat-cell *matCellDef="let element" class="text-nowrap actions-cell">
-                  <div class="text-center text-nowrap">
-                    <ul class="list-inline p-l-0">
-                      <li class="list-inline-item m-r-10" [matTooltip]="'عرض' | translate">
-                        <a
-                          [routerLink]="['/online-course/report/details', element.id]"
-                          [state]="{ report: element }"
-                          class="avatar avatar-xs text-muted"
-                        >
-                          <i class="ti ti-eye f-18"></i>
-                        </a>
-                      </li>
-                      <li class="list-inline-item m-r-10" [matTooltip]="'تعديل' | translate" *ngIf="canManageReports">
-                        <a
-                          [routerLink]="['/online-course/report/edit', element.id]"
-                          [state]="{ report: element }"
-                          class="avatar avatar-xs text-muted"
-                        >
-                          <i class="ti ti-edit-circle f-18"></i>
-                        </a>
-                      </li>
-                      <li class="list-inline-item m-r-10" [matTooltip]="'واتساب' | translate">
-                        <button
-                          type="button"
-                          class="avatar avatar-xs text-muted"
-                          (click)="onSendWhatsApp(element)"
+                <!-- Circle -->
+                <div class="col-12 col-md-6 col-xl-3">
+                  <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>{{ 'الحلقة' | translate }}</mat-label>
+                    <mat-select formControlName="circleId" [disabled]="isLoadingStudents">
+                      <mat-option [value]="null">{{ 'كل الحلقات' | translate }}</mat-option>
+                      <mat-option *ngFor="let circle of circles" [value]="circle.id">
+                        {{ circle.name }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+                <!-- Student -->
+                <div class="col-12 col-md-6 col-xl-3">
+                  <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>{{ 'الطالب' | translate }}</mat-label>
+                    <mat-select formControlName="studentId" [disabled]="isLoadingStudents">
+                      <mat-option [value]="null">{{ 'كل الطلاب' | translate }}</mat-option>
+                      <mat-option *ngFor="let student of students" [value]="student.id">
+                        {{ student.name }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+                <!-- Residency -->
+                <div class="col-12 col-md-6 col-xl-3">
+                  <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>{{ 'الاقامة' | translate }}</mat-label>
+                    <mat-select formControlName="residentGroup">
+                      <mat-option *ngFor="let option of residencyGroupOptions" [value]="option.value">
+                        {{ option.translationKey | translate }}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+              </div>
+            </form>
+
+            <!-- Loader Bar -->
+            <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>
+
+            <!-- DATA TABLE -->
+            <div class="table-responsive report-table-container">
+
+              <table
+                mat-table
+                [dataSource]="dataSource"
+                class="mat-elevation-z8 report-table"
+              >
+                <!-- Student -->
+                <ng-container matColumnDef="student">
+                  <th mat-header-cell *matHeaderCellDef class="p-l-25">{{ 'طالب' | translate }}</th>
+                  <td mat-cell *matCellDef="let element" class="p-l-25 text-nowrap">
+                    {{ getStudentDisplay(element) }}
+                  </td>
+                </ng-container>
+
+                <!-- Circle -->
+                <ng-container matColumnDef="circle">
+                  <th mat-header-cell *matHeaderCellDef>{{ 'حلقة' | translate }}</th>
+                  <td mat-cell *matCellDef="let element" class="text-nowrap">
+                    {{ getCircleDisplay(element) }}
+                  </td>
+                </ng-container>
+
+                <!-- Status -->
+                <ng-container matColumnDef="status">
+                  <th mat-header-cell *matHeaderCellDef>{{ 'الحالة' | translate }}</th>
+                  <td mat-cell *matCellDef="let element" class="text-nowrap">
+                    @let status = getStatusConfig(element.attendStatueId);
+                    <span class="status-pill {{ status.class }}">{{ status.label }}</span>
+                  </td>
+                </ng-container>
+
+                <!-- Date -->
+                <ng-container matColumnDef="creationTime">
+                  <th mat-header-cell *matHeaderCellDef>{{ 'التاريخ' | translate }}</th>
+                  <td mat-cell *matCellDef="let element" class="text-nowrap">
+                    {{ formatDate(element.creationTime) }}
+                  </td>
+                </ng-container>
+
+                <!-- Actions -->
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef class="text-center">{{ 'الاجراءات' | translate }}</th>
+                  <td mat-cell *matCellDef="let element" class="text-nowrap">
+                    <div class="text-center">
+                      <ul class="list-inline p-l-0">
+                        <li class="list-inline-item m-r-10" [matTooltip]="'عرض' | translate">
+                          <a
+                            [routerLink]="['/online-course/report/details', element.id]"
+                            [state]="{ report: element }"
+                            class="avatar avatar-xs text-muted"
+                          >
+                            <i class="ti ti-eye f-18"></i>
+                          </a>
+                        </li>
+
+                        <li
+                          class="list-inline-item m-r-10"
+                          *ngIf="canManageReports"
+                          [matTooltip]="'تعديل' | translate"
                         >
                           <i class="ti ti-brand-whatsapp f-18"></i>
                         </button>
@@ -150,6 +147,20 @@
                   </div>
                 </td>
               </ng-container>
+
+                        <li class="list-inline-item m-r-10" [matTooltip]="'واتساب' | translate">
+                          <button
+                            type="button"
+                            class="avatar avatar-xs text-muted"
+                            (click)="onSendWhatsApp(element)"
+                          >
+                            <i class="ti ti-brand-whatsapp f-18"></i>
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
+                  </td>
+                </ng-container>
 
               <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
               <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
@@ -168,7 +179,6 @@
             ></p-paginator>
           </div>
         </div>
-      </div>
       </app-card>
     </div>
   </div>
