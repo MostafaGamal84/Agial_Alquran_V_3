@@ -9,7 +9,7 @@ export class ArabicMatPaginatorIntl extends MatPaginatorIntl {
   override firstPageLabel = 'الصفحة الأولى';
   override lastPageLabel = 'الصفحة الأخيرة';
 
-  override getRangeLabel(page: number, pageSize: number, length: number): string {
+  override getRangeLabel = (page: number, pageSize: number, length: number): string => {
     if (length === 0 || pageSize === 0) {
       return `0 من ${length}`;
     }
@@ -18,5 +18,5 @@ export class ArabicMatPaginatorIntl extends MatPaginatorIntl {
     const endIndex = Math.min((page + 1) * pageSize, length);
 
     return `${startIndex} – ${endIndex} من ${length}`;
-  }
+  };
 }
