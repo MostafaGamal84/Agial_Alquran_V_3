@@ -1,13 +1,13 @@
 // angular import
-import { AfterViewInit, Component, OnInit, inject, viewChild } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 // angular material
 import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { finalize } from 'rxjs/operators';
+import { PaginatorState } from 'primeng/paginator';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -32,7 +32,7 @@ import { TranslateService } from '@ngx-translate/core';
   templateUrl: './student-list.component.html',
   styleUrl: './student-list.component.scss'
 })
-export class StudentListComponent implements OnInit, AfterViewInit {
+export class StudentListComponent implements OnInit {
   private lookupService = inject(LookupService);
   private userService = inject(UserService);
   private toast = inject(ToastService);
@@ -44,6 +44,8 @@ export class StudentListComponent implements OnInit, AfterViewInit {
   dataSource = new MatTableDataSource<LookUpUserDto>();
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
+  pageIndex = 0;
+  pageSize = 10;
   showInactive = false;
   nationalities: NationalityDto[] = [];
   selectedResidentId: number | null = null;
@@ -52,16 +54,12 @@ export class StudentListComponent implements OnInit, AfterViewInit {
   private pendingStudentIds = new Set<number>();
   isLoading = false;
 
-  // paginator
-readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
-
-
   // table search filter
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     this.filter.searchTerm = filterValue.trim().toLowerCase();
+    this.pageIndex = 0;
     this.filter.skipCount = 0;
-    this.paginator().firstPage();
     this.loadStudents();
   }
 
@@ -72,8 +70,8 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
     } else {
       delete this.filter.filter;
     }
+    this.pageIndex = 0;
     this.filter.skipCount = 0;
-    this.paginator().firstPage();
     this.loadStudents();
   }
 
@@ -124,15 +122,15 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
 
   onResidencyChange(value: number | null): void {
     this.selectedResidentId = value && value > 0 ? value : null;
+    this.pageIndex = 0;
     this.filter.skipCount = 0;
-    this.paginator().firstPage();
     this.loadStudents();
   }
 
   onResidencyGroupChange(value: ResidencyGroupFilter | null): void {
     this.selectedResidencyGroup = value ?? 'all';
+    this.pageIndex = 0;
     this.filter.skipCount = 0;
-    this.paginator().firstPage();
     this.loadStudents();
   }
 
@@ -207,12 +205,11 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
       });
   }
 
-  // life cycle event
-  ngAfterViewInit() {
-    this.paginator().page.subscribe(() => {
-      this.filter.skipCount = this.paginator().pageIndex * this.paginator().pageSize;
-      this.filter.maxResultCount = this.paginator().pageSize;
-      this.loadStudents();
-    });
+  onPageChange(event: PaginatorState): void {
+    this.pageIndex = event.page ?? 0;
+    this.pageSize = event.rows ?? this.pageSize;
+    this.filter.skipCount = this.pageIndex * this.pageSize;
+    this.filter.maxResultCount = this.pageSize;
+    this.loadStudents();
   }
 }

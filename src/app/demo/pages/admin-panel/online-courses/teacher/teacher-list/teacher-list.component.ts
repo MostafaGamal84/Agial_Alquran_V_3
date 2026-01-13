@@ -1,13 +1,13 @@
 // angular import
-import { AfterViewInit, Component, OnInit, inject, viewChild } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 
 // angular material
 import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { PaginatorState } from 'primeng/paginator';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -30,7 +30,7 @@ import { TranslateService } from '@ngx-translate/core';
   templateUrl: './teacher-list.component.html',
   styleUrl: './teacher-list.component.scss'
 })
-export class TeacherListComponent implements OnInit, AfterViewInit {
+export class TeacherListComponent implements OnInit {
   private lookupService = inject(LookupService);
   private userService = inject(UserService);
   private toast = inject(ToastService);
@@ -42,19 +42,18 @@ export class TeacherListComponent implements OnInit, AfterViewInit {
   dataSource = new MatTableDataSource<LookUpUserDto>();
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
+  pageIndex = 0;
+  pageSize = 10;
   isLoading = false;
   private pendingTeacherIds = new Set<number>();
-
-  // paginator
-readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
 
 
   // table search filter
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     this.filter.searchTerm = filterValue.trim().toLowerCase();
+    this.pageIndex = 0;
     this.filter.skipCount = 0;
-    this.paginator()?.firstPage();
     this.loadTeachers();
   }
 
@@ -156,12 +155,11 @@ readonly paginator = viewChild.required(MatPaginator);  // if Angular ≥17
       });
   }
 
-  // life cycle event
-  ngAfterViewInit() {
-    this.paginator().page.subscribe(() => {
-      this.filter.skipCount = this.paginator().pageIndex * this.paginator().pageSize;
-      this.filter.maxResultCount = this.paginator().pageSize;
-      this.loadTeachers();
-    });
+  onPageChange(event: PaginatorState): void {
+    this.pageIndex = event.page ?? 0;
+    this.pageSize = event.rows ?? this.pageSize;
+    this.filter.skipCount = this.pageIndex * this.pageSize;
+    this.filter.maxResultCount = this.pageSize;
+    this.loadTeachers();
   }
 }

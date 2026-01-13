@@ -98,12 +98,15 @@
                 <button mat-button color="primary" (click)="goToInvoice(paymentDetails?.invoiceId)">View Invoice</button>
               </div>
             </mat-expansion-panel>
-            <mat-paginator
-              [length]="totalCount"
-              [pageSize]="filter.maxResultCount"
-              [pageSizeOptions]="[5, 10, 25, 100]"
-              aria-label="Select page of subscribes"
-            ></mat-paginator>
+            <div class="app-paginator">
+              <p-paginator
+                [first]="pageIndex * pageSize"
+                [rows]="pageSize"
+                [totalRecords]="totalCount"
+                [rowsPerPageOptions]="[5, 10, 25, 100]"
+                (onPageChange)="onPageChange($event)"
+              ></p-paginator>
+            </div>
           </div>
         </mat-card-content>
       </mat-card>
