@@ -124,10 +124,15 @@ export class MembershipListComponent implements OnInit {
     if (!paymentId) {
       return;
     }
-    this.paymentService.getPayment(paymentId).subscribe((res) => {
-      if (res.isSuccess && res.data) {
-        this.dialog.open(PaymentDetailsComponent, { data: res.data });
-      }
+
+    const dialogRef = this.dialog.open(PaymentDetailsComponent, { data: { isLoading: true } });
+
+    this.paymentService.getPayment(paymentId).subscribe({
+      next: (res) => {
+        const payment = res.isSuccess ? res.data ?? null : null;
+        dialogRef.componentInstance?.updatePayment(payment);
+      },
+      error: () => dialogRef.componentInstance?.updatePayment(null)
     });
   }
 
