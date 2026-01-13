@@ -63,6 +63,7 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
   students: LookUpUserDto[] = [];
   days = DAY_OPTIONS;
   isManager = false;
+  submitted = false;
 
   ngOnInit(): void {
     this.isManager = this.auth.getRole() === UserTypesEnum.Manager;
@@ -435,6 +436,7 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
 
   // ========== Submit ==========
   onSubmit() {
+    this.submitted = true;
     if (this.circleForm.invalid) {
       this.circleForm.markAllAsTouched();
       return;
@@ -485,6 +487,7 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
   }
 
   private resetForm(): void {
+    this.submitted = false;
     while (this.daysArray.length > 1) {
       this.daysArray.removeAt(0);
     }

@@ -6,6 +6,7 @@
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>اسم الحلقة</mat-label>
             <input matInput formControlName="name" placeholder="ادخل اسم الحلقة" />
+            <mat-error *ngIf="submitted && circleForm.get('name')?.errors">اسم الحلقة مطلوب</mat-error>
           </mat-form-field>
         </div>
         <div class="col-md-6">
@@ -14,6 +15,7 @@
             <mat-select formControlName="teacherId">
               <mat-option *ngFor="let t of teachers" [value]="t.id">{{ t.fullName }}</mat-option>
             </mat-select>
+            <mat-error *ngIf="submitted && circleForm.get('teacherId')?.errors">المعلم مطلوب</mat-error>
           </mat-form-field>
         </div>
         <div class="col-12">
@@ -26,12 +28,14 @@
                     <mat-select formControlName="dayId">
                       <mat-option *ngFor="let day of days" [value]="day.value">{{ day.label }}</mat-option>
                     </mat-select>
+                    <mat-error *ngIf="submitted && daysArray.at(i).get('dayId')?.errors">اليوم مطلوب</mat-error>
                   </mat-form-field>
                 </div>
                 <div class="col-md-5">
                   <mat-form-field appearance="outline" class="w-100">
                     <mat-label>الوقت</mat-label>
                     <input matInput type="time" formControlName="startTime" placeholder="ادخل الساعة" />
+                    <mat-error *ngIf="submitted && daysArray.at(i).get('startTime')?.errors">الوقت مطلوب</mat-error>
                   </mat-form-field>
                 </div>
                 <div class="col-md-2 d-flex align-items-center">
