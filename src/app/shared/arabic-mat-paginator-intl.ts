@@ -9,14 +9,21 @@ export class ArabicMatPaginatorIntl extends MatPaginatorIntl {
   override firstPageLabel = 'الصفحة الأولى';
   override lastPageLabel = 'الصفحة الأخيرة';
 
+  private readonly numberFormatter = new Intl.NumberFormat('ar-EG');
+
   override getRangeLabel(page: number, pageSize: number, length: number): string {
+    const ltrMark = '\u200E';
     if (length === 0 || pageSize === 0) {
-      return `0 من ${length}`;
+      return `${ltrMark}${this.formatNumber(0)}${ltrMark} من ${ltrMark}${this.formatNumber(length)}${ltrMark}`;
     }
 
     const startIndex = page * pageSize + 1;
     const endIndex = Math.min((page + 1) * pageSize, length);
 
-    return `${startIndex} – ${endIndex} من ${length}`;
+    return `${ltrMark}${this.formatNumber(startIndex)} – ${this.formatNumber(endIndex)}${ltrMark} من ${ltrMark}${this.formatNumber(length)}${ltrMark}`;
+  }
+
+  private formatNumber(value: number): string {
+    return this.numberFormatter.format(value);
   }
 }
