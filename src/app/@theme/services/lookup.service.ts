@@ -71,9 +71,14 @@ export function normalizePagedResult<T>(
   response: ApiResponse<PagedResultDto<T>>,
   options: NormalizePagedResultOptions = {}
 ): ApiResponse<PagedResultDto<T>> {
-  const rawData = response.data ?? ({ totalCount: 0, items: [] } as PagedResultDto<T>);
-  const rawItems = rawData.items;
-  const items = Array.isArray(rawItems) ? rawItems : [];
+  const responseData = response.data as unknown;
+  const arrayPayload = Array.isArray(responseData) ? (responseData as T[]) : null;
+  const rawData =
+    responseData && !Array.isArray(responseData)
+      ? (responseData as PagedResultDto<T>)
+      : ({ totalCount: arrayPayload?.length ?? 0, items: arrayPayload ?? [] } as PagedResultDto<T>);
+  const rawItems = (rawData as Partial<PagedResultDto<T>>).items;
+  const items = Array.isArray(rawItems) ? rawItems : arrayPayload ?? [];
 
   const parseNumeric = (value: unknown): number | undefined => {
     const parsed = Number(value);
@@ -89,7 +94,17 @@ export function normalizePagedResult<T>(
 
   const fallbackTotal = skipCount + items.length;
 
-  const parsedTotal = parseNumeric((rawData as Partial<{ totalCount: number | string }>).totalCount);
+  const totalCandidates: Array<number | string | undefined> = [
+    (rawData as Partial<{ totalCount: number | string }>).totalCount,
+    (rawData as Partial<{ total: number | string }>).total,
+    (rawData as Partial<{ count: number | string }>).count,
+    (rawData as Partial<{ totalItems: number | string }>).totalItems,
+    (rawData as Partial<{ totalRecords: number | string }>).totalRecords,
+    (response as Partial<{ totalCount: number | string }>).totalCount,
+    (response as Partial<{ total: number | string }>).total,
+    (response as Partial<{ count: number | string }>).count
+  ];
+  const parsedTotal = totalCandidates.map(parseNumeric).find((value) => value !== undefined);
   const normalizedTotal = parsedTotal !== undefined
     ? Math.max(Math.trunc(parsedTotal), fallbackTotal)
     : fallbackTotal;
