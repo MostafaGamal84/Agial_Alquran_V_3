@@ -11,8 +11,8 @@ export class ArabicMatPaginatorIntl extends MatPaginatorIntl {
 
   private readonly numberFormatter = new Intl.NumberFormat('ar-EG');
 
-  override getRangeLabel(page: number, pageSize: number, length: number): string {
-    const ltrMark = '\u200E';
+override getRangeLabel = (page: number, pageSize: number, length: number): string => {
+      const ltrMark = '\u200E';
     if (length === 0 || pageSize === 0) {
       return `${ltrMark}${this.formatNumber(0)}${ltrMark} من ${ltrMark}${this.formatNumber(length)}${ltrMark}`;
     }
