@@ -184,7 +184,7 @@ ul {
 /* PrimeNG paginator */
 .p-paginator {
   align-items: center;
-  background: var(--accent-50);
+  background: #fff;
   border: 1px solid var(--accent-300);
   border-radius: 8px;
   color: var(--accent-700);
@@ -228,7 +228,7 @@ ul {
 
 body.dark {
   .p-paginator {
-    background: var(--accent-100);
+    background: #000;
     color: var(--accent-600);
   }
 }
