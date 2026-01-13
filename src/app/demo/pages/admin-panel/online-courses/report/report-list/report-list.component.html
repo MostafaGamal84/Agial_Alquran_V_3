@@ -140,15 +140,15 @@
                           *ngIf="canManageReports"
                           [matTooltip]="'تعديل' | translate"
                         >
-                          <a
-                            [routerLink]="['/online-course/report/edit', element.id]"
-                            [state]="{ report: element }"
-                            class="avatar avatar-xs text-muted"
-                          >
-                            <i class="ti ti-edit-circle f-18"></i>
-                          </a>
-                        </li>
+                          <i class="ti ti-brand-whatsapp f-18"></i>
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                </td>
+              </ng-container>
 
+<<<<<<< HEAD
                         <li class="list-inline-item m-r-10" [matTooltip]="'واتساب' | translate">
                           <button
                             type="button"
@@ -163,26 +163,21 @@
                   </td>
                 </ng-container>
 
-                <!-- Header & Row -->
-                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-
-                <!-- No Data -->
-                <tr class="mat-row" *matNoDataRow>
-                  <td class="mat-cell" colspan="5">{{ 'No Reports Found' | translate }}</td>
-                </tr>
-              </table>
-
-              <!-- PAGINATOR -->
-                <p-paginator
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+              <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell" colspan="5">{{ 'No Reports Found' | translate }}</td>
+              </tr>
+            </table>
+          </div>
+          <div class="report-paginator">
+            <p-paginator
               [first]="pageIndex * pageSize"
               [rows]="pageSize"
               [totalRecords]="totalCount"
               [rowsPerPageOptions]="[5, 10, 25, 100, 500]"
               (onPageChange)="onPageChange($event)"
             ></p-paginator>
-
-            </div>
           </div>
         </div>
       </app-card>

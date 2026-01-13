@@ -81,7 +81,6 @@ export class ReportListComponent implements OnInit, OnDestroy {
   private auth = inject(AuthenticationService);
   private translate = inject(TranslateService);
   private dialog = inject(MatDialog);
-  private cdr = inject(ChangeDetectorRef);
 
   filterForm: FormGroup = this.fb.group({
     searchTerm: [''],
@@ -384,7 +383,6 @@ export class ReportListComponent implements OnInit, OnDestroy {
         next: (res) => {
           if (res.isSuccess && res.data?.items) {
             this.dataSource.data = res.data.items;
-
             this.totalCount = Number(res.data.totalCount) || 0;
           } else {
             this.dataSource.data = [];
