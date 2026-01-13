@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -293,7 +293,15 @@ export class ReportListComponent implements OnInit, OnDestroy {
     };
   }
 
-
+  private applyFilters(): void {
+    const { circleId, studentId } = this.filterForm.value;
+    this.selectedCircleId = circleId ?? undefined;
+    this.selectedStudentId = studentId ?? undefined;
+    this.filter.residentGroup = this.selectedResidencyGroup;
+    this.filter.skipCount = 0;
+    this.pageIndex = 0;
+    this.loadReports();
+  }
 
   private onResidencyChange(residentId: number | null): void {
     this.selectedResidentId = residentId && residentId > 0 ? residentId : null;
