@@ -174,14 +174,13 @@
               </table>
 
               <!-- PAGINATOR -->
-              <mat-paginator
-                [length]="totalCount"
-                [pageSize]="pageSize"
-                [pageIndex]="pageIndex"
-                [pageSizeOptions]="[5, 10, 25, 100, 500]"
-                (page)="onPageChange($event)"
-                [attr.aria-label]="'Select page of reports' | translate">
-              </mat-paginator>
+                <p-paginator
+              [first]="pageIndex * pageSize"
+              [rows]="pageSize"
+              [totalRecords]="totalCount"
+              [rowsPerPageOptions]="[5, 10, 25, 100, 500]"
+              (onPageChange)="onPageChange($event)"
+            ></p-paginator>
 
             </div>
           </div>
