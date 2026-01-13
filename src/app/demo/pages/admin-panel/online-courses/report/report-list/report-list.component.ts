@@ -1,23 +1,9 @@
-import {
-  AfterViewInit,
-  Component,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-  ChangeDetectorRef,
-  inject
-} from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 import { MatTableDataSource } from '@angular/material/table';
-import {
-  MatPaginator,
-  MatPaginatorIntl,
-  MatPaginatorModule,
-  PageEvent
-} from '@angular/material/paginator';
 import { MatButtonModule } from '@angular/material/button';
 import {
   MatDialog,
@@ -27,6 +13,7 @@ import {
 } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
@@ -60,7 +47,6 @@ import { TranslateService } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
-import { ArabicMatPaginatorIntl } from 'src/app/shared/arabic-mat-paginator-intl';
 
 interface StudentOption {
   id: number;
@@ -80,14 +66,13 @@ interface StudentOption {
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    MatPaginatorModule,
+    PaginatorModule,
     ReactiveFormsModule
   ],
-  providers: [{ provide: MatPaginatorIntl, useClass: ArabicMatPaginatorIntl }],
   templateUrl: './report-list.component.html',
   styleUrl: './report-list.component.scss'
 })
-export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
+export class ReportListComponent implements OnInit, OnDestroy {
   private reportService = inject(CircleReportService);
   private circleService = inject(CircleService);
   private lookupService = inject(LookupService);
@@ -97,8 +82,6 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
   private translate = inject(TranslateService);
   private dialog = inject(MatDialog);
   private cdr = inject(ChangeDetectorRef);
-
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   filterForm: FormGroup = this.fb.group({
     searchTerm: [''],
@@ -179,18 +162,6 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
       .get('residentGroup')
       ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe((group: ResidencyGroupFilter | null) => this.onResidencyGroupChange(group));
-  }
-
-  ngAfterViewInit(): void {
-    // في السيرفر سايد **ما نربطش** الـ dataSource بالـ paginator
-    // this.dataSource.paginator = this.paginator;
-
-    // في أول مرة بعد ما يتبني الـ View
-    if (this.paginator) {
-      this.paginator.pageIndex = this.pageIndex;
-      this.paginator.pageSize = this.pageSize;
-      this.paginator.length = this.totalCount;
-    }
   }
 
   ngOnDestroy(): void {
@@ -323,6 +294,16 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     };
   }
 
+  private applyFilters(): void {
+    const { circleId, studentId } = this.filterForm.value;
+    this.selectedCircleId = circleId ?? undefined;
+    this.selectedStudentId = studentId ?? undefined;
+    this.filter.residentGroup = this.selectedResidencyGroup;
+    this.filter.skipCount = 0;
+    this.pageIndex = 0;
+    this.loadReports();
+  }
+
   private onResidencyChange(residentId: number | null): void {
     this.selectedResidentId = residentId && residentId > 0 ? residentId : null;
     this.filterForm.patchValue({ studentId: null }, { emitEvent: false });
@@ -372,7 +353,6 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.filter.searchTerm = term.length ? term : undefined;
 
     this.pageIndex = 0;
-    this.paginator?.firstPage();
     this.loadReports();
   }
 
@@ -415,18 +395,9 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
             this.dataSource.data = res.data.items;
 
             this.totalCount = Number(res.data.totalCount) || 0;
-            console.log('totalCount from API =', this.totalCount);
-
-            // 👈 هنا بنضمن إن الـ paginator يشوف الـ length الجديد
-            if (this.paginator) {
-              this.paginator.length = this.totalCount;
-              this.paginator.pageIndex = this.pageIndex;
-              this.paginator.pageSize = this.pageSize;
-            }
           } else {
             this.dataSource.data = [];
             this.totalCount = 0;
-            if (this.paginator) this.paginator.length = 0;
           }
           this.isLoading = false;
           this.cdr.detectChanges();
@@ -434,7 +405,6 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
         error: () => {
           this.dataSource.data = [];
           this.totalCount = 0;
-          if (this.paginator) this.paginator.length = 0;
           this.isLoading = false;
           this.toast.error('Error loading reports');
           this.cdr.detectChanges();
@@ -442,9 +412,9 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
       });
   }
 
-  onPageChange(event: PageEvent): void {
-    this.pageIndex = event.pageIndex;
-    this.pageSize = event.pageSize;
+  onPageChange(event: PaginatorState): void {
+    this.pageIndex = event.page ?? 0;
+    this.pageSize = event.rows ?? this.pageSize;
     this.loadReports();
   }
 
