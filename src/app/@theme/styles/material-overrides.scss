@@ -342,7 +342,7 @@ body {
     .mat-mdc-paginator,
     .mat-stepper-horizontal,
     .mat-stepper-vertical {
-      background-color: var(--accent-50);
+      background-color: #000;
     }
 
     // all theme dropdown
@@ -371,6 +371,10 @@ body {
     .mat-datepicker-content {
       background-color: var(--accent-300) !important;
     }
+  }
+
+  .mat-mdc-paginator {
+    background-color: #fff;
   }
 
   .mat-mdc-tab-header.account-profile {
