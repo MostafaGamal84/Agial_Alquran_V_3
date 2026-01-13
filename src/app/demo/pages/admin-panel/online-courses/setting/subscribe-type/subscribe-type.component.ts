@@ -1,11 +1,11 @@
-import { AfterViewInit, Component, OnInit, inject, viewChild } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
 import { MatDialog, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
 import { MatButton } from '@angular/material/button';
 import { MatSelectChange } from '@angular/material/select';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { PaginatorState } from 'primeng/paginator';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
@@ -28,7 +28,7 @@ import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overl
   templateUrl: './subscribe-type.component.html',
   styleUrl: './subscribe-type.component.scss'
 })
-export class SubscribeTypeComponent implements OnInit, AfterViewInit {
+export class SubscribeTypeComponent implements OnInit {
   private service = inject(SubscribeService);
   private dialog = inject(MatDialog);
   private toast = inject(ToastService);
@@ -39,12 +39,12 @@ export class SubscribeTypeComponent implements OnInit, AfterViewInit {
   dataSource = new MatTableDataSource<SubscribeTypeDto>();
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
+  pageIndex = 0;
+  pageSize = 10;
   nationalities: NationalityDto[] = [];
   selectedResidentId: number | null = null;
   noResultsMessage: string | null = null;
   isLoading = false;
-
-  readonly paginator = viewChild.required(MatPaginator);
 
   ngOnInit() {
     this.loadNationalities();
@@ -87,8 +87,8 @@ export class SubscribeTypeComponent implements OnInit, AfterViewInit {
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     this.filter.searchTerm = filterValue.trim().toLowerCase();
+    this.pageIndex = 0;
     this.filter.skipCount = 0;
-    this.paginator().firstPage();
     this.load();
   }
 
@@ -96,17 +96,17 @@ export class SubscribeTypeComponent implements OnInit, AfterViewInit {
     const residentId = Number(event.value ?? 0);
     this.selectedResidentId = Number.isFinite(residentId) && residentId > 0 ? residentId : null;
     this.filter.residentId = this.selectedResidentId ?? undefined;
+    this.pageIndex = 0;
     this.filter.skipCount = 0;
-    this.paginator().firstPage();
     this.load();
   }
 
-  ngAfterViewInit() {
-    this.paginator().page.subscribe(() => {
-      this.filter.skipCount = this.paginator().pageIndex * this.paginator().pageSize;
-      this.filter.maxResultCount = this.paginator().pageSize;
-      this.load();
-    });
+  onPageChange(event: PaginatorState): void {
+    this.pageIndex = event.page ?? 0;
+    this.pageSize = event.rows ?? this.pageSize;
+    this.filter.skipCount = this.pageIndex * this.pageSize;
+    this.filter.maxResultCount = this.pageSize;
+    this.load();
   }
 
   private loadNationalities(): void {

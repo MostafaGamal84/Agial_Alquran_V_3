@@ -11,10 +11,10 @@ import {
   viewChild,
   inject
 } from '@angular/core';
-import { PageEvent } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { forkJoin, Observable } from 'rxjs';
+import { PaginatorState } from 'primeng/paginator';
 
 
 // project import
@@ -294,9 +294,9 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
     this.dataSource.sort = this.sort()!;
   }
 
-  onPageChange(event: PageEvent): void {
-    this.pageIndex = event.pageIndex;
-    this.pageSize = event.pageSize;
+  onPageChange(event: PaginatorState): void {
+    this.pageIndex = event.page ?? 0;
+    this.pageSize = event.rows ?? this.pageSize;
     this.loadData();
   }
 }

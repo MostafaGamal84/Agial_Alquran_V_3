@@ -18,7 +18,6 @@ import { MatListModule } from '@angular/material/list';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatRadioModule } from '@angular/material/radio';
-import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -44,6 +43,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { NgScrollbarModule } from 'ngx-scrollbar';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
+import { PaginatorModule } from 'primeng/paginator';
 
 // project import
 import { CustomTranslateLoader } from './custom-translate-loader';
@@ -67,7 +67,6 @@ const MaterialModules = [
   MatSlideToggleModule,
   MatBadgeModule,
   MatRadioModule,
-  MatPaginatorModule,
   MatFormFieldModule,
   MatProgressBarModule,
   MatDialogModule,
@@ -100,6 +99,7 @@ const MaterialModules = [
     ReactiveFormsModule,
     NgScrollbarModule,
     NgSelectModule,
+    PaginatorModule,
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
@@ -118,6 +118,7 @@ const MaterialModules = [
     ReactiveFormsModule,
     NgScrollbarModule,
     NgSelectModule,
+    PaginatorModule,
     TranslateModule,
     CardComponent,
     OpenSelectOnTypeDirective,

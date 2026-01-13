@@ -331,7 +331,15 @@
           ></tr>
         </table>
       </div>
-      <mat-paginator [pageSize]="10" [pageSizeOptions]="[5, 10, 25, 50]" showFirstLastButtons></mat-paginator>
+      <div class="app-paginator">
+        <p-paginator
+          [first]="pageIndex * pageSize"
+          [rows]="pageSize"
+          [totalRecords]="totalCount"
+          [rowsPerPageOptions]="[5, 10, 25, 50]"
+          (onPageChange)="onPageChange($event)"
+        ></p-paginator>
+      </div>
       @if (!invoicesLoading && dataSource.data.length === 0) {
         <div class="empty-state">{{ 'No Invoices Found' | translate }}</div>
       }
