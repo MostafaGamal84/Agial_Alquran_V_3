@@ -181,6 +181,58 @@ ul {
   height: auto;
 }
 
+/* PrimeNG paginator */
+.p-paginator {
+  align-items: center;
+  background: var(--accent-50);
+  border: 1px solid var(--accent-300);
+  border-radius: 8px;
+  color: var(--accent-700);
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  width: 100%;
+
+  .p-paginator-pages {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .p-paginator-page,
+  .p-paginator-next,
+  .p-paginator-prev,
+  .p-paginator-first,
+  .p-paginator-last {
+    border-radius: 6px;
+    color: inherit;
+  }
+
+  .p-paginator-page.p-highlight {
+    background: var(--primary-500);
+    color: #fff;
+  }
+
+  .p-paginator-rpp-options {
+    .p-dropdown {
+      background: var(--accent-100);
+      border: 1px solid var(--accent-300);
+      border-radius: 6px;
+      color: var(--accent-800);
+    }
+
+    .p-dropdown-label {
+      color: inherit;
+    }
+  }
+}
+
+body.dark {
+  .p-paginator {
+    background: var(--accent-100);
+    color: var(--accent-600);
+  }
+}
+
 /// adjust position when applying bade on custom elements
 
 .mat-badge-content {
