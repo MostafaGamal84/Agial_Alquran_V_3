@@ -3,9 +3,8 @@ import {
   ChangeDetectionStrategy,
   Component,
   Input,
-  OnDestroy,
 } from '@angular/core';
-import { BehaviorSubject, Subscription, interval } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
 interface HadithCard {
   text: string;
@@ -21,10 +20,9 @@ interface HadithCard {
   styleUrl: './loading-overlay.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class LoadingOverlayComponent implements OnDestroy {
+export class LoadingOverlayComponent {
   private loadingValue = false;
   private hadithIndex = 0;
-  private rotationSub: Subscription | null = null;
 
   readonly hadithList: HadithCard[] = [
   {
@@ -100,9 +98,6 @@ export class LoadingOverlayComponent implements OnDestroy {
 
     if (value) {
       this.showNextHadith();   // أول حديث عشوائي
-      this.startRotation();    // وبعدين نبدأ التدوير
-    } else {
-      this.stopRotation();
     }
   }
 
@@ -110,18 +105,7 @@ export class LoadingOverlayComponent implements OnDestroy {
     return this.loadingValue;
   }
 
-  ngOnDestroy(): void {
-    this.stopRotation();
-  }
-
   // ================= helpers =================
-
-  private emitRandomHadith(): void {
-    this.hadithIndex = this.getRandomHadithIndex();
-    const hadith = this.hadithList[this.hadithIndex];
-
-    this.currentHadith$.next(hadith);
-  }
 
   private getRandomHadithIndex(): number {
     if (this.hadithList.length <= 1) return 0;
@@ -134,24 +118,10 @@ export class LoadingOverlayComponent implements OnDestroy {
     return nextIndex;
   }
 
-  private startRotation(): void {
-    if (this.rotationSub) return;
-
-    // غيّر الحديث كل 2 ثانية (أو نص ثانية لو حابب)
-    this.rotationSub = interval(2000).subscribe(() => {
-      if (!this.loadingValue) return;
-      this.emitRandomHadith();
-    });
-  }
-
-  private stopRotation(): void {
-    if (!this.rotationSub) return;
-
-    this.rotationSub.unsubscribe();
-    this.rotationSub = null;
-  }
-
   private showNextHadith(): void {
-    this.emitRandomHadith();
+    this.hadithIndex = this.getRandomHadithIndex();
+    const hadith = this.hadithList[this.hadithIndex];
+
+    this.currentHadith$.next(hadith);
   }
 }
