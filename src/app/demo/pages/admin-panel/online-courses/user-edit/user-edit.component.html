@@ -202,7 +202,7 @@
                 bindLabel="fullName"
                 bindValue="id"
                 [searchable]="true"
-                [disabled]="true"
+                (change)="onTeacherManagerChange($event.value)"
               ></ng-select>
             </div>
             <div class="col-md-6 mb-3">
