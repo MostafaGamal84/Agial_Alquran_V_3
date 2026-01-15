@@ -91,7 +91,7 @@ export class ReportListComponent implements OnInit, OnDestroy {
     residentGroup: ['all']
   });
 
-  displayedColumns: string[] = ['student', 'circle', 'status', 'creationTime', 'actions'];
+  displayedColumns: string[] = ['student', 'circle', 'status', 'creationTime', 'minutes', 'actions'];
   dataSource = new MatTableDataSource<CircleReportListDto>();
 
   // 🔢 خصائص الباجينيتور – سيرفر سايد
