@@ -1,49 +1,62 @@
 <div class="row">
   <div class="col-12">
     <app-card cardTitle="اضافة الحلقة">
-      <form [formGroup]="circleForm" (ngSubmit)="onSubmit()" class="row">
+      <form [formGroup]="circleForm" (ngSubmit)="onSubmit()" class="row course-form">
         <div class="col-md-6">
-          <mat-form-field appearance="outline" class="w-100">
+          <mat-form-field appearance="outline" class="w-100 course-input">
             <mat-label>اسم الحلقة</mat-label>
             <input matInput formControlName="name" placeholder="ادخل اسم الحلقة" />
             <mat-error *ngIf="submitted && circleForm.get('name')?.errors">اسم الحلقة مطلوب</mat-error>
           </mat-form-field>
         </div>
         <div class="col-md-6">
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>الفرع</mat-label>
-            <mat-select formControlName="branchId">
-              <mat-option *ngFor="let branch of branchOptions" [value]="branch.id">
-                {{ branch.label }}
-              </mat-option>
-            </mat-select>
-            <mat-error *ngIf="submitted && circleForm.get('branchId')?.errors">الفرع مطلوب</mat-error>
-          </mat-form-field>
+          <label class="form-label">الفرع</label>
+          <ng-select
+            class="w-100"
+            formControlName="branchId"
+            [items]="branchOptions"
+            bindLabel="label"
+            bindValue="id"
+            [searchable]="false"
+            [clearable]="true"
+            placeholder="الفرع"
+          ></ng-select>
+          <div class="text-danger small" *ngIf="submitted && circleForm.get('branchId')?.errors">الفرع مطلوب</div>
         </div>
         <div class="col-md-6">
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>المعلم</mat-label>
-            <mat-select formControlName="teacherId">
-              <mat-option *ngFor="let t of teachers" [value]="t.id">{{ t.fullName }}</mat-option>
-            </mat-select>
-            <mat-error *ngIf="submitted && circleForm.get('teacherId')?.errors">المعلم مطلوب</mat-error>
-          </mat-form-field>
+          <label class="form-label">المعلم</label>
+          <ng-select
+            class="w-100"
+            formControlName="teacherId"
+            [items]="teachers"
+            bindLabel="fullName"
+            bindValue="id"
+            [searchable]="true"
+            [clearable]="true"
+            placeholder="المعلم"
+          ></ng-select>
+          <div class="text-danger small" *ngIf="submitted && circleForm.get('teacherId')?.errors">المعلم مطلوب</div>
         </div>
         <div class="col-12">
           <div formArrayName="days">
             <ng-container *ngFor="let dayGroup of daysArray.controls; let i = index; trackBy: trackByIndex">
               <div class="row" [formGroupName]="i">
                 <div class="col-md-5">
-                  <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>اليوم</mat-label>
-                    <mat-select formControlName="dayId">
-                      <mat-option *ngFor="let day of days" [value]="day.value">{{ day.label }}</mat-option>
-                    </mat-select>
-                    <mat-error *ngIf="submitted && daysArray.at(i).get('dayId')?.errors">اليوم مطلوب</mat-error>
-                  </mat-form-field>
+                  <label class="form-label">اليوم</label>
+                  <ng-select
+                    class="w-100"
+                    formControlName="dayId"
+                    [items]="days"
+                    bindLabel="label"
+                    bindValue="value"
+                    [searchable]="false"
+                    [clearable]="true"
+                    placeholder="اليوم"
+                  ></ng-select>
+                  <div class="text-danger small" *ngIf="submitted && daysArray.at(i).get('dayId')?.errors">اليوم مطلوب</div>
                 </div>
                 <div class="col-md-5">
-                  <mat-form-field appearance="outline" class="w-100">
+                  <mat-form-field appearance="outline" class="w-100 course-input">
                     <mat-label>الوقت</mat-label>
                     <input matInput type="time" formControlName="startTime" placeholder="ادخل الساعة" />
                     <mat-error *ngIf="submitted && daysArray.at(i).get('startTime')?.errors">الوقت مطلوب</mat-error>
@@ -77,20 +90,31 @@
           </div>
         </div>
         <div class="col-md-6">
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>المشرف</mat-label>
-            <mat-select formControlName="managers" >
-              <mat-option *ngFor="let m of managers" [value]="m.id">{{ m.fullName }}</mat-option>
-            </mat-select>
-          </mat-form-field>
+          <label class="form-label">المشرف</label>
+          <ng-select
+            class="w-100"
+            formControlName="managers"
+            [items]="managers"
+            bindLabel="fullName"
+            bindValue="id"
+            [searchable]="true"
+            [clearable]="true"
+            placeholder="المشرف"
+          ></ng-select>
         </div>
         <div class="col-md-6">
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>الطلاب</mat-label>
-            <mat-select formControlName="studentsIds" multiple>
-              <mat-option *ngFor="let s of students" [value]="s.id">{{ s.fullName }}</mat-option>
-            </mat-select>
-          </mat-form-field>
+          <label class="form-label">الطلاب</label>
+          <ng-select
+            class="w-100"
+            formControlName="studentsIds"
+            [items]="students"
+            bindLabel="fullName"
+            bindValue="id"
+            [multiple]="true"
+            [searchable]="true"
+            [clearable]="true"
+            placeholder="الطلاب"
+          ></ng-select>
         </div>
         <div class="col-12">
           <button mat-flat-button color="primary" type="submit">انشاء</button>

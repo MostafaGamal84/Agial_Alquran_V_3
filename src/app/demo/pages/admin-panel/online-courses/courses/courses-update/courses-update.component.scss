@@ -1,0 +1,88 @@
+:host ::ng-deep .course-form .ng-select .ng-select-container {
+  min-height: 44px;
+  border-radius: 8px;
+  border: 1px solid rgba(15, 23, 42, 0.18);
+  background: #ffffff;
+  color: #0f172a;
+}
+
+:host ::ng-deep .course-form .ng-select .ng-placeholder {
+  color: rgba(15, 23, 42, 0.6);
+}
+
+:host ::ng-deep .course-form .ng-select.ng-select-multiple .ng-select-container {
+  padding: 4px 6px;
+}
+
+:host ::ng-deep .course-form .ng-dropdown-panel {
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.18);
+  color: #0f172a;
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12);
+}
+
+:host ::ng-deep .course-form .ng-option {
+  color: #0f172a;
+}
+
+:host ::ng-deep .course-form .ng-option:hover,
+:host ::ng-deep .course-form .ng-option.ng-option-marked {
+  background: rgba(59, 130, 246, 0.12);
+}
+
+:host ::ng-deep .course-form .course-input .mdc-text-field--outlined {
+  background: #ffffff;
+  border-radius: 8px;
+}
+
+:host ::ng-deep .course-form .course-input .mdc-notched-outline__leading,
+:host ::ng-deep .course-form .course-input .mdc-notched-outline__notch,
+:host ::ng-deep .course-form .course-input .mdc-notched-outline__trailing {
+  border-color: rgba(15, 23, 42, 0.22);
+}
+
+:host ::ng-deep .course-form .course-input .mat-mdc-input-element {
+  color: #0f172a;
+}
+
+:host ::ng-deep .dark .course-form .ng-select .ng-select-container {
+  background: rgba(15, 23, 42, 0.65);
+  border-color: rgba(148, 163, 184, 0.35);
+  color: #f8fafc;
+}
+
+:host ::ng-deep .dark .course-form .ng-select .ng-placeholder {
+  color: rgba(248, 250, 252, 0.65);
+}
+
+:host ::ng-deep .dark .course-form .ng-dropdown-panel {
+  background: #0b1220;
+  border-color: rgba(148, 163, 184, 0.35);
+  color: #f8fafc;
+  box-shadow: 0 20px 40px rgba(2, 6, 23, 0.6);
+}
+
+:host ::ng-deep .dark .course-form .ng-option {
+  color: #f8fafc;
+}
+
+:host ::ng-deep .dark .course-form .ng-option:hover,
+:host ::ng-deep .dark .course-form .ng-option.ng-option-marked {
+  background: rgba(96, 165, 250, 0.2);
+}
+
+:host ::ng-deep .dark .course-form .course-input .mdc-text-field--outlined {
+  background: rgba(15, 23, 42, 0.6);
+}
+
+:host ::ng-deep .dark .course-form .course-input .mdc-notched-outline__leading,
+:host ::ng-deep .dark .course-form .course-input .mdc-notched-outline__notch,
+:host ::ng-deep .dark .course-form .course-input .mdc-notched-outline__trailing {
+  border-color: rgba(148, 163, 184, 0.4);
+}
+
+:host ::ng-deep .dark .course-form .course-input .mat-mdc-input-element,
+:host ::ng-deep .dark .course-form .course-input .mdc-floating-label {
+  color: #f8fafc;
+}
