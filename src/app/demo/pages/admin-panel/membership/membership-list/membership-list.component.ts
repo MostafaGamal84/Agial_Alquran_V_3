@@ -1,5 +1,5 @@
 // angular import
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { finalize } from 'rxjs/operators';
@@ -7,7 +7,6 @@ import { finalize } from 'rxjs/operators';
 // angular material
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
-import { PaginatorState } from 'primeng/paginator';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -33,7 +32,7 @@ import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overl
   templateUrl: './membership-list.component.html',
   styleUrl: './membership-list.component.scss'
 })
-export class MembershipListComponent implements OnInit {
+export class MembershipListComponent implements OnInit, OnDestroy {
   private service = inject(StudentSubscribeService);
   private lookupService = inject(LookupService);
   private paymentService = inject(StudentPaymentService);
@@ -50,10 +49,23 @@ export class MembershipListComponent implements OnInit {
   residencyGroupOptions = RESIDENCY_GROUP_OPTIONS;
   selectedResidencyGroup: ResidencyGroupFilter = 'all';
   isLoading = false;
+  isLoadingMore = false;
+  private intersectionObserver?: IntersectionObserver;
+  private loadMoreElement?: ElementRef<HTMLElement>;
+
+  @ViewChild('loadMoreTrigger')
+  set loadMoreTrigger(element: ElementRef<HTMLElement> | undefined) {
+    this.loadMoreElement = element;
+    this.setupIntersectionObserver();
+  }
 
   ngOnInit() {
     this.loadNationalities();
     this.load();
+  }
+
+  ngOnDestroy(): void {
+    this.intersectionObserver?.disconnect();
   }
 
   private loadNationalities(): void {
@@ -66,24 +78,36 @@ export class MembershipListComponent implements OnInit {
     });
   }
 
-  private load() {
+  private load(append = false) {
     this.filter.residentGroup = this.selectedResidencyGroup;
-    this.isLoading = true;
+    this.isLoading = !append;
+    this.isLoadingMore = append;
     this.service
       .getStudents(this.filter, undefined, this.selectedResidentId ?? undefined)
-      .pipe(finalize(() => (this.isLoading = false)))
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.isLoadingMore = false;
+        })
+      )
       .subscribe({
         next: (res) => {
           if (res.isSuccess && res.data?.items) {
-            this.dataSource.data = res.data.items;
+            this.dataSource.data = append
+              ? [...this.dataSource.data, ...res.data.items]
+              : res.data.items;
             this.totalCount = res.data.totalCount;
           } else {
-            this.dataSource.data = [];
+            if (!append) {
+              this.dataSource.data = [];
+            }
             this.totalCount = 0;
           }
         },
         error: () => {
-          this.dataSource.data = [];
+          if (!append) {
+            this.dataSource.data = [];
+          }
           this.totalCount = 0;
         }
       });
@@ -112,12 +136,40 @@ export class MembershipListComponent implements OnInit {
     this.load();
   }
 
-  onPageChange(event: PaginatorState): void {
-    this.pageIndex = event.page ?? 0;
-    this.pageSize = event.rows ?? this.pageSize;
+  private setupIntersectionObserver(): void {
+    if (!this.loadMoreElement) {
+      return;
+    }
+
+    this.intersectionObserver?.disconnect();
+    this.intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          this.loadNextPage();
+        }
+      },
+      { root: null, rootMargin: '200px' }
+    );
+    this.intersectionObserver.observe(this.loadMoreElement.nativeElement);
+  }
+
+  private loadNextPage(): void {
+    if (this.isLoading || this.isLoadingMore) {
+      return;
+    }
+
+    if (!this.hasMoreResults()) {
+      return;
+    }
+
+    this.pageIndex += 1;
     this.filter.skipCount = this.pageIndex * this.pageSize;
     this.filter.maxResultCount = this.pageSize;
-    this.load();
+    this.load(true);
+  }
+
+  hasMoreResults(): boolean {
+    return this.dataSource.data.length < this.totalCount;
   }
 
   openPaymentDetails(paymentId?: number) {

@@ -99,13 +99,9 @@
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
     <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
   </table>
-  <div class="app-paginator">
-    <p-paginator
-      [first]="pageIndex * pageSize"
-      [rows]="pageSize"
-      [totalRecords]="totalCount"
-      [rowsPerPageOptions]="[5, 10, 25, 100]"
-      (onPageChange)="onPageChange($event)"
-    ></p-paginator>
+  <div class="app-paginator" #loadMoreTrigger [class.d-none]="!hasMoreResults()">
+    <span class="text-muted">
+      {{ (isLoadingMore ? 'Loading more...' : 'Scroll to load more') | translate }}
+    </span>
   </div>
 </div>

@@ -42,7 +42,7 @@ export class StudentListComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = ['fullName', 'email', 'mobile', 'nationality', 'action'];
   dataSource = new MatTableDataSource<LookUpUserDto>();
   totalCount = 0;
-  filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
+  filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 20 };
   pageIndex = 0;
   pageSize = 20;
   showInactive = false;

@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -13,7 +13,6 @@ import {
 } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
@@ -66,7 +65,6 @@ interface StudentOption {
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    PaginatorModule,
     ReactiveFormsModule
   ],
   templateUrl: './report-list.component.html',
@@ -112,6 +110,15 @@ export class ReportListComponent implements OnInit, OnDestroy {
 
   isLoading = false;
   isLoadingStudents = false;
+  isLoadingMore = false;
+  private intersectionObserver?: IntersectionObserver;
+  private loadMoreElement?: ElementRef<HTMLElement>;
+
+  @ViewChild('loadMoreTrigger')
+  set loadMoreTrigger(element: ElementRef<HTMLElement> | undefined) {
+    this.loadMoreElement = element;
+    this.setupIntersectionObserver();
+  }
 
   private destroy$ = new Subject<void>();
 
@@ -165,6 +172,7 @@ export class ReportListComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.intersectionObserver?.disconnect();
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -365,8 +373,9 @@ export class ReportListComponent implements OnInit, OnDestroy {
  
   // ───────── Server-side Pagination: Reports ─────────
 
-  private loadReports(): void {
-    this.isLoading = true;
+  private loadReports(append = false): void {
+    this.isLoading = !append;
+    this.isLoadingMore = append;
     this.filter.residentGroup = this.selectedResidencyGroup;
 
     this.filter.skipCount = this.pageIndex * this.pageSize;
@@ -383,29 +392,65 @@ export class ReportListComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res) => {
           if (res.isSuccess && res.data?.items) {
-            this.dataSource.data = res.data.items;
+            this.dataSource.data = append
+              ? [...this.dataSource.data, ...res.data.items]
+              : res.data.items;
             this.totalCount = Number(res.data.totalCount) || 0;
           } else {
-            this.dataSource.data = [];
+            if (!append) {
+              this.dataSource.data = [];
+            }
             this.totalCount = 0;
           }
           this.isLoading = false;
+          this.isLoadingMore = false;
           this.cdr.detectChanges();
         },
         error: () => {
-          this.dataSource.data = [];
+          if (!append) {
+            this.dataSource.data = [];
+          }
           this.totalCount = 0;
           this.isLoading = false;
+          this.isLoadingMore = false;
           this.toast.error('Error loading reports');
           this.cdr.detectChanges();
         }
       });
   }
 
-  onPageChange(event: PaginatorState): void {
-    this.pageIndex = event.page ?? 0;
-    this.pageSize = event.rows ?? this.pageSize;
-    this.loadReports();
+  private setupIntersectionObserver(): void {
+    if (!this.loadMoreElement) {
+      return;
+    }
+
+    this.intersectionObserver?.disconnect();
+    this.intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          this.loadNextPage();
+        }
+      },
+      { root: null, rootMargin: '200px' }
+    );
+    this.intersectionObserver.observe(this.loadMoreElement.nativeElement);
+  }
+
+  private loadNextPage(): void {
+    if (this.isLoading || this.isLoadingMore) {
+      return;
+    }
+
+    if (!this.hasMoreResults()) {
+      return;
+    }
+
+    this.pageIndex += 1;
+    this.loadReports(true);
+  }
+
+  hasMoreResults(): boolean {
+    return this.dataSource.data.length < this.totalCount;
   }
 
   // ───────── Display Helpers ─────────

@@ -2,21 +2,21 @@
 import {
   AfterViewInit,
   Component,
+  ElementRef,
+  EventEmitter,
   Input,
   OnChanges,
+  OnDestroy,
   OnInit,
   Output,
-  EventEmitter,
   SimpleChanges,
+  ViewChild,
   viewChild,
   inject
 } from '@angular/core';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { forkJoin, Observable } from 'rxjs';
-import { PaginatorState } from 'primeng/paginator';
-
-
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
@@ -50,7 +50,7 @@ export interface InvoiceTableItem {
   templateUrl: './invoice-list-table.component.html',
   styleUrl: './invoice-list-table.component.scss'
 })
-export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChanges {
+export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChanges, OnDestroy {
   @Input() tab?: string;
   @Input() month?: string;
   @Input() compareMonth?: string;
@@ -71,6 +71,16 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
   pageIndex = 0;
   pageSize = 100;
   readonly sort = viewChild(MatSort);
+  isLoading = false;
+  isLoadingMore = false;
+  private intersectionObserver?: IntersectionObserver;
+  private loadMoreElement?: ElementRef<HTMLElement>;
+
+  @ViewChild('loadMoreTrigger')
+  set loadMoreTrigger(element: ElementRef<HTMLElement> | undefined) {
+    this.loadMoreElement = element;
+    this.setupIntersectionObserver();
+  }
 
   ngOnInit(): void {
     this.dataSource.filterPredicate = (data: InvoiceTableItem, filter: string): boolean => {
@@ -136,7 +146,9 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
     });
   }
 
-  loadData(): void {
+  loadData(append = false): void {
+    this.isLoading = !append;
+    this.isLoadingMore = append;
     const filter: FilteredResultRequestDto = {
       skipCount: this.pageIndex * this.pageSize,
       maxResultCount: this.pageSize,
@@ -222,21 +234,33 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
           )
         );
       }
-      forkJoin(requests).subscribe((responses) => {
-        this.totalCount = responses.reduce(
-          (acc: number, resp: ApiResponse<PagedResultDto<StudentInvoiceDto>>) => acc + (resp.data.totalCount ?? 0),
-          0
-        );
-        const items = responses.reduce(
-          (acc: InvoiceTableItem[], resp: ApiResponse<PagedResultDto<StudentInvoiceDto>>) => [
-            ...acc,
-            ...mapItems(resp)
-          ],
-          []
-        );
-        this.dataSource.data = items;
-        this.dataSource.filter = this.searchTerm.trim().toLowerCase();
-        this.countChange.emit(this.totalCount || this.dataSource.filteredData.length);
+      forkJoin(requests).subscribe({
+        next: (responses) => {
+          this.totalCount = responses.reduce(
+            (acc: number, resp: ApiResponse<PagedResultDto<StudentInvoiceDto>>) => acc + (resp.data.totalCount ?? 0),
+            0
+          );
+          const items = responses.reduce(
+            (acc: InvoiceTableItem[], resp: ApiResponse<PagedResultDto<StudentInvoiceDto>>) => [
+              ...acc,
+              ...mapItems(resp)
+            ],
+            []
+          );
+          this.dataSource.data = append ? [...this.dataSource.data, ...items] : items;
+          this.dataSource.filter = this.searchTerm.trim().toLowerCase();
+          this.countChange.emit(this.totalCount || this.dataSource.filteredData.length);
+          this.isLoading = false;
+          this.isLoadingMore = false;
+        },
+        error: () => {
+          if (!append) {
+            this.dataSource.data = [];
+          }
+          this.totalCount = 0;
+          this.isLoading = false;
+          this.isLoadingMore = false;
+        }
       });
     } else {
       const requests: Observable<ApiResponse<PagedResultDto<StudentInvoiceDto>>>[] = [];
@@ -270,21 +294,33 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
           )
         );
       }
-      forkJoin(requests).subscribe((responses) => {
-        this.totalCount = responses.reduce(
-          (acc: number, resp: ApiResponse<PagedResultDto<StudentInvoiceDto>>) => acc + (resp.data.totalCount ?? 0),
-          0
-        );
-        const items = responses.reduce(
-          (acc: InvoiceTableItem[], resp: ApiResponse<PagedResultDto<StudentInvoiceDto>>) => [
-            ...acc,
-            ...mapItems(resp)
-          ],
-          []
-        );
-        this.dataSource.data = items;
-        this.dataSource.filter = this.searchTerm.trim().toLowerCase();
-        this.countChange.emit(this.totalCount || this.dataSource.filteredData.length);
+      forkJoin(requests).subscribe({
+        next: (responses) => {
+          this.totalCount = responses.reduce(
+            (acc: number, resp: ApiResponse<PagedResultDto<StudentInvoiceDto>>) => acc + (resp.data.totalCount ?? 0),
+            0
+          );
+          const items = responses.reduce(
+            (acc: InvoiceTableItem[], resp: ApiResponse<PagedResultDto<StudentInvoiceDto>>) => [
+              ...acc,
+              ...mapItems(resp)
+            ],
+            []
+          );
+          this.dataSource.data = append ? [...this.dataSource.data, ...items] : items;
+          this.dataSource.filter = this.searchTerm.trim().toLowerCase();
+          this.countChange.emit(this.totalCount || this.dataSource.filteredData.length);
+          this.isLoading = false;
+          this.isLoadingMore = false;
+        },
+        error: () => {
+          if (!append) {
+            this.dataSource.data = [];
+          }
+          this.totalCount = 0;
+          this.isLoading = false;
+          this.isLoadingMore = false;
+        }
       });
     }
   }
@@ -294,9 +330,41 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
     this.dataSource.sort = this.sort()!;
   }
 
-  onPageChange(event: PaginatorState): void {
-    this.pageIndex = event.page ?? 0;
-    this.pageSize = event.rows ?? this.pageSize;
-    this.loadData();
+  ngOnDestroy(): void {
+    this.intersectionObserver?.disconnect();
+  }
+
+  private setupIntersectionObserver(): void {
+    if (!this.loadMoreElement) {
+      return;
+    }
+
+    this.intersectionObserver?.disconnect();
+    this.intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          this.loadNextPage();
+        }
+      },
+      { root: null, rootMargin: '200px' }
+    );
+    this.intersectionObserver.observe(this.loadMoreElement.nativeElement);
+  }
+
+  private loadNextPage(): void {
+    if (this.isLoading || this.isLoadingMore) {
+      return;
+    }
+
+    if (!this.hasMoreResults()) {
+      return;
+    }
+
+    this.pageIndex += 1;
+    this.loadData(true);
+  }
+
+  hasMoreResults(): boolean {
+    return this.dataSource.data.length < this.totalCount;
   }
 }

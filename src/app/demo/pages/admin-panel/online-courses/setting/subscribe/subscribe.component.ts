@@ -1,11 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
 import { MatButton } from '@angular/material/button';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { finalize } from 'rxjs/operators';
-import { PaginatorState } from 'primeng/paginator';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { SubscribeService, SubscribeDto } from 'src/app/@theme/services/subscribe.service';
@@ -19,7 +18,7 @@ import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overl
   templateUrl: './subscribe.component.html',
   styleUrl: './subscribe.component.scss'
 })
-export class SubscribeComponent implements OnInit {
+export class SubscribeComponent implements OnInit, OnDestroy {
   private service = inject(SubscribeService);
   private dialog = inject(MatDialog);
   private toast = inject(ToastService);
@@ -32,28 +31,53 @@ export class SubscribeComponent implements OnInit {
   pageIndex = 0;
   pageSize = 10;
   isLoading = false;
+  isLoadingMore = false;
+  private intersectionObserver?: IntersectionObserver;
+  private loadMoreElement?: ElementRef<HTMLElement>;
+
+  @ViewChild('loadMoreTrigger')
+  set loadMoreTrigger(element: ElementRef<HTMLElement> | undefined) {
+    this.loadMoreElement = element;
+    this.setupIntersectionObserver();
+  }
 
   ngOnInit() {
     this.load();
   }
 
-  private load() {
-    this.isLoading = true;
+  ngOnDestroy(): void {
+    this.intersectionObserver?.disconnect();
+  }
+
+  private load(append = false) {
+    this.isLoading = !append;
+    this.isLoadingMore = append;
     this.service
       .getAll(this.filter)
-      .pipe(finalize(() => (this.isLoading = false)))
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.isLoadingMore = false;
+        })
+      )
       .subscribe({
         next: (res) => {
           if (res.isSuccess && res.data?.items) {
-            this.dataSource.data = res.data.items;
+            this.dataSource.data = append
+              ? [...this.dataSource.data, ...res.data.items]
+              : res.data.items;
             this.totalCount = res.data.totalCount;
           } else {
-            this.dataSource.data = [];
+            if (!append) {
+              this.dataSource.data = [];
+            }
             this.totalCount = 0;
           }
         },
         error: () => {
-          this.dataSource.data = [];
+          if (!append) {
+            this.dataSource.data = [];
+          }
           this.totalCount = 0;
           this.toast.error(this.translate.instant('Error loading subscribes'));
         }
@@ -68,12 +92,40 @@ export class SubscribeComponent implements OnInit {
     this.load();
   }
 
-  onPageChange(event: PaginatorState): void {
-    this.pageIndex = event.page ?? 0;
-    this.pageSize = event.rows ?? this.pageSize;
+  private setupIntersectionObserver(): void {
+    if (!this.loadMoreElement) {
+      return;
+    }
+
+    this.intersectionObserver?.disconnect();
+    this.intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          this.loadNextPage();
+        }
+      },
+      { root: null, rootMargin: '200px' }
+    );
+    this.intersectionObserver.observe(this.loadMoreElement.nativeElement);
+  }
+
+  private loadNextPage(): void {
+    if (this.isLoading || this.isLoadingMore) {
+      return;
+    }
+
+    if (!this.hasMoreResults()) {
+      return;
+    }
+
+    this.pageIndex += 1;
     this.filter.skipCount = this.pageIndex * this.pageSize;
     this.filter.maxResultCount = this.pageSize;
-    this.load();
+    this.load(true);
+  }
+
+  hasMoreResults(): boolean {
+    return this.dataSource.data.length < this.totalCount;
   }
 
   delete(id: number) {
