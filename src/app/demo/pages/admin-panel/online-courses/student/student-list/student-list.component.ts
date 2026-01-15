@@ -7,7 +7,6 @@ import { RouterModule } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { finalize } from 'rxjs/operators';
-import { PaginatorState } from 'primeng/paginator';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -53,6 +52,7 @@ export class StudentListComponent implements OnInit {
   selectedResidencyGroup: ResidencyGroupFilter = 'all';
   private pendingStudentIds = new Set<number>();
   isLoading = false;
+  isLoadingMore = false;
 
   // table search filter
   applyFilter(event: Event) {
@@ -90,9 +90,10 @@ export class StudentListComponent implements OnInit {
     });
   }
 
-  private loadStudents() {
+  private loadStudents(append = false) {
     this.filter.residentGroup = this.selectedResidencyGroup;
-    this.isLoading = true;
+    this.isLoading = !append;
+    this.isLoadingMore = append;
     this.lookupService
       .getUsersForSelects(
         this.filter,
@@ -102,19 +103,30 @@ export class StudentListComponent implements OnInit {
         0,
         this.selectedResidentId ?? undefined
       )
-      .pipe(finalize(() => (this.isLoading = false)))
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.isLoadingMore = false;
+        })
+      )
       .subscribe({
         next: (res) => {
           if (res.isSuccess && res.data?.items) {
-            this.dataSource.data = res.data.items;
+            this.dataSource.data = append
+              ? [...this.dataSource.data, ...res.data.items]
+              : res.data.items;
             this.totalCount = res.data.totalCount;
           } else {
-            this.dataSource.data = [];
+            if (!append) {
+              this.dataSource.data = [];
+            }
             this.totalCount = 0;
           }
         },
         error: () => {
-          this.dataSource.data = [];
+          if (!append) {
+            this.dataSource.data = [];
+          }
           this.totalCount = 0;
         }
       });
@@ -205,11 +217,30 @@ export class StudentListComponent implements OnInit {
       });
   }
 
-  onPageChange(event: PaginatorState): void {
-    this.pageIndex = event.page ?? 0;
-    this.pageSize = event.rows ?? this.pageSize;
-    this.filter.skipCount = this.pageIndex * this.pageSize;
-    this.filter.maxResultCount = this.pageSize;
-    this.loadStudents();
+  onScroll(event: Event): void {
+    if (this.isLoading || this.isLoadingMore) {
+      return;
+    }
+
+    if (!this.hasMoreResults()) {
+      return;
+    }
+
+    const target = event.target as HTMLElement | null;
+    if (!target) {
+      return;
+    }
+
+    const threshold = target.scrollHeight - target.clientHeight - 200;
+    if (target.scrollTop >= threshold) {
+      this.pageIndex += 1;
+      this.filter.skipCount = this.pageIndex * this.pageSize;
+      this.filter.maxResultCount = this.pageSize;
+      this.loadStudents(true);
+    }
+  }
+
+  hasMoreResults(): boolean {
+    return this.dataSource.data.length < this.totalCount;
   }
 }
