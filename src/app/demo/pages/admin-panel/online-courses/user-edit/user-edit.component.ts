@@ -561,7 +561,7 @@ export class UserEditComponent implements OnInit {
       this.userService.updateUser(model).subscribe({
         next: (res) => {
           if (res?.isSuccess) {
-            this.toast.success(res.message || 'User updated successfully');
+            this.toast.success(res.message || 'تم الحفظ بنجاح');
           } else if (res?.errors?.length) {
             res.errors.forEach((e) => this.toast.error(e.message));
           } else {
