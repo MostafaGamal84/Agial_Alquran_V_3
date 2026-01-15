@@ -1,9 +1,9 @@
 <div class="row">
   <div class="col-12">
     <app-card cardTitle="اضافة الحلقة">
-      <form [formGroup]="circleForm" (ngSubmit)="onSubmit()" class="row">
+      <form [formGroup]="circleForm" (ngSubmit)="onSubmit()" class="row course-form">
         <div class="col-md-6">
-          <mat-form-field appearance="outline" class="w-100">
+          <mat-form-field appearance="outline" class="w-100 course-input">
             <mat-label>اسم الحلقة</mat-label>
             <input matInput formControlName="name" placeholder="ادخل اسم الحلقة" />
             <mat-error *ngIf="submitted && circleForm.get('name')?.errors">اسم الحلقة مطلوب</mat-error>
@@ -56,7 +56,7 @@
                   <div class="text-danger small" *ngIf="submitted && daysArray.at(i).get('dayId')?.errors">اليوم مطلوب</div>
                 </div>
                 <div class="col-md-5">
-                  <mat-form-field appearance="outline" class="w-100">
+                  <mat-form-field appearance="outline" class="w-100 course-input">
                     <mat-label>الوقت</mat-label>
                     <input matInput type="time" formControlName="startTime" placeholder="ادخل الساعة" />
                     <mat-error *ngIf="submitted && daysArray.at(i).get('startTime')?.errors">الوقت مطلوب</mat-error>
