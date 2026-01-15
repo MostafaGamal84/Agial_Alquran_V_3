@@ -20,6 +20,7 @@ import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { DAY_OPTIONS, DayValue, coerceDayValue } from 'src/app/@theme/types/DaysEnum';
 import { ProfileDto, UserService } from 'src/app/@theme/services/user.service';
+import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 
 import { timeStringToTimeSpanString } from 'src/app/@theme/utils/time';
 import { Subject, takeUntil } from 'rxjs';
@@ -31,6 +32,7 @@ interface CircleScheduleFormValue {
 
 interface CircleFormValue {
   name: string;
+  branchId: number | null;
   teacherId: number;
   days: CircleScheduleFormValue[];
   managers: number | null;      // 👈 بدل number[]
@@ -62,6 +64,10 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
   managers: LookUpUserDto[] = [];
   students: LookUpUserDto[] = [];
   days = DAY_OPTIONS;
+  branchOptions = [
+    { id: BranchesEnum.Mens, label: 'الرجال' },
+    { id: BranchesEnum.Women, label: 'النساء' }
+  ];
   isManager = false;
   submitted = false;
 
@@ -71,6 +77,7 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
 
     this.circleForm = this.fb.group({
       name: ['', Validators.required],
+      branchId: [null, Validators.required],
       teacherId: [{ value: null, disabled: true }, Validators.required],
       days: this.fb.array([this.createDayGroup()]),
       // 👇 الآن قيمة واحدة (number أو null)
@@ -465,6 +472,7 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
     // 👇 الريكويست زي ما هو: managers: number[]
     const model: CreateCircleDto = {
       name: formValue.name,
+      branchId: formValue.branchId,
       teacherId: formValue.teacherId,
       days: schedule.length ? schedule : null,
       managers: managerId ? [managerId] : [],
@@ -504,6 +512,7 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
 
     this.circleForm.reset({
       name: '',
+      branchId: null,
       teacherId: null,
       managers: managerSelection,
       studentsIds: [],

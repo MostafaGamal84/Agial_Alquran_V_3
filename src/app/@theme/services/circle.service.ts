@@ -44,6 +44,7 @@ export interface CircleStudentDto {
 export interface CircleDto {
   id: number;
   name?: string | null;
+  branchId?: number | null;
   teacherId?: number | null;
   teacher?: LookUpUserDto;
   teacherName?: string | null;
@@ -61,6 +62,7 @@ export interface CircleDto {
 
 export interface CreateCircleDto {
   name?: string | null;
+  branchId?: number | null;
   teacherId?: number | null;
   days?: CircleDayRequestDto[] | null;
   managers?: number[] | null;
@@ -196,4 +198,3 @@ export class CircleService {
     );
   }
 }
-
