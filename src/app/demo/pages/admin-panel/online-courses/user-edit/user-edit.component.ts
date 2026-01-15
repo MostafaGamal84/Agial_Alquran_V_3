@@ -295,7 +295,6 @@ export class UserEditComponent implements OnInit {
         this.basicInfoForm.get('circleIds')?.disable();
       }
       if (this.isTeacher) {
-        this.basicInfoForm.get('managerId')?.disable();
         const mId = this.basicInfoForm.get('managerId')?.value;
         if (mId) {
           this.loadStudentsAndCircles(mId);
@@ -484,6 +483,19 @@ export class UserEditComponent implements OnInit {
     });
     this.basicInfoForm.get('studentIds')?.enable();
     this.basicInfoForm.get('circleId')?.enable();
+  }
+
+  onTeacherManagerChange(managerId: number | null) {
+    const resolved = managerId ?? null;
+    if (resolved) {
+      this.loadStudentsAndCircles(resolved);
+    } else {
+      this.students = [];
+      this.circles = [];
+      this.basicInfoForm.patchValue({ studentIds: [], circleId: null });
+      this.basicInfoForm.get('studentIds')?.disable();
+      this.basicInfoForm.get('circleId')?.disable();
+    }
   }
 
   private loadCircles() {
