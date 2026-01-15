@@ -438,6 +438,17 @@ export class CoursesViewComponent implements OnInit, OnDestroy {
       <button mat-button color="warn" [mat-dialog-close]="true">نعم</button>
     </div>
   `,
+  styles: [
+    `
+      :host {
+        color: var(--accent-900);
+      }
+
+      :host-context(.dark) {
+        color: rgba(255, 255, 255, 0.87);
+      }
+    `
+  ],
   imports: [MatDialogActions, MatButton, MatDialogClose]
 })
 export class DeleteConfirmDialogComponent {}
