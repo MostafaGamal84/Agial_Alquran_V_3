@@ -11,6 +11,17 @@
         </div>
         <div class="col-md-6">
           <mat-form-field appearance="outline" class="w-100">
+            <mat-label>الفرع</mat-label>
+            <mat-select formControlName="branchId">
+              <mat-option *ngFor="let branch of branchOptions" [value]="branch.id">
+                {{ branch.label }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="submitted && circleForm.get('branchId')?.errors">الفرع مطلوب</mat-error>
+          </mat-form-field>
+        </div>
+        <div class="col-md-6">
+          <mat-form-field appearance="outline" class="w-100">
             <mat-label>المعلم</mat-label>
             <mat-select formControlName="teacherId">
               <mat-option *ngFor="let t of teachers" [value]="t.id">{{ t.fullName }}</mat-option>

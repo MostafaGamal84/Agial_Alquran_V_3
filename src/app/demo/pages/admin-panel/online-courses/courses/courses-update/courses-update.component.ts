@@ -25,6 +25,7 @@ import { DAY_OPTIONS, DayValue, coerceDayValue } from 'src/app/@theme/types/Days
 import { formatTimeValue, timeStringToTimeSpanString } from 'src/app/@theme/utils/time';
 import { Subject, takeUntil } from 'rxjs';
 import { ProfileDto, UserService } from 'src/app/@theme/services/user.service';
+import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 
 interface CircleScheduleFormValue {
   dayId: DayValue | null;
@@ -33,6 +34,7 @@ interface CircleScheduleFormValue {
 
 interface CircleFormValue {
   name: string;
+  branchId: number | null;
   teacherId: number;
   days: CircleScheduleFormValue[];
   managers: number[];
@@ -65,6 +67,10 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
   private lastLoadedManagerId: number | null = null;
   private managerFallback: LookUpUserDto | null = null;
   days = DAY_OPTIONS;
+  branchOptions = [
+    { id: BranchesEnum.Mens, label: 'الرجال' },
+    { id: BranchesEnum.Women, label: 'النساء' }
+  ];
   submitted = false;
 
   ngOnInit(): void {
@@ -72,6 +78,7 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
     this.currentManagerId = this.isManager ? this.resolveCurrentManagerId() : null;
     this.circleForm = this.fb.group({
       name: ['', Validators.required],
+      branchId: [null, Validators.required],
       teacherId: [{ value: null, disabled: true }, Validators.required],
       days: this.fb.array([this.createDayGroup()]),
       managers: [
@@ -241,7 +248,13 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
 
     const fallbackTeacher = course.teacher ?? null;
 
-    this.circleForm.patchValue({ name: course.name ?? '' }, { emitEvent: false });
+    this.circleForm.patchValue(
+      {
+        name: course.name ?? '',
+        branchId: course.branchId ?? null
+      },
+      { emitEvent: false }
+    );
     this.circleForm.get('managers')?.setValue(effectiveManagerIds, { emitEvent: false });
 
     const schedule = this.extractSchedule(course);
@@ -697,6 +710,7 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
     const model: UpdateCircleDto = {
       id: this.id,
       name: formValue.name,
+      branchId: formValue.branchId,
       teacherId: formValue.teacherId,
       days: schedule.length ? schedule : null,
       managers: formValue.managers,
