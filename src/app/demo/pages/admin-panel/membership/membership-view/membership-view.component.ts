@@ -100,7 +100,7 @@ export class MembershipViewComponent implements OnInit, OnDestroy {
           this.loadNextPage();
         }
       },
-      { root: null, rootMargin: '200px' }
+      { root: null, rootMargin: '0px 0px 20% 0px' }
     );
     this.intersectionObserver.observe(this.loadMoreElement.nativeElement);
   }
