@@ -217,8 +217,7 @@ export class StudentListComponent implements OnInit {
       });
   }
 
-  @HostListener('window:scroll')
-  onWindowScroll(): void {
+  onScroll(event: Event): void {
     if (this.isLoading || this.isLoadingMore) {
       return;
     }
@@ -227,10 +226,13 @@ export class StudentListComponent implements OnInit {
       return;
     }
 
-    const scrollPosition = window.innerHeight + window.scrollY;
-    const threshold = document.documentElement.scrollHeight - 200;
+    const target = event.target as HTMLElement | null;
+    if (!target) {
+      return;
+    }
 
-    if (scrollPosition >= threshold) {
+    const threshold = target.scrollHeight - target.clientHeight - 200;
+    if (target.scrollTop >= threshold) {
       this.pageIndex += 1;
       this.filter.skipCount = this.pageIndex * this.pageSize;
       this.filter.maxResultCount = this.pageSize;
