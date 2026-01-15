@@ -13,6 +13,10 @@
               {{ course?.teacher?.fullName || course?.teacherName || course?.teacherId }}
             </span>
           </div>
+          <div class="course-detail-row" *ngIf="getBranchLabel(currentCourse.branchId) as branch">
+            <span class="course-detail-label">الفرع</span>
+            <span class="course-detail-value">{{ branch }}</span>
+          </div>
 
           <ng-container *ngIf="getSchedule(currentCourse) as schedule">
             <div class="course-detail-row" *ngIf="schedule.length">

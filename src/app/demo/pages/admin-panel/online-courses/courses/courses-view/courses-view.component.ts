@@ -35,6 +35,7 @@ import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { DayValue, formatDayValue } from 'src/app/@theme/types/DaysEnum';
 import { formatTimeValue } from 'src/app/@theme/utils/time';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
+import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 
 interface CircleScheduleEntry {
   day: string;
@@ -73,7 +74,15 @@ export class CoursesViewComponent implements OnInit, OnDestroy {
   private auth = inject(AuthenticationService);
 
 
-  displayedColumns: string[] = ['name', 'teacher', 'schedule', 'managers', 'students', 'action'];
+  displayedColumns: string[] = [
+    'name',
+    'branch',
+    'teacher',
+    'schedule',
+    'managers',
+    'students',
+    'action'
+  ];
   dataSource = new MatTableDataSource<CircleViewModel>();
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
@@ -305,6 +314,18 @@ export class CoursesViewComponent implements OnInit, OnDestroy {
     }
 
     return day || time || '-';
+  }
+
+  getBranchLabel(branchId: number | null | undefined): string {
+    if (branchId === BranchesEnum.Mens) {
+      return 'الرجال';
+    }
+
+    if (branchId === BranchesEnum.Women) {
+      return 'النساء';
+    }
+
+    return '-';
   }
 
   private extractManagerLabels(

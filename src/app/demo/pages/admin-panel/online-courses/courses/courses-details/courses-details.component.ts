@@ -12,6 +12,7 @@ import {
 import { formatDayValue } from 'src/app/@theme/types/DaysEnum';
 import { formatTimeValue } from 'src/app/@theme/utils/time';
 import { ToastService } from 'src/app/@theme/services/toast.service';
+import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 
 
 
@@ -193,6 +194,18 @@ export class CoursesDetailsComponent implements OnInit {
     }
 
     return formatDayValue(circle.dayId ?? circle.day);
+  }
+
+  getBranchLabel(branchId: number | null | undefined): string {
+    if (branchId === BranchesEnum.Mens) {
+      return 'الرجال';
+    }
+
+    if (branchId === BranchesEnum.Women) {
+      return 'النساء';
+    }
+
+    return '';
   }
 
   getFormattedStartTime(circle?: CircleDto): string {
