@@ -64,6 +64,7 @@ export class UserEditComponent implements OnInit {
   isManager = false;
   isTeacher = false;
   isStudent = false;
+  submitted = false;
   Branch = [
     { id: BranchesEnum.Mens, label: 'الرجال' },
     { id: BranchesEnum.Women, label: 'النساء' }
@@ -549,6 +550,7 @@ export class UserEditComponent implements OnInit {
   }
 
   onSubmit() {
+    this.submitted = true;
     if (this.basicInfoForm.valid) {
       // Use getRawValue so disabled controls like circleId are included
       const formValue = this.basicInfoForm.getRawValue();
