@@ -1,5 +1,5 @@
 // angular import
-import { Component, HostListener, OnInit, inject } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -31,7 +31,7 @@ import { TranslateService } from '@ngx-translate/core';
   templateUrl: './student-list.component.html',
   styleUrl: './student-list.component.scss'
 })
-export class StudentListComponent implements OnInit {
+export class StudentListComponent implements OnInit, OnDestroy {
   private lookupService = inject(LookupService);
   private userService = inject(UserService);
   private toast = inject(ToastService);
@@ -53,6 +53,14 @@ export class StudentListComponent implements OnInit {
   private pendingStudentIds = new Set<number>();
   isLoading = false;
   isLoadingMore = false;
+  private intersectionObserver?: IntersectionObserver;
+  private loadMoreElement?: ElementRef<HTMLElement>;
+
+  @ViewChild('loadMoreTrigger')
+  set loadMoreTrigger(element: ElementRef<HTMLElement> | undefined) {
+    this.loadMoreElement = element;
+    this.setupIntersectionObserver();
+  }
 
   // table search filter
   applyFilter(event: Event) {
@@ -78,6 +86,10 @@ export class StudentListComponent implements OnInit {
   ngOnInit() {
     this.loadNationalities();
     this.loadStudents();
+  }
+
+  ngOnDestroy(): void {
+    this.intersectionObserver?.disconnect();
   }
 
   private loadNationalities(): void {
@@ -217,7 +229,24 @@ export class StudentListComponent implements OnInit {
       });
   }
 
-  onScroll(event: Event): void {
+  private setupIntersectionObserver(): void {
+    if (!this.loadMoreElement) {
+      return;
+    }
+
+    this.intersectionObserver?.disconnect();
+    this.intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          this.loadNextPage();
+        }
+      },
+      { root: null, rootMargin: '200px' }
+    );
+    this.intersectionObserver.observe(this.loadMoreElement.nativeElement);
+  }
+
+  private loadNextPage(): void {
     if (this.isLoading || this.isLoadingMore) {
       return;
     }
@@ -226,18 +255,10 @@ export class StudentListComponent implements OnInit {
       return;
     }
 
-    const target = event.target as HTMLElement | null;
-    if (!target) {
-      return;
-    }
-
-    const threshold = target.scrollHeight - target.clientHeight - 200;
-    if (target.scrollTop >= threshold) {
-      this.pageIndex += 1;
-      this.filter.skipCount = this.pageIndex * this.pageSize;
-      this.filter.maxResultCount = this.pageSize;
-      this.loadStudents(true);
-    }
+    this.pageIndex += 1;
+    this.filter.skipCount = this.pageIndex * this.pageSize;
+    this.filter.maxResultCount = this.pageSize;
+    this.loadStudents(true);
   }
 
   hasMoreResults(): boolean {
