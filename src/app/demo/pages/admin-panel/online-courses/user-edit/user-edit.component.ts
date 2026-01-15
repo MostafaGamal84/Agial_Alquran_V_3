@@ -536,6 +536,19 @@ export class UserEditComponent implements OnInit {
     governorateControl.updateValueAndValidity({ emitEvent: false });
   }
 
+  private getListRoute(): string {
+    if (this.isStudent) {
+      return '/online-course/student/list';
+    }
+    if (this.isTeacher) {
+      return '/online-course/teacher/list';
+    }
+    if (this.isManager) {
+      return '/online-course/manager/list';
+    }
+    return '/online-course/student/list';
+  }
+
   onSubmit() {
     this.submitted = true;
     if (this.basicInfoForm.valid) {
@@ -564,6 +577,7 @@ export class UserEditComponent implements OnInit {
         next: (res) => {
           if (res?.isSuccess) {
             this.toast.success(res.message || 'User updated successfully');
+            this.router.navigate([this.getListRoute()]);
           } else if (res?.errors?.length) {
             res.errors.forEach((e) => this.toast.error(e.message));
           } else {

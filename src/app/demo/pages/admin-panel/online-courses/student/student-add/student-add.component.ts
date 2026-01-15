@@ -3,6 +3,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
+import { Router } from '@angular/router';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -32,6 +33,7 @@ export class StudentAddComponent implements OnInit {
   private lookupService = inject(LookupService);
   private countryService = inject(CountryService);
   private translate = inject(TranslateService);
+  private router = inject(Router);
 
   basicInfoForm!: FormGroup;
   submitted = false;
