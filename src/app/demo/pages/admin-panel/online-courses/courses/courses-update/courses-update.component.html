@@ -10,37 +10,50 @@
           </mat-form-field>
         </div>
         <div class="col-md-6">
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>الفرع</mat-label>
-            <mat-select formControlName="branchId">
-              <mat-option *ngFor="let branch of branchOptions" [value]="branch.id">
-                {{ branch.label }}
-              </mat-option>
-            </mat-select>
-            <mat-error *ngIf="submitted && circleForm.get('branchId')?.errors">الفرع مطلوب</mat-error>
-          </mat-form-field>
+          <label class="form-label">الفرع</label>
+          <ng-select
+            class="w-100"
+            formControlName="branchId"
+            [items]="branchOptions"
+            bindLabel="label"
+            bindValue="id"
+            [searchable]="false"
+            [clearable]="true"
+            placeholder="الفرع"
+          ></ng-select>
+          <div class="text-danger small" *ngIf="submitted && circleForm.get('branchId')?.errors">الفرع مطلوب</div>
         </div>
         <div class="col-md-6">
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Teacher</mat-label>
-            <mat-select formControlName="teacherId">
-              <mat-option *ngFor="let t of teachers" [value]="t.id">{{ t.fullName }}</mat-option>
-            </mat-select>
-            <mat-error *ngIf="submitted && circleForm.get('teacherId')?.errors">المعلم مطلوب</mat-error>
-          </mat-form-field>
+          <label class="form-label">Teacher</label>
+          <ng-select
+            class="w-100"
+            formControlName="teacherId"
+            [items]="teachers"
+            bindLabel="fullName"
+            bindValue="id"
+            [searchable]="true"
+            [clearable]="true"
+            placeholder="Teacher"
+          ></ng-select>
+          <div class="text-danger small" *ngIf="submitted && circleForm.get('teacherId')?.errors">المعلم مطلوب</div>
         </div>
         <div class="col-12">
           <div formArrayName="days">
             <ng-container *ngFor="let dayGroup of daysArray.controls; let i = index; trackBy: trackByIndex">
               <div class="row" [formGroupName]="i">
                 <div class="col-md-5">
-                  <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>Day</mat-label>
-                    <mat-select formControlName="dayId">
-                      <mat-option *ngFor="let day of days" [value]="day.value">{{ day.label }}</mat-option>
-                    </mat-select>
-                    <mat-error *ngIf="submitted && daysArray.at(i).get('dayId')?.errors">اليوم مطلوب</mat-error>
-                  </mat-form-field>
+                  <label class="form-label">Day</label>
+                  <ng-select
+                    class="w-100"
+                    formControlName="dayId"
+                    [items]="days"
+                    bindLabel="label"
+                    bindValue="value"
+                    [searchable]="false"
+                    [clearable]="true"
+                    placeholder="Day"
+                  ></ng-select>
+                  <div class="text-danger small" *ngIf="submitted && daysArray.at(i).get('dayId')?.errors">اليوم مطلوب</div>
                 </div>
                 <div class="col-md-5">
                   <mat-form-field appearance="outline" class="w-100">
@@ -77,20 +90,33 @@
           </div>
         </div>
         <div class="col-md-6">
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Managers</mat-label>
-            <mat-select formControlName="managers" multiple [disabled]="isManager">
-              <mat-option *ngFor="let m of managers" [value]="m.id">{{ m.fullName }}</mat-option>
-            </mat-select>
-          </mat-form-field>
+          <label class="form-label">Managers</label>
+          <ng-select
+            class="w-100"
+            formControlName="managers"
+            [items]="managers"
+            bindLabel="fullName"
+            bindValue="id"
+            [multiple]="true"
+            [searchable]="true"
+            [clearable]="true"
+            [disabled]="isManager"
+            placeholder="Managers"
+          ></ng-select>
         </div>
         <div class="col-md-6">
-          <mat-form-field appearance="outline" class="w-100">
-            <mat-label>Students</mat-label>
-            <mat-select formControlName="studentsIds" multiple>
-              <mat-option *ngFor="let s of students" [value]="s.id">{{ s.fullName }}</mat-option>
-            </mat-select>
-          </mat-form-field>
+          <label class="form-label">Students</label>
+          <ng-select
+            class="w-100"
+            formControlName="studentsIds"
+            [items]="students"
+            bindLabel="fullName"
+            bindValue="id"
+            [multiple]="true"
+            [searchable]="true"
+            [clearable]="true"
+            placeholder="Students"
+          ></ng-select>
         </div>
         <div class="col-12">
           <button mat-flat-button color="primary" type="submit">Update</button>
