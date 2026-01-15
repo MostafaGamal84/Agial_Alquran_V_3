@@ -1,11 +1,11 @@
 <div class="row">
   <div class="col-12">
-    <app-card cardTitle="Course Update">
+    <app-card cardTitle="تحديث الحلقة">
       <form [formGroup]="circleForm" (ngSubmit)="onSubmit()" class="row course-form">
         <div class="col-md-6">
           <mat-form-field appearance="outline" class="w-100 course-input">
-            <mat-label>Circle Name</mat-label>
-            <input matInput formControlName="name" placeholder="Enter Circle Name" />
+            <mat-label>اسم الحلقة</mat-label>
+            <input matInput formControlName="name" placeholder="ادخل اسم الحلقة" />
             <mat-error *ngIf="submitted && circleForm.get('name')?.errors">اسم الحلقة مطلوب</mat-error>
           </mat-form-field>
         </div>
@@ -24,7 +24,7 @@
           <div class="text-danger small" *ngIf="submitted && circleForm.get('branchId')?.errors">الفرع مطلوب</div>
         </div>
         <div class="col-md-6">
-          <label class="form-label">Teacher</label>
+          <label class="form-label">المعلم</label>
           <ng-select
             class="w-100"
             formControlName="teacherId"
@@ -33,7 +33,7 @@
             bindValue="id"
             [searchable]="true"
             [clearable]="true"
-            placeholder="Teacher"
+            placeholder="المعلم"
           ></ng-select>
           <div class="text-danger small" *ngIf="submitted && circleForm.get('teacherId')?.errors">المعلم مطلوب</div>
         </div>
@@ -42,7 +42,7 @@
             <ng-container *ngFor="let dayGroup of daysArray.controls; let i = index; trackBy: trackByIndex">
               <div class="row" [formGroupName]="i">
                 <div class="col-md-5">
-                  <label class="form-label">Day</label>
+                  <label class="form-label">اليوم</label>
                   <ng-select
                     class="w-100"
                     formControlName="dayId"
@@ -51,14 +51,14 @@
                     bindValue="value"
                     [searchable]="false"
                     [clearable]="true"
-                    placeholder="Day"
+                    placeholder="اليوم"
                   ></ng-select>
                   <div class="text-danger small" *ngIf="submitted && daysArray.at(i).get('dayId')?.errors">اليوم مطلوب</div>
                 </div>
                 <div class="col-md-5">
                   <mat-form-field appearance="outline" class="w-100 course-input">
-                    <mat-label>Start Time</mat-label>
-                    <input matInput type="time" formControlName="startTime" placeholder="Select Start Time" />
+                    <mat-label>الوقت</mat-label>
+                    <input matInput type="time" formControlName="startTime" placeholder="ادخل الساعة" />
                     <mat-error *ngIf="submitted && daysArray.at(i).get('startTime')?.errors">الوقت مطلوب</mat-error>
                   </mat-form-field>
                 </div>
@@ -90,7 +90,7 @@
           </div>
         </div>
         <div class="col-md-6">
-          <label class="form-label">Managers</label>
+          <label class="form-label">المشرف</label>
           <ng-select
             class="w-100"
             formControlName="managers"
@@ -101,11 +101,11 @@
             [searchable]="true"
             [clearable]="true"
             [disabled]="isManager"
-            placeholder="Managers"
+            placeholder="المشرف"
           ></ng-select>
         </div>
         <div class="col-md-6">
-          <label class="form-label">Students</label>
+          <label class="form-label">الطلاب</label>
           <ng-select
             class="w-100"
             formControlName="studentsIds"
@@ -115,11 +115,11 @@
             [multiple]="true"
             [searchable]="true"
             [clearable]="true"
-            placeholder="Students"
+            placeholder="الطلاب"
           ></ng-select>
         </div>
         <div class="col-12">
-          <button mat-flat-button color="primary" type="submit">Update</button>
+          <button mat-flat-button color="primary" type="submit">تحديث</button>
         </div>
       </form>
     </app-card>
