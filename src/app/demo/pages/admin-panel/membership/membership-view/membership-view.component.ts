@@ -1,9 +1,8 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { PaginatorState } from 'primeng/paginator';
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { StudentSubscribeService, ViewStudentSubscribeReDto } from 'src/app/@theme/services/student-subscribe.service';
 import { FilteredResultRequestDto } from 'src/app/@theme/services/lookup.service';
@@ -20,7 +19,7 @@ import {
   templateUrl: './membership-view.component.html',
   styleUrl: './membership-view.component.scss'
 })
-export class MembershipViewComponent implements OnInit {
+export class MembershipViewComponent implements OnInit, OnDestroy {
   private service = inject(StudentSubscribeService);
   private route = inject(ActivatedRoute);
   private paymentService = inject(StudentPaymentService);
@@ -33,6 +32,16 @@ export class MembershipViewComponent implements OnInit {
   pageIndex = 0;
   pageSize = 10;
   studentId = 0;
+  isLoading = false;
+  isLoadingMore = false;
+  private intersectionObserver?: IntersectionObserver;
+  private loadMoreElement?: ElementRef<HTMLElement>;
+
+  @ViewChild('loadMoreTrigger')
+  set loadMoreTrigger(element: ElementRef<HTMLElement> | undefined) {
+    this.loadMoreElement = element;
+    this.setupIntersectionObserver();
+  }
 
   expandedElement: ViewStudentSubscribeReDto | null = null;
   paymentDetails: StudentPaymentDto | null = null;
@@ -43,26 +52,76 @@ export class MembershipViewComponent implements OnInit {
     this.load();
   }
 
-  private load() {
+  ngOnDestroy(): void {
+    this.intersectionObserver?.disconnect();
+  }
+
+  private load(append = false) {
+    this.isLoading = !append;
+    this.isLoadingMore = append;
     this.service
       .getStudentSubscribesWithPayment(this.filter, this.studentId)
-      .subscribe((res) => {
-        if (res.isSuccess && res.data?.items) {
-          this.dataSource.data = res.data.items;
-          this.totalCount = res.data.totalCount;
-        } else {
-          this.dataSource.data = [];
+      .subscribe({
+        next: (res) => {
+          if (res.isSuccess && res.data?.items) {
+            this.dataSource.data = append
+              ? [...this.dataSource.data, ...res.data.items]
+              : res.data.items;
+            this.totalCount = res.data.totalCount;
+          } else {
+            if (!append) {
+              this.dataSource.data = [];
+            }
+            this.totalCount = 0;
+          }
+          this.isLoading = false;
+          this.isLoadingMore = false;
+        },
+        error: () => {
+          if (!append) {
+            this.dataSource.data = [];
+          }
           this.totalCount = 0;
+          this.isLoading = false;
+          this.isLoadingMore = false;
         }
       });
   }
 
-  onPageChange(event: PaginatorState): void {
-    this.pageIndex = event.page ?? 0;
-    this.pageSize = event.rows ?? this.pageSize;
+  private setupIntersectionObserver(): void {
+    if (!this.loadMoreElement) {
+      return;
+    }
+
+    this.intersectionObserver?.disconnect();
+    this.intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          this.loadNextPage();
+        }
+      },
+      { root: null, rootMargin: '200px' }
+    );
+    this.intersectionObserver.observe(this.loadMoreElement.nativeElement);
+  }
+
+  private loadNextPage(): void {
+    if (this.isLoading || this.isLoadingMore) {
+      return;
+    }
+
+    if (!this.hasMoreResults()) {
+      return;
+    }
+
+    this.pageIndex += 1;
     this.filter.skipCount = this.pageIndex * this.pageSize;
     this.filter.maxResultCount = this.pageSize;
-    this.load();
+    this.load(true);
+  }
+
+  hasMoreResults(): boolean {
+    return this.dataSource.data.length < this.totalCount;
   }
 
   togglePaymentDetails(element: ViewStudentSubscribeReDto) {

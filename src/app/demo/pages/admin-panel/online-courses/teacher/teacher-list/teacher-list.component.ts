@@ -1,5 +1,5 @@
 // angular import
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { finalize } from 'rxjs/operators';
@@ -7,7 +7,6 @@ import { finalize } from 'rxjs/operators';
 // angular material
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { PaginatorState } from 'primeng/paginator';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -30,7 +29,7 @@ import { TranslateService } from '@ngx-translate/core';
   templateUrl: './teacher-list.component.html',
   styleUrl: './teacher-list.component.scss'
 })
-export class TeacherListComponent implements OnInit {
+export class TeacherListComponent implements OnInit, OnDestroy {
   private lookupService = inject(LookupService);
   private userService = inject(UserService);
   private toast = inject(ToastService);
@@ -45,7 +44,16 @@ export class TeacherListComponent implements OnInit {
   pageIndex = 0;
   pageSize = 10;
   isLoading = false;
+  isLoadingMore = false;
   private pendingTeacherIds = new Set<number>();
+  private intersectionObserver?: IntersectionObserver;
+  private loadMoreElement?: ElementRef<HTMLElement>;
+
+  @ViewChild('loadMoreTrigger')
+  set loadMoreTrigger(element: ElementRef<HTMLElement> | undefined) {
+    this.loadMoreElement = element;
+    this.setupIntersectionObserver();
+  }
 
 
   // table search filter
@@ -61,8 +69,13 @@ export class TeacherListComponent implements OnInit {
     this.loadTeachers();
   }
 
-  private loadTeachers() {
-    this.isLoading = true;
+  ngOnDestroy(): void {
+    this.intersectionObserver?.disconnect();
+  }
+
+  private loadTeachers(append = false) {
+    this.isLoading = !append;
+    this.isLoadingMore = append;
     this.lookupService
       .getUsersForSelects(
         this.filter,
@@ -71,19 +84,30 @@ export class TeacherListComponent implements OnInit {
         0,
         0
       )
-      .pipe(finalize(() => (this.isLoading = false)))
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.isLoadingMore = false;
+        })
+      )
       .subscribe({
         next: (res) => {
           if (res.isSuccess && res.data?.items) {
-            this.dataSource.data = res.data.items;
+            this.dataSource.data = append
+              ? [...this.dataSource.data, ...res.data.items]
+              : res.data.items;
             this.totalCount = res.data.totalCount;
           } else {
-            this.dataSource.data = [];
+            if (!append) {
+              this.dataSource.data = [];
+            }
             this.totalCount = 0;
           }
         },
         error: () => {
-          this.dataSource.data = [];
+          if (!append) {
+            this.dataSource.data = [];
+          }
           this.totalCount = 0;
         }
       });
@@ -155,11 +179,39 @@ export class TeacherListComponent implements OnInit {
       });
   }
 
-  onPageChange(event: PaginatorState): void {
-    this.pageIndex = event.page ?? 0;
-    this.pageSize = event.rows ?? this.pageSize;
+  private setupIntersectionObserver(): void {
+    if (!this.loadMoreElement) {
+      return;
+    }
+
+    this.intersectionObserver?.disconnect();
+    this.intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          this.loadNextPage();
+        }
+      },
+      { root: null, rootMargin: '200px' }
+    );
+    this.intersectionObserver.observe(this.loadMoreElement.nativeElement);
+  }
+
+  private loadNextPage(): void {
+    if (this.isLoading || this.isLoadingMore) {
+      return;
+    }
+
+    if (!this.hasMoreResults()) {
+      return;
+    }
+
+    this.pageIndex += 1;
     this.filter.skipCount = this.pageIndex * this.pageSize;
     this.filter.maxResultCount = this.pageSize;
-    this.loadTeachers();
+    this.loadTeachers(true);
+  }
+
+  hasMoreResults(): boolean {
+    return this.dataSource.data.length < this.totalCount;
   }
 }

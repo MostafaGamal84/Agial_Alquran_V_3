@@ -1,11 +1,11 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
 import { MatButton } from '@angular/material/button';
 import { MatSelectChange } from '@angular/material/select';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { PaginatorState } from 'primeng/paginator';
+import { finalize } from 'rxjs/operators';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
@@ -28,7 +28,7 @@ import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overl
   templateUrl: './subscribe-type.component.html',
   styleUrl: './subscribe-type.component.scss'
 })
-export class SubscribeTypeComponent implements OnInit {
+export class SubscribeTypeComponent implements OnInit, OnDestroy {
   private service = inject(SubscribeService);
   private dialog = inject(MatDialog);
   private toast = inject(ToastService);
@@ -45,43 +45,71 @@ export class SubscribeTypeComponent implements OnInit {
   selectedResidentId: number | null = null;
   noResultsMessage: string | null = null;
   isLoading = false;
+  isLoadingMore = false;
+  private intersectionObserver?: IntersectionObserver;
+  private loadMoreElement?: ElementRef<HTMLElement>;
+
+  @ViewChild('loadMoreTrigger')
+  set loadMoreTrigger(element: ElementRef<HTMLElement> | undefined) {
+    this.loadMoreElement = element;
+    this.setupIntersectionObserver();
+  }
 
   ngOnInit() {
     this.loadNationalities();
     this.load();
   }
 
-  private load() {
-    this.isLoading = true;
+  ngOnDestroy(): void {
+    this.intersectionObserver?.disconnect();
+  }
+
+  private load(append = false) {
+    this.isLoading = !append;
+    this.isLoadingMore = append;
     this.noResultsMessage = null;
 
-    this.service.getAllTypes(this.filter).subscribe({
-      next: (res) => {
-        if (res.isSuccess && res.data?.items) {
-          this.dataSource.data = res.data.items;
-          this.totalCount = res.data.totalCount;
-        } else {
-          this.dataSource.data = [];
-          this.totalCount = 0;
-        }
+    this.service
+      .getAllTypes(this.filter)
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.isLoadingMore = false;
+        })
+      )
+      .subscribe({
+        next: (res) => {
+          if (res.isSuccess && res.data?.items) {
+            this.dataSource.data = append
+              ? [...this.dataSource.data, ...res.data.items]
+              : res.data.items;
+            this.totalCount = res.data.totalCount;
+          } else {
+            if (!append) {
+              this.dataSource.data = [];
+            }
+            this.totalCount = 0;
+          }
 
-        if (this.dataSource.data.length === 0) {
-          this.noResultsMessage = this.resolveNoResultsMessage();
-        } else {
-          this.noResultsMessage = null;
+          if (!append) {
+            if (this.dataSource.data.length === 0) {
+              this.noResultsMessage = this.resolveNoResultsMessage();
+            } else {
+              this.noResultsMessage = null;
+            }
+          }
+        },
+        error: () => {
+          if (!append) {
+            this.dataSource.data = [];
+          }
+          this.totalCount = 0;
+          if (!append) {
+            this.noResultsMessage = this.translate.instant('Unable to load subscribe types.');
+          }
+          this.toast.error(this.translate.instant('Error loading subscribe types'));
         }
-      },
-      error: () => {
-        this.dataSource.data = [];
-        this.totalCount = 0;
-        this.noResultsMessage = this.translate.instant('Unable to load subscribe types.');
-        this.toast.error(this.translate.instant('Error loading subscribe types'));
-        this.isLoading = false;
-      },
-      complete: () => {
-        this.isLoading = false;
-      }
-    });
+      });
   }
 
   applyFilter(event: Event) {
@@ -101,12 +129,40 @@ export class SubscribeTypeComponent implements OnInit {
     this.load();
   }
 
-  onPageChange(event: PaginatorState): void {
-    this.pageIndex = event.page ?? 0;
-    this.pageSize = event.rows ?? this.pageSize;
+  private setupIntersectionObserver(): void {
+    if (!this.loadMoreElement) {
+      return;
+    }
+
+    this.intersectionObserver?.disconnect();
+    this.intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          this.loadNextPage();
+        }
+      },
+      { root: null, rootMargin: '200px' }
+    );
+    this.intersectionObserver.observe(this.loadMoreElement.nativeElement);
+  }
+
+  private loadNextPage(): void {
+    if (this.isLoading || this.isLoadingMore) {
+      return;
+    }
+
+    if (!this.hasMoreResults()) {
+      return;
+    }
+
+    this.pageIndex += 1;
     this.filter.skipCount = this.pageIndex * this.pageSize;
     this.filter.maxResultCount = this.pageSize;
-    this.load();
+    this.load(true);
+  }
+
+  hasMoreResults(): boolean {
+    return this.dataSource.data.length < this.totalCount;
   }
 
   private loadNationalities(): void {

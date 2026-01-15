@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import {
   Component,
+  ElementRef,
   OnDestroy,
   OnInit,
   ViewChild,
@@ -9,7 +10,6 @@ import {
 } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
-import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
 import { MatDatepicker, MatDatepickerModule } from '@angular/material/datepicker';
 import {
@@ -138,7 +138,6 @@ class InvoicePrintContextError extends Error {
     MatTooltipModule,
     MatTableModule,
     MatSlideToggleModule,
-    PaginatorModule,
     TranslateModule,
     LoadingOverlayComponent
   ],
@@ -193,6 +192,15 @@ export class TeacherSalaryComponent
   totalCount = 0;
   pageIndex = 0;
   pageSize = 10;
+  isLoadingMore = false;
+  private intersectionObserver?: IntersectionObserver;
+  private loadMoreElement?: ElementRef<HTMLElement>;
+
+  @ViewChild('loadMoreTrigger')
+  set loadMoreTrigger(element: ElementRef<HTMLElement> | undefined) {
+    this.loadMoreElement = element;
+    this.setupIntersectionObserver();
+  }
   private allInvoices: TeacherSalaryInvoice[] = [];
 
   teachers: LookUpUserDto[] = [];
@@ -261,6 +269,7 @@ export class TeacherSalaryComponent
   }
 
   ngOnDestroy(): void {
+    this.intersectionObserver?.disconnect();
     this.subscriptions.unsubscribe();
     this.updatingStatusIds.clear();
     this.uploadingReceiptIds.clear();
@@ -870,16 +879,43 @@ export class TeacherSalaryComponent
     }
   }
 
-  onPageChange(event: PaginatorState): void {
-    this.pageIndex = event.page ?? 0;
-    this.pageSize = event.rows ?? this.pageSize;
-    this.updatePagedInvoices();
+  private setupIntersectionObserver(): void {
+    if (!this.loadMoreElement) {
+      return;
+    }
+
+    this.intersectionObserver?.disconnect();
+    this.intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          this.loadNextPage();
+        }
+      },
+      { root: null, rootMargin: '200px' }
+    );
+    this.intersectionObserver.observe(this.loadMoreElement.nativeElement);
   }
 
-  private updatePagedInvoices(): void {
+  private loadNextPage(): void {
+    if (this.isLoadingMore || !this.hasMoreResults()) {
+      return;
+    }
+
+    this.isLoadingMore = true;
+    this.pageIndex += 1;
+    this.updatePagedInvoices(true);
+    this.isLoadingMore = false;
+  }
+
+  private updatePagedInvoices(append = false): void {
     const start = this.pageIndex * this.pageSize;
     const end = start + this.pageSize;
-    this.dataSource.data = this.allInvoices.slice(start, end);
+    const nextRows = this.allInvoices.slice(start, end);
+    this.dataSource.data = append ? [...this.dataSource.data, ...nextRows] : nextRows;
+  }
+
+  hasMoreResults(): boolean {
+    return this.dataSource.data.length < this.totalCount;
   }
 
   private compareByMonthDesc(

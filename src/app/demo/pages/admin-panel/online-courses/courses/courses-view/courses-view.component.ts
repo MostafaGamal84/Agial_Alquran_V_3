@@ -1,5 +1,5 @@
 // angular import
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { NgFor, NgIf } from '@angular/common';
 import { finalize } from 'rxjs/operators';
@@ -15,7 +15,6 @@ import {
   MatDialogTitle
 } from '@angular/material/dialog';
 import { MatButton } from '@angular/material/button';
-import { PaginatorState } from 'primeng/paginator';
 
 
 // project import
@@ -67,7 +66,7 @@ interface CourseParticipantsDialogOptions {
   templateUrl: './courses-view.component.html',
   styleUrl: './courses-view.component.scss'
 })
-export class CoursesViewComponent implements OnInit {
+export class CoursesViewComponent implements OnInit, OnDestroy {
   private circleService = inject(CircleService);
   private dialog = inject(MatDialog);
   private toast = inject(ToastService);
@@ -81,31 +80,56 @@ export class CoursesViewComponent implements OnInit {
   pageIndex = 0;
   pageSize = 10;
   isLoading = false;
+  isLoadingMore = false;
+  private intersectionObserver?: IntersectionObserver;
+  private loadMoreElement?: ElementRef<HTMLElement>;
+
+  @ViewChild('loadMoreTrigger')
+  set loadMoreTrigger(element: ElementRef<HTMLElement> | undefined) {
+    this.loadMoreElement = element;
+    this.setupIntersectionObserver();
+  }
 
   isTeacherOrStudent = [UserTypesEnum.Teacher, UserTypesEnum.Student].includes(this.auth.getRole()!);
   ngOnInit() {
     this.loadCircles();
   }
 
-  private loadCircles() {
-    this.isLoading = true;
+  ngOnDestroy(): void {
+    this.intersectionObserver?.disconnect();
+  }
+
+  private loadCircles(append = false) {
+    this.isLoading = !append;
+    this.isLoadingMore = append;
     this.circleService
       .getAll(this.filter)
-      .pipe(finalize(() => (this.isLoading = false)))
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.isLoadingMore = false;
+        })
+      )
       .subscribe({
         next: (res) => {
           if (res.isSuccess && res.data?.items) {
             const sourceCircles = res.data.items;
             const viewModels = sourceCircles.map((circle) => this.buildViewModel(circle));
-            this.dataSource.data = viewModels;
+            this.dataSource.data = append
+              ? [...this.dataSource.data, ...viewModels]
+              : viewModels;
             this.totalCount = res.data.totalCount;
           } else {
-            this.dataSource.data = [];
+            if (!append) {
+              this.dataSource.data = [];
+            }
             this.totalCount = 0;
           }
         },
         error: () => {
-          this.dataSource.data = [];
+          if (!append) {
+            this.dataSource.data = [];
+          }
           this.totalCount = 0;
           this.toast.error('Error loading courses');
         }
@@ -129,12 +153,40 @@ export class CoursesViewComponent implements OnInit {
     this.loadCircles();
   }
 
-  onPageChange(event: PaginatorState): void {
-    this.pageIndex = event.page ?? 0;
-    this.pageSize = event.rows ?? this.pageSize;
+  private setupIntersectionObserver(): void {
+    if (!this.loadMoreElement) {
+      return;
+    }
+
+    this.intersectionObserver?.disconnect();
+    this.intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          this.loadNextPage();
+        }
+      },
+      { root: null, rootMargin: '200px' }
+    );
+    this.intersectionObserver.observe(this.loadMoreElement.nativeElement);
+  }
+
+  private loadNextPage(): void {
+    if (this.isLoading || this.isLoadingMore) {
+      return;
+    }
+
+    if (!this.hasMoreResults()) {
+      return;
+    }
+
+    this.pageIndex += 1;
     this.filter.skipCount = this.pageIndex * this.pageSize;
     this.filter.maxResultCount = this.pageSize;
-    this.loadCircles();
+    this.loadCircles(true);
+  }
+
+  hasMoreResults(): boolean {
+    return this.dataSource.data.length < this.totalCount;
   }
 
   deleteCircle(id: number) {
