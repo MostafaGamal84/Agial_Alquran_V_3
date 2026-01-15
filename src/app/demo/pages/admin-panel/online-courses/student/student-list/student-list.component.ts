@@ -44,7 +44,7 @@ export class StudentListComponent implements OnInit, OnDestroy {
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
   pageIndex = 0;
-  pageSize = 10;
+  pageSize = 20;
   showInactive = false;
   nationalities: NationalityDto[] = [];
   selectedResidentId: number | null = null;
