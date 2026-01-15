@@ -162,6 +162,16 @@
 .toast-success {
   background-color: #4caf50;
   color: #fff;
+  .mdc-snackbar__label {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+  }
+
+  .mdc-snackbar__label::before {
+    content: '✔';
+    font-weight: 700;
+  }
 }
 
 .toast-error {

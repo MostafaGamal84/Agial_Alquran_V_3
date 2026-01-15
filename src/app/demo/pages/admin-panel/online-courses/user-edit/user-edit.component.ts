@@ -535,6 +535,19 @@ export class UserEditComponent implements OnInit {
     governorateControl.updateValueAndValidity({ emitEvent: false });
   }
 
+  private getListRoute(): string {
+    if (this.isStudent) {
+      return '/online-course/student/list';
+    }
+    if (this.isTeacher) {
+      return '/online-course/teacher/list';
+    }
+    if (this.isManager) {
+      return '/online-course/manager/list';
+    }
+    return '/online-course/student/list';
+  }
+
   onSubmit() {
     if (this.basicInfoForm.valid) {
       // Use getRawValue so disabled controls like circleId are included
@@ -561,7 +574,8 @@ export class UserEditComponent implements OnInit {
       this.userService.updateUser(model).subscribe({
         next: (res) => {
           if (res?.isSuccess) {
-            this.toast.success(res.message || 'تم الحفظ بنجاح');
+            this.toast.success(res.message || 'User updated successfully');
+            this.router.navigate([this.getListRoute()]);
           } else if (res?.errors?.length) {
             res.errors.forEach((e) => this.toast.error(e.message));
           } else {
