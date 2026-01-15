@@ -1,3 +1,180 @@
+/* ================== Layout & Header ================== */
+
+.courses-header {
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.page-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 0.35rem;
+}
+
+.page-subtitle {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+/* RTL */
+[dir='rtl'] .courses-header {
+  text-align: right;
+}
+
+/* ================== Sections ================== */
+
+.section-card {
+  border-radius: 18px;
+  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 40%, #ffffff 100%);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  padding: 1.25rem 1.4rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.section-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(59, 130, 246, 0.08);
+  color: #2563eb;
+  flex-shrink: 0;
+}
+
+.section-icon-blue {
+  background: rgba(59, 130, 246, 0.1);
+  color: #1d4ed8;
+}
+
+.section-icon-green {
+  background: rgba(34, 197, 94, 0.1);
+  color: #15803d;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.section-subtitle {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin: 0.1rem 0 0;
+}
+
+.flex-spacer {
+  flex: 1 1 auto;
+}
+
+.form-label-sm {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 0.35rem;
+}
+
+/* ================== Days Section ================== */
+
+.course-form {
+  row-gap: 1rem;
+}
+
+.days-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.day-card {
+  border-radius: 14px;
+  border: 1px dashed rgba(148, 163, 184, 0.7);
+  background: #f9fafb;
+  padding: 0.9rem 1rem;
+  transition: all 0.2s ease;
+}
+
+.day-card:hover {
+  border-style: solid;
+  border-color: rgba(59, 130, 246, 0.6);
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.12);
+  transform: translateY(-1px);
+}
+
+.day-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  gap: 0.5rem;
+}
+
+.day-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(37, 99, 235, 0.06);
+  color: #1d4ed8;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.day-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.add-day-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  border-radius: 999px !important;
+  padding-inline: 0.9rem !important;
+  padding-block: 0.2rem !important;
+}
+
+/* ================== Actions ================== */
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.submit-btn {
+  border-radius: 999px !important;
+  padding-inline: 1.4rem !important;
+  padding-block: 0.55rem !important;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* Error text */
+.text-danger.small {
+  font-size: 0.78rem;
+}
+
+/* ================== ng-select & mat-input (Light mode) ================== */
+
 :host ::ng-deep .course-form .ng-select .ng-select-container {
   min-height: 44px;
   border-radius: 8px;
@@ -36,9 +213,21 @@
   border-radius: 8px;
 }
 
-:host ::ng-deep .course-form .course-input .mdc-notched-outline__leading,
-:host ::ng-deep .course-form .course-input .mdc-notched-outline__notch,
-:host ::ng-deep .course-form .course-input .mdc-notched-outline__trailing {
+:host
+  ::ng-deep
+  .course-form
+  .course-input
+  .mdc-notched-outline__leading,
+:host
+  ::ng-deep
+  .course-form
+  .course-input
+  .mdc-notched-outline__notch,
+:host
+  ::ng-deep
+  .course-form
+  .course-input
+  .mdc-notched-outline__trailing {
   border-color: rgba(15, 23, 42, 0.22);
 }
 
@@ -46,43 +235,143 @@
   color: #0f172a;
 }
 
-:host ::ng-deep .dark .course-form .ng-select .ng-select-container {
-  background: rgba(15, 23, 42, 0.65);
-  border-color: rgba(148, 163, 184, 0.35);
-  color: #f8fafc;
+/* ================== Dark mode (يُقرأ من body.blue-theme.dark) ================== */
+
+:host-context(.dark) {
+  .page-title {
+    color: #e5e7eb;
+  }
+
+  .page-subtitle {
+    color: #9ca3af;
+  }
+
+  .form-label-sm {
+    color: #e5e7eb;
+  }
+
+  .section-card {
+    background: radial-gradient(circle at top, #020617 0%, #020617 40%, #020617 100%);
+    border-color: rgba(148, 163, 184, 0.45);
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.7);
+  }
+
+  .section-title {
+    color: #e5e7eb;
+  }
+
+  .section-subtitle {
+    color: #9ca3af;
+  }
+
+  .day-card {
+    background: rgba(15, 23, 42, 0.9);
+    border-color: rgba(148, 163, 184, 0.6);
+  }
+
+  .day-chip {
+    background: rgba(59, 130, 246, 0.18);
+    color: #bfdbfe;
+  }
 }
 
-:host ::ng-deep .dark .course-form .ng-select .ng-placeholder {
+:host-context(.dark) ::ng-deep .course-form .ng-select .ng-select-container {
+  background: rgba(15, 23, 42, 0.85);
+  border-color: rgba(148, 163, 184, 0.45);
+  color: #f9fafb;
+}
+
+:host-context(.dark) ::ng-deep .course-form .ng-select .ng-placeholder {
   color: rgba(248, 250, 252, 0.65);
 }
 
-:host ::ng-deep .dark .course-form .ng-dropdown-panel {
-  background: #0b1220;
-  border-color: rgba(148, 163, 184, 0.35);
-  color: #f8fafc;
-  box-shadow: 0 20px 40px rgba(2, 6, 23, 0.6);
+:host-context(.dark) ::ng-deep .course-form .ng-dropdown-panel {
+  background: #020617;
+  border-color: rgba(148, 163, 184, 0.45);
+  color: #f9fafb;
+  box-shadow: 0 24px 48px rgba(2, 6, 23, 0.85);
 }
 
-:host ::ng-deep .dark .course-form .ng-option {
-  color: #f8fafc;
+:host-context(.dark) ::ng-deep .course-form .ng-option {
+  color: #f9fafb;
 }
 
-:host ::ng-deep .dark .course-form .ng-option:hover,
-:host ::ng-deep .dark .course-form .ng-option.ng-option-marked {
-  background: rgba(96, 165, 250, 0.2);
+:host-context(.dark)
+  ::ng-deep
+  .course-form
+  .ng-option:hover,
+:host-context(.dark)
+  ::ng-deep
+  .course-form
+  .ng-option.ng-option-marked {
+  background: rgba(59, 130, 246, 0.25);
 }
 
-:host ::ng-deep .dark .course-form .course-input .mdc-text-field--outlined {
-  background: rgba(15, 23, 42, 0.6);
+:host-context(.dark)
+  ::ng-deep
+  .course-form
+  .course-input
+  .mdc-text-field--outlined {
+  background: rgba(15, 23, 42, 0.85);
 }
 
-:host ::ng-deep .dark .course-form .course-input .mdc-notched-outline__leading,
-:host ::ng-deep .dark .course-form .course-input .mdc-notched-outline__notch,
-:host ::ng-deep .dark .course-form .course-input .mdc-notched-outline__trailing {
-  border-color: rgba(148, 163, 184, 0.4);
+:host-context(.dark)
+  ::ng-deep
+  .course-form
+  .course-input
+  .mdc-notched-outline__leading,
+:host-context(.dark)
+  ::ng-deep
+  .course-form
+  .course-input
+  .mdc-notched-outline__notch,
+:host-context(.dark)
+  ::ng-deep
+  .course-form
+  .course-input
+  .mdc-notched-outline__trailing {
+  border-color: rgba(148, 163, 184, 0.55);
 }
 
-:host ::ng-deep .dark .course-form .course-input .mat-mdc-input-element,
-:host ::ng-deep .dark .course-form .course-input .mdc-floating-label {
-  color: #f8fafc;
+:host-context(.dark)
+  ::ng-deep
+  .course-form
+  .course-input
+  .mat-mdc-input-element,
+:host-context(.dark)
+  ::ng-deep
+  .course-form
+  .course-input
+  .mdc-floating-label {
+  color: #f9fafb;
+}
+
+/* ================== Responsiveness ================== */
+
+@media (max-width: 768px) {
+  .section-card {
+    padding: 1rem;
+  }
+
+  .section-header {
+    align-items: flex-start;
+    flex-direction: row;
+    gap: 0.6rem;
+  }
+
+  .page-title {
+    font-size: 1.25rem;
+  }
+
+  .page-subtitle {
+    font-size: 0.85rem;
+  }
+
+  .day-card {
+    padding: 0.8rem 0.85rem;
+  }
+
+  .form-actions {
+    justify-content: center;
+  }
 }

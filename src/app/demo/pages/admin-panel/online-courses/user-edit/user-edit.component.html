@@ -1,280 +1,409 @@
-<div class="row">
-  <div class="col-12">
-    <app-card cardTitle="Update User">
-      <form [formGroup]="basicInfoForm" (ngSubmit)="onSubmit()">
-        <div class="row">
-          <div class="col-md-6">
-            <mat-form-field appearance="outline" class="w-100 m-b-10">
-              <mat-label>Full Name</mat-label>
-              <input matInput type="text" placeholder="Enter Full Name" formControlName="fullName" />
-              @if (submitted && basicInfoForm.get('fullName')?.errors) {
-                <mat-error>{{ 'Full name is required' | translate }}</mat-error>
-              }
-            </mat-form-field>
-          </div>
-          <div class="col-md-6">
-            <mat-form-field appearance="outline" class="w-100 m-b-10">
-              <mat-label>Email</mat-label>
-              <input matInput type="email" placeholder="Enter Email" formControlName="email" />
-              @if (submitted && basicInfoForm.get('email')?.errors) {
-                <mat-error>{{ 'Email is required' | translate }}</mat-error>
-              }
-            </mat-form-field>
-          </div>
+<div class="row justify-content-center">
+  <div class="col-xl-10 col-lg-11 col-12">
+    <app-card cardTitle="تحديث المستخدم">
+      <!-- العنوان الرئيسي -->
+      <div class="user-header">
+        <h2 class="page-title">تحديث بيانات المستخدم</h2>
+        <p class="page-subtitle">
+          قم بتعديل البيانات الأساسية وبيانات التواصل ومكان الإقامة والارتباطات (مشرفين، معلمين، طلاب، حلقات) لهذا المستخدم.
+        </p>
+      </div>
 
-          <div class="col-md-6 mb-3">
-            <label class="form-label d-block">Mobile</label>
-            <div class="d-flex gap-2 align-items-start">
-              <ng-select
-                class="flex-shrink-0 w-100"
-                [items]="countries"
-                bindLabel="name"
-                bindValue="dialCode"
-                formControlName="mobileCountryDialCode"
-                (change)="onCountryCodeChange('mobileCountryDialCode')"
-                placeholder="+1"
-                [searchable]="true"
-              ></ng-select>
-              <mat-form-field appearance="outline" class="w-100 m-b-10">
-                <input
-                  matInput
-                  type="text"
-                  formControlName="mobile"
-                  [mask]="mobileMask"
-                  [placeholder]="mobilePlaceholder"
-                  [dropSpecialCharacters]="false"
-                  [validation]="!!mobileMask"
-                  (click)="$event.stopPropagation()"
-                />
-              </mat-form-field>
+      <form
+        [formGroup]="basicInfoForm"
+        (ngSubmit)="onSubmit()"
+        class="user-form row g-3"
+      >
+        <!-- ============ القسم 1: البيانات الأساسية ============ -->
+        <div class="col-12">
+          <div class="section-card">
+            <div class="section-header">
+              <div class="section-icon">
+                <mat-icon>person</mat-icon>
+              </div>
+              <div>
+                <h5 class="section-title">البيانات الأساسية</h5>
+                <p class="section-subtitle">
+                  الاسم الكامل والبريد الإلكتروني للمستخدم.
+                </p>
+              </div>
             </div>
-            @if (submitted && basicInfoForm.get('mobile')?.errors) {
-              <div class="text-danger small">{{ 'Mobile is required' | translate }}</div>
-            }
-          </div>
 
-          <div class="col-md-6 mb-3">
-            <label class="form-label d-block">Second Mobile</label>
-            <div class="d-flex gap-2 align-items-start">
-              <ng-select
-                class="flex-shrink-0 w-100"
-                [items]="countries"
-                bindLabel="name"
-                bindValue="dialCode"
-                formControlName="secondMobileCountryDialCode"
-                (change)="onCountryCodeChange('secondMobileCountryDialCode')"
-                placeholder="+1"
-                [searchable]="true"
-              ></ng-select>
-              <mat-form-field appearance="outline" class="w-100 m-b-10">
-                <input
-                  matInput
-                  type="text"
-                  formControlName="secondMobile"
-                  [mask]="secondMobileMask"
-                  [placeholder]="secondMobilePlaceholder"
-                  [dropSpecialCharacters]="false"
-                  [validation]="!!secondMobileMask"
-                  (click)="$event.stopPropagation()"
-                />
-              </mat-form-field>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>الاسم الكامل</mat-label>
+                  <input
+                    matInput
+                    type="text"
+                    placeholder="أدخل الاسم الكامل"
+                    formControlName="fullName"
+                  />
+                  @if (submitted && basicInfoForm.get('fullName')?.errors) {
+                    <mat-error>{{ 'الاسم الكامل مطلوب' | translate }}</mat-error>
+                  }
+                </mat-form-field>
+              </div>
+
+              <div class="col-md-6">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>البريد الإلكتروني</mat-label>
+                  <input
+                    matInput
+                    type="email"
+                    placeholder="أدخل البريد الإلكتروني"
+                    formControlName="email"
+                  />
+                  @if (submitted && basicInfoForm.get('email')?.errors) {
+                    <mat-error>{{ 'البريد الإلكتروني مطلوب' | translate }}</mat-error>
+                  }
+                </mat-form-field>
+              </div>
             </div>
           </div>
+        </div>
 
-          <div class="col-md-6 mb-3">
-            <label class="form-label">Nationality</label>
-            <ng-select
-              class="w-100"
-              formControlName="nationalityId"
-              [items]="nationalities"
-              bindLabel="name"
-              bindValue="id"
-              placeholder="Select Nationality"
-              [searchable]="true"
-            ></ng-select>
-            @if (submitted && basicInfoForm.get('nationalityId')?.errors) {
-              <div class="text-danger small">{{ 'Nationality is required' | translate }}</div>
-            }
+        <!-- ============ القسم 2: بيانات التواصل ============ -->
+        <div class="col-12">
+          <div class="section-card">
+            <div class="section-header">
+              <div class="section-icon section-icon-blue">
+                <mat-icon>phone</mat-icon>
+              </div>
+              <div>
+                <h5 class="section-title">بيانات التواصل</h5>
+                <p class="section-subtitle">
+                  أرقام الجوال مع مفتاح الدولة للجوال الأساسي والبديل.
+                </p>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <!-- الجوال الأساسي -->
+              <div class="col-md-6">
+                <label class="form-label form-label-sm d-block">الجوال</label>
+                <div class="d-flex gap-2 align-items-start phone-row">
+                  <ng-select
+                    class="flex-shrink-0 w-100 phone-country-select"
+                    [items]="countries"
+                    bindLabel="name"
+                    bindValue="dialCode"
+                    formControlName="mobileCountryDialCode"
+                    (change)="onCountryCodeChange('mobileCountryDialCode')"
+                    placeholder="+1"
+                    [searchable]="true"
+                  ></ng-select>
+
+                  <mat-form-field appearance="outline" class="w-100">
+                    <input
+                      matInput
+                      type="text"
+                      formControlName="mobile"
+                      [mask]="mobileMask"
+                      [placeholder]="mobilePlaceholder"
+                      [dropSpecialCharacters]="false"
+                      [validation]="!!mobileMask"
+                      (click)="$event.stopPropagation()"
+                    />
+                  </mat-form-field>
+                </div>
+                @if (submitted && basicInfoForm.get('mobile')?.errors) {
+                  <div class="text-danger small">
+                    {{ 'رقم الجوال مطلوب' | translate }}
+                  </div>
+                }
+              </div>
+
+              <!-- الجوال البديل -->
+              <div class="col-md-6">
+                <label class="form-label form-label-sm d-block">الجوال البديل</label>
+                <div class="d-flex gap-2 align-items-start phone-row">
+                  <ng-select
+                    class="flex-shrink-0 w-100 phone-country-select"
+                    [items]="countries"
+                    bindLabel="name"
+                    bindValue="dialCode"
+                    formControlName="secondMobileCountryDialCode"
+                    (change)="onCountryCodeChange('secondMobileCountryDialCode')"
+                    placeholder="+1"
+                    [searchable]="true"
+                  ></ng-select>
+
+                  <mat-form-field appearance="outline" class="w-100">
+                    <input
+                      matInput
+                      type="text"
+                      formControlName="secondMobile"
+                      [mask]="secondMobileMask"
+                      [placeholder]="secondMobilePlaceholder"
+                      [dropSpecialCharacters]="false"
+                      [validation]="!!secondMobileMask"
+                      (click)="$event.stopPropagation()"
+                    />
+                  </mat-form-field>
+                </div>
+              </div>
+            </div>
           </div>
+        </div>
 
-          <div class="col-md-6 mb-3">
-            <label class="form-label">Place of residence</label>
-            <ng-select
-              class="w-100"
-              formControlName="residentId"
-              [items]="nationalities"
-              bindLabel="name"
-              bindValue="id"
-              placeholder="Select place of residence"
-              [searchable]="true"
-            ></ng-select>
-            @if (submitted && basicInfoForm.get('residentId')?.errors) {
-              <div class="text-danger small">{{ 'Place of residence is required' | translate }}</div>
-            }
+        <!-- ============ القسم 3: الجنسية ومكان الإقامة ============ -->
+        <div class="col-12">
+          <div class="section-card">
+            <div class="section-header">
+              <div class="section-icon section-icon-green">
+                <mat-icon>location_on</mat-icon>
+              </div>
+              <div>
+                <h5 class="section-title">الجنسية ومكان الإقامة</h5>
+                <p class="section-subtitle">
+                  اختر الجنسية ومكان الإقامة والمحافظة والفرع.
+                </p>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label form-label-sm">الجنسية</label>
+                <ng-select
+                  class="w-100"
+                  formControlName="nationalityId"
+                  [items]="nationalities"
+                  bindLabel="name"
+                  bindValue="id"
+                  placeholder="اختر الجنسية"
+                  [searchable]="true"
+                ></ng-select>
+                @if (submitted && basicInfoForm.get('nationalityId')?.errors) {
+                  <div class="text-danger small">
+                    {{ 'الجنسية مطلوبة' | translate }}
+                  </div>
+                }
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label form-label-sm">مكان الإقامة</label>
+                <ng-select
+                  class="w-100"
+                  formControlName="residentId"
+                  [items]="nationalities"
+                  bindLabel="name"
+                  bindValue="id"
+                  placeholder="اختر مكان الإقامة"
+                  [searchable]="true"
+                ></ng-select>
+                @if (submitted && basicInfoForm.get('residentId')?.errors) {
+                  <div class="text-danger small">
+                    {{ 'مكان الإقامة مطلوب' | translate }}
+                  </div>
+                }
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label form-label-sm">المحافظة</label>
+                <ng-select
+                  class="w-100"
+                  formControlName="governorateId"
+                  [items]="governorates"
+                  bindLabel="name"
+                  bindValue="id"
+                  placeholder="اختر المحافظة"
+                  [searchable]="true"
+                ></ng-select>
+                @if (submitted && basicInfoForm.get('governorateId')?.errors) {
+                  <div class="text-danger small">
+                    {{ 'المحافظة مطلوبة' | translate }}
+                  </div>
+                }
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label form-label-sm">الفرع</label>
+                <ng-select
+                  class="w-100"
+                  formControlName="branchId"
+                  [items]="Branch"
+                  bindLabel="label"
+                  bindValue="id"
+                  placeholder="اختر الفرع"
+                  [searchable]="false"
+                ></ng-select>
+                @if (submitted && basicInfoForm.get('branchId')?.errors) {
+                  <div class="text-danger small">
+                    {{ 'الفرع مطلوب' | translate }}
+                  </div>
+                }
+              </div>
+            </div>
           </div>
+        </div>
 
-          <div class="col-md-6 mb-3">
-            <label class="form-label">Governorate</label>
-            <ng-select
-              class="w-100"
-              formControlName="governorateId"
-              [items]="governorates"
-              bindLabel="name"
-              bindValue="id"
-              placeholder="Select Governorate"
-              [searchable]="true"
-            ></ng-select>
-            @if (submitted && basicInfoForm.get('governorateId')?.errors) {
-              <div class="text-danger small">{{ 'EgyptGovernorateRequiredMessage' | translate }}</div>
-            }
+        <!-- ============ القسم 4: الارتباطات بناءً على نوع المستخدم ============ -->
+        @if (isManager || isTeacher || isStudent) {
+          <div class="col-12">
+            <div class="section-card">
+              <div class="section-header">
+                <div class="section-icon section-icon-orange">
+                  <mat-icon>groups</mat-icon>
+                </div>
+                <div>
+                  <h5 class="section-title">الارتباطات</h5>
+                  <p class="section-subtitle">
+                    إدارة ارتباط المستخدم بالمشرفين والمعلمين والطلاب والحلقات.
+                  </p>
+                </div>
+              </div>
+
+              <div class="row g-3">
+                @if (isManager) {
+                  <div class="col-md-6">
+                    <label class="form-label form-label-sm">المعلمون</label>
+                    <ng-select
+                      class="w-100"
+                      formControlName="teacherIds"
+                      [items]="teachers"
+                      bindLabel="fullName"
+                      bindValue="id"
+                      [multiple]="true"
+                      [closeOnSelect]="false"
+                      [searchable]="true"
+                      placeholder="اختر المعلمين"
+                      (change)="onTeachersChange($event)"
+                    ></ng-select>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label form-label-sm">الطلاب</label>
+                    <ng-select
+                      class="w-100"
+                      formControlName="studentIds"
+                      [items]="students"
+                      bindLabel="fullName"
+                      bindValue="id"
+                      [multiple]="true"
+                      [closeOnSelect]="false"
+                      [searchable]="true"
+                      placeholder="اختر الطلاب"
+                    ></ng-select>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label form-label-sm">الحلقات</label>
+                    <ng-select
+                      class="w-100"
+                      formControlName="circleIds"
+                      [items]="circles"
+                      bindLabel="name"
+                      bindValue="id"
+                      [multiple]="true"
+                      [closeOnSelect]="false"
+                      [searchable]="true"
+                      placeholder="الحلقات المرتبطة بالمشرف"
+                      [disabled]="true"
+                    ></ng-select>
+                  </div>
+                }
+
+                @if (isTeacher) {
+                  <div class="col-md-6">
+                    <label class="form-label form-label-sm">المشرف</label>
+                    <ng-select
+                      class="w-100"
+                      formControlName="managerId"
+                      [items]="managers"
+                      bindLabel="fullName"
+                      bindValue="id"
+                      [searchable]="true"
+                      [disabled]="true"
+                    ></ng-select>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label form-label-sm">الطلاب</label>
+                    <ng-select
+                      class="w-100"
+                      formControlName="studentIds"
+                      [items]="students"
+                      bindLabel="fullName"
+                      bindValue="id"
+                      [multiple]="true"
+                      [closeOnSelect]="false"
+                      [searchable]="true"
+                      placeholder="اختر الطلاب"
+                      [disabled]="!basicInfoForm.get('managerId')?.value"
+                    ></ng-select>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label form-label-sm">الحلقة</label>
+                    <ng-select
+                      class="w-100"
+                      formControlName="circleId"
+                      [items]="circles"
+                      bindLabel="name"
+                      bindValue="id"
+                      [searchable]="true"
+                      [disabled]="!basicInfoForm.get('managerId')?.value"
+                      placeholder="اختر الحلقة"
+                    ></ng-select>
+                  </div>
+                }
+
+                @if (isStudent) {
+                  <div class="col-md-6">
+                    <label class="form-label form-label-sm">المعلم</label>
+                    <ng-select
+                      class="w-100"
+                      formControlName="teacherId"
+                      [items]="teachers"
+                      bindLabel="fullName"
+                      bindValue="id"
+                      [searchable]="true"
+                      [disabled]="!basicInfoForm.get('managerId')?.value"
+                      placeholder="اختر المعلم"
+                      (change)="onTeacherChange($event.value)"
+                    ></ng-select>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label form-label-sm">المشرف</label>
+                    <ng-select
+                      class="w-100"
+                      formControlName="managerId"
+                      [items]="managers"
+                      bindLabel="fullName"
+                      bindValue="id"
+                      [searchable]="true"
+                      placeholder="اختر المشرف"
+                      (change)="onManagerChange($event.value)"
+                    ></ng-select>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label class="form-label form-label-sm">الحلقة</label>
+                    <ng-select
+                      class="w-100"
+                      formControlName="circleId"
+                      [items]="circles"
+                      bindLabel="name"
+                      bindValue="id"
+                      [searchable]="true"
+                      [disabled]="true"
+                      placeholder="الحلقة المرتبطة بالطالب"
+                    ></ng-select>
+                  </div>
+                }
+              </div>
+            </div>
           </div>
+        }
 
-          <div class="col-md-6 mb-3">
-            <label class="form-label">Branch</label>
-            <ng-select
-              class="w-100"
-              formControlName="branchId"
-              [items]="Branch"
-              bindLabel="label"
-              bindValue="id"
-              placeholder="Select Branch"
-              [searchable]="false"
-            ></ng-select>
-            @if (submitted && basicInfoForm.get('branchId')?.errors) {
-              <div class="text-danger small">{{ 'Branch is required' | translate }}</div>
-            }
-          </div>
-
-          @if (isManager) {
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Teachers</label>
-              <ng-select
-                class="w-100"
-                formControlName="teacherIds"
-                [items]="teachers"
-                bindLabel="fullName"
-                bindValue="id"
-                [multiple]="true"
-                [closeOnSelect]="false"
-                [searchable]="true"
-                placeholder="Select Teachers"
-                (change)="onTeachersChange($event)"
-              ></ng-select>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Students</label>
-              <ng-select
-                class="w-100"
-                formControlName="studentIds"
-                [items]="students"
-                bindLabel="fullName"
-                bindValue="id"
-                [multiple]="true"
-                [closeOnSelect]="false"
-                [searchable]="true"
-                placeholder="Select Students"
-              ></ng-select>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Circles</label>
-              <ng-select
-                class="w-100"
-                formControlName="circleIds"
-                [items]="circles"
-                bindLabel="name"
-                bindValue="id"
-                [multiple]="true"
-                [closeOnSelect]="false"
-                [searchable]="true"
-                placeholder="Select Circles"
-                [disabled]="true"
-              ></ng-select>
-            </div>
-          }
-
-          @if (isTeacher) {
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Manager</label>
-              <ng-select
-                class="w-100"
-                formControlName="managerId"
-                [items]="managers"
-                bindLabel="fullName"
-                bindValue="id"
-                [searchable]="true"
-                [disabled]="true"
-              ></ng-select>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Students</label>
-              <ng-select
-                class="w-100"
-                formControlName="studentIds"
-                [items]="students"
-                bindLabel="fullName"
-                bindValue="id"
-                [multiple]="true"
-                [closeOnSelect]="false"
-                [searchable]="true"
-                placeholder="Select Students"
-                [disabled]="!basicInfoForm.get('managerId')?.value"
-              ></ng-select>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Circle</label>
-              <ng-select
-                class="w-100"
-                formControlName="circleId"
-                [items]="circles"
-                bindLabel="name"
-                bindValue="id"
-                [searchable]="true"
-                [disabled]="!basicInfoForm.get('managerId')?.value"
-              ></ng-select>
-            </div>
-          }
-
-          @if (isStudent) {
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Teacher</label>
-              <ng-select
-                class="w-100"
-                formControlName="teacherId"
-                [items]="teachers"
-                bindLabel="fullName"
-                bindValue="id"
-                [searchable]="true"
-                [disabled]="!basicInfoForm.get('managerId')?.value"
-                (change)="onTeacherChange($event.value)"
-              ></ng-select>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Manager</label>
-              <ng-select
-                class="w-100"
-                formControlName="managerId"
-                [items]="managers"
-                bindLabel="fullName"
-                bindValue="id"
-                [searchable]="true"
-                (change)="onManagerChange($event.value)"
-              ></ng-select>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Circle</label>
-              <ng-select
-                class="w-100"
-                formControlName="circleId"
-                [items]="circles"
-                bindLabel="name"
-                bindValue="id"
-                [searchable]="true"
-                [disabled]="true"
-              ></ng-select>
-            </div>
-          }
-          <div class="col-md-12 text-end">
-            <button mat-flat-button color="primary">Update</button>
+        <!-- أزرار الإجراء -->
+        <div class="col-12">
+          <div class="form-actions">
+            <button mat-flat-button color="primary" type="submit" class="submit-btn">
+              تحديث البيانات
+            </button>
           </div>
         </div>
       </form>

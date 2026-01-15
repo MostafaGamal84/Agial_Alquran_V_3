@@ -1,35 +1,77 @@
-.details-grid {
-  display: grid;
-  gap: 24px;
+:host {
+  direction: rtl;
+  text-align: right;
+
+  /* ألوان افتراضية (لايت مود) */
+  --section-bg: #f8fafc;
+  --section-border: rgba(148, 163, 184, 0.35);
+  --label-color: #6b7280;
+  --value-color: #0f172a;
+  --muted-text: rgba(15, 23, 42, 0.55);
+  --divider-color: rgba(148, 163, 184, 0.35);
+  --card-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
 }
 
+:host-context(.dark),
+:host-context([data-theme='dark']) {
+  --section-bg: rgba(15, 23, 42, 0.75);
+  --section-border: rgba(148, 163, 184, 0.4);
+  --label-color: #9ca3af;
+  --value-color: #e5e7eb;
+  --muted-text: #9ca3af;
+  --divider-color: rgba(31, 41, 55, 0.9);
+  --card-shadow: 0 10px 24px rgba(15, 23, 42, 0.6);
+}
+
+/* الشبكة العامة */
+.details-grid {
+  display: grid;
+  gap: 20px;
+}
+
+/* شاشت كبيرة - عمودين */
 @media (min-width: 992px) {
   .details-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
+/* شاشات عريضة جدًا - 3 أعمدة لو حابب توسّع */
+@media (min-width: 1400px) {
+  .details-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .details-section:last-child {
+    grid-column: span 3;
+  }
+}
+
+/* الكروت / الأقسام */
 .details-section {
-  background-color: #f8f9fb;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.02);
+  background-color: var(--section-bg);
+  border-radius: 14px;
+  padding: 18px 16px;
+  border: 1px solid var(--section-border);
+  box-shadow: var(--card-shadow);
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .details-section h6 {
-  margin-bottom: 16px;
-  font-weight: 600;
-  text-transform: uppercase;
+  margin-bottom: 14px;
+  font-weight: 800;
   font-size: 13px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
+  color: var(--label-color);
 }
 
+/* عناصر السطر */
 .detail-item {
   display: flex;
   justify-content: space-between;
   gap: 16px;
   padding: 8px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid var(--divider-color);
 }
 
 .detail-item:last-of-type {
@@ -37,21 +79,34 @@
 }
 
 .detail-item .label {
-  font-weight: 600;
-  color: rgba(0, 0, 0, 0.6);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--label-color);
 }
 
 .detail-item .value {
-  text-align: right;
-  color: rgba(0, 0, 0, 0.85);
+  text-align: left;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--value-color);
+  word-break: break-word;
 }
 
+/* لما تكون RTL بنرجّع القيمة لليمين */
+:host {
+  .detail-item .value {
+    text-align: right;
+  }
+}
+
+/* هيدر الكارد (زر التعديل) */
 .header-actions {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
+/* لودر + حالة لا توجد بيانات */
 .loading-container,
 .empty-state {
   display: flex;
@@ -59,9 +114,40 @@
   align-items: center;
   justify-content: center;
   padding: 40px 0;
-  color: rgba(0, 0, 0, 0.54);
+  color: var(--muted-text);
 }
 
 .empty-state i {
-  color: rgba(0, 0, 0, 0.38);
+  color: var(--muted-text);
+}
+
+/* ريسبونسيف للموبايل */
+@media (max-width: 768px) {
+  .details-section {
+    padding: 14px 12px;
+  }
+
+  .details-grid {
+    gap: 16px;
+  }
+
+  .detail-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .detail-item .value {
+    text-align: right;
+  }
+}
+
+@media (max-width: 480px) {
+  .details-section h6 {
+    font-size: 12px;
+  }
+
+  .detail-item .label,
+  .detail-item .value {
+    font-size: 12px;
+  }
 }

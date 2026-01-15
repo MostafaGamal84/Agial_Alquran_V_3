@@ -1,180 +1,255 @@
 <section class="page">
   <header class="page__header">
     <div>
-      <p class="eyebrow">{{ mode === 'update' ? ('تعديل تقرير' ) : ('إنشاء تقرير جديد') }}</p>
-      <h1 class="title">{{ mode === 'update' ? ('Edit report details') : ('Add report for a student') }}</h1>
-      <p class="subtitle">{{ 'املأ الحقول أدناه لتسجيل حضور الطالب وملاحظات الحفظ بكل سهولة' }}</p>
+      <p class="eyebrow">
+        {{ mode === 'update' ? 'تعديل تقرير' : 'إنشاء تقرير جديد' }}
+      </p>
+      <h1 class="title">
+        {{ mode === 'update' ? 'تعديل تقرير' : 'إنشاء تقرير جديد' }}
+      </h1>
+      <p class="subtitle">
+        املأ الحقول أدناه لتسجيل حضور الطالب وملاحظات الحفظ بكل سهولة
+      </p>
     </div>
 
     <div class="pill" *ngIf="mode === 'update'">
-      {{ 'وضع التعديل' }}
+      وضع التعديل
     </div>
   </header>
 
   <form class="card" [formGroup]="reportForm" (ngSubmit)="onSubmit()">
     <div class="grid">
 
-      <!-- Supervisor -->
+      <!-- المشرف -->
       <ng-container *ngIf="mode === 'add'; else managerReadonly">
         <div class="field" *ngIf="showSupervisorSelector">
-          <label class="lbl">{{ 'المشرف' }}</label>
-          <ng-select formControlName="managerId" [items]="managers" bindLabel="displayName" bindValue="id"
-            [loading]="isLoadingManagers" [searchable]="true" [clearable]="true" [trackByFn]="trackById"
-            [disabled]="lockManagerSelection" placeholder="{{ 'المشرف'  }}"></ng-select>
+          <label class="lbl">المشرف</label>
+          <ng-select
+            formControlName="managerId"
+            [items]="managers"
+            bindLabel="displayName"
+            bindValue="id"
+            [loading]="isLoadingManagers"
+            [searchable]="true"
+            [clearable]="true"
+            [trackByFn]="trackById"
+            [disabled]="lockManagerSelection"
+            placeholder="اختر المشرف"
+          ></ng-select>
 
-          <div class="err" *ngIf="isInvalid('managerId')">{{ errorText('managerId') }}</div>
+          <div class="err" *ngIf="isInvalid('managerId')">
+            {{ errorText('managerId') }}
+          </div>
         </div>
       </ng-container>
       <ng-template #managerReadonly>
         <div class="field">
-          <label class="lbl">{{ 'المشرف' }}</label>
+          <label class="lbl">المشرف</label>
           <p class="static-value">{{ managerDisplayName || '-' }}</p>
         </div>
       </ng-template>
 
-      <!-- Teacher -->
+      <!-- المعلم -->
       <ng-container *ngIf="mode === 'add'; else teacherReadonly">
         <div class="field" *ngIf="showTeacherSelector">
-          <label class="lbl">{{ 'Teacher' }}</label>
-          <ng-select formControlName="teacherId" [items]="teachers" bindLabel="displayName" bindValue="id"
-            [loading]="isLoadingTeachers" [searchable]="true" [clearable]="true" [trackByFn]="trackById"
-            [disabled]="lockTeacherSelection" placeholder="{{ 'Teacher'  }}"></ng-select>
+          <label class="lbl">المعلم</label>
+          <ng-select
+            formControlName="teacherId"
+            [items]="teachers"
+            bindLabel="displayName"
+            bindValue="id"
+            [loading]="isLoadingTeachers"
+            [searchable]="true"
+            [clearable]="true"
+            [trackByFn]="trackById"
+            [disabled]="lockTeacherSelection"
+            placeholder="اختر المعلم"
+          ></ng-select>
 
-          <div class="err" *ngIf="isInvalid('teacherId')">{{ errorText('teacherId') }}</div>
+          <div class="err" *ngIf="isInvalid('teacherId')">
+            {{ errorText('teacherId') }}
+          </div>
         </div>
       </ng-container>
       <ng-template #teacherReadonly>
         <div class="field">
-          <label class="lbl">{{ 'Teacher' }}</label>
+          <label class="lbl">المعلم</label>
           <p class="static-value">{{ teacherDisplayName || '-' }}</p>
         </div>
       </ng-template>
 
-      <!-- Circle -->
+      <!-- الحلقة -->
       <ng-container *ngIf="mode === 'add'; else circleReadonly">
         <div class="field">
-          <label class="lbl">{{ 'Circle' }}</label>
-          <ng-select formControlName="circleId" [items]="circles" bindLabel="name" bindValue="id"
-            [loading]="isLoadingCircles" [searchable]="true" [clearable]="true" [trackByFn]="trackById"
-            [disabled]="!reportForm.get('teacherId')?.value" placeholder="{{ 'Circle' }}"></ng-select>
+          <label class="lbl">الحلقة</label>
+          <ng-select
+            formControlName="circleId"
+            [items]="circles"
+            bindLabel="name"
+            bindValue="id"
+            [loading]="isLoadingCircles"
+            [searchable]="true"
+            [clearable]="true"
+            [trackByFn]="trackById"
+            [disabled]="!reportForm.get('teacherId')?.value"
+            placeholder="اختر الحلقة"
+          ></ng-select>
 
-          <div class="err" *ngIf="isInvalid('circleId')">{{ errorText('circleId') }}</div>
+          <div class="err" *ngIf="isInvalid('circleId')">
+            {{ errorText('circleId') }}
+          </div>
         </div>
       </ng-container>
       <ng-template #circleReadonly>
         <div class="field">
-          <label class="lbl">{{ 'Circle' }}</label>
+          <label class="lbl">الحلقة</label>
           <p class="static-value">{{ circleDisplayName || '-' }}</p>
         </div>
       </ng-template>
 
-      <!-- Student -->
+      <!-- الطالب -->
       <ng-container *ngIf="mode === 'add'; else studentReadonly">
         <div class="field">
-          <label class="lbl">{{ 'Student' }}</label>
-          <ng-select formControlName="studentId" [items]="students" bindLabel="name" bindValue="id"
-            [loading]="isLoadingStudents" [searchable]="true" [clearable]="true" [trackByFn]="trackById"
-            [disabled]="!reportForm.get('circleId')?.value" placeholder="{{ 'Student'  }}"></ng-select>
+          <label class="lbl">الطالب</label>
+          <ng-select
+            formControlName="studentId"
+            [items]="students"
+            bindLabel="name"
+            bindValue="id"
+            [loading]="isLoadingStudents"
+            [searchable]="true"
+            [clearable]="true"
+            [trackByFn]="trackById"
+            [disabled]="!reportForm.get('circleId')?.value"
+            placeholder="اختر الطالب"
+          ></ng-select>
 
-          <div class="err" *ngIf="isInvalid('studentId')">{{ errorText('studentId') }}</div>
+          <div class="err" *ngIf="isInvalid('studentId')">
+            {{ errorText('studentId') }}
+          </div>
         </div>
       </ng-container>
       <ng-template #studentReadonly>
         <div class="field">
-          <label class="lbl">{{ 'Student' }}</label>
+          <label class="lbl">الطالب</label>
           <p class="static-value">{{ studentDisplayName || '-' }}</p>
         </div>
       </ng-template>
 
-      <!-- Creation time (optional) -->
+      <!-- تاريخ التقرير -->
       <div class="field">
-        <label class="lbl">{{ 'تاريخ التقرير (اختياري)' }}</label>
-        <input class="inp" type="datetime-local" formControlName="creationTime" [max]="creationTimeMax" />
-        <p class="hint">{{ 'اترك الحقل فارغًا لاستخدام وقت رفع التقرير تلقائيًا' }}</p>
+        <label class="lbl">تاريخ التقرير (اختياري)</label>
+        <input
+          class="inp"
+          type="datetime-local"
+          formControlName="creationTime"
+          [max]="creationTimeMax"
+        />
+        <p class="hint">
+          اترك الحقل فارغًا لاستخدام وقت رفع التقرير تلقائيًا
+        </p>
       </div>
 
-      <!-- Status -->
+      <!-- حالة الحضور -->
       <div class="field">
-        <label class="lbl">{{ 'Attend Status' }}</label>
-        <ng-select formControlName="attendStatueId" [items]="attendStatusOptions" bindLabel="label" bindValue="value"
-          [searchable]="false" [clearable]="true" placeholder="{{ 'Attend Status'  }}"></ng-select>
+        <label class="lbl">حالة الحضور</label>
+        <ng-select
+          formControlName="attendStatueId"
+          [items]="attendStatusOptions"
+          bindLabel="label"
+          bindValue="value"
+          [searchable]="false"
+          [clearable]="true"
+          placeholder="اختر حالة الحضور"
+        ></ng-select>
 
-        <div class="err" *ngIf="isInvalid('attendStatueId')">{{ errorText('attendStatueId') }}</div>
+        <div class="err" *ngIf="isInvalid('attendStatueId')">
+          {{ errorText('attendStatueId') }}
+        </div>
       </div>
 
-      <!-- Minutes -->
+      <!-- عدد الدقائق -->
       <div class="field" *ngIf="selectedStatus !== AttendStatusEnum.ExcusedAbsence">
-        <label class="lbl">{{ 'Minutes' }}</label>
+        <label class="lbl">عدد الدقائق</label>
         <input class="inp" type="number" formControlName="minutes" />
-        <div class="err" *ngIf="isInvalid('minutes')">{{ errorText('minutes') }}</div>
+        <div class="err" *ngIf="isInvalid('minutes')">
+          {{ errorText('minutes') }}
+        </div>
       </div>
 
-      <!-- Attended extra fields -->
+      <!-- حقول إضافية عند الحضور -->
       <ng-container *ngIf="selectedStatus === AttendStatusEnum.Attended">
 
         <div class="field">
-          <label class="lbl">{{ 'New Surah' }}</label>
-          <ng-select formControlName="newId" [items]="surahList" bindLabel="name" bindValue="id" [searchable]="true"
-            [clearable]="true" placeholder="{{ 'New Surah'  }}"></ng-select>
+          <label class="lbl">السورة الجديدة</label>
+          <ng-select
+            formControlName="newId"
+            [items]="surahList"
+            bindLabel="name"
+            bindValue="id"
+            [searchable]="true"
+            [clearable]="true"
+            placeholder="اختر السورة"
+          ></ng-select>
         </div>
 
         <div class="field">
-          <label class="lbl">{{ 'New From' }}</label>
+          <label class="lbl">من</label>
           <input class="inp" formControlName="newFrom" />
         </div>
 
         <div class="field">
-          <label class="lbl">{{ 'New To' }}</label>
+          <label class="lbl">إلى</label>
           <input class="inp" formControlName="newTo" />
         </div>
 
         <div class="field">
-          <label class="lbl">{{ 'New Rate' }}</label>
+          <label class="lbl">تقدير الدرس الجديد</label>
           <input class="inp" formControlName="newRate" />
         </div>
 
         <div class="field">
-          <label class="lbl">{{ 'Recent Past' }}</label>
+          <label class="lbl">المراجعة القريبة</label>
           <input class="inp" formControlName="recentPast" />
         </div>
 
         <div class="field">
-          <label class="lbl">{{ 'Recent Past Rate' }}</label>
+          <label class="lbl">تقدير المراجعة القريبة</label>
           <input class="inp" formControlName="recentPastRate" />
         </div>
 
         <div class="field">
-          <label class="lbl">{{ 'Distant Past' }}</label>
+          <label class="lbl">المراجعة البعيدة</label>
           <input class="inp" formControlName="distantPast" />
         </div>
 
         <div class="field">
-          <label class="lbl">{{ 'Distant Past Rate' }}</label>
+          <label class="lbl">تقدير المراجعة البعيدة</label>
           <input class="inp" formControlName="distantPastRate" />
         </div>
 
         <div class="field">
-          <label class="lbl">{{ 'Farthest Past' }}</label>
+          <label class="lbl">المراجعة الأبعد</label>
           <input class="inp" formControlName="farthestPast" />
         </div>
 
         <div class="field">
-          <label class="lbl">{{ 'Farthest Past Rate' }}</label>
+          <label class="lbl">تقدير المراجعة الأبعد</label>
           <input class="inp" formControlName="farthestPastRate" />
         </div>
 
         <div class="field">
-          <label class="lbl">{{ 'The Words of the Quran Stranger' }}</label>
+          <label class="lbl">كلمات غريب القرآن</label>
           <input class="inp" formControlName="theWordsQuranStranger" />
         </div>
 
         <div class="field">
-          <label class="lbl">{{ 'Intonation' }}</label>
+          <label class="lbl">التجويد</label>
           <input class="inp" formControlName="intonation" />
         </div>
 
         <div class="field span-2">
-          <label class="lbl">{{ 'Other Notes' }}</label>
+          <label class="lbl">ملاحظات أخرى</label>
           <textarea class="inp ta" formControlName="other"></textarea>
         </div>
 
@@ -182,9 +257,11 @@
     </div>
 
     <div class="actions">
-      <button class="btn ghost" type="button" routerLink="../">{{ 'إلغاء' }}</button>
+      <button class="btn ghost" type="button" routerLink="../">
+        إلغاء
+      </button>
       <button class="btn" type="submit" [disabled]="isSubmitting">
-        {{ mode === 'update' ? ('Update') : ('Create') }}
+        {{ mode === 'update' ? 'تحديث' : 'إنشاء' }}
       </button>
     </div>
   </form>

@@ -1,3 +1,133 @@
+/* ================== الهيدر ================== */
+
+.user-header {
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.page-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 0.35rem;
+}
+
+.page-subtitle {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+/* RTL */
+[dir='rtl'] .user-header {
+  text-align: right;
+}
+
+/* ================== الكروت (الأقسام) ================== */
+
+.section-card {
+  border-radius: 18px;
+  background: linear-gradient(135deg, #ffffff 0%, #f9fafb 40%, #ffffff 100%);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  padding: 1.25rem 1.4rem;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.section-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(59, 130, 246, 0.08);
+  color: #2563eb;
+  flex-shrink: 0;
+}
+
+.section-icon-blue {
+  background: rgba(59, 130, 246, 0.1);
+  color: #1d4ed8;
+}
+
+.section-icon-green {
+  background: rgba(34, 197, 94, 0.1);
+  color: #15803d;
+}
+
+.section-icon-orange {
+  background: rgba(249, 115, 22, 0.1);
+  color: #ea580c;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.section-subtitle {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin: 0.1rem 0 0;
+}
+
+/* ================== الفورم ================== */
+
+.user-form {
+  row-gap: 1rem;
+}
+
+.form-label-sm {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 0.35rem;
+}
+
+/* صف تليفونات */
+.phone-row {
+  width: 100%;
+}
+
+.phone-country-select .ng-select-container {
+  min-width: 110px;
+}
+
+/* أزرار الإجراء */
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.submit-btn {
+  border-radius: 999px !important;
+  padding-inline: 1.4rem !important;
+  padding-block: 0.55rem !important;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* رسائل الخطأ */
+.text-danger.small {
+  font-size: 0.78rem;
+}
+
+/* ================== mat-form-field الأساس ================== */
+
 form {
   .mat-mdc-form-field {
     width: 100%;
@@ -8,6 +138,162 @@ form {
     }
   }
 }
+
+/* ================== ng-select & mat-input (وضع اللايت) ================== */
+
+:host ::ng-deep .user-form .ng-select .ng-select-container {
+  min-height: 44px;
+  border-radius: 8px;
+  border: 1px solid rgba(15, 23, 42, 0.18);
+  background: #ffffff;
+  color: #0f172a;
+}
+
+:host ::ng-deep .user-form .ng-select .ng-placeholder {
+  color: rgba(15, 23, 42, 0.6);
+}
+
+:host ::ng-deep .user-form .ng-select.ng-select-multiple .ng-select-container {
+  padding: 4px 6px;
+}
+
+:host ::ng-deep .user-form .ng-dropdown-panel {
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.18);
+  color: #0f172a;
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12);
+}
+
+:host ::ng-deep .user-form .ng-option {
+  color: #0f172a;
+}
+
+:host ::ng-deep .user-form .ng-option:hover,
+:host ::ng-deep .user-form .ng-option.ng-option-marked {
+  background: rgba(59, 130, 246, 0.12);
+}
+
+:host ::ng-deep .user-form .mat-mdc-text-field-wrapper.mdc-text-field--outlined {
+  background: #ffffff;
+  border-radius: 8px;
+}
+
+:host
+  ::ng-deep
+  .user-form
+  .mdc-notched-outline__leading,
+:host
+  ::ng-deep
+  .user-form
+  .mdc-notched-outline__notch,
+:host
+  ::ng-deep
+  .user-form
+  .mdc-notched-outline__trailing {
+  border-color: rgba(15, 23, 42, 0.22);
+}
+
+:host ::ng-deep .user-form .mat-mdc-input-element {
+  color: #0f172a;
+}
+
+/* ================== وضع الدارك (مبني على .dark في body/theme) ================== */
+
+:host-context(.dark) {
+  .page-title {
+    color: #e5e7eb;
+  }
+
+  .page-subtitle {
+    color: #9ca3af;
+  }
+
+  .form-label-sm {
+    color: #e5e7eb;
+  }
+
+  .section-card {
+    background: radial-gradient(circle at top, #020617 0%, #020617 40%, #020617 100%);
+    border-color: rgba(148, 163, 184, 0.45);
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.7);
+  }
+
+  .section-title {
+    color: #e5e7eb;
+  }
+
+  .section-subtitle {
+    color: #9ca3af;
+  }
+}
+
+:host-context(.dark) ::ng-deep .user-form .ng-select .ng-select-container {
+  background: rgba(15, 23, 42, 0.85);
+  border-color: rgba(148, 163, 184, 0.45);
+  color: #f9fafb;
+}
+
+:host-context(.dark) ::ng-deep .user-form .ng-select .ng-placeholder {
+  color: rgba(248, 250, 252, 0.65);
+}
+
+:host-context(.dark) ::ng-deep .user-form .ng-dropdown-panel {
+  background: #020617;
+  border-color: rgba(148, 163, 184, 0.45);
+  color: #f9fafb;
+  box-shadow: 0 24px 48px rgba(2, 6, 23, 0.85);
+}
+
+:host-context(.dark) ::ng-deep .user-form .ng-option {
+  color: #f9fafb;
+}
+
+:host-context(.dark)
+  ::ng-deep
+  .user-form
+  .ng-option:hover,
+:host-context(.dark)
+  ::ng-deep
+  .user-form
+  .ng-option.ng-option-marked {
+  background: rgba(59, 130, 246, 0.25);
+}
+
+:host-context(.dark)
+  ::ng-deep
+  .user-form
+  .mat-mdc-text-field-wrapper.mdc-text-field--outlined {
+  background: rgba(15, 23, 42, 0.85);
+}
+
+:host-context(.dark)
+  ::ng-deep
+  .user-form
+  .mdc-notched-outline__leading,
+:host-context(.dark)
+  ::ng-deep
+  .user-form
+  .mdc-notched-outline__notch,
+:host-context(.dark)
+  ::ng-deep
+  .user-form
+  .mdc-notched-outline__trailing {
+  border-color: rgba(148, 163, 184, 0.55);
+}
+
+:host-context(.dark)
+  ::ng-deep
+  .user-form
+  .mat-mdc-input-element,
+:host-context(.dark)
+  ::ng-deep
+  .user-form
+  .mdc-floating-label {
+  color: #f9fafb;
+}
+
+/* ================== file-upload (زي ما عندك) ================== */
 
 .file-upload {
   display: block;
@@ -20,6 +306,7 @@ form {
   &:not(:disabled):not([readonly]) {
     cursor: pointer;
   }
+
   &::file-selector-button {
     padding: 0.8rem 0.75rem;
     margin-right: 8px;
@@ -35,5 +322,31 @@ form {
 
   &:hover:not(:disabled):not([readonly])::file-selector-button {
     background: var(--accent-200);
+  }
+}
+
+/* ================== Responsiveness ================== */
+
+@media (max-width: 768px) {
+  .section-card {
+    padding: 1rem;
+  }
+
+  .section-header {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0.6rem;
+  }
+
+  .page-title {
+    font-size: 1.25rem;
+  }
+
+  .page-subtitle {
+    font-size: 0.85rem;
+  }
+
+  .form-actions {
+    justify-content: center;
   }
 }

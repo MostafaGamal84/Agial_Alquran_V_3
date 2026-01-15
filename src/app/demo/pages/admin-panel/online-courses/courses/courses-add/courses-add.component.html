@@ -1,123 +1,291 @@
-<div class="row">
-  <div class="col-12">
-    <app-card cardTitle="اضافة الحلقة">
-      <form [formGroup]="circleForm" (ngSubmit)="onSubmit()" class="row course-form">
-        <div class="col-md-6">
-          <mat-form-field appearance="outline" class="w-100 course-input">
-            <mat-label>اسم الحلقة</mat-label>
-            <input matInput formControlName="name" placeholder="ادخل اسم الحلقة" />
-            <mat-error *ngIf="submitted && circleForm.get('name')?.errors">اسم الحلقة مطلوب</mat-error>
-          </mat-form-field>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">الفرع</label>
-          <ng-select
-            class="w-100"
-            formControlName="branchId"
-            [items]="branchOptions"
-            bindLabel="label"
-            bindValue="id"
-            [searchable]="false"
-            [clearable]="true"
-            placeholder="الفرع"
-          ></ng-select>
-          <div class="text-danger small" *ngIf="submitted && circleForm.get('branchId')?.errors">الفرع مطلوب</div>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">المعلم</label>
-          <ng-select
-            class="w-100"
-            formControlName="teacherId"
-            [items]="teachers"
-            bindLabel="fullName"
-            bindValue="id"
-            [searchable]="true"
-            [clearable]="true"
-            placeholder="المعلم"
-          ></ng-select>
-          <div class="text-danger small" *ngIf="submitted && circleForm.get('teacherId')?.errors">المعلم مطلوب</div>
-        </div>
+<div class="row justify-content-center">
+  <div class="col-xl-10 col-lg-11 col-12">
+    <app-card cardTitle="إضافة حلقة جديدة">
+      <div class="courses-header">
+        <h2 class="page-title">إضافة حلقة جديدة</h2>
+        <p class="page-subtitle">
+          قم بإدخال بيانات الحلقة، جدولها، والمشرف والمعلم والطلاب المرتبطين بها.
+        </p>
+      </div>
+
+      <form
+        [formGroup]="circleForm"
+        (ngSubmit)="onSubmit()"
+        class="row g-3 course-form"
+      >
+        <!-- ============ Section 1: Basic Info ============ -->
         <div class="col-12">
-          <div formArrayName="days">
-            <ng-container *ngFor="let dayGroup of daysArray.controls; let i = index; trackBy: trackByIndex">
-              <div class="row" [formGroupName]="i">
-                <div class="col-md-5">
-                  <label class="form-label">اليوم</label>
-                  <ng-select
-                    class="w-100"
-                    formControlName="dayId"
-                    [items]="days"
-                    bindLabel="label"
-                    bindValue="value"
-                    [searchable]="false"
-                    [clearable]="true"
-                    placeholder="اليوم"
-                  ></ng-select>
-                  <div class="text-danger small" *ngIf="submitted && daysArray.at(i).get('dayId')?.errors">اليوم مطلوب</div>
-                </div>
-                <div class="col-md-5">
-                  <mat-form-field appearance="outline" class="w-100 course-input">
-                    <mat-label>الوقت</mat-label>
-                    <input matInput type="time" formControlName="startTime" placeholder="ادخل الساعة" />
-                    <mat-error *ngIf="submitted && daysArray.at(i).get('startTime')?.errors">الوقت مطلوب</mat-error>
-                  </mat-form-field>
-                </div>
-                <div class="col-md-2 d-flex align-items-center">
-                  <button
-                    mat-icon-button
-                    color="warn"
-                    type="button"
-                    class="m-r-10"
-                    aria-label="Remove day"
-                    (click)="removeDay(i)"
-                    *ngIf="daysArray.length > 1"
-                  >
-                    <mat-icon>حذف</mat-icon>
-                  </button>
-                  <button
-                    mat-icon-button
-                    color="primary"
-                    type="button"
-                    aria-label="Add day"
-                    (click)="addDay()"
-                    *ngIf="i === daysArray.length - 1"
-                  >
-                    <mat-icon>+ </mat-icon>
-                  </button>
+          <div class="section-card">
+            <div class="section-header">
+              <div class="section-icon">
+                <mat-icon>info</mat-icon>
+              </div>
+              <div>
+                <h5 class="section-title">بيانات الحلقة الأساسية</h5>
+                <p class="section-subtitle">
+                  اسم الحلقة والفرع الذي تنتمي إليه.
+                </p>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-md-6">
+                <mat-form-field appearance="outline" class="w-100 course-input">
+                  <mat-label>اسم الحلقة</mat-label>
+                  <input
+                    matInput
+                    formControlName="name"
+                    placeholder="ادخل اسم الحلقة"
+                  />
+                  <mat-error *ngIf="submitted && circleForm.get('name')?.errors">
+                    اسم الحلقة مطلوب
+                  </mat-error>
+                </mat-form-field>
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label form-label-sm">الفرع</label>
+                <ng-select
+                  class="w-100"
+                  formControlName="branchId"
+                  [items]="branchOptions"
+                  bindLabel="label"
+                  bindValue="id"
+                  [searchable]="false"
+                  [clearable]="true"
+                  placeholder="اختر الفرع"
+                ></ng-select>
+                <div
+                  class="text-danger small mt-1"
+                  *ngIf="submitted && circleForm.get('branchId')?.errors"
+                >
+                  الفرع مطلوب
                 </div>
               </div>
-            </ng-container>
+            </div>
           </div>
         </div>
-        <div class="col-md-6">
-          <label class="form-label">المشرف</label>
-          <ng-select
-            class="w-100"
-            formControlName="managers"
-            [items]="managers"
-            bindLabel="fullName"
-            bindValue="id"
-            [searchable]="true"
-            [clearable]="true"
-            placeholder="المشرف"
-          ></ng-select>
-        </div>
-        <div class="col-md-6">
-          <label class="form-label">الطلاب</label>
-          <ng-select
-            class="w-100"
-            formControlName="studentsIds"
-            [items]="students"
-            bindLabel="fullName"
-            bindValue="id"
-            [multiple]="true"
-            [searchable]="true"
-            [clearable]="true"
-            placeholder="الطلاب"
-          ></ng-select>
-        </div>
+
+        <!-- ============ Section 2: Schedule ============ -->
         <div class="col-12">
-          <button mat-flat-button color="primary" type="submit">انشاء</button>
+          <div class="section-card">
+            <div class="section-header">
+              <div class="section-icon section-icon-blue">
+                <mat-icon>calendar_today</mat-icon>
+              </div>
+              <div>
+                <h5 class="section-title">جدول الحلقة</h5>
+                <p class="section-subtitle">
+                  حدد الأيام والأوقات التي تُقام فيها الحلقة.
+                </p>
+              </div>
+              <div class="flex-spacer"></div>
+              <button
+                mat-stroked-button
+                type="button"
+                class="add-day-btn d-none d-md-inline-flex"
+                (click)="addDay()"
+              >
+                <mat-icon>add</mat-icon>
+                <span>إضافة يوم</span>
+              </button>
+            </div>
+
+            <div formArrayName="days" class="days-wrapper">
+              <ng-container
+                *ngFor="
+                  let dayGroup of daysArray.controls;
+                  let i = index;
+                  trackBy: trackByIndex
+                "
+              >
+                <div class="day-card" [formGroupName]="i">
+                  <div class="day-card-header">
+                    <span class="day-chip">موعد رقم {{ i + 1 }}</span>
+
+                    <div class="day-actions">
+                      <button
+                        mat-icon-button
+                        color="warn"
+                        type="button"
+                        class="m-r-6"
+                        aria-label="حذف اليوم"
+                        (click)="removeDay(i)"
+                        *ngIf="daysArray.length > 1"
+                        matTooltip="حذف اليوم"
+                      >
+                        <mat-icon>delete</mat-icon>
+                      </button>
+
+                      <button
+                        mat-icon-button
+                        color="primary"
+                        type="button"
+                        aria-label="إضافة يوم جديد"
+                        (click)="addDay()"
+                        *ngIf="i === daysArray.length - 1"
+                        matTooltip="إضافة يوم"
+                      >
+                        <mat-icon>add</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="row g-3 align-items-center">
+                    <div class="col-md-6">
+                      <label class="form-label form-label-sm">اليوم</label>
+                      <ng-select
+                        class="w-100"
+                        formControlName="dayId"
+                        [items]="days"
+                        bindLabel="label"
+                        bindValue="value"
+                        [searchable]="false"
+                        [clearable]="true"
+                        placeholder="اختر اليوم"
+                      ></ng-select>
+                      <div
+                        class="text-danger small mt-1"
+                        *ngIf="submitted && daysArray.at(i).get('dayId')?.errors"
+                      >
+                        اليوم مطلوب
+                      </div>
+                    </div>
+
+                    <div class="col-md-6">
+                      <mat-form-field
+                        appearance="outline"
+                        class="w-100 course-input"
+                      >
+                        <mat-label>وقت الحلقة</mat-label>
+                        <input
+                          matInput
+                          type="time"
+                          formControlName="startTime"
+                          placeholder="اختر الساعة"
+                        />
+                        <mat-error
+                          *ngIf="submitted && daysArray.at(i).get('startTime')?.errors"
+                        >
+                          الوقت مطلوب
+                        </mat-error>
+                      </mat-form-field>
+                    </div>
+                  </div>
+                </div>
+              </ng-container>
+
+              <!-- زر إضافة يوم للموبايل -->
+              <div class="d-md-none text-center mt-2">
+                <button
+                  mat-stroked-button
+                  type="button"
+                  class="add-day-btn"
+                  (click)="addDay()"
+                >
+                  <mat-icon>add</mat-icon>
+                  <span>إضافة يوم</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ Section 3: Manager, Teacher & Students ============ -->
+        <div class="col-12">
+          <div class="section-card">
+            <div class="section-header">
+              <div class="section-icon section-icon-green">
+                <mat-icon>groups</mat-icon>
+              </div>
+              <div>
+                <h5 class="section-title">المشرف، المعلم والطلاب</h5>
+                <p class="section-subtitle">
+                  حدد المشرف والمعلم المسؤول عن الحلقة، والطلاب المنضمين إليها.
+                </p>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label form-label-sm">المشرف</label>
+                <ng-select
+                  class="w-100"
+                  formControlName="managers"
+                  [items]="managers"
+                  bindLabel="fullName"
+                  bindValue="id"
+                  [searchable]="true"
+                  [clearable]="true"
+                  placeholder="اختر المشرف"
+                ></ng-select>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label form-label-sm">المعلم</label>
+                <ng-select
+                  class="w-100"
+                  formControlName="teacherId"
+                  [items]="teachers"
+                  bindLabel="fullName"
+                  bindValue="id"
+                  [searchable]="true"
+                  [clearable]="true"
+                  placeholder="اختر المعلم"
+                ></ng-select>
+                <div
+                  class="text-danger small mt-1"
+                  *ngIf="submitted && circleForm.get('teacherId')?.errors"
+                >
+                  المعلم مطلوب
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <label class="form-label form-label-sm">عرض الطلاب</label>
+                <ng-select
+                  class="w-100"
+                  formControlName="studentsIds"
+                  [items]="students"
+                  bindLabel="fullName"
+                  bindValue="id"
+                  [multiple]="true"
+                  [searchable]="true"
+                  [clearable]="true"
+                  placeholder="اختر الطلاب"
+                ></ng-select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ Actions ============ -->
+        <div class="col-12">
+          <div class="form-actions">
+            <button
+              mat-flat-button
+              color="primary"
+              type="submit"
+              class="submit-btn"
+              [disabled]="isSaving"
+            >
+              <span class="btn-label">
+                <mat-icon *ngIf="isSaving" class="btn-spinner">autorenew</mat-icon>
+                <span>{{ isSaving ? 'جاري الحفظ...' : 'إنشاء الحلقة' }}</span>
+              </span>
+            </button>
+
+            <button
+              mat-stroked-button
+              color="primary"
+              type="button"
+              class="reset-btn"
+              (click)="resetForm()"
+              [disabled]="isSaving"
+            >
+              إعادة تعيين
+            </button>
+          </div>
         </div>
       </form>
     </app-card>

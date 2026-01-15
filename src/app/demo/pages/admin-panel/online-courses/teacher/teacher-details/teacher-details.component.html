@@ -9,17 +9,19 @@
 </div>
 
 <mat-dialog-content class="dialog-content">
-
+  <!-- حالة التحميل -->
   <div class="loading-state" *ngIf="loading">
     <mat-spinner diameter="48"></mat-spinner>
-    <div class="loading-text">جاري تحميل البيانات...</div>
+    <div class="loading-text">جاري تحميل بيانات المعلم...</div>
   </div>
 
-  <app-scrollbar *ngIf="!loading && vm as t" [customStyle]="{ maxHeight: 'calc(100vh - 155px)', position: 'relative' }">
-
+  <!-- المحتوى الرئيسي -->
+  <app-scrollbar
+    *ngIf="!loading && vm as t"
+    [customStyle]="{ maxHeight: 'calc(100vh - 155px)', position: 'relative' }"
+  >
     <div class="wrap">
-
-      <!-- ====== Header Card ====== -->
+      <!-- ====== كرت الهيدر (المعلم) ====== -->
       <section class="card hero">
         <div class="hero-left">
           <div class="avatar">
@@ -27,18 +29,24 @@
           </div>
 
           <div class="hero-meta">
-            <div class="name">{{ t.fullName || '—' }}</div>
+            <div class="name">{{ t.fullName || 'غير متوفر' }}</div>
 
             <div class="sub">
               <span class="pill">
                 <i class="ti ti-building-store"></i>
-                {{ getBranchLabel(t.branchId) }}
+                {{ getBranchLabel(t.branchId) || 'فرع غير محدد' }}
               </span>
 
-              <!-- <span class="pill" *ngIf="t.inactive !== undefined" [class.is-inactive]="!!t.inactive">
-                <i class="ti" [class.ti-circle-check]="!t.inactive" [class.ti-circle-x]="!!t.inactive"></i>
+              <!-- حالة النشاط (اختياري لاحقًا)
+              <span class="pill" *ngIf="t.inactive !== undefined" [class.is-inactive]="!!t.inactive">
+                <i
+                  class="ti"
+                  [class.ti-circle-check]="!t.inactive"
+                  [class.ti-circle-x]="!!t.inactive"
+                ></i>
                 {{ t.inactive ? 'غير نشط' : 'نشط' }}
-              </span> -->
+              </span>
+              -->
             </div>
           </div>
         </div>
@@ -46,12 +54,12 @@
         <div class="hero-right" *ngIf="statEntries.length">
           <div class="mini" *ngFor="let s of statEntries">
             <div class="mini-k">{{ s.label }}</div>
-            <div class="mini-v">{{ s.value || '—' }}</div>
+            <div class="mini-v">{{ s.value || 'غير متوفر' }}</div>
           </div>
         </div>
       </section>
 
-      <!-- ====== Contact Card ====== -->
+      <!-- ====== كرت بيانات التواصل ====== -->
       <section class="card" *ngIf="contactEntries.length">
         <div class="card-title">
           <i class="ti ti-address-book"></i>
@@ -59,16 +67,18 @@
         </div>
 
         <div class="contact-grid">
-          <a class="contact-item"
-             *ngFor="let c of contactEntries"
-             [href]="c.href || null"
-             [class.is-link]="!!c.href"
-             (click)="$event.stopPropagation()">
-
+          <a
+            class="contact-item"
+            *ngFor="let c of contactEntries"
+            [href]="c.href || null"
+            [class.is-link]="!!c.href"
+            (click)="$event.stopPropagation()"
+          >
             <div class="c-ico"><i [class]="c.icon"></i></div>
+
             <div class="c-body">
               <div class="c-label">{{ c.label }}</div>
-              <div class="c-value">{{ c.value || '—' }}</div>
+              <div class="c-value">{{ c.value || 'غير متوفر' }}</div>
             </div>
 
             <i class="ti ti-external-link hint" *ngIf="c.href"></i>
@@ -76,7 +86,7 @@
         </div>
       </section>
 
-      <!-- ====== Details Card ====== -->
+      <!-- ====== كرت البيانات الأساسية ====== -->
       <section class="card" *ngIf="detailEntries.length">
         <div class="card-title">
           <i class="ti ti-id"></i>
@@ -86,12 +96,12 @@
         <div class="kv-grid">
           <div class="kv" *ngFor="let e of detailEntries">
             <div class="k">{{ e.label }}</div>
-            <div class="v">{{ e.value }}</div>
+            <div class="v">{{ e.value || 'غير متوفر' }}</div>
           </div>
         </div>
       </section>
 
-      <!-- ====== Lists ====== -->
+      <!-- ====== كرت الارتباطات (الطلاب) ====== -->
       <section class="card" *ngIf="students.length">
         <div class="card-title">
           <i class="ti ti-list-details"></i>
@@ -99,7 +109,7 @@
         </div>
 
         <mat-accordion class="acc">
-          <!-- Students -->
+          <!-- الطلاب -->
           <mat-expansion-panel>
             <mat-expansion-panel-header>
               <mat-panel-title>
@@ -111,22 +121,26 @@
             <div class="rows">
               <div class="row" *ngFor="let s of students">
                 <div class="row-main">
-                  <div class="row-title">{{ s.fullName || '—' }}</div>
-                  <div class="row-sub">{{ s.mobile || '—' }}</div>
+                  <div class="row-title">{{ s.fullName || 'غير متوفر' }}</div>
+                  <div class="row-sub">
+                    {{ s.mobile || 'لا يوجد رقم جوال' }}
+                  </div>
                 </div>
-                <a class="row-action"
-                   *ngIf="s.mobile"
-                   [href]="buildWhatsAppLink(s.mobile)"
-                   (click)="$event.stopPropagation()">
-                  واتساب
+
+                <a
+                  class="row-action"
+                  *ngIf="s.mobile"
+                  [href]="buildWhatsAppLink(s.mobile)"
+                  (click)="$event.stopPropagation()"
+                >
+                  <i class="ti ti-brand-whatsapp"></i>
+                  <span>واتساب</span>
                 </a>
               </div>
             </div>
           </mat-expansion-panel>
         </mat-accordion>
       </section>
-
     </div>
-
   </app-scrollbar>
 </mat-dialog-content>

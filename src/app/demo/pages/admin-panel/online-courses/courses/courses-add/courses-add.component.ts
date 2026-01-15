@@ -1,9 +1,7 @@
-// angular imports
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 
-// project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
   LookupService,
@@ -23,7 +21,9 @@ import { ProfileDto, UserService } from 'src/app/@theme/services/user.service';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 
 import { timeStringToTimeSpanString } from 'src/app/@theme/utils/time';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject } from 'rxjs';
+import { takeUntil, finalize } from 'rxjs/operators';
+import { Router } from '@angular/router';
 
 interface CircleScheduleFormValue {
   dayId: DayValue | null;
@@ -35,7 +35,7 @@ interface CircleFormValue {
   branchId: number | null;
   teacherId: number;
   days: CircleScheduleFormValue[];
-  managers: number | null;      // 👈 بدل number[]
+  managers: number | null;
   studentsIds: number[];
 }
 
@@ -51,6 +51,8 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
   private circle = inject(CircleService);
   private toast = inject(ToastService);
   private auth = inject(AuthenticationService);
+  private router = inject(Router);
+
   private userService = inject(UserService);
   private destroy$ = new Subject<void>();
   private readonly userFilter: FilteredResultRequestDto = { lookupOnly: true };
@@ -70,6 +72,7 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
   ];
   isManager = false;
   submitted = false;
+  isSaving = false;
 
   ngOnInit(): void {
     this.isManager = this.auth.getRole() === UserTypesEnum.Manager;
@@ -80,7 +83,6 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
       branchId: [null, Validators.required],
       teacherId: [{ value: null, disabled: true }, Validators.required],
       days: this.fb.array([this.createDayGroup()]),
-      // 👇 الآن قيمة واحدة (number أو null)
       managers: [
         {
           value: this.currentManagerId !== null ? this.currentManagerId : null,
@@ -104,7 +106,6 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
       this.resolveManagerFromProfile();
     }
 
-    // تحميل كل المشرفين
     this.lookup
       .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Manager))
       .pipe(takeUntil(this.destroy$))
@@ -123,7 +124,6 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
         }
       });
 
-    // تغيّر المشرف (قيمة واحدة)
     managersControl
       ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe((managerId: number | null) => {
@@ -131,7 +131,6 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
         this.loadTeachers(id);
       });
 
-    // تغيّر المعلم
     teacherControl
       ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe((teacherId: number | null) => {
@@ -139,7 +138,6 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
         this.loadStudents(resolvedTeacherId);
       });
 
-    // تحميل المعلمين للمشرف المبدئي
     const rawInitialManager = managersControl?.value;
     const initialManagerId =
       typeof rawInitialManager === 'number' ? rawInitialManager : null;
@@ -291,7 +289,6 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // 👇 قيمة واحدة في الفورم
     control.setValue(managerId, { emitEvent: false });
 
     if (this.isManager) {
@@ -319,7 +316,6 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // fall back to loading without a resolved manager to at least populate teachers
     this.loadTeachers(null);
   }
 
@@ -453,15 +449,15 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
 
     const schedule: CircleDayRequestDto[] = Array.isArray(formValue.days)
       ? formValue.days.reduce<CircleDayRequestDto[]>((acc, entry) => {
-          const dayValue = coerceDayValue(entry?.dayId ?? undefined);
-          if (dayValue === undefined) {
-            return acc;
-          }
-
-          const startTimeValue = timeStringToTimeSpanString(entry?.startTime);
-          acc.push({ dayId: dayValue, time: startTimeValue ?? null });
+        const dayValue = coerceDayValue(entry?.dayId ?? undefined);
+        if (dayValue === undefined) {
           return acc;
-        }, [])
+        }
+
+        const startTimeValue = timeStringToTimeSpanString(entry?.startTime);
+        acc.push({ dayId: dayValue, time: startTimeValue ?? null });
+        return acc;
+      }, [])
       : [];
 
     const managerId =
@@ -469,7 +465,6 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
         ? formValue.managers
         : null;
 
-    // 👇 الريكويست زي ما هو: managers: number[]
     const model: CreateCircleDto = {
       name: formValue.name,
       branchId: formValue.branchId,
@@ -479,22 +474,33 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
       studentsIds: formValue.studentsIds
     };
 
-    this.circle.create(model).subscribe({
-      next: (res) => {
-        if (res.isSuccess) {
-          this.toast.success('تم اضافة الحلقة بنجاح');
-          this.resetForm();
-        } else if (res.errors?.length) {
-          res.errors.forEach((e) => this.toast.error(e.message));
-        } else {
-          this.toast.error('خطا في التعديل');
-        }
-      },
-      error: () => this.toast.error('خطا في الحفظ')
-    });
+    this.isSaving = true;
+
+    this.circle
+      .create(model)
+      .pipe(
+        finalize(() => {
+          this.isSaving = false;
+        })
+      )
+      .subscribe({
+        next: (res) => {
+          if (res.isSuccess) {
+            this.toast.success('تم اضافة الحلقة بنجاح');
+            this.router.navigate(['/online-course/courses/view']);
+            []
+            this.resetForm();
+          } else if (res.errors?.length) {
+            res.errors.forEach((e) => this.toast.error(e.message));
+          } else {
+            this.toast.error('خطأ في التعديل');
+          }
+        },
+        error: () => this.toast.error('خطأ في الحفظ')
+      });
   }
 
-  private resetForm(): void {
+  resetForm(): void {
     this.submitted = false;
     while (this.daysArray.length > 1) {
       this.daysArray.removeAt(0);
