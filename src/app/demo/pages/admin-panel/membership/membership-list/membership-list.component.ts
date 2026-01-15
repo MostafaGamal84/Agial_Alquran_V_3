@@ -184,7 +184,7 @@ export class MembershipListComponent implements OnInit, OnDestroy {
   }
 
   openSubscribeDialog(student: ViewStudentSubscribeReDto) {
-    if (student.payStatus === true || student.isCancelled === true) {
+    if (!this.canEditSubscription(student)) {
       return;
     }
     const residentId = student.residentId ?? null;
@@ -201,6 +201,16 @@ export class MembershipListComponent implements OnInit, OnDestroy {
         this.load();
       }
     });
+  }
+
+  canEditSubscription(student: ViewStudentSubscribeReDto): boolean {
+    if (student.isCancelled === true) {
+      return false;
+    }
+    if (student.payStatus !== true) {
+      return true;
+    }
+    return student.remainingMinutes === 0;
   }
 
   private resolveResidencyGroup(residentId: number | null): ResidencyGroupFilter | null {
