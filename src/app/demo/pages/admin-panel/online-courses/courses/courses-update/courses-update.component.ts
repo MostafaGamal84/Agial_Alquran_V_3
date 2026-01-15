@@ -65,6 +65,7 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
   private lastLoadedManagerId: number | null = null;
   private managerFallback: LookUpUserDto | null = null;
   days = DAY_OPTIONS;
+  submitted = false;
 
   ngOnInit(): void {
     this.isManager = this.auth.getRole() === UserTypesEnum.Manager;
@@ -673,6 +674,7 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
   }
 
   onSubmit() {
+    this.submitted = true;
     if (this.circleForm.invalid) {
       this.circleForm.markAllAsTouched();
       return;
@@ -714,4 +716,3 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
     });
   }
 }
-

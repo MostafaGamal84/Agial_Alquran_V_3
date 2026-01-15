@@ -34,6 +34,7 @@ export class StudentAddComponent implements OnInit {
   private translate = inject(TranslateService);
 
   basicInfoForm!: FormGroup;
+  submitted = false;
 
   nationalities: NationalityDto[] = [];
   governorates: GovernorateDto[] = [];
@@ -119,6 +120,7 @@ export class StudentAddComponent implements OnInit {
   }
 
   onSubmit() {
+    this.submitted = true;
     if (this.basicInfoForm.valid) {
 
       const formValue = this.basicInfoForm.value;
@@ -144,6 +146,7 @@ export class StudentAddComponent implements OnInit {
           if (res?.isSuccess) {
             this.toast.success(res.message || this.translate.instant('تمت الاضافة بنجاح'));
             this.basicInfoForm.reset();
+            this.submitted = false;
           } else if (res?.errors?.length) {
             res.errors.forEach((e) => this.toast.error(e.message));
           } else {

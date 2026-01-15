@@ -7,7 +7,7 @@
             <mat-form-field appearance="outline" class="w-100 m-b-10">
               <mat-label>{{ 'Full Name' | translate }}</mat-label>
               <input matInput type="text" [placeholder]="'Enter Full Name' | translate" formControlName="fullName" />
-              @if (basicInfoForm.get('fullName')?.touched && basicInfoForm.get('fullName')?.invalid) {
+              @if (submitted && basicInfoForm.get('fullName')?.errors) {
                 <mat-error>{{ 'Full name is required' | translate }}</mat-error>
               }
             </mat-form-field>
@@ -16,7 +16,7 @@
             <mat-form-field appearance="outline" class="w-100 m-b-10">
               <mat-label>{{ 'Email' | translate }}</mat-label>
               <input matInput type="email" [placeholder]="'Enter Email' | translate" formControlName="email" />
-              @if (basicInfoForm.get('email')?.touched && basicInfoForm.get('email')?.invalid) {
+              @if (submitted && basicInfoForm.get('email')?.errors) {
                 <mat-error>{{ 'Email is required' | translate }}</mat-error>
               }
             </mat-form-field>
@@ -45,7 +45,7 @@
                 [validation]="!!mobileMask"
                 (click)="$event.stopPropagation()"
               />
-              @if (basicInfoForm.get('mobile')?.touched && basicInfoForm.get('mobile')?.invalid) {
+              @if (submitted && basicInfoForm.get('mobile')?.errors) {
                 <mat-error>{{ 'Mobile is required' | translate }}</mat-error>
               }
             </mat-form-field>
@@ -80,7 +80,7 @@
             <mat-form-field appearance="outline" class="w-100 m-b-10">
               <mat-label>{{ 'Password' | translate }}</mat-label>
               <input matInput type="password" [placeholder]="'Enter Password' | translate" formControlName="passwordHash" />
-              @if (basicInfoForm.get('passwordHash')?.touched && basicInfoForm.get('passwordHash')?.invalid) {
+              @if (submitted && basicInfoForm.get('passwordHash')?.errors) {
                 <mat-error>{{ 'Password is required' | translate }}</mat-error>
               }
             </mat-form-field>
@@ -95,7 +95,7 @@
               >
                 <mat-option *ngFor="let n of nationalities" [value]="n.id">{{ n.name }}</mat-option>
               </mat-select>
-              @if (basicInfoForm.get('nationalityId')?.touched && basicInfoForm.get('nationalityId')?.invalid) {
+              @if (submitted && basicInfoForm.get('nationalityId')?.errors) {
                 <mat-error>{{ 'Nationality is required' | translate }}</mat-error>
               }
             </mat-form-field>
@@ -110,7 +110,7 @@
               >
                 <mat-option *ngFor="let n of nationalities" [value]="n.id">{{ n.name }}</mat-option>
               </mat-select>
-              @if (basicInfoForm.get('residentId')?.touched && basicInfoForm.get('residentId')?.invalid) {
+              @if (submitted && basicInfoForm.get('residentId')?.errors) {
                 <mat-error>{{ 'Place of residence is required' | translate }}</mat-error>
               }
             </mat-form-field>
@@ -135,13 +135,13 @@
               <mat-select formControlName="branchId" [placeholder]="'Select Branch' | translate" appOpenSelectOnType>
                 <mat-option *ngFor="let b of Branch" [value]="b.id">{{ b.label }}</mat-option>
               </mat-select>
-              @if (basicInfoForm.get('branchId')?.touched && basicInfoForm.get('branchId')?.invalid) {
+              @if (submitted && basicInfoForm.get('branchId')?.errors) {
                 <mat-error>{{ 'Branch is required' | translate }}</mat-error>
               }
             </mat-form-field>
           </div>
           <div class="col-md-12 text-end">
-            <button mat-flat-button color="primary" [disabled]="basicInfoForm.invalid">{{ 'Submit' | translate }}</button>
+            <button mat-flat-button color="primary">{{ 'Submit' | translate }}</button>
           </div>
         </div>
       </form>
