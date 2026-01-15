@@ -204,7 +204,7 @@ export class CoursesViewComponent implements OnInit, OnDestroy {
       if (result) {
         this.circleService.delete(id).subscribe({
           next: () => {
-            this.toast.success('تمت الاضافة بنجاح');
+            this.toast.success('تم الحذف بنجاح');
             this.loadCircles();
           },
           error: () => this.toast.error('خطأ . حاول مرة أخرى.')
@@ -432,10 +432,10 @@ export class CoursesViewComponent implements OnInit, OnDestroy {
   selector: 'app-delete-confirm-dialog',
   template: `
     <div class="m-b-0 p-10 f-16 f-w-600">Delete course</div>
-    <div class="p-10">Are you sure you want to delete this course?</div>
+    <div class="p-10">هل انت متاكد من الحذف؟</div>
     <div mat-dialog-actions>
-      <button mat-button mat-dialog-close>No</button>
-      <button mat-button color="warn" [mat-dialog-close]="true">Yes</button>
+      <button mat-button mat-dialog-close>لا</button>
+      <button mat-button color="warn" [mat-dialog-close]="true">نعم</button>
     </div>
   `,
   imports: [MatDialogActions, MatButton, MatDialogClose]

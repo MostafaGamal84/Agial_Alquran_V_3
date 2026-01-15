@@ -719,14 +719,14 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
     this.circle.update(model).subscribe({
       next: (res) => {
         if (res.isSuccess) {
-          this.toast.success('Circle updated successfully');
+          this.toast.success('تم تحديث البيانات بنجاح ');
         } else if (res.errors?.length) {
           res.errors.forEach((e) => this.toast.error(e.message));
         } else {
-          this.toast.error('Error updating circle');
+          this.toast.error('خطا في الحفظ');
         }
       },
-      error: () => this.toast.error('Error updating circle')
+      error: () => this.toast.error('خطا في الحفظ')
     });
   }
 }
