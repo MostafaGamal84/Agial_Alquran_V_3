@@ -588,15 +588,15 @@ export class UserEditComponent implements OnInit {
       this.userService.updateUser(model).subscribe({
         next: (res) => {
           if (res?.isSuccess) {
-            this.toast.success(res.message || 'User updated successfully');
+            this.toast.success(res.message || 'تم تحديث البيانات بنجاح');
             this.router.navigate([this.getListRoute()]);
           } else if (res?.errors?.length) {
             res.errors.forEach((e) => this.toast.error(e.message));
           } else {
-            this.toast.error('Error updating user');
+            this.toast.error('خطأ في تحديث البيانات');
           }
         },
-        error: () => this.toast.error('Error updating user')
+        error: () => this.toast.error('خطأ في تحديث البيانات')
       });
     } else {
       this.basicInfoForm.markAllAsTouched();

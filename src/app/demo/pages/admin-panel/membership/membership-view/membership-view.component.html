@@ -1,6 +1,6 @@
 <div class="row">
   <div class="col-12">
-    <app-card cardTitle="Student Subscribe" headerClass="p-y-15">
+    <app-card cardTitle="اشتراك الطالب" headerClass="p-y-15">
       <ng-template #headerOptionsTemplate>
         <a class="avatar avatar-s text-accent-500 hover" href="javascript:">
           <svg class="pc-icon">
@@ -8,61 +8,103 @@
           </svg>
         </a>
       </ng-template>
+
       <mat-card class="border m-b-0">
         <mat-card-content class="p-20">
           <div class="table-responsive">
-            <table mat-table [dataSource]="dataSource" class="mat-elevation-z8 w-100">
-              
+            <table
+              mat-table
+              [dataSource]="dataSource"
+              class="mat-elevation-z8 w-100"
+            >
 
+              <!-- الخطة -->
               <ng-container matColumnDef="plan">
-                <th mat-header-cell *matHeaderCellDef>PLAN</th>
-                <td mat-cell *matCellDef="let element" class="text-nowrap">{{ element.plan || 'there is no' }}</td>
+                <th mat-header-cell *matHeaderCellDef>
+                  الخطة
+                </th>
+                <td mat-cell *matCellDef="let element" class="text-nowrap">
+                  {{ element.plan || 'لا يوجد' }}
+                </td>
               </ng-container>
+
+              <!-- الدقائق المتبقية -->
               <ng-container matColumnDef="remainingMinutes">
-                <th mat-header-cell *matHeaderCellDef>REMAINING MINUTES</th>
-                <td mat-cell *matCellDef="let element" class="text-nowrap">{{ element.remainingMinutes ?? 'there is no' }}</td>
+                <th mat-header-cell *matHeaderCellDef>
+                  الدقائق المتبقية
+                </th>
+                <td mat-cell *matCellDef="let element" class="text-nowrap">
+                  {{ element.remainingMinutes ?? 'لا يوجد' }}
+                </td>
               </ng-container>
+
+              <!-- تاريخ البداية -->
               <ng-container matColumnDef="startDate">
-                <th mat-header-cell *matHeaderCellDef>START DATE</th>
-                <td mat-cell *matCellDef="let element" class="text-nowrap">{{ element.startDate ? (element.startDate | date: 'short') : 'there is no' }}</td>
+                <th mat-header-cell *matHeaderCellDef>
+                  تاريخ البداية
+                </th>
+                <td mat-cell *matCellDef="let element" class="text-nowrap">
+                  {{
+                    element.startDate
+                      ? (element.startDate | date: 'short')
+                      : 'لا يوجد'
+                  }}
+                </td>
               </ng-container>
+
+              <!-- حالة الدفع -->
               <ng-container matColumnDef="status">
-                <th mat-header-cell *matHeaderCellDef>STATUS</th>
+                <th mat-header-cell *matHeaderCellDef>
+                  حالة الدفع
+                </th>
                 <td mat-cell *matCellDef="let element" class="text-nowrap">
                   @if (element.payStatus === true) {
-                    <div class="text-success-500">
+                    <div class="text-success-500 d-flex align-items-center">
                       <i class="fas fa-circle f-10 m-r-10 text-success"></i>
-                      Payed
+                      <span>مدفوع</span>
                     </div>
                   } @else if (element.payStatus === false) {
-                    <div class="text-accent-500">
+                    <div class="text-accent-500 d-flex align-items-center">
                       <i class="fas fa-circle f-10 m-r-10 text-accent-500"></i>
-                      Not payed
+                      <span>غير مدفوع</span>
                     </div>
                   } @else {
-                    <div>there is no</div>
+                    <div>لا يوجد</div>
                   }
                 </td>
               </ng-container>
+
+              <!-- المزيد / تفاصيل الدفع -->
               <ng-container matColumnDef="expand">
-                <th mat-header-cell *matHeaderCellDef>More</th>
+                <th mat-header-cell *matHeaderCellDef>
+                  تفاصيل
+                </th>
                 <td mat-cell *matCellDef="let element">
                   <button
                     mat-icon-button
                     *ngIf="element.studentPaymentId !== null && element.studentPaymentId !== undefined"
                     (click)="togglePaymentDetails(element)"
-                    aria-label="View payment details"
+                    aria-label="عرض تفاصيل الدفع"
                   >
                     <mat-icon>expand_more</mat-icon>
                   </button>
                 </td>
               </ng-container>
+
+              <!-- صف الهيدر -->
               <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <!-- صفوف البيانات -->
               <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+              <!-- لا توجد بيانات -->
               <tr class="mat-row" *matNoDataRow>
-                <td class="mat-cell" [attr.colspan]="displayedColumns.length">No data</td>
+                <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+                  لا توجد بيانات
+                </td>
               </tr>
             </table>
+
+            <!-- تفاصيل الدفع -->
             <mat-expansion-panel
               *ngIf="paymentDetails"
               [expanded]="panelOpen"
@@ -70,37 +112,73 @@
               class="m-t-10"
             >
               <mat-expansion-panel-header>
-                <mat-panel-title>Payment Details</mat-panel-title>
+                <mat-panel-title>تفاصيل الدفع</mat-panel-title>
               </mat-expansion-panel-header>
+
               <div class="p-16">
-                <p><strong>Invoice ID:</strong> {{ paymentDetails.invoiceId }}</p>
-                <p><strong>Student ID:</strong> {{ paymentDetails.studentId }}</p>
-                <p><strong>Name:</strong> {{ paymentDetails.userName }}</p>
-                <p><strong>Email:</strong> {{ paymentDetails.userEmail }}</p>
+                <p><strong>رقم الفاتورة:</strong> {{ paymentDetails.invoiceId }}</p>
+                <p><strong>رقم الطالب:</strong> {{ paymentDetails.studentId }}</p>
+                <p><strong>اسم الطالب:</strong> {{ paymentDetails.userName }}</p>
+                <p><strong>البريد الإلكتروني:</strong> {{ paymentDetails.userEmail }}</p>
+
                 <p>
-                  <strong>Create Date:</strong>
-                  {{ paymentDetails.createDate ? (paymentDetails.createDate | date: 'short') : 'N/A' }}
+                  <strong>تاريخ الإنشاء:</strong>
+                  {{
+                    paymentDetails.createDate
+                      ? (paymentDetails.createDate | date: 'short')
+                      : 'غير متوفر'
+                  }}
                 </p>
+
                 <p>
-                  <strong>Due Date:</strong>
-                  {{ paymentDetails.dueDate ? (paymentDetails.dueDate | date: 'short') : 'N/A' }}
+                  <strong>تاريخ الاستحقاق:</strong>
+                  {{
+                    paymentDetails.dueDate
+                      ? (paymentDetails.dueDate | date: 'short')
+                      : 'غير متوفر'
+                  }}
                 </p>
+
                 <p>
-                  <strong>Payment Date:</strong>
-                  {{ paymentDetails.paymentDate ? (paymentDetails.paymentDate | date: 'short') : 'N/A' }}
+                  <strong>تاريخ الدفع:</strong>
+                  {{
+                    paymentDetails.paymentDate
+                      ? (paymentDetails.paymentDate | date: 'short')
+                      : 'غير متوفر'
+                  }}
                 </p>
-                <p><strong>Amount:</strong> {{ paymentDetails.amount }}</p>
+
+                <p><strong>المبلغ:</strong> {{ paymentDetails.amount }}</p>
+
                 <p>
-                  <strong>Currency:</strong>
-                  {{ getCurrencyLabel(paymentDetails.currencyId ?? paymentDetails.currency ?? null) }}
+                  <strong>العملة:</strong>
+                  {{
+                    getCurrencyLabel(
+                      paymentDetails.currencyId ?? paymentDetails.currency ?? null
+                    )
+                  }}
                 </p>
-                <p><strong>Status:</strong> {{ paymentDetails.statusText }}</p>
-                <button mat-button color="primary" (click)="goToInvoice(paymentDetails?.invoiceId)">View Invoice</button>
+
+                <p><strong>الحالة:</strong> {{ paymentDetails.statusText }}</p>
+
+                <button
+                  mat-button
+                  color="primary"
+                  (click)="goToInvoice(paymentDetails?.invoiceId)"
+                >
+                  عرض الفاتورة
+                </button>
               </div>
             </mat-expansion-panel>
-            <div class="app-paginator" #loadMoreTrigger [class.d-none]="!hasMoreResults()">
+
+            <!-- تحميل المزيد -->
+            <div
+              class="app-paginator"
+              #loadMoreTrigger
+              [class.d-none]="!hasMoreResults()"
+            >
               <span class="text-muted">
-                {{ (isLoadingMore ? 'Loading more...' : 'جاري التحميل') | translate }}
+                {{ isLoadingMore ? 'جاري تحميل المزيد...' : 'اسحب لأسفل لتحميل المزيد' }}
               </span>
             </div>
           </div>

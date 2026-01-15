@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AbstractControl, FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
@@ -54,6 +54,8 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private auth = inject(AuthenticationService);
   private userService = inject(UserService);
+    private router = inject(Router);
+  
   private destroy$ = new Subject<void>();
   private readonly userFilter: FilteredResultRequestDto = { lookupOnly: true };
 
@@ -635,19 +637,19 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
     const normalized =
       Array.isArray(circle.days) && circle.days.length
         ? circle.days
-            .map((day) => {
-              const resolvedDay = coerceDayValue(day?.dayId ?? day?.dayName ?? undefined);
-              const startTime = formatTimeValue(day?.time);
-              return {
-                dayId: resolvedDay ?? null,
-                startTime: startTime ? startTime : ''
-              };
-            })
-            .filter(
-              (entry) =>
-                entry.dayId !== null ||
-                (typeof entry.startTime === 'string' && entry.startTime.trim().length > 0)
-            )
+          .map((day) => {
+            const resolvedDay = coerceDayValue(day?.dayId ?? day?.dayName ?? undefined);
+            const startTime = formatTimeValue(day?.time);
+            return {
+              dayId: resolvedDay ?? null,
+              startTime: startTime ? startTime : ''
+            };
+          })
+          .filter(
+            (entry) =>
+              entry.dayId !== null ||
+              (typeof entry.startTime === 'string' && entry.startTime.trim().length > 0)
+          )
         : [];
 
     if (normalized.length) {
@@ -658,10 +660,10 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
     const fallbackDayId =
       coerceDayValue(
         primaryDay?.dayId ??
-          circle.dayIds?.[0] ??
-          circle.dayNames?.[0] ??
-          circle.dayId ??
-          circle.day
+        circle.dayIds?.[0] ??
+        circle.dayNames?.[0] ??
+        circle.dayId ??
+        circle.day
       ) ?? null;
     const fallbackTime = formatTimeValue(primaryDay?.time ?? circle.startTime ?? circle.time);
     const trimmedFallbackTime = fallbackTime.trim();
@@ -696,15 +698,15 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
 
     const schedule: CircleDayRequestDto[] = Array.isArray(formValue.days)
       ? formValue.days.reduce<CircleDayRequestDto[]>((acc, entry) => {
-          const dayValue = coerceDayValue(entry?.dayId ?? undefined);
-          if (dayValue === undefined) {
-            return acc;
-          }
-
-          const startTimeValue = timeStringToTimeSpanString(entry?.startTime ?? undefined);
-          acc.push({ dayId: dayValue, time: startTimeValue ?? null });
+        const dayValue = coerceDayValue(entry?.dayId ?? undefined);
+        if (dayValue === undefined) {
           return acc;
-        }, [])
+        }
+
+        const startTimeValue = timeStringToTimeSpanString(entry?.startTime ?? undefined);
+        acc.push({ dayId: dayValue, time: startTimeValue ?? null });
+        return acc;
+      }, [])
       : [];
 
     const model: UpdateCircleDto = {
@@ -720,6 +722,8 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
       next: (res) => {
         if (res.isSuccess) {
           this.toast.success('تم تحديث البيانات بنجاح ');
+          this.router.navigate(['/online-course/courses/view']);
+
         } else if (res.errors?.length) {
           res.errors.forEach((e) => this.toast.error(e.message));
         } else {
