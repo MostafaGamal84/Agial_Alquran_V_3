@@ -231,14 +231,16 @@ export class DefaultComponent implements OnInit {
     }
     if (valueType && valueType.toLowerCase() === 'currency') {
       const code = currencyCode ?? 'USD';
+      const displayCode = code === 'USD' ? 'دولار' : code;
       try {
-        return new Intl.NumberFormat(undefined, {
+        const formatted = new Intl.NumberFormat(undefined, {
           style: 'currency',
           currency: code,
           maximumFractionDigits: 0
         }).format(value);
+        return code === 'USD' ? formatted.replace(/US/g, 'دولار') : formatted;
       } catch {
-        return `${code} ${this.formatNumber(value)}`;
+        return `${displayCode} ${this.formatNumber(value)}`;
       }
     }
     return this.formatNumber(value);
