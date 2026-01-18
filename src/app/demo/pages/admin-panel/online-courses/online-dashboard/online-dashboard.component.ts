@@ -618,7 +618,10 @@ export class OnlineDashboardComponent implements OnInit {
     const parts: string[] = [];
 
     if (typeof rangeLabel === 'string' && rangeLabel.trim()) {
-      parts.push(rangeLabel.trim());
+      const normalizedLabel = this.normalizeRangeLabel(rangeLabel.trim());
+      if (normalizedLabel) {
+        parts.push(normalizedLabel);
+      }
     }
 
     const start = this.formatDateOnly(rangeStart);
@@ -634,6 +637,21 @@ export class OnlineDashboardComponent implements OnInit {
     }
 
     return parts.join(' · ');
+  }
+
+  private normalizeRangeLabel(label: string): string | null {
+    const normalized = label.trim();
+    if (!normalized) {
+      return null;
+    }
+
+    const token = normalized.toLowerCase().replace(/\s+/g, ' ');
+
+    if (['last30d', 'last 30 days', 'last 30 day', 'last30days', 'last30 day'].includes(token)) {
+      return this.translate.instant('آخر 30 يوم');
+    }
+
+    return normalized;
   }
 
   private formatDateOnly(value?: string | null): string | null {
