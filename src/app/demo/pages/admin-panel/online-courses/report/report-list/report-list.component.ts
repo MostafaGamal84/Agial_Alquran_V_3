@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 import { MatTableDataSource } from '@angular/material/table';
@@ -79,7 +79,8 @@ export class ReportListComponent implements OnInit, OnDestroy {
   private auth = inject(AuthenticationService);
   private translate = inject(TranslateService);
   private dialog = inject(MatDialog);
-  private cdr = inject(ChangeDetectorRef)
+  private cdr = inject(ChangeDetectorRef);
+  private router = inject(Router);
 
   filterForm: FormGroup = this.fb.group({
     searchTerm: [''],
@@ -585,6 +586,18 @@ export class ReportListComponent implements OnInit, OnDestroy {
   private launchWhatsApp(message: string): void {
     const url = message ? `https://wa.me/?text=${encodeURIComponent(message)}` : `https://wa.me/`;
     window.open(url, '_blank');
+  }
+
+  onEdit(report: CircleReportListDto): void {
+    const reportId = Number(report?.id);
+    if (!Number.isFinite(reportId) || reportId <= 0) {
+      this.toast.error('Invalid report identifier');
+      return;
+    }
+
+    this.router.navigate(['/online-course/report/edit', reportId], {
+      state: { report }
+    });
   }
 }
 
