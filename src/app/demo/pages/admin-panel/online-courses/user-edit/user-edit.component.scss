@@ -228,24 +228,28 @@ form {
   }
 }
 
-:host-context(.dark) ::ng-deep .user-form .ng-select .ng-select-container {
+:host-context(.dark) ::ng-deep .user-form .ng-select .ng-select-container,
+:host-context([data-theme='dark']) ::ng-deep .user-form .ng-select .ng-select-container {
   background: rgba(15, 23, 42, 0.85);
   border-color: rgba(148, 163, 184, 0.45);
   color: #f9fafb;
 }
 
-:host-context(.dark) ::ng-deep .user-form .ng-select .ng-placeholder {
+:host-context(.dark) ::ng-deep .user-form .ng-select .ng-placeholder,
+:host-context([data-theme='dark']) ::ng-deep .user-form .ng-select .ng-placeholder {
   color: rgba(248, 250, 252, 0.65);
 }
 
-:host-context(.dark) ::ng-deep .user-form .ng-dropdown-panel {
+:host-context(.dark) ::ng-deep .user-form .ng-dropdown-panel,
+:host-context([data-theme='dark']) ::ng-deep .user-form .ng-dropdown-panel {
   background: #020617;
   border-color: rgba(148, 163, 184, 0.45);
   color: #f9fafb;
   box-shadow: 0 24px 48px rgba(2, 6, 23, 0.85);
 }
 
-:host-context(.dark) ::ng-deep .user-form .ng-option {
+:host-context(.dark) ::ng-deep .user-form .ng-option,
+:host-context([data-theme='dark']) ::ng-deep .user-form .ng-option {
   color: #f9fafb;
 }
 
@@ -254,6 +258,14 @@ form {
   .user-form
   .ng-option:hover,
 :host-context(.dark)
+  ::ng-deep
+  .user-form
+  .ng-option.ng-option-marked,
+:host-context([data-theme='dark'])
+  ::ng-deep
+  .user-form
+  .ng-option:hover,
+:host-context([data-theme='dark'])
   ::ng-deep
   .user-form
   .ng-option.ng-option-marked {
