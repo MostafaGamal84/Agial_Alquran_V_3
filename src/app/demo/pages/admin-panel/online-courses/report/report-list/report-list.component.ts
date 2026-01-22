@@ -625,3 +625,4 @@ export class ReportWhatsAppDialogComponent {
     this.dialogRef.close(true);
   }
 }
+ 

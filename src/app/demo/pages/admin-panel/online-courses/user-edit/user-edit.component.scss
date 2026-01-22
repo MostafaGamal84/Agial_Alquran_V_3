@@ -1,5 +1,4 @@
-/* ================== الهيدر ================== */
-
+/* ================== Header ================== */
 .user-header {
   padding-bottom: 0.75rem;
   margin-bottom: 1.25rem;
@@ -19,13 +18,11 @@
   color: #64748b;
 }
 
-/* RTL */
 [dir='rtl'] .user-header {
   text-align: right;
 }
 
-/* ================== الكروت (الأقسام) ================== */
-
+/* ================== Section Card ================== */
 .section-card {
   border-radius: 18px;
   background: linear-gradient(135deg, #ffffff 0%, #f9fafb 40%, #ffffff 100%);
@@ -64,11 +61,6 @@
   color: #15803d;
 }
 
-.section-icon-orange {
-  background: rgba(249, 115, 22, 0.1);
-  color: #ea580c;
-}
-
 .section-title {
   font-size: 1rem;
   font-weight: 700;
@@ -82,8 +74,7 @@
   margin: 0.1rem 0 0;
 }
 
-/* ================== الفورم ================== */
-
+/* ================== Form ================== */
 .user-form {
   row-gap: 1rem;
 }
@@ -95,7 +86,6 @@
   margin-bottom: 0.35rem;
 }
 
-/* صف تليفونات */
 .phone-row {
   width: 100%;
 }
@@ -104,7 +94,6 @@
   min-width: 110px;
 }
 
-/* أزرار الإجراء */
 .form-actions {
   display: flex;
   flex-wrap: wrap;
@@ -121,94 +110,74 @@
   font-size: 0.95rem;
 }
 
-/* رسائل الخطأ */
 .text-danger.small {
   font-size: 0.78rem;
 }
 
-/* ================== mat-form-field الأساس ================== */
-
-form {
-  .mat-mdc-form-field {
-    width: 100%;
-    margin-bottom: 1rem;
-
-    .mdc-floating-label {
-      font-weight: 500;
-    }
-  }
-}
-
-/* ================== ng-select & mat-input (وضع اللايت) ================== */
-
-:host ::ng-deep .user-form .ng-select .ng-select-container {
+/* ================== NG-SELECT (LIGHT) ================== */
+/* استخدمنا .themed-ng-select عشان ما نكسرش باقي ng-select في المشروع */
+:host ::ng-deep .user-form .themed-ng-select.ng-select .ng-select-container {
   min-height: 44px;
   border-radius: 8px;
   border: 1px solid rgba(15, 23, 42, 0.18);
   background: #ffffff;
   color: #0f172a;
+  font-family: inherit;
 }
 
-:host ::ng-deep .user-form .ng-select .ng-placeholder {
+:host ::ng-deep .user-form .themed-ng-select.ng-select .ng-value-label,
+:host ::ng-deep .user-form .themed-ng-select.ng-select .ng-input input {
+  color: #0f172a;
+}
+
+:host ::ng-deep .user-form .themed-ng-select.ng-select .ng-placeholder {
   color: rgba(15, 23, 42, 0.6);
 }
 
-:host ::ng-deep .user-form .ng-select.ng-select-multiple .ng-select-container {
-  padding: 4px 6px;
+/* focus/open border */
+:host ::ng-deep .user-form .themed-ng-select.ng-select.ng-select-opened .ng-select-container,
+:host ::ng-deep .user-form .themed-ng-select.ng-select.ng-select-focused .ng-select-container {
+  border-color: rgba(59, 130, 246, 0.6);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.12);
 }
 
-:host ::ng-deep .user-form .ng-dropdown-panel {
+/* panel (appendTo body => لازم نستهدفه بكلاس ثابت) */
+.ng-dropdown-panel.themed-ng-panel {
   border-radius: 10px;
-  background: #ffffff;
-  border: 1px solid rgba(15, 23, 42, 0.18);
-  color: #0f172a;
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.18) !important;
+  color: #0f172a !important;
   box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12);
+  z-index: 4000 !important;
 }
 
-:host ::ng-deep .user-form .ng-option {
-  color: #0f172a;
+.ng-dropdown-panel.themed-ng-panel .ng-option {
+  color: #0f172a !important;
 }
 
-:host ::ng-deep .user-form .ng-option:hover,
-:host ::ng-deep .user-form .ng-option.ng-option-marked {
-  background: rgba(59, 130, 246, 0.12);
+.ng-dropdown-panel.themed-ng-panel .ng-option:hover,
+.ng-dropdown-panel.themed-ng-panel .ng-option.ng-option-marked {
+  background: rgba(59, 130, 246, 0.12) !important;
 }
 
-:host ::ng-deep .user-form .mat-mdc-text-field-wrapper.mdc-text-field--outlined {
-  background: #ffffff;
-  border-radius: 8px;
-}
-
-:host
-  ::ng-deep
-  .user-form
-  .mdc-notched-outline__leading,
-:host
-  ::ng-deep
-  .user-form
-  .mdc-notched-outline__notch,
-:host
-  ::ng-deep
-  .user-form
-  .mdc-notched-outline__trailing {
-  border-color: rgba(15, 23, 42, 0.22);
-}
-
-:host ::ng-deep .user-form .mat-mdc-input-element {
-  color: #0f172a;
-}
-
-/* ================== وضع الدارك (مبني على .dark في body/theme) ================== */
-
-:host-context(.dark) {
+/* ================== DARK MODE (يدعم .dark + .blue-theme.dark) ================== */
+:host-context(.dark),
+:host-context(.blue-theme.dark),
+:host-context(.indigo-theme.dark),
+:host-context(.purple-theme.dark),
+:host-context(.pink-theme.dark),
+:host-context(.red-theme.dark),
+:host-context(.orange-theme.dark),
+:host-context(.yellow-theme.dark),
+:host-context(.green-theme.dark),
+:host-context(.teal-theme.dark),
+:host-context(.cyan-theme.dark) {
   .page-title {
     color: #e5e7eb;
   }
-
   .page-subtitle {
     color: #9ca3af;
   }
-
   .form-label-sm {
     color: #e5e7eb;
   }
@@ -228,137 +197,142 @@ form {
   }
 }
 
-:host-context(.dark) ::ng-deep .user-form .ng-select .ng-select-container,
-:host-context([data-theme='dark']) ::ng-deep .user-form .ng-select .ng-select-container {
-  background: rgba(15, 23, 42, 0.85);
-  border-color: rgba(148, 163, 184, 0.45);
-  color: #f9fafb;
+/* select container in dark */
+:host-context(.dark) ::ng-deep .user-form .themed-ng-select.ng-select .ng-select-container,
+:host-context(.blue-theme.dark) ::ng-deep .user-form .themed-ng-select.ng-select .ng-select-container {
+  background: rgba(15, 23, 42, 0.85) !important;
+  border-color: rgba(148, 163, 184, 0.45) !important;
+  color: #f9fafb !important;
 }
 
-:host-context(.dark) ::ng-deep .user-form .ng-select .ng-placeholder,
-:host-context([data-theme='dark']) ::ng-deep .user-form .ng-select .ng-placeholder {
-  color: rgba(248, 250, 252, 0.65);
+:host-context(.dark) ::ng-deep .user-form .themed-ng-select.ng-select .ng-value-label,
+:host-context(.dark) ::ng-deep .user-form .themed-ng-select.ng-select .ng-input input,
+:host-context(.dark) ::ng-deep .user-form .themed-ng-select.ng-select .ng-placeholder,
+:host-context(.blue-theme.dark) ::ng-deep .user-form .themed-ng-select.ng-select .ng-value-label,
+:host-context(.blue-theme.dark) ::ng-deep .user-form .themed-ng-select.ng-select .ng-input input,
+:host-context(.blue-theme.dark) ::ng-deep .user-form .themed-ng-select.ng-select .ng-placeholder {
+  color: rgba(248, 250, 252, 0.85) !important;
 }
 
-:host-context(.dark) ::ng-deep .user-form .ng-dropdown-panel,
-:host-context([data-theme='dark']) ::ng-deep .user-form .ng-dropdown-panel {
-  background: #020617;
-  border-color: rgba(148, 163, 184, 0.45);
-  color: #f9fafb;
+/* panel in dark */
+:host-context(.dark) .ng-dropdown-panel.themed-ng-panel,
+:host-context(.blue-theme.dark) .ng-dropdown-panel.themed-ng-panel {
+  background: #020617 !important;
+  border-color: rgba(148, 163, 184, 0.45) !important;
+  color: #f9fafb !important;
   box-shadow: 0 24px 48px rgba(2, 6, 23, 0.85);
 }
 
-:host-context(.dark) ::ng-deep .user-form .ng-option,
-:host-context([data-theme='dark']) ::ng-deep .user-form .ng-option {
-  color: #f9fafb;
+:host-context(.dark) .ng-dropdown-panel.themed-ng-panel .ng-option,
+:host-context(.blue-theme.dark) .ng-dropdown-panel.themed-ng-panel .ng-option {
+  color: #f9fafb !important;
 }
 
-:host-context(.dark)
-  ::ng-deep
-  .user-form
-  .ng-option:hover,
-:host-context(.dark)
-  ::ng-deep
-  .user-form
-  .ng-option.ng-option-marked,
-:host-context([data-theme='dark'])
-  ::ng-deep
-  .user-form
-  .ng-option:hover,
-:host-context([data-theme='dark'])
-  ::ng-deep
-  .user-form
-  .ng-option.ng-option-marked {
-  background: rgba(59, 130, 246, 0.25);
+:host-context(.dark) .ng-dropdown-panel.themed-ng-panel .ng-option:hover,
+:host-context(.dark) .ng-dropdown-panel.themed-ng-panel .ng-option.ng-option-marked,
+:host-context(.blue-theme.dark) .ng-dropdown-panel.themed-ng-panel .ng-option:hover,
+:host-context(.blue-theme.dark) .ng-dropdown-panel.themed-ng-panel .ng-option.ng-option-marked {
+  background: rgba(59, 130, 246, 0.25) !important;
 }
 
-:host-context(.dark)
-  ::ng-deep
-  .user-form
-  .mat-mdc-text-field-wrapper.mdc-text-field--outlined {
-  background: rgba(15, 23, 42, 0.85);
-}
-
-:host-context(.dark)
-  ::ng-deep
-  .user-form
-  .mdc-notched-outline__leading,
-:host-context(.dark)
-  ::ng-deep
-  .user-form
-  .mdc-notched-outline__notch,
-:host-context(.dark)
-  ::ng-deep
-  .user-form
-  .mdc-notched-outline__trailing {
-  border-color: rgba(148, 163, 184, 0.55);
-}
-
-:host-context(.dark)
-  ::ng-deep
-  .user-form
-  .mat-mdc-input-element,
-:host-context(.dark)
-  ::ng-deep
-  .user-form
-  .mdc-floating-label {
-  color: #f9fafb;
-}
-
-/* ================== file-upload (زي ما عندك) ================== */
-
-.file-upload {
-  display: block;
-  border: 1px solid var(--accent-300);
-  width: 100%;
-  margin-bottom: 24px;
-  border-radius: 4px;
-  overflow: hidden;
-
-  &:not(:disabled):not([readonly]) {
-    cursor: pointer;
-  }
-
-  &::file-selector-button {
-    padding: 0.8rem 0.75rem;
-    margin-right: 8px;
-    color: var(--accent-800);
-    pointer-events: none;
-    border-color: var(--accent-300);
-    border-style: solid;
-    border-width: 0px;
-    border-inline-end-width: 1px;
-    border-radius: 0;
-    background: var(--accent-100);
-  }
-
-  &:hover:not(:disabled):not([readonly])::file-selector-button {
-    background: var(--accent-200);
-  }
-}
-
-/* ================== Responsiveness ================== */
-
+/* ================== Responsive ================== */
 @media (max-width: 768px) {
   .section-card {
     padding: 1rem;
   }
-
-  .section-header {
-    flex-direction: row;
-    align-items: flex-start;
-    gap: 0.6rem;
-  }
-
   .page-title {
     font-size: 1.25rem;
   }
-
   .page-subtitle {
     font-size: 0.85rem;
   }
-
   .form-actions {
     justify-content: center;
   }
+}
+/* ===============================
+   NG-SELECT DARK MODE (NO HTML CHANGES)
+   Target when theme is: body.blue-theme.dark
+================================ */
+
+/* 1) Container نفسه في الدارك */
+:host-context(.blue-theme.dark) ::ng-deep .user-form .ng-select .ng-select-container,
+:host-context(.dark) ::ng-deep .user-form .ng-select .ng-select-container {
+  background: rgba(15, 23, 42, 0.85) !important;
+  border-color: rgba(148, 163, 184, 0.45) !important;
+  color: #f9fafb !important;
+}
+
+/* النص داخل select (قيمة مختارة + input البحث + placeholder) */
+:host-context(.blue-theme.dark) ::ng-deep .user-form .ng-select .ng-value-label,
+:host-context(.blue-theme.dark) ::ng-deep .user-form .ng-select .ng-input > input,
+:host-context(.blue-theme.dark) ::ng-deep .user-form .ng-select .ng-placeholder,
+:host-context(.dark) ::ng-deep .user-form .ng-select .ng-value-label,
+:host-context(.dark) ::ng-deep .user-form .ng-select .ng-input > input,
+:host-context(.dark) ::ng-deep .user-form .ng-select .ng-placeholder {
+  color: rgba(248, 250, 252, 0.88) !important;
+}
+
+/* السهم (caret) و زرار clear */
+:host-context(.blue-theme.dark) ::ng-deep .user-form .ng-select .ng-arrow,
+:host-context(.dark) ::ng-deep .user-form .ng-select .ng-arrow {
+  border-top-color: rgba(248, 250, 252, 0.75) !important;
+}
+
+:host-context(.blue-theme.dark) ::ng-deep .user-form .ng-select .ng-clear-wrapper,
+:host-context(.dark) ::ng-deep .user-form .ng-select .ng-clear-wrapper {
+  color: rgba(248, 250, 252, 0.75) !important;
+}
+
+/* 2) الـ DROPDOWN PANEL في الدارك (ده اللي كان أبيض عندك) */
+:host-context(.blue-theme.dark) ::ng-deep .ng-dropdown-panel,
+:host-context(.dark) ::ng-deep .ng-dropdown-panel {
+  background: #0b1220 !important; /* دارك قوي */
+  border: 1px solid rgba(148, 163, 184, 0.35) !important;
+  box-shadow: 0 24px 48px rgba(2, 6, 23, 0.75) !important;
+}
+
+/* header/search داخل الـ panel (لو موجود) */
+:host-context(.blue-theme.dark) ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items,
+:host-context(.dark) ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items {
+  background: transparent !important;
+}
+
+/* 3) الأوبشنز */
+:host-context(.blue-theme.dark) ::ng-deep .ng-dropdown-panel .ng-option,
+:host-context(.dark) ::ng-deep .ng-dropdown-panel .ng-option {
+  background: transparent !important;
+  color: rgba(248, 250, 252, 0.9) !important;
+}
+
+/* Hover / Marked */
+:host-context(.blue-theme.dark) ::ng-deep .ng-dropdown-panel .ng-option:hover,
+:host-context(.blue-theme.dark) ::ng-deep .ng-dropdown-panel .ng-option.ng-option-marked,
+:host-context(.dark) ::ng-deep .ng-dropdown-panel .ng-option:hover,
+:host-context(.dark) ::ng-deep .ng-dropdown-panel .ng-option.ng-option-marked {
+  background: rgba(96, 165, 250, 0.22) !important;
+}
+
+/* Selected */
+:host-context(.blue-theme.dark) ::ng-deep .ng-dropdown-panel .ng-option.ng-option-selected,
+:host-context(.dark) ::ng-deep .ng-dropdown-panel .ng-option.ng-option-selected {
+  background: rgba(59, 130, 246, 0.28) !important;
+  color: #ffffff !important;
+}
+
+/* 4) Scrollbar (اختياري) */
+:host-context(.blue-theme.dark) ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items::-webkit-scrollbar,
+:host-context(.dark) ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items::-webkit-scrollbar {
+  width: 10px;
+}
+
+:host-context(.blue-theme.dark) ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items::-webkit-scrollbar-thumb,
+:host-context(.dark) ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 10px;
+}
+
+:host-context(.blue-theme.dark) ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items::-webkit-scrollbar-track,
+:host-context(.dark) ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items::-webkit-scrollbar-track {
+  background: rgba(2, 6, 23, 0.35);
 }
