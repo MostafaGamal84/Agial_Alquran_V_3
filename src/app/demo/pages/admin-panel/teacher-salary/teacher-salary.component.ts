@@ -172,7 +172,7 @@ export class TeacherSalaryComponent
   });
   private readonly currencyFormatter = new Intl.NumberFormat('ar-EG', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'EGP',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   });
