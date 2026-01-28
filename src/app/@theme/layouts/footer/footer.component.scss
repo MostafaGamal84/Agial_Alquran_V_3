@@ -22,7 +22,7 @@
 .ticker-track {
   display: flex;
   width: max-content;
-  animation: ticker-scroll 28s linear infinite;
+  animation: ticker-scroll 220s linear infinite;
 }
 
 .ticker-content {
@@ -47,10 +47,10 @@
 
 @keyframes ticker-scroll {
   0% {
-    transform: translateX(0);
+    transform: translateX(-50%);
   }
   100% {
-    transform: translateX(-50%);
+    transform: translateX(0);
   }
 }
 
