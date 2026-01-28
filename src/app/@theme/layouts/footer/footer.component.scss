@@ -3,58 +3,54 @@
 // ============================
 
 .theme-footer {
-  position: relative;
-  padding: 15px 0;
-  z-index: 1024;
-  a {
-    color: var(--accent-900);
-    &:hover {
-      color: var(--primary-500);
-    }
-  }
-  .footer-wrapper {
-    padding-left: 40px;
-    padding-right: 40px;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1100;
+  background: rgba(12, 20, 38, 0.92);
+  color: #fff;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
 
-    .col {
-      flex: 1 0 0%;
-    }
-    .col-auto {
-      flex: 0 0 auto;
-      width: auto;
-    }
-    .list-inline {
-      padding-left: 0;
-      list-style: none;
+.footer-ticker {
+  direction: ltr;
+  padding: 10px 0;
+}
 
-      .list-inline-item {
-        display: inline-block;
-      }
-    }
-  }
-  .footer-link {
-    .list-inline-item:not(:last-child) {
-      margin-right: 0.9rem;
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ticker-scroll 28s linear infinite;
+}
 
-      ::ng-deep.able-pro-rtl & {
-        margin-left: 0.9rem !important;
-        margin-right: auto !important;
-      }
-    }
-  }
+.ticker-content {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.ticker-item {
+  padding: 0 2.5rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #f8fafc;
 }
 
 @media (max-width: 575.98px) {
-  .theme-footer {
-    padding: 0px 0px 15px 0;
-    .footer-wrapper {
-      padding-left: 15px;
-      padding-right: 15px;
+  .ticker-item {
+    padding: 0 1.5rem;
+    font-size: 0.85rem;
+  }
+}
 
-      > div {
-        flex-direction: column;
-      }
-    }
+@keyframes ticker-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
   }
 }
 
