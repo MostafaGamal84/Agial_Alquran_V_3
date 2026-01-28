@@ -384,40 +384,75 @@ export class OnlineDashboardComponent implements OnInit {
     });
   }
 
-  private buildMonthlyRevenueChart(monthlyRevenue?: DashboardOverviewMonthlyRevenuePointDto[] | null): void {
-    const points = Array.isArray(monthlyRevenue) ? monthlyRevenue : [];
-    const categories = points.map((point) => {
-      const month = point?.month;
-      return typeof month === 'string' ? month.trim() : '';
+ private buildMonthlyRevenueChart(monthlyRevenue?: DashboardOverviewMonthlyRevenuePointDto[] | null): void {
+  const points = Array.isArray(monthlyRevenue) ? monthlyRevenue : [];
+
+  // ✅ Convert month labels to Arabic
+  const categories = points.map((point) => {
+    const month = typeof point?.month === 'string' ? point.month.trim() : '';
+    return this.toArabicMonthLabel(month);
+  });
+
+  const seriesDefinitions = [
+    { key: 'earnings', nameKey: 'الأرباح' },
+    { key: 'teacherPayout', nameKey: 'مدفوعات المعلمين' },
+    { key: 'managerPayout', nameKey: 'مدفوعات المديرين' },
+    { key: 'netIncome', nameKey: 'صافي الدخل' }
+  ] as const;
+
+  const series: ApexAxisChartSeries = [];
+
+  for (const def of seriesDefinitions) {
+    const hasValue = points.some((p) => this.coerceNumber((p as any)?.[def.key]) !== null);
+    if (!hasValue) continue;
+
+    const data = points.map((p) => this.coerceNumber((p as any)?.[def.key]) ?? 0);
+
+    series.push({
+      name: this.translate.instant(def.nameKey),
+      data
     });
-
-    const seriesDefinitions = [
-      { key: 'earnings', nameKey: 'الأرباح' },
-      { key: 'teacherPayout', nameKey: 'مدفوعات المعلمين' },
-      { key: 'managerPayout', nameKey: 'مدفوعات المديرين' },
-      { key: 'netIncome', nameKey: 'صافي الدخل' }
-    ] as const;
-
-    const series: ApexAxisChartSeries = [];
-
-    for (const definition of seriesDefinitions) {
-      const hasValue = points.some((point) => this.coerceNumber(point?.[definition.key]) !== null);
-      if (!hasValue) {
-        continue;
-      }
-
-      const data = points.map((point) => this.coerceNumber(point?.[definition.key]) ?? 0);
-
-      series.push({
-        name: this.translate.instant(definition.nameKey),
-        data
-      });
-    }
-
-    this.monthlyRevenueSeries = series.length ? series : undefined;
-    this.monthlyRevenueCategories = categories.some((category) => !!category) ? categories : undefined;
-    this.monthlyRevenueHasData = series.length > 0;
   }
+
+  this.monthlyRevenueSeries = series.length ? series : undefined;
+  this.monthlyRevenueCategories = categories.some((c) => !!c) ? categories : undefined;
+  this.monthlyRevenueHasData = series.length > 0;
+}
+
+/** ✅ Converts: Dec/January/2026-01/2026-01-15 => ديسمبر/يناير ... */
+private toArabicMonthLabel(input: string): string {
+  const raw = (input ?? '').trim();
+  if (!raw) return '';
+
+  // 1) Try parse as date/iso forms
+  const tryDates = [raw, `${raw}-01`, `${raw}-01-01`];
+  for (const candidate of tryDates) {
+    const d = new Date(candidate);
+    if (!Number.isNaN(d.getTime())) {
+      return new Intl.DateTimeFormat('ar', { month: 'long' }).format(d);
+    }
+  }
+
+  // 2) Month name map (English -> Arabic)
+  const key = raw.toLowerCase();
+  const map: Record<string, string> = {
+    jan: 'يناير', january: 'يناير',
+    feb: 'فبراير', february: 'فبراير',
+    mar: 'مارس', march: 'مارس',
+    apr: 'أبريل', april: 'أبريل',
+    may: 'مايو',
+    jun: 'يونيو', june: 'يونيو',
+    jul: 'يوليو', july: 'يوليو',
+    aug: 'أغسطس', august: 'أغسطس',
+    sep: 'سبتمبر', sept: 'سبتمبر', september: 'سبتمبر',
+    oct: 'أكتوبر', october: 'أكتوبر',
+    nov: 'نوفمبر', november: 'نوفمبر',
+    dec: 'ديسمبر', december: 'ديسمبر'
+  };
+
+  return map[key] ?? raw;
+}
+
 
   private buildFinancialChart(metrics?: DashboardOverviewMetricsDto | null): void {
     const definitions = [
@@ -436,7 +471,7 @@ export class OnlineDashboardComponent implements OnInit {
       const currencyCode = this.pickCurrencyCode(metrics, definition.currencyKeys, definition.fallback);
       const label = currencyCode ? `${definition.label} (${currencyCode})` : definition.label;
 
-      categories.push(label);
+    categories.push(definition.label); // ✅ من غير عملة
       data.push(numericValue ?? 0);
       if (numericValue !== null) {
         hasData = true;

@@ -147,38 +147,7 @@
           </div>
         </div>
 
-        <!-- ============ بلوك إضافي للمعلم (Manager + Students) خارج القسم 2 ============ -->
-        @if (isTeacher) {
-          <div class="col-md-6 mb-3">
-            <label class="form-label">Manager</label>
-            <ng-select
-              class="w-100"
-              formControlName="managerId"
-              [items]="managers"
-              bindLabel="fullName"
-              bindValue="id"
-              [searchable]="true"
-              (change)="onTeacherManagerChange($event.value)"
-            ></ng-select>
-          </div>
-
-          <div class="col-md-6 mb-3">
-            <label class="form-label">Students</label>
-            <ng-select
-              class="w-100"
-              formControlName="studentIds"
-              [items]="students"
-              bindLabel="fullName"
-              bindValue="id"
-              [multiple]="true"
-              [closeOnSelect]="false"
-              [searchable]="true"
-              placeholder="Select Students"
-              [disabled]="!basicInfoForm.get('managerId')?.value"
-            ></ng-select>
-          </div>
-        }
-
+       
         <!-- ============ القسم 3: الجنسية ومكان الإقامة ============ -->
         <div class="col-12">
           <div class="section-card">

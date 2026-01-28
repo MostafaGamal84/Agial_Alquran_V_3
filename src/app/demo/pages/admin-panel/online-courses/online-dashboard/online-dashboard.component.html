@@ -68,7 +68,7 @@
           <div class="flex align-item-center justify-content-between">
             <div class="flex-grow-1">
               <p class="m-b-5 f-w-600 text-muted">{{ finance.title | translate }}</p>
-              <div class="f-18 f-w-700">{{ finance.value }}</div>
+              <div class="f-18 f-w-700">  {{ finance.value.replace('US$', 'دولار').replace('USD', 'دولار').trim() }}</div>
             </div>
             <div class="metric-icon {{ finance.background }}">
               <svg class="pc-icon">
