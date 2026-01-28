@@ -1,22 +1,11 @@
 <footer class="theme-footer">
-  <div class="footer-wrapper">
-    <div class="flex align-item-center">
-      <div class="col m-y-5">
-        <p class="m-0">
-          Ajyal-alquran created with &#9829; by team
-          <a href="https://corevadev.com" target="_blank" class="text-primary-500">COREVADEV</a>
-        </p>
+  <div class="footer-ticker" aria-label="شريط أحاديث">
+    <div class="ticker-track">
+      <div class="ticker-content">
+        <span class="ticker-item" *ngFor="let hadith of hadithTickerItems">{{ hadith }}</span>
       </div>
-      <div class="col-auto">
-        <ul class="list-inline footer-link m-b-0">
-          <li class="list-inline-item"><a href="https://ajyal-alquran.com/">{{ 'Home' | translate }}</a></li>
-          <!-- <li class="list-inline-item">
-            <a href="https://phoenixcoded.gitbook.io/able-pro" target="_blank">{{ 'Documentation' | translate }}</a>
-          </li>
-          <li class="list-inline-item">
-            <a href="https://phoenixcoded.authordesk.app/" target="_blank">{{ 'Support' | translate }}</a>
-          </li> -->
-        </ul>
+      <div class="ticker-content" aria-hidden="true">
+        <span class="ticker-item" *ngFor="let hadith of hadithTickerItems">{{ hadith }}</span>
       </div>
     </div>
   </div>
