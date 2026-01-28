@@ -42,6 +42,9 @@
   </div>
 </div>
 <div mat-dialog-actions align="end">
+  <button mat-button color="warn" (click)="revertPayment()" [disabled]="isUpdating" *ngIf="canRevertPayment">
+    تراجع عن اتمام الدفع
+  </button>
   <button mat-button color="primary" (click)="viewInvoice()">عرض الفاتورة</button>
   <button mat-button mat-dialog-close>اغلاق</button>
 </div>
