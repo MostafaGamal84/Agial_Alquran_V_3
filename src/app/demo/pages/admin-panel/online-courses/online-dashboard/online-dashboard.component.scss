@@ -81,6 +81,58 @@
       }
     }
   }
+
+  @media (max-width: 768px) {
+    .upcoming-row {
+      grid-template-columns: 1fr;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .upcoming-row.upcoming-header {
+      display: none;
+    }
+
+    .upcoming-row:not(.upcoming-header) {
+      padding: 16px;
+    }
+
+    .col-course {
+      .course-info {
+        width: 100%;
+        align-items: flex-start;
+
+        .course-text {
+          .course-name {
+            font-size: 14px;
+          }
+        }
+      }
+    }
+
+    .col-schedule,
+    .col-managers,
+    .col-teacher {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 8px;
+      border-top: 1px dashed var(--accent-100);
+
+      &::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: var(--pc-font-muted);
+      }
+    }
+
+    .col-teacher {
+      .teacher-pill {
+        margin-inline-start: 8px;
+      }
+    }
+  }
 }
 
 .metric-list {

@@ -160,13 +160,13 @@
                 </div>
               </div>
             </div>
-            <div class="col-schedule text-muted">
+            <div class="col-schedule text-muted" [attr.data-label]="'الجدول' | translate">
               {{ getUpcomingScheduleLabel(circle) || ('الجدول غير محدد' | translate) }}
             </div>
-            <div class="col-managers text-muted">
+            <div class="col-managers text-muted" [attr.data-label]="'المديرون' | translate">
               {{ getUpcomingManagersLabel(circle) || '—' }}
             </div>
-            <div class="col-teacher">
+            <div class="col-teacher" [attr.data-label]="'المعلم' | translate">
               <ng-container *ngIf="getUpcomingTeacherName(circle) as teacher; else teacherPlaceholder">
                 <span class="teacher-pill">{{ teacher }}</span>
               </ng-container>
