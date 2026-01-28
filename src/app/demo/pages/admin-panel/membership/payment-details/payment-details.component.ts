@@ -61,7 +61,9 @@ export class PaymentDetailsComponent {
   }
 
   get canRevertPayment(): boolean {
+   
     const status = (this.data.statusText ?? '').toLowerCase();
-    return status.includes('paid') || status.includes('مدفوع');
+  return status === 'paid' || status === 'مدفوع';
   }
 }
+  
