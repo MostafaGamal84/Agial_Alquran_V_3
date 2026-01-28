@@ -23,6 +23,7 @@ interface HadithCard {
 export class LoadingOverlayComponent {
   private loadingValue = false;
   private hadithIndex = 0;
+  private showHadithValue = false;
 
   readonly hadithList: HadithCard[] = [
   {
@@ -96,13 +97,26 @@ export class LoadingOverlayComponent {
 
     this.loadingValue = value;
 
-    if (value) {
+    if (value && this.showHadithValue) {
       this.showNextHadith();   // أول حديث عشوائي
     }
   }
 
   get isLoading(): boolean {
     return this.loadingValue;
+  }
+
+  @Input()
+  set showHadith(value: boolean) {
+    this.showHadithValue = value;
+
+    if (value && this.loadingValue) {
+      this.showNextHadith();
+    }
+  }
+
+  get showHadith(): boolean {
+    return this.showHadithValue;
   }
 
   // ================= helpers =================
