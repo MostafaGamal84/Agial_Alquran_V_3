@@ -485,6 +485,40 @@ export class TeacherSalaryComponent
     this.subscriptions.add(subscription);
   }
 
+  onVodafoneCashTransfer(
+    event: MouseEvent,
+    invoice: TeacherSalaryInvoice
+  ): void {
+    event.stopPropagation();
+    event.preventDefault();
+    if (!this.canTransferVodafoneCash(invoice)) {
+      this.toastService.error('تعذر تجهيز تحويل فودافون كاش بدون رقم جوال أو مبلغ صحيح.');
+      return;
+    }
+
+    const amountValue = this.formatTransferAmount(this.getSalaryAmount(invoice));
+    const mobile = this.normalizePhoneNumber(this.resolveTeacherMobile(invoice) ?? '');
+    const ussd = `*9*7*${mobile}*${amountValue}#`;
+    const dialLink = `tel:${this.encodeUssd(ussd)}`;
+    window.location.href = dialLink;
+  }
+
+  onInstapayTransfer(
+    event: MouseEvent,
+    invoice: TeacherSalaryInvoice
+  ): void {
+    event.stopPropagation();
+    event.preventDefault();
+    if (!this.canTransferInstapay(invoice)) {
+      this.toastService.error('تعذر تجهيز تحويل إنستاباي بدون مبلغ صحيح.');
+      return;
+    }
+
+    const amountValue = this.formatTransferAmount(this.getSalaryAmount(invoice));
+    const link = this.buildInstapayLink(amountValue);
+    window.location.href = link;
+  }
+
   onGenerateMonthly(): void {
     if (this.manualGenerationLoading) {
       return;
@@ -845,7 +879,7 @@ export class TeacherSalaryComponent
 
   private updateDisplayedColumns(): void {
     const baseColumns = ['teacher', 'month', 'salary', 'status', 'paidAt', 'receipt'];
-    if (this.canGenerateInvoices) {
+    if (this.canGenerateInvoices || this.canManagePayments) {
       baseColumns.push('actions');
     }
     this.displayedColumns = this.canManagePayments
@@ -1015,6 +1049,90 @@ export class TeacherSalaryComponent
       }
     }
     return null;
+  }
+
+  private normalizePhoneNumber(phone: string): string {
+    return phone.replace(/[^\d]/g, '');
+  }
+
+  private resolveTeacherMobile(invoice: TeacherSalaryInvoice | null): string | null {
+    if (!invoice) {
+      return null;
+    }
+
+    const sources: Array<Record<string, unknown> | null | undefined> = [
+      invoice,
+      this.invoiceDetails?.invoice,
+      this.selectedInvoice
+    ];
+    const keys = [
+      'mobile',
+      'mobileNumber',
+      'phone',
+      'phoneNumber',
+      'teacherMobile',
+      'teacherPhone',
+      'teacherMobileNumber',
+      'teacherPhoneNumber',
+      'mobileNo',
+      'phoneNo',
+      'teacherMobileNo',
+      'teacherPhoneNo'
+    ];
+
+    for (const source of sources) {
+      if (!source) {
+        continue;
+      }
+      for (const key of keys) {
+        const value = source[key];
+        if (typeof value === 'string' && value.trim().length > 0) {
+          return value.trim();
+        }
+      }
+    }
+
+    const teacherId = invoice.teacherId;
+    if (teacherId && this.teachers.length > 0) {
+      const teacher = this.teachers.find((item) => item.id === teacherId);
+      if (teacher?.mobile) {
+        return teacher.mobile;
+      }
+    }
+
+    return null;
+  }
+
+  private formatTransferAmount(amount: number | null): string {
+    if (amount === null || !Number.isFinite(amount)) {
+      return '';
+    }
+    const fixed = Number(amount).toFixed(2);
+    return fixed.replace(/\.?0+$/, '');
+  }
+
+  private encodeUssd(value: string): string {
+    return value.replace(/#/g, '%23');
+  }
+
+  private buildInstapayLink(amount: string): string {
+    return `instapay://transfer?amount=${encodeURIComponent(amount)}`;
+  }
+
+  canTransferVodafoneCash(invoice: TeacherSalaryInvoice | null): boolean {
+    const amount = this.getSalaryAmount(invoice);
+    const mobile = this.resolveTeacherMobile(invoice);
+    return Boolean(
+      amount !== null &&
+      Number.isFinite(amount) &&
+      mobile &&
+      this.normalizePhoneNumber(mobile).length > 0
+    );
+  }
+
+  canTransferInstapay(invoice: TeacherSalaryInvoice | null): boolean {
+    const amount = this.getSalaryAmount(invoice);
+    return Boolean(amount !== null && Number.isFinite(amount));
   }
 
   private buildSummaryMetrics(

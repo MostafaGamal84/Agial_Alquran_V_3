@@ -601,6 +601,8 @@
   "Reload": "إعادة تحميل",
   "Generate Invoice Tooltip": "إنشاء وطباعة وتحميل الفاتورة",
   "Generate Printable Invoice": "إنشاء فاتورة قابلة للطباعة",
+  "Vodafone Cash Transfer": "تحويل عبر فودافون كاش",
+  "Instapay Transfer": "تحويل عبر إنستاباي",
   "Paid Question": "مدفوع؟",
   "No Invoices Found": "لا توجد فواتير للمرشحات المحددة.",
   "Monthly Summary Subtitle": "نظرة عامة على الحضور والرواتب لـ",

@@ -426,6 +426,8 @@
   "Reload": "Reload",
   "Generate Invoice Tooltip": "Generate, open, and upload printable invoice",
   "Generate Printable Invoice": "Generate printable invoice",
+  "Vodafone Cash Transfer": "Transfer via Vodafone Cash",
+  "Instapay Transfer": "Transfer via Instapay",
   "Paid Question": "Paid?",
   "No Invoices Found": "No invoices found for the selected filters.",
   "Monthly Summary Subtitle": "Attendance and salary overview for",
