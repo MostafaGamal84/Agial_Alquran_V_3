@@ -5,8 +5,8 @@
 
   <ng-container *ngIf="isLoading && showHadith">
     <div *ngIf="currentHadith$ | async as currentHadith" class="loading-overlay__backdrop" role="status" aria-live="polite">
-      <section class="hadith-view" aria-label="Hadith about the Qur'an while loading">
-        <p class="hadith-view__eyebrow"> فضل القرآن الكريم</p>
+      <section class="hadith-view" aria-label="Hadith while loading">
+        <p class="hadith-view__eyebrow">{{ currentHadith.eyebrow || 'فضل القرآن الكريم' }}</p>
 
         <blockquote class="hadith-view__quote">
           <span class="hadith-view__quote-text">
