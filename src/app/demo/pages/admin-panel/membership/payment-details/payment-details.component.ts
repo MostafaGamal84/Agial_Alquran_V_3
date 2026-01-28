@@ -7,7 +7,12 @@ import {
 } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { Router } from '@angular/router';
-import { StudentPaymentDto, getCurrencyLabel } from 'src/app/@theme/services/student-payment.service';
+import {
+  StudentPaymentDto,
+  StudentPaymentService,
+  UpdatePaymentDto,
+  getCurrencyLabel
+} from 'src/app/@theme/services/student-payment.service';
 
 @Component({
   selector: 'app-payment-details',
@@ -20,6 +25,8 @@ export class PaymentDetailsComponent {
   data = inject<StudentPaymentDto>(MAT_DIALOG_DATA);
   private router = inject(Router);
   private dialogRef = inject(MatDialogRef<PaymentDetailsComponent>);
+  private paymentService = inject(StudentPaymentService);
+  isUpdating = false;
 
   viewInvoice(): void {
     this.dialogRef.close();
@@ -28,7 +35,33 @@ export class PaymentDetailsComponent {
     });
   }
 
+  revertPayment(): void {
+    if (this.isUpdating) {
+      return;
+    }
+
+    this.isUpdating = true;
+    const dto: UpdatePaymentDto = {
+      id: this.data.invoiceId,
+      payStatue: false,
+      isCancelled: false
+    };
+
+    this.paymentService.updatePayment(dto).subscribe({
+      next: () => this.dialogRef.close(true),
+      error: (error) => {
+        this.isUpdating = false;
+        console.error('Failed to revert payment status.', error);
+      }
+    });
+  }
+
   get currencyLabel(): string {
     return getCurrencyLabel(this.data.currencyId ?? this.data.currency ?? null);
+  }
+
+  get canRevertPayment(): boolean {
+    const status = (this.data.statusText ?? '').toLowerCase();
+    return status.includes('paid') || status.includes('مدفوع');
   }
 }
