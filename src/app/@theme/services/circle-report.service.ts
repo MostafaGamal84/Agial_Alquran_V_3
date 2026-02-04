@@ -61,6 +61,15 @@ export class CircleReportService {
     );
   }
 
+  delete(id: number): Observable<ApiResponse<boolean>> {
+    const params = new HttpParams().set('id', id.toString());
+    return this.http.post<ApiResponse<boolean>>(
+      `${environment.apiUrl}/api/CircleReport/Delete`,
+      null,
+      { params }
+    );
+  }
+
   get(id: number): Observable<ApiResponse<CircleReportAddDto>> {
     const params = new HttpParams().set('id', id.toString());
     return this.http.get<ApiResponse<CircleReportAddDto>>(

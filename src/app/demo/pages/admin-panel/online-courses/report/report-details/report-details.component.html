@@ -11,6 +11,15 @@
               {{ 'تعديل التقرير' | translate }}
             </div>
           </button>
+          <button
+            mat-icon-button
+            color="warn"
+            [disabled]="isDeleting"
+            (click)="deleteReport()"
+            [matTooltip]="'Delete report' | translate"
+          >
+            <i class="ti ti-trash f-18"></i>
+          </button>
         </div>
       </ng-template>
 
