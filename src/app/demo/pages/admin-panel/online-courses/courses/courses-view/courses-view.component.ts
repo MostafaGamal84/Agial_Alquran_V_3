@@ -426,6 +426,17 @@ export class CoursesViewComponent implements OnInit, OnDestroy {
     return label;
   }
 
+  hasMissingAssignments(circle: CircleViewModel): boolean {
+    const teacherLabel = circle.teacher?.fullName ?? circle.teacherName ?? circle.teacherId;
+    const hasTeacher = typeof teacherLabel === 'number' || !!String(teacherLabel ?? '').trim();
+    const hasManagers =
+      (circle.managerLabels?.length ?? 0) > 0 || (circle.managers?.length ?? 0) > 0;
+    const hasStudents =
+      (circle.studentLabels?.length ?? 0) > 0 || (circle.students?.length ?? 0) > 0;
+
+    return !(hasTeacher && hasManagers && hasStudents);
+  }
+
 }
 
 @Component({
