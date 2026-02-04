@@ -156,6 +156,20 @@
                     </a>
                       </li>
 
+                      <li
+                        class="list-inline-item m-r-10"
+                        *ngIf="canManageReports"
+                        [matTooltip]="'Delete report' | translate"
+                      >
+                        <a
+                          type="button"
+                          class="avatar avatar-xs text-muted"
+                          (click)="onDelete(element)"
+                        >
+                          <i class="ti ti-trash f-18"></i>
+                        </a>
+                      </li>
+
                       <li class="list-inline-item m-r-10" [matTooltip]="'واتساب' | translate">
                         <a
                           type="button"

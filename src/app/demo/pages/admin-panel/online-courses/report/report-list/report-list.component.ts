@@ -7,6 +7,8 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import {
   MatDialog,
+  MatDialogActions,
+  MatDialogClose,
   MatDialogModule,
   MatDialogRef,
   MAT_DIALOG_DATA
@@ -41,7 +43,7 @@ import {
   ResidencyGroupFilter
 } from 'src/app/@theme/types/residency-group';
 import { matchesResidencyGroup } from 'src/app/@theme/utils/nationality.utils';
-import { TranslateService } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
@@ -599,6 +601,30 @@ export class ReportListComponent implements OnInit, OnDestroy {
       state: { report }
     });
   }
+
+  onDelete(report: CircleReportListDto): void {
+    const reportId = Number(report?.id);
+    if (!Number.isFinite(reportId) || reportId <= 0) {
+      this.toast.error(this.translate.instant('Invalid report identifier'));
+      return;
+    }
+
+    const dialogRef = this.dialog.open(DeleteReportConfirmDialogComponent);
+    dialogRef.afterClosed().subscribe((result) => {
+      if (!result) {
+        return;
+      }
+      this.reportService.delete(reportId).subscribe({
+        next: () => {
+          this.toast.success(this.translate.instant('Report deleted successfully'));
+          this.loadReports();
+        },
+        error: () => {
+          this.toast.error(this.translate.instant('Error deleting report'));
+        }
+      });
+    });
+  }
 }
 
 interface WhatsAppDialogPayload {
@@ -638,4 +664,29 @@ export class ReportWhatsAppDialogComponent {
     this.dialogRef.close(true);
   }
 }
+
+@Component({
+  selector: 'app-delete-report-confirm-dialog',
+  template: `
+    <div class="m-b-0 p-10 f-16 f-w-600">{{ 'Delete report' | translate }}</div>
+    <div class="p-10">{{ 'Are you sure you want to delete this report?' | translate }}</div>
+    <div mat-dialog-actions>
+      <button mat-button mat-dialog-close>{{ 'No' | translate }}</button>
+      <button mat-button color="warn" [mat-dialog-close]="true">{{ 'Yes' | translate }}</button>
+    </div>
+  `,
+  styles: [
+    `
+      :host {
+        color: var(--accent-900);
+      }
+
+      :host-context(.dark) {
+        color: rgba(255, 255, 255, 0.87);
+      }
+    `
+  ],
+  imports: [MatDialogActions, MatDialogClose, MatButtonModule, TranslateModule]
+})
+export class DeleteReportConfirmDialogComponent {}
  
