@@ -260,18 +260,20 @@ export class UserEditComponent implements OnInit {
         });
       }
       if (this.currentUser.managerCircles?.length) {
-        const circleList: CircleDto[] = this.currentUser.managerCircles.map((c) => ({
-          id: c.circleId,
-          name: c.circle || ''
-        }));
+        const circleList: CircleDto[] = this.currentUser.managerCircles
+          .filter((c) => typeof c.circleId === 'number')
+          .map((c) => ({
+            id: c.circleId as number,
+            name: c.circle || ''
+          }));
         this.circles = circleList;
         if (this.isManager) {
           this.basicInfoForm.patchValue({
-            circleIds: this.currentUser.managerCircles.map((c) => c.circleId)
+            circleIds: circleList.map((c) => c.id)
           });
         } else {
           this.basicInfoForm.patchValue({
-            circleId: this.currentUser.managerCircles[0].circleId
+            circleId: circleList[0]?.id ?? null
           });
         }
       } else if (this.currentUser.circleId && this.currentUser.circleName) {

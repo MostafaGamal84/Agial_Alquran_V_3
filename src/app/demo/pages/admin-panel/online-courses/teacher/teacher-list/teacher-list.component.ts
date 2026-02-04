@@ -82,7 +82,9 @@ export class TeacherListComponent implements OnInit, OnDestroy {
         Number(UserTypesEnum.Teacher),
         0,
         0,
-        0
+        0,
+        undefined,
+        true
       )
       .pipe(
         finalize(() => {
@@ -213,5 +215,15 @@ export class TeacherListComponent implements OnInit, OnDestroy {
 
   hasMoreResults(): boolean {
     return this.dataSource.data.length < this.totalCount;
+  }
+
+  hasMissingAssignments(teacher: LookUpUserDto): boolean {
+    const hasManager =
+      typeof teacher.managerId === 'number' || !!String(teacher.managerName ?? '').trim();
+    const hasCircle =
+      typeof teacher.circleId === 'number' || !!String(teacher.circleName ?? '').trim();
+    const hasStudents = Array.isArray(teacher.students) && teacher.students.length > 0;
+
+    return !(hasManager && hasCircle && hasStudents);
   }
 }
