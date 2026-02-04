@@ -648,7 +648,7 @@ export const menus: Navigation[] = [
         url: '/teacher-salary',
         role: [
           UserTypesEnum.Admin.toString(),
-          // UserTypesEnum.Manager.toString(),
+          UserTypesEnum.Manager.toString(),
           // UserTypesEnum.Teacher.toString()
         ]
       }

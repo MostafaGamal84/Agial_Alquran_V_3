@@ -613,3 +613,65 @@
 :host-context(.dark) ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items::-webkit-scrollbar-track {
   background: rgba(2, 6, 23, 0.35);
 }
+/* ==========================================
+   NG-SELECT MULTI TAGS (Selected items pills)
+   Fix for Dark Mode (no HTML changes)
+========================================== */
+
+/* 1) Multi select tags container fixes */
+:host-context(.blue-theme.dark) ::ng-deep .user-form .ng-select.ng-select-multiple .ng-select-container,
+:host-context(.dark) ::ng-deep .user-form .ng-select.ng-select-multiple .ng-select-container {
+  background: rgba(15, 23, 42, 0.85) !important;
+  border-color: rgba(148, 163, 184, 0.45) !important;
+}
+
+/* 2) The selected value "pill" itself */
+:host-context(.blue-theme.dark) ::ng-deep .user-form .ng-select.ng-select-multiple .ng-value,
+:host-context(.dark) ::ng-deep .user-form .ng-select.ng-select-multiple .ng-value {
+  background: rgba(59, 130, 246, 0.22) !important; /* pill background */
+  border: 1px solid rgba(96, 165, 250, 0.35) !important;
+  color: #f8fafc !important;
+  border-radius: 10px !important;
+}
+
+/* 3) Text inside the pill */
+:host-context(.blue-theme.dark) ::ng-deep .user-form .ng-select.ng-select-multiple .ng-value .ng-value-label,
+:host-context(.dark) ::ng-deep .user-form .ng-select.ng-select-multiple .ng-value .ng-value-label {
+  color: #f8fafc !important;
+  font-weight: 600;
+}
+
+/* 4) The small "x" remove icon area inside pill */
+:host-context(.blue-theme.dark) ::ng-deep .user-form .ng-select.ng-select-multiple .ng-value .ng-value-icon,
+:host-context(.dark) ::ng-deep .user-form .ng-select.ng-select-multiple .ng-value .ng-value-icon {
+  color: rgba(248, 250, 252, 0.9) !important;
+  border-inline-start: 1px solid rgba(96, 165, 250, 0.25) !important;
+  padding-inline: 6px !important;
+}
+
+/* hover for x */
+:host-context(.blue-theme.dark) ::ng-deep .user-form .ng-select.ng-select-multiple .ng-value .ng-value-icon:hover,
+:host-context(.dark) ::ng-deep .user-form .ng-select.ng-select-multiple .ng-value .ng-value-icon:hover {
+  background: rgba(96, 165, 250, 0.18) !important;
+  color: #ffffff !important;
+}
+
+/* 5) Search/input inside ng-select (important in multi) */
+:host-context(.blue-theme.dark) ::ng-deep .user-form .ng-select .ng-input > input,
+:host-context(.dark) ::ng-deep .user-form .ng-select .ng-input > input {
+  color: #f8fafc !important;
+  caret-color: #f8fafc !important;
+}
+
+:host-context(.blue-theme.dark) ::ng-deep .user-form .ng-select .ng-placeholder,
+:host-context(.dark) ::ng-deep .user-form .ng-select .ng-placeholder {
+  color: rgba(248, 250, 252, 0.65) !important;
+}
+
+/* 6) (Optional) make tags spacing nicer */
+:host-context(.blue-theme.dark) ::ng-deep .user-form .ng-select.ng-select-multiple .ng-select-container .ng-value-container,
+:host-context(.dark) ::ng-deep .user-form .ng-select.ng-select-multiple .ng-select-container .ng-value-container {
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+  gap: 6px !important;
+}
