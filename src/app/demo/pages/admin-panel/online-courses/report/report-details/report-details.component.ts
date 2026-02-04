@@ -192,11 +192,11 @@ export class ReportDetailsComponent implements OnInit {
       this.isDeleting = true;
       this.service.delete(this.report.id).subscribe({
         next: () => {
-          this.toast.success(this.translate.instant('Report deleted successfully'));
+          this.toast.success('تم حذف التثقير بنجاح');
           this.router.navigate(['/online-course/report/view']);
         },
         error: () => {
-          this.toast.error(this.translate.instant('Error deleting report'));
+          this.toast.error('خطا في الحذف');
           this.isDeleting = false;
         }
       });
@@ -207,8 +207,8 @@ export class ReportDetailsComponent implements OnInit {
 @Component({
   selector: 'app-delete-report-confirm-dialog',
   template: `
-    <div class="m-b-0 p-10 f-16 f-w-600">{{ 'Delete report' | translate }}</div>
-    <div class="p-10">{{ 'Are you sure you want to delete this report?' | translate }}</div>
+    <div class="m-b-0 p-10 f-16 f-w-600">{{ 'حذف التقرير'}}</div>
+    <div class="p-10">{{ 'هل انت متاكد من حذف التقرير؟'}}</div>
     <div mat-dialog-actions>
       <button mat-button mat-dialog-close>{{ 'No' | translate }}</button>
       <button mat-button color="warn" [mat-dialog-close]="true">{{ 'Yes' | translate }}</button>
