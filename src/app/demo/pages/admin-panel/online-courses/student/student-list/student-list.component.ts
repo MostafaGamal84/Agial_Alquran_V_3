@@ -264,4 +264,15 @@ export class StudentListComponent implements OnInit, OnDestroy {
   hasMoreResults(): boolean {
     return this.dataSource.data.length < this.totalCount;
   }
+
+  hasMissingAssignments(student: LookUpUserDto): boolean {
+    const hasManager =
+      typeof student.managerId === 'number' || !!String(student.managerName ?? '').trim();
+    const hasTeacher =
+      typeof student.teacherId === 'number' || !!String(student.teacherName ?? '').trim();
+    const hasCircle =
+      typeof student.circleId === 'number' || !!String(student.circleName ?? '').trim();
+
+    return !(hasManager && hasTeacher && hasCircle);
+  }
 }
