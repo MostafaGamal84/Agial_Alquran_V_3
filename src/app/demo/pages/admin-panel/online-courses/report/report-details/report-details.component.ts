@@ -1,6 +1,9 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
+import { MatDialog, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
+import { MatButton } from '@angular/material/button';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
@@ -30,9 +33,12 @@ export class ReportDetailsComponent implements OnInit {
   private service = inject(CircleReportService);
   private toast = inject(ToastService);
   private auth = inject(AuthenticationService);
+  private dialog = inject(MatDialog);
+  private translate = inject(TranslateService);
 
   report?: ReportDetails;
   isLoading = true;
+  isDeleting = false;
 
   readonly role = this.auth.getRole();
   readonly canEdit = this.role !== UserTypesEnum.Student;
@@ -173,4 +179,52 @@ export class ReportDetailsComponent implements OnInit {
       state: { report: this.report }
     });
   }
+
+  deleteReport(): void {
+    if (!this.report?.id || this.isDeleting) {
+      return;
+    }
+    const dialogRef = this.dialog.open(DeleteReportConfirmDialogComponent);
+    dialogRef.afterClosed().subscribe((result) => {
+      if (!result || !this.report?.id) {
+        return;
+      }
+      this.isDeleting = true;
+      this.service.delete(this.report.id).subscribe({
+        next: () => {
+          this.toast.success(this.translate.instant('Report deleted successfully'));
+          this.router.navigate(['/online-course/report/view']);
+        },
+        error: () => {
+          this.toast.error(this.translate.instant('Error deleting report'));
+          this.isDeleting = false;
+        }
+      });
+    });
+  }
 }
+
+@Component({
+  selector: 'app-delete-report-confirm-dialog',
+  template: `
+    <div class="m-b-0 p-10 f-16 f-w-600">{{ 'Delete report' | translate }}</div>
+    <div class="p-10">{{ 'Are you sure you want to delete this report?' | translate }}</div>
+    <div mat-dialog-actions>
+      <button mat-button mat-dialog-close>{{ 'No' | translate }}</button>
+      <button mat-button color="warn" [mat-dialog-close]="true">{{ 'Yes' | translate }}</button>
+    </div>
+  `,
+  styles: [
+    `
+      :host {
+        color: var(--accent-900);
+      }
+
+      :host-context(.dark) {
+        color: rgba(255, 255, 255, 0.87);
+      }
+    `
+  ],
+  imports: [MatDialogActions, MatButton, MatDialogClose, TranslateModule]
+})
+export class DeleteReportConfirmDialogComponent {}

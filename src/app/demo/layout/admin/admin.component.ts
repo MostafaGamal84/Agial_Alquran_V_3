@@ -43,7 +43,7 @@ import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
     VerticalMenuComponent,
     HorizontalMenuComponent,
     CompactMenuComponent,
-    BreadcrumbComponent,
+    // BreadcrumbComponent,
     ConfigurationComponent,
     FooterComponent
   ],
