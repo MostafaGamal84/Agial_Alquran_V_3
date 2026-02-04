@@ -113,7 +113,8 @@ export class StudentListComponent implements OnInit, OnDestroy {
         0,
         0,
         0,
-        this.selectedResidentId ?? undefined
+        this.selectedResidentId ?? undefined,
+        true
       )
       .pipe(
         finalize(() => {
