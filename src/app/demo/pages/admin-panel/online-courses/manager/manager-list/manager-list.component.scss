@@ -9,3 +9,8 @@
     }
   }
 }
+
+::ng-deep .missing-assignments .mat-column-fullName {
+  color: var(--warning-600, #d97706);
+  font-weight: 600;
+}

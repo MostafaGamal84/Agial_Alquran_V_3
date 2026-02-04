@@ -23,8 +23,13 @@ export interface LookUpUserDto {
   inactive?: boolean;
   managerId?: number;
   managerName?: string;
+  teacherId?: number;
+  teacherName?: string;
   circleId?: number;
   circleName?: string;
+  students?: Array<{ id?: number; fullName?: string }>;
+  teachers?: Array<{ id?: number; fullName?: string }>;
+  managerCircles?: Array<{ circleId?: number; circle?: string }>;
 }
 
 export interface ApiError {
