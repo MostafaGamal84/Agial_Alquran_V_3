@@ -94,10 +94,14 @@
                 </td>
               </tr>
             </table>
-            <div class="app-paginator" #loadMoreTrigger [class.d-none]="!hasMoreResults()">
-              <span class="text-muted">
-                {{ (isLoadingMore ? 'Loading more...' : 'جاري التحميل') | translate }}
+            <div class="app-paginator" #loadMoreTrigger>
+              <span class="text-muted" *ngIf="isLoadingMore">
+                {{ 'Loading more...' | translate }}
               </span>
+              <span class="text-muted" *ngIf="!isLoadingMore && !hasMoreResults()">
+                {{ 'تم تحميل كل البيانات' | translate }}
+              </span>
+              <span class="text-muted invisible" *ngIf="!isLoadingMore && hasMoreResults()">&nbsp;</span>
             </div>
           </div>
         </div>
