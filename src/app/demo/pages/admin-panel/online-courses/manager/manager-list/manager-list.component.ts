@@ -76,7 +76,9 @@ export class ManagerListComponent implements OnInit, OnDestroy {
         Number(UserTypesEnum.Manager),
         0,
         0,
-        0
+        0,
+        undefined,
+        true
       )
       .pipe(
         finalize(() => {
@@ -158,5 +160,19 @@ export class ManagerListComponent implements OnInit, OnDestroy {
 
   hasMoreResults(): boolean {
     return this.dataSource.data.length < this.totalCount;
+  }
+
+  hasMissingAssignments(manager: LookUpUserDto): boolean {
+    const hasTeacher =
+      typeof manager.teacherId === 'number' ||
+      !!String(manager.teacherName ?? '').trim() ||
+      (Array.isArray(manager.teachers) && manager.teachers.length > 0);
+    const hasStudents = Array.isArray(manager.students) && manager.students.length > 0;
+    const hasCircle =
+      typeof manager.circleId === 'number' ||
+      !!String(manager.circleName ?? '').trim() ||
+      (Array.isArray(manager.managerCircles) && manager.managerCircles.length > 0);
+
+    return !(hasTeacher && hasStudents && hasCircle);
   }
 }

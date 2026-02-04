@@ -69,3 +69,8 @@
   max-width: 100%;
   white-space: normal;
 }
+
+::ng-deep .missing-assignments .mat-column-name {
+  color: var(--warning-600, #d97706);
+  font-weight: 600;
+}
