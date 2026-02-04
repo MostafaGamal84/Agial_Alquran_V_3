@@ -27,9 +27,9 @@ export interface LookUpUserDto {
   teacherName?: string;
   circleId?: number;
   circleName?: string;
-  students?: Array<{ fullName?: string | null }>;
-  teachers?: Array<{ fullName?: string | null }>;
-  managerCircles?: Array<{ circleId?: number | null; circle?: string | null }>;
+  students?: Array<{ id?: number; fullName?: string }>;
+  teachers?: Array<{ id?: number; fullName?: string }>;
+  managerCircles?: Array<{ circleId?: number; circle?: string }>;
 }
 
 export interface ApiError {
