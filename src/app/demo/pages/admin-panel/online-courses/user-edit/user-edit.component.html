@@ -269,7 +269,7 @@
                       [closeOnSelect]="false"
                       [searchable]="true"
                       placeholder="اختر المعلمين"
-                      (change)="onTeachersChange($event)"
+                      (change)="onTeachersChange($event?.value ?? $event)"
                     ></ng-select>
                   </div>
 
@@ -318,7 +318,7 @@
                       [closeOnSelect]="false"
                       [searchable]="true"
                       placeholder="اختر المشرفين"
-                      (change)="onTeacherManagersChange($event)"
+                      (change)="onTeacherManagersChange($event?.value ?? $event)"
                     ></ng-select>
                   </div>
 

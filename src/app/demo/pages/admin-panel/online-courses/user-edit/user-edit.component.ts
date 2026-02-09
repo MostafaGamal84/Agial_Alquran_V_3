@@ -407,8 +407,8 @@ export class UserEditComponent implements OnInit {
     }
   }
 
-  onTeachersChange(selection: number[] | number | null) {
-    const teacherIds = this.normalizeTeacherIds(Array.isArray(selection) ? selection : selection ? [selection] : []);
+  onTeachersChange(selection: unknown) {
+    const teacherIds = this.normalizeTeacherIds(this.extractSelectIds(selection));
     if (!this.isManager) {
       return;
     }
@@ -504,8 +504,8 @@ export class UserEditComponent implements OnInit {
     this.basicInfoForm.get('circleId')?.enable();
   }
 
-  onTeacherManagersChange(selection: number[] | number | null) {
-    const managerIds = this.normalizeIds(Array.isArray(selection) ? selection : selection ? [selection] : []);
+  onTeacherManagersChange(selection: unknown) {
+    const managerIds = this.normalizeIds(this.extractSelectIds(selection));
     this.basicInfoForm.patchValue({ managerIds }, { emitEvent: false });
 
     const primaryManagerId = managerIds[0] ?? null;
@@ -627,6 +627,29 @@ export class UserEditComponent implements OnInit {
     } else {
       this.basicInfoForm.markAllAsTouched();
     }
+  }
+
+  private extractSelectIds(selection: unknown): Array<number | null | undefined> {
+    const eventValue =
+      selection && typeof selection === 'object' && 'value' in (selection as Record<string, unknown>)
+        ? (selection as { value?: unknown }).value
+        : selection;
+
+    if (Array.isArray(eventValue)) {
+      return eventValue.map((item) =>
+        typeof item === 'number' ? item : typeof item === 'object' && item && 'id' in item ? Number((item as { id?: unknown }).id) : null
+      );
+    }
+
+    if (typeof eventValue === 'number') {
+      return [eventValue];
+    }
+
+    if (typeof eventValue === 'object' && eventValue && 'id' in eventValue) {
+      return [Number((eventValue as { id?: unknown }).id)];
+    }
+
+    return [];
   }
 
   private normalizeIds(ids: Array<number | null | undefined>): number[] {
