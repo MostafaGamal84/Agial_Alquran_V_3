@@ -307,15 +307,18 @@
 
                 @if (isTeacher) {
                   <div class="col-md-6">
-                    <label class="form-label form-label-sm">المشرف</label>
+                    <label class="form-label form-label-sm">المشرفون</label>
                     <ng-select
                       class="w-100"
-                      formControlName="managerId"
+                      formControlName="managerIds"
                       [items]="managers"
                       bindLabel="fullName"
                       bindValue="id"
+                      [multiple]="true"
+                      [closeOnSelect]="false"
                       [searchable]="true"
-                      [disabled]="true"
+                      placeholder="اختر المشرفين"
+                      (change)="onTeacherManagersChange($event)"
                     ></ng-select>
                   </div>
 
@@ -331,7 +334,7 @@
                       [closeOnSelect]="false"
                       [searchable]="true"
                       placeholder="اختر الطلاب"
-                      [disabled]="!basicInfoForm.get('managerId')?.value"
+                      [disabled]="!(basicInfoForm.get('managerIds')?.value?.length)"
                     ></ng-select>
                   </div>
 
@@ -344,7 +347,7 @@
                       bindLabel="name"
                       bindValue="id"
                       [searchable]="true"
-                      [disabled]="!basicInfoForm.get('managerId')?.value"
+                      [disabled]="!(basicInfoForm.get('managerIds')?.value?.length)"
                       placeholder="اختر الحلقة"
                     ></ng-select>
                   </div>
