@@ -363,14 +363,16 @@ export class UserEditComponent implements OnInit {
 
   private loadRelatedUsers() {
     const filter: FilteredResultRequestDto = { lookupOnly: true };
+    const fullListFilter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 1000 };
     if (this.isManager) {
       this.lookupService
-        .getUsersForSelects(filter, Number(UserTypesEnum.Teacher), 0, 0, this.currentUser?.branchId || 0)
+        .getUsersForSelects(fullListFilter, Number(UserTypesEnum.Teacher), 0, 0, this.currentUser?.branchId || 0)
         .subscribe((res) => {
           if (res.isSuccess) {
             const existing = new Map(this.teachers.map((t) => [t.id, t]));
             res.data.items.forEach((t) => existing.set(t.id, t));
             this.teachers = Array.from(existing.values());
+
           }
         });
     } else if (this.isTeacher) {
@@ -396,12 +398,13 @@ export class UserEditComponent implements OnInit {
     }
     if (this.isManager) {
       this.lookupService
-        .getUsersForSelects(filter, Number(UserTypesEnum.Student), 0, 0, this.currentUser?.branchId || 0)
+        .getUsersForSelects(fullListFilter, Number(UserTypesEnum.Student), 0, 0, this.currentUser?.branchId || 0)
         .subscribe((res) => {
           if (res.isSuccess) {
             const existing = new Map(this.students.map((s) => [s.id, s]));
             res.data.items.forEach((s) => existing.set(s.id, s));
             this.students = Array.from(existing.values());
+
           }
         });
     }
