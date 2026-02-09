@@ -363,9 +363,10 @@ export class UserEditComponent implements OnInit {
 
   private loadRelatedUsers() {
     const filter: FilteredResultRequestDto = { lookupOnly: true };
+    const managerId = this.userId || 0;
     if (this.isManager) {
       this.lookupService
-        .getUsersForSelects(filter, Number(UserTypesEnum.Teacher), 0, 0, this.currentUser?.branchId || 0)
+        .getUsersForSelects(filter, Number(UserTypesEnum.Teacher), managerId, 0, this.currentUser?.branchId || 0)
         .subscribe((res) => {
           if (res.isSuccess) {
             const existing = new Map(this.teachers.map((t) => [t.id, t]));
@@ -397,7 +398,7 @@ export class UserEditComponent implements OnInit {
     }
     if (this.isManager) {
       this.lookupService
-        .getUsersForSelects(filter, Number(UserTypesEnum.Student), 0, 0, this.currentUser?.branchId || 0)
+        .getUsersForSelects(filter, Number(UserTypesEnum.Student), managerId, 0, this.currentUser?.branchId || 0)
         .subscribe((res) => {
           if (res.isSuccess) {
             const existing = new Map(this.students.map((s) => [s.id, s]));
