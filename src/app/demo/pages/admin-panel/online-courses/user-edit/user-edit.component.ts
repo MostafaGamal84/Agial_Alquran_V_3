@@ -371,6 +371,7 @@ export class UserEditComponent implements OnInit {
             const existing = new Map(this.teachers.map((t) => [t.id, t]));
             res.data.items.forEach((t) => existing.set(t.id, t));
             this.teachers = Array.from(existing.values());
+
           }
         });
     } else if (this.isTeacher) {
@@ -402,6 +403,7 @@ export class UserEditComponent implements OnInit {
             const existing = new Map(this.students.map((s) => [s.id, s]));
             res.data.items.forEach((s) => existing.set(s.id, s));
             this.students = Array.from(existing.values());
+
           }
         });
     }
