@@ -58,6 +58,7 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
   
   private destroy$ = new Subject<void>();
   private readonly userFilter: FilteredResultRequestDto = { lookupOnly: true };
+  private readonly fullListFilter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 1000 };
 
   circleForm!: FormGroup;
   teachers: LookUpUserDto[] = [];
@@ -121,7 +122,7 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
     const course = history.state.course as CircleDto | undefined;
 
     this.lookup
-      .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Manager))
+      .getUsersForSelects(this.fullListFilter, Number(UserTypesEnum.Manager), 0, 0, this.getSelectedBranchId())
       .pipe(takeUntil(this.destroy$))
       .subscribe((res) => {
         if (res.isSuccess) {
@@ -324,7 +325,7 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
     }
 
     this.lookup
-      .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Teacher), managerId)
+      .getUsersForSelects(this.fullListFilter, Number(UserTypesEnum.Teacher), 0, 0, this.getSelectedBranchId())
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res) => {
@@ -367,7 +368,7 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
     }
 
     this.lookup
-      .getUsersForSelects(this.userFilter, Number(UserTypesEnum.Student), 0, teacherId)
+      .getUsersForSelects(this.fullListFilter, Number(UserTypesEnum.Student), 0, 0, this.getSelectedBranchId())
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (res) => {
@@ -386,6 +387,11 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
           studentsControl?.disable({ emitEvent: false });
         }
       });
+  }
+
+  private getSelectedBranchId(): number {
+    const branchId = Number(this.circleForm?.get('branchId')?.value);
+    return Number.isFinite(branchId) && branchId > 0 ? branchId : 0;
   }
 
   private resolvePrimaryId(ids: number[] | null | undefined): number | null {
