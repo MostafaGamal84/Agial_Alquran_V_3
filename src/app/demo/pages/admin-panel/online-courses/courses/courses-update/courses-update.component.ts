@@ -35,7 +35,7 @@ interface CircleScheduleFormValue {
 interface CircleFormValue {
   name: string;
   branchId: number | null;
-  teacherId: number;
+  teacherId: number | null;
   days: CircleScheduleFormValue[];
   managers: number[];
   studentsIds: number[];
@@ -75,6 +75,7 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
     { id: BranchesEnum.Women, label: 'النساء' }
   ];
   submitted = false;
+  isSaving = false;
 
   ngOnInit(): void {
     this.isManager = this.auth.getRole() === UserTypesEnum.Manager;
@@ -700,7 +701,17 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
       this.circleForm.markAllAsTouched();
       return;
     }
+
+    if (!Number.isFinite(this.id) || this.id <= 0) {
+      this.toast.error('تعذر تحديد الحلقة المراد تحديثها');
+      return;
+    }
+
     const formValue = this.circleForm.getRawValue() as CircleFormValue;
+    if (typeof formValue.teacherId !== 'number' || formValue.teacherId <= 0) {
+      this.toast.error('يرجى اختيار المعلم قبل تحديث الحلقة');
+      return;
+    }
 
     const schedule: CircleDayRequestDto[] = Array.isArray(formValue.days)
       ? formValue.days.reduce<CircleDayRequestDto[]>((acc, entry) => {
@@ -724,8 +735,10 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
       managers: formValue.managers,
       studentsIds: formValue.studentsIds
     };
+    this.isSaving = true;
     this.circle.update(model).subscribe({
       next: (res) => {
+        this.isSaving = false;
         if (res.isSuccess) {
           this.toast.success('تم تحديث البيانات بنجاح ');
           this.router.navigate(['/online-course/courses/view']);
@@ -736,7 +749,10 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
           this.toast.error('خطا في الحفظ');
         }
       },
-      error: () => this.toast.error('خطا في الحفظ')
+      error: () => {
+        this.isSaving = false;
+        this.toast.error('خطا في الحفظ');
+      }
     });
   }
 }
