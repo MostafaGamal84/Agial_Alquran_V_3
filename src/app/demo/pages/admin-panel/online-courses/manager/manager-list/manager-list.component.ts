@@ -78,7 +78,7 @@ export class ManagerListComponent implements OnInit, OnDestroy {
         0,
         0,
         undefined,
-        true
+        false
       )
       .pipe(
         finalize(() => {

@@ -166,15 +166,20 @@ export class UserEditComponent implements OnInit {
 
     if (this.isManager || this.isTeacher || this.isStudent) {
       if (this.isManager) {
-        const teacherList = this.currentUser.teachers ?? this.currentUser.managers ?? [];
+        const teacherList = this.currentUser.teachers ?? [];
+        const fallbackTeacherIds =
+          typeof this.currentUser.teacherId === 'number' ? [this.currentUser.teacherId] : [];
+        const selectedTeacherIds = this.normalizeTeacherIds([
+          ...teacherList.map((teacher) => teacher.id),
+          ...fallbackTeacherIds
+        ]);
+
         if (teacherList.length) {
           this.teachers = teacherList;
-          const ids = teacherList.map((t) => t.id);
-          this.basicInfoForm.patchValue({
-            teacherIds: ids
-          });
-          this.onTeachersChange(ids);
         }
+
+        this.basicInfoForm.patchValue({ teacherIds: selectedTeacherIds });
+        this.onTeachersChange(selectedTeacherIds);
       } else if (this.isTeacher) {
         if (this.currentUser.managers?.length) {
           this.managers = this.currentUser.managers;
@@ -394,10 +399,13 @@ export class UserEditComponent implements OnInit {
   }
 
   onTeachersChange(selection: number[] | number | null) {
-    const teacherIds = Array.isArray(selection) ? selection : selection ? [selection] : [];
+    const teacherIds = this.normalizeTeacherIds(Array.isArray(selection) ? selection : selection ? [selection] : []);
     if (!this.isManager) {
       return;
     }
+
+    this.basicInfoForm.patchValue({ teacherIds }, { emitEvent: false });
+
     if (!(teacherIds && teacherIds.length)) {
       this.circles = [];
       this.basicInfoForm.patchValue({ circleIds: [] });
@@ -569,6 +577,7 @@ export class UserEditComponent implements OnInit {
       // Use getRawValue so disabled controls like circleId are included
       const formValue = this.basicInfoForm.getRawValue();
       const clean = (v: string) => v.replace(/\D/g, '');
+      const managerTeacherIds = this.isManager ? this.normalizeTeacherIds(formValue.teacherIds ?? []) : undefined;
       const model: UpdateUserDto = {
         id: this.userId,
         fullName: formValue.fullName,
@@ -580,7 +589,7 @@ export class UserEditComponent implements OnInit {
         governorateId: formValue.governorateId,
         branchId: formValue.branchId,
         managerId: this.isTeacher || this.isStudent ? formValue.managerId : undefined,
-        teacherIds: this.isManager ? formValue.teacherIds : undefined,
+        teacherIds: managerTeacherIds,
         teacherId: this.isStudent ? formValue.teacherId : undefined,
 
         studentIds: this.isManager || this.isTeacher ? formValue.studentIds : undefined,
@@ -590,7 +599,7 @@ export class UserEditComponent implements OnInit {
       this.userService.updateUser(model).subscribe({
         next: (res) => {
           if (res?.isSuccess) {
-            this.toast.success(res.message || 'تم تحديث البيانات بنجاح');
+            this.toast.success(res.message || (this.isManager ? 'تم تحديث البيانات والعلاقات بنجاح' : 'تم تحديث البيانات بنجاح'));
             this.router.navigate([this.getListRoute()]);
           } else if (res?.errors?.length) {
             res.errors.forEach((e) => this.toast.error(e.message));
@@ -603,5 +612,16 @@ export class UserEditComponent implements OnInit {
     } else {
       this.basicInfoForm.markAllAsTouched();
     }
+  }
+
+  private normalizeTeacherIds(ids: Array<number | null | undefined>): number[] {
+    const uniqueIds = new Set<number>();
+    ids.forEach((id) => {
+      if (typeof id === 'number' && Number.isFinite(id) && id > 0) {
+        uniqueIds.add(id);
+      }
+    });
+
+    return Array.from(uniqueIds);
   }
 }
