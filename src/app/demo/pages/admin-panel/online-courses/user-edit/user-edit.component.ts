@@ -373,10 +373,6 @@ export class UserEditComponent implements OnInit {
             res.data.items.forEach((t) => existing.set(t.id, t));
             this.teachers = Array.from(existing.values());
 
-            const selectedTeacherIds = this.normalizeTeacherIds(this.basicInfoForm.get('teacherIds')?.value ?? []);
-            if (!selectedTeacherIds.length && this.teachers.length) {
-              this.basicInfoForm.patchValue({ teacherIds: this.teachers.map((teacher) => teacher.id) }, { emitEvent: false });
-            }
           }
         });
     } else if (this.isTeacher) {
@@ -409,10 +405,6 @@ export class UserEditComponent implements OnInit {
             res.data.items.forEach((s) => existing.set(s.id, s));
             this.students = Array.from(existing.values());
 
-            const selectedStudentIds = this.normalizeIds(this.basicInfoForm.get('studentIds')?.value ?? []);
-            if (!selectedStudentIds.length && this.students.length) {
-              this.basicInfoForm.patchValue({ studentIds: this.students.map((student) => student.id) }, { emitEvent: false });
-            }
           }
         });
     }
