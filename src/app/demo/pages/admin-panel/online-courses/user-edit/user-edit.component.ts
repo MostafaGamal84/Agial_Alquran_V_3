@@ -363,10 +363,10 @@ export class UserEditComponent implements OnInit {
 
   private loadRelatedUsers() {
     const filter: FilteredResultRequestDto = { lookupOnly: true };
-    const managerId = this.userId || 0;
+    const fullListFilter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 1000 };
     if (this.isManager) {
       this.lookupService
-        .getUsersForSelects(filter, Number(UserTypesEnum.Teacher), managerId, 0, this.currentUser?.branchId || 0)
+        .getUsersForSelects(fullListFilter, Number(UserTypesEnum.Teacher), 0, 0, this.currentUser?.branchId || 0)
         .subscribe((res) => {
           if (res.isSuccess) {
             const existing = new Map(this.teachers.map((t) => [t.id, t]));
@@ -398,7 +398,7 @@ export class UserEditComponent implements OnInit {
     }
     if (this.isManager) {
       this.lookupService
-        .getUsersForSelects(filter, Number(UserTypesEnum.Student), managerId, 0, this.currentUser?.branchId || 0)
+        .getUsersForSelects(fullListFilter, Number(UserTypesEnum.Student), 0, 0, this.currentUser?.branchId || 0)
         .subscribe((res) => {
           if (res.isSuccess) {
             const existing = new Map(this.students.map((s) => [s.id, s]));
