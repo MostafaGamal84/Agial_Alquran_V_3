@@ -98,6 +98,7 @@ export class UserEditComponent implements OnInit {
       teacherIds: [[]],
       teacherId: [null],
       managerId: [null],
+      managerIds: [[]],
 
       studentIds: [[]],
       circleIds: [[]],
@@ -183,9 +184,12 @@ export class UserEditComponent implements OnInit {
       } else if (this.isTeacher) {
         if (this.currentUser.managers?.length) {
           this.managers = this.currentUser.managers;
+          const selectedManagerIds = this.normalizeIds(this.currentUser.managers.map((manager) => manager.id));
           this.basicInfoForm.patchValue({
-            managerId: this.currentUser.managers[0].id
+            managerIds: selectedManagerIds
           });
+          const primaryManagerId = selectedManagerIds[0] ?? null;
+          this.basicInfoForm.patchValue({ managerId: primaryManagerId });
         } else if (this.currentUser.managerId && this.currentUser.managerName) {
           const manager: LookUpUserDto = {
             id: this.currentUser.managerId,
@@ -203,6 +207,7 @@ export class UserEditComponent implements OnInit {
           };
           this.managers = [manager];
           this.basicInfoForm.patchValue({
+            managerIds: [manager.id],
             managerId: manager.id
           });
         }
@@ -233,9 +238,12 @@ export class UserEditComponent implements OnInit {
         }
         if (this.currentUser.managers?.length) {
           this.managers = this.currentUser.managers;
+          const selectedManagerIds = this.normalizeIds(this.currentUser.managers.map((manager) => manager.id));
           this.basicInfoForm.patchValue({
-            managerId: this.currentUser.managers[0].id
+            managerIds: selectedManagerIds
           });
+          const primaryManagerId = selectedManagerIds[0] ?? null;
+          this.basicInfoForm.patchValue({ managerId: primaryManagerId });
         } else if (this.currentUser.managerId && this.currentUser.managerName) {
           const manager: LookUpUserDto = {
             id: this.currentUser.managerId,
@@ -302,9 +310,10 @@ export class UserEditComponent implements OnInit {
         this.basicInfoForm.get('circleIds')?.disable();
       }
       if (this.isTeacher) {
-        const mId = this.basicInfoForm.get('managerId')?.value;
-        if (mId) {
-          this.loadStudentsAndCircles(mId);
+        const managerIds = this.normalizeIds(this.basicInfoForm.get('managerIds')?.value ?? []);
+        const primaryManagerId = managerIds[0] ?? this.basicInfoForm.get('managerId')?.value ?? null;
+        if (primaryManagerId) {
+          this.loadStudentsAndCircles(primaryManagerId);
         } else {
           this.basicInfoForm.get('studentIds')?.disable();
           this.basicInfoForm.get('circleId')?.disable();
@@ -495,10 +504,15 @@ export class UserEditComponent implements OnInit {
     this.basicInfoForm.get('circleId')?.enable();
   }
 
-  onTeacherManagerChange(managerId: number | null) {
-    const resolved = managerId ?? null;
-    if (resolved) {
-      this.loadStudentsAndCircles(resolved);
+  onTeacherManagersChange(selection: number[] | number | null) {
+    const managerIds = this.normalizeIds(Array.isArray(selection) ? selection : selection ? [selection] : []);
+    this.basicInfoForm.patchValue({ managerIds }, { emitEvent: false });
+
+    const primaryManagerId = managerIds[0] ?? null;
+    this.basicInfoForm.patchValue({ managerId: primaryManagerId }, { emitEvent: false });
+
+    if (primaryManagerId) {
+      this.loadStudentsAndCircles(primaryManagerId);
     } else {
       this.students = [];
       this.circles = [];
@@ -589,6 +603,7 @@ export class UserEditComponent implements OnInit {
         governorateId: formValue.governorateId,
         branchId: formValue.branchId,
         managerId: this.isTeacher || this.isStudent ? formValue.managerId : undefined,
+        managerIds: this.isTeacher ? this.normalizeIds(formValue.managerIds ?? []) : undefined,
         teacherIds: managerTeacherIds,
         teacherId: this.isStudent ? formValue.teacherId : undefined,
 
@@ -614,7 +629,7 @@ export class UserEditComponent implements OnInit {
     }
   }
 
-  private normalizeTeacherIds(ids: Array<number | null | undefined>): number[] {
+  private normalizeIds(ids: Array<number | null | undefined>): number[] {
     const uniqueIds = new Set<number>();
     ids.forEach((id) => {
       if (typeof id === 'number' && Number.isFinite(id) && id > 0) {
@@ -623,5 +638,9 @@ export class UserEditComponent implements OnInit {
     });
 
     return Array.from(uniqueIds);
+  }
+
+  private normalizeTeacherIds(ids: Array<number | null | undefined>): number[] {
+    return this.normalizeIds(ids);
   }
 }
