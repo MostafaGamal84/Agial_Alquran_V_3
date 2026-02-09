@@ -264,8 +264,14 @@
         <!-- ============ Actions ============ -->
         <div class="col-12">
           <div class="form-actions">
-            <button mat-flat-button color="primary" type="submit" class="submit-btn">
-              تحديث الحلقة
+            <button
+              mat-flat-button
+              color="primary"
+              type="submit"
+              class="submit-btn"
+              [disabled]="isSaving"
+            >
+              {{ isSaving ? 'جاري التحديث...' : 'تحديث الحلقة' }}
             </button>
           </div>
         </div>
