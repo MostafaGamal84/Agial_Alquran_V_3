@@ -471,7 +471,12 @@ export class UserEditComponent implements OnInit {
     }
   }
 
-  onTeacherChange(teacherId: number) {
+  onTeacherChange(selection: unknown) {
+    const teacherId = this.toNumberOrNull(
+      typeof selection === 'object' && selection !== null && 'value' in selection
+        ? (selection as { value?: unknown }).value
+        : selection
+    );
     const circleFilter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
     if (teacherId) {
       this.circleService.getAll(circleFilter, undefined, teacherId).subscribe((res) => {
@@ -486,6 +491,11 @@ export class UserEditComponent implements OnInit {
       this.basicInfoForm.patchValue({ circleId: null });
     }
     this.basicInfoForm.get('circleId')?.disable();
+  }
+
+  private toNumberOrNull(value: unknown): number | null {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
   }
 
   private loadStudentsAndCircles(managerId: number) {
