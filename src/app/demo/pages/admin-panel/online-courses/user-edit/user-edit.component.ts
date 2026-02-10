@@ -491,6 +491,11 @@ export class UserEditComponent implements OnInit {
     this.basicInfoForm.get('circleId')?.disable();
   }
 
+  private toNumberOrNull(value: unknown): number | null {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+  }
+
   private loadStudentsAndCircles(managerId: number) {
     const fullListFilter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 1000 };
     const effectiveManagerId = this.getEffectiveManagerId(managerId);
@@ -647,7 +652,19 @@ export class UserEditComponent implements OnInit {
       const formValue = this.basicInfoForm.getRawValue();
       const clean = (v: string) => v.replace(/\D/g, '');
       const managerTeacherIds = this.isManager ? this.normalizeTeacherIds(formValue.teacherIds ?? []) : undefined;
-      const allowManagerUpdate = !this.shouldLockManagerAssignment;
+      const managerIdsFromForm = this.normalizeIds(formValue.managerIds ?? []);
+      const fallbackManagerId =
+        typeof formValue.managerId === 'number' && Number.isFinite(formValue.managerId) && formValue.managerId > 0
+          ? formValue.managerId
+          : undefined;
+      const managerIdsForUpdate =
+        this.isTeacher || this.isStudent
+          ? this.normalizeIds([
+              ...managerIdsFromForm,
+              ...(fallbackManagerId ? [fallbackManagerId] : [])
+            ])
+          : undefined;
+      const managerIdForUpdate = managerIdsForUpdate?.[0] ?? fallbackManagerId;
       const model: UpdateUserDto = {
         id: this.userId,
         fullName: formValue.fullName,
@@ -658,13 +675,8 @@ export class UserEditComponent implements OnInit {
         residentId: formValue.residentId,
         governorateId: formValue.governorateId,
         branchId: formValue.branchId,
-        managerId: this.isTeacher || this.isStudent ? (allowManagerUpdate ? formValue.managerId : undefined) : undefined,
-        managerIds:
-          this.isTeacher || this.isStudent
-            ? allowManagerUpdate
-              ? this.normalizeIds(formValue.managerIds ?? [])
-              : undefined
-            : undefined,
+        managerId: this.isTeacher || this.isStudent ? managerIdForUpdate : undefined,
+        managerIds: this.isTeacher || this.isStudent ? managerIdsForUpdate : undefined,
         teacherIds: managerTeacherIds,
         teacherId: this.isStudent ? formValue.teacherId : undefined,
 
