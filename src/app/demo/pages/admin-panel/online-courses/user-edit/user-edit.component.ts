@@ -19,6 +19,7 @@ import {
 } from 'src/app/@theme/services/lookup.service';
 import { CircleService, CircleDto } from 'src/app/@theme/services/circle.service';
 import { CountryService, Country } from 'src/app/@theme/services/country.service';
+import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { isEgyptianNationality } from 'src/app/@theme/utils/nationality.utils';
@@ -37,6 +38,7 @@ export class UserEditComponent implements OnInit {
   private lookupService = inject(LookupService);
   private circleService = inject(CircleService);
   private countryService = inject(CountryService);
+  private auth = inject(AuthenticationService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
@@ -64,6 +66,7 @@ export class UserEditComponent implements OnInit {
   isManager = false;
   isTeacher = false;
   isStudent = false;
+  isBranchLeaderUser = false;
   submitted = false;
   Branch = [
     { id: BranchesEnum.Mens, label: 'الرجال' },
@@ -84,6 +87,7 @@ export class UserEditComponent implements OnInit {
     this.isManager = this.router.url.includes('/manager/');
     this.isTeacher = this.router.url.includes('/teacher/');
     this.isStudent = this.router.url.includes('/student/');
+    this.isBranchLeaderUser = this.auth.getRole() === UserTypesEnum.BranchLeader;
     this.basicInfoForm = this.fb.group({
       fullName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
@@ -307,7 +311,11 @@ export class UserEditComponent implements OnInit {
       }
       this.loadRelatedUsers();
       if (this.isManager) {
-        this.basicInfoForm.get('circleIds')?.disable();
+        if (this.isBranchLeaderUser) {
+          this.basicInfoForm.get('circleIds')?.enable();
+        } else {
+          this.basicInfoForm.get('circleIds')?.disable();
+        }
       }
       if (this.isTeacher) {
         const managerIds = this.normalizeIds(this.basicInfoForm.get('managerIds')?.value ?? []);
