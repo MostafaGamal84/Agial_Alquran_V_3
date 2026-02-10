@@ -93,6 +93,10 @@ export class UserEditComponent implements OnInit {
     return Number.isFinite(id) && id > 0 ? id : null;
   }
 
+  private get shouldLockManagerAssignment(): boolean {
+    return (this.isTeacher || this.isStudent) && this.auth.getRole() === UserTypesEnum.Manager;
+  }
+
   private getEffectiveManagerId(managerId?: number | null): number {
     return this.loggedInManagerId ?? managerId ?? 0;
   }
@@ -315,6 +319,11 @@ export class UserEditComponent implements OnInit {
       } else {
         this.loadCircles();
       }
+
+      if (this.shouldLockManagerAssignment) {
+        this.basicInfoForm.get('managerIds')?.disable({ emitEvent: false });
+        this.basicInfoForm.get('managerId')?.disable({ emitEvent: false });
+      }
     }
 
     this.countryService.getCountries().subscribe((data) => {
@@ -510,6 +519,10 @@ export class UserEditComponent implements OnInit {
   }
 
   onTeacherManagersChange(selection: unknown) {
+    if (this.shouldLockManagerAssignment) {
+      return;
+    }
+
     const managerIds = this.normalizeIds(this.extractSelectIds(selection));
     this.basicInfoForm.patchValue({ managerIds }, { emitEvent: false });
 
@@ -528,6 +541,10 @@ export class UserEditComponent implements OnInit {
   }
 
   onStudentManagersChange(selection: unknown): void {
+    if (this.shouldLockManagerAssignment) {
+      return;
+    }
+
     const managerIds = this.normalizeIds(this.extractSelectIds(selection));
     const primaryManagerId = managerIds[0] ?? null;
 
@@ -627,6 +644,7 @@ export class UserEditComponent implements OnInit {
       const formValue = this.basicInfoForm.getRawValue();
       const clean = (v: string) => v.replace(/\D/g, '');
       const managerTeacherIds = this.isManager ? this.normalizeTeacherIds(formValue.teacherIds ?? []) : undefined;
+      const allowManagerUpdate = !this.shouldLockManagerAssignment;
       const model: UpdateUserDto = {
         id: this.userId,
         fullName: formValue.fullName,
@@ -637,10 +655,12 @@ export class UserEditComponent implements OnInit {
         residentId: formValue.residentId,
         governorateId: formValue.governorateId,
         branchId: formValue.branchId,
-        managerId: this.isTeacher || this.isStudent ? formValue.managerId : undefined,
+        managerId: this.isTeacher || this.isStudent ? (allowManagerUpdate ? formValue.managerId : undefined) : undefined,
         managerIds:
           this.isTeacher || this.isStudent
-            ? this.normalizeIds(formValue.managerIds ?? [])
+            ? allowManagerUpdate
+              ? this.normalizeIds(formValue.managerIds ?? [])
+              : undefined
             : undefined,
         teacherIds: managerTeacherIds,
         teacherId: this.isStudent ? formValue.teacherId : undefined,
