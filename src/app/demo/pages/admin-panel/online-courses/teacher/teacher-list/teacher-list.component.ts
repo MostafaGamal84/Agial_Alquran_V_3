@@ -22,6 +22,7 @@ import { ToastService } from 'src/app/@theme/services/toast.service';
 import { UserService } from 'src/app/@theme/services/user.service';
 import { DisableUserConfirmDialogComponent } from '../../student/student-list/student-list.disable-user-confirm-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
+import { getUserManagers } from 'src/app/demo/shared/utils/user-managers';
 
 @Component({
   selector: 'app-teacher-list',
@@ -218,8 +219,7 @@ export class TeacherListComponent implements OnInit, OnDestroy {
   }
 
   hasMissingAssignments(teacher: LookUpUserDto): boolean {
-    const hasManager =
-      typeof teacher.managerId === 'number' || !!String(teacher.managerName ?? '').trim();
+    const hasManager = getUserManagers(teacher).length > 0;
     const hasCircle =
       typeof teacher.circleId === 'number' || !!String(teacher.circleName ?? '').trim();
     const hasStudents = Array.isArray(teacher.students) && teacher.students.length > 0;
