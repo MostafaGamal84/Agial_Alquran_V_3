@@ -84,6 +84,19 @@ export class UserEditComponent implements OnInit {
   secondMobileMask = '';
   secondMobilePlaceholder = '';
 
+  private get loggedInManagerId(): number | null {
+    if (this.auth.getRole() !== UserTypesEnum.Manager) {
+      return null;
+    }
+
+    const id = Number(this.auth.currentUserValue?.user?.id);
+    return Number.isFinite(id) && id > 0 ? id : null;
+  }
+
+  private getEffectiveManagerId(managerId?: number | null): number {
+    return this.loggedInManagerId ?? managerId ?? 0;
+  }
+
   ngOnInit(): void {
     this.isManager = this.router.url.includes('/manager/');
     this.isTeacher = this.router.url.includes('/teacher/');
@@ -412,12 +425,14 @@ export class UserEditComponent implements OnInit {
 
   onManagerChange(managerId: number, initial = false) {
     const fullListFilter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 1000 };
-    if (managerId) {
+    const effectiveManagerId = this.getEffectiveManagerId(managerId);
+
+    if (effectiveManagerId) {
       this.lookupService
         .getUsersForSelects(
           fullListFilter,
           Number(UserTypesEnum.Teacher),
-          managerId,
+          effectiveManagerId,
           0,
           this.currentUser?.branchId || 0
         )
@@ -466,11 +481,13 @@ export class UserEditComponent implements OnInit {
 
   private loadStudentsAndCircles(managerId: number) {
     const fullListFilter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 1000 };
+    const effectiveManagerId = this.getEffectiveManagerId(managerId);
+
     this.lookupService
       .getUsersForSelects(
         fullListFilter,
         Number(UserTypesEnum.Student),
-        managerId,
+        effectiveManagerId,
         0,
         this.currentUser?.branchId || 0
       )
@@ -483,7 +500,7 @@ export class UserEditComponent implements OnInit {
       skipCount: 0,
       maxResultCount: 100
     };
-    this.circleService.getAll(circleFilter, managerId).subscribe((res) => {
+    this.circleService.getAll(circleFilter, effectiveManagerId).subscribe((res) => {
       if (res.isSuccess) {
         this.circles = res.data.items;
       }
