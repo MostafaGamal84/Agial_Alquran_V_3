@@ -332,7 +332,6 @@ export class UserEditComponent implements OnInit {
   }
 
   private loadRelatedUsers() {
-    const filter: FilteredResultRequestDto = { lookupOnly: true };
     const fullListFilter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 1000 };
     if (this.isManager) {
       this.lookupService
@@ -347,7 +346,7 @@ export class UserEditComponent implements OnInit {
         });
     } else if (this.isTeacher) {
       this.lookupService
-        .getUsersForSelects(filter, Number(UserTypesEnum.Manager), 0, 0, this.currentUser?.branchId || 0)
+        .getUsersForSelects(fullListFilter, Number(UserTypesEnum.Manager), 0, 0, this.currentUser?.branchId || 0)
         .subscribe((res) => {
           if (res.isSuccess) {
             const existing = new Map(this.managers.map((m) => [m.id, m]));
@@ -357,7 +356,7 @@ export class UserEditComponent implements OnInit {
         });
     } else if (this.isStudent) {
       this.lookupService
-        .getUsersForSelects(filter, Number(UserTypesEnum.Manager), 0, 0, this.currentUser?.branchId || 0)
+        .getUsersForSelects(fullListFilter, Number(UserTypesEnum.Manager), 0, 0, this.currentUser?.branchId || 0)
         .subscribe((res) => {
           if (res.isSuccess) {
             const existing = new Map(this.managers.map((m) => [m.id, m]));
@@ -412,10 +411,16 @@ export class UserEditComponent implements OnInit {
   }
 
   onManagerChange(managerId: number, initial = false) {
-    const filter: FilteredResultRequestDto = { lookupOnly: true };
+    const fullListFilter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 1000 };
     if (managerId) {
       this.lookupService
-        .getUsersForSelects(filter, Number(UserTypesEnum.Teacher), managerId, 0, this.currentUser?.branchId || 0)
+        .getUsersForSelects(
+          fullListFilter,
+          Number(UserTypesEnum.Teacher),
+          managerId,
+          0,
+          this.currentUser?.branchId || 0
+        )
         .subscribe((res) => {
           if (res.isSuccess) {
             this.teachers = res.data.items;
@@ -460,9 +465,15 @@ export class UserEditComponent implements OnInit {
   }
 
   private loadStudentsAndCircles(managerId: number) {
-    const filter: FilteredResultRequestDto = { lookupOnly: true };
+    const fullListFilter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 1000 };
     this.lookupService
-      .getUsersForSelects(filter, Number(UserTypesEnum.Student), managerId, 0, this.currentUser?.branchId || 0)
+      .getUsersForSelects(
+        fullListFilter,
+        Number(UserTypesEnum.Student),
+        managerId,
+        0,
+        this.currentUser?.branchId || 0
+      )
       .subscribe((res) => {
         if (res.isSuccess) {
           this.students = res.data.items;
