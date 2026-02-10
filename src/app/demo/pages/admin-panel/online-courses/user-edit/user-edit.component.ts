@@ -184,7 +184,9 @@ export class UserEditComponent implements OnInit {
         }
 
         this.basicInfoForm.patchValue({ teacherIds: selectedTeacherIds });
-        this.onTeachersChange(selectedTeacherIds);
+        if (!this.isBranchLeaderUser) {
+          this.onTeachersChange(selectedTeacherIds);
+        }
       } else if (this.isTeacher) {
         if (this.currentUser.managers?.length) {
           this.managers = this.currentUser.managers;
@@ -313,6 +315,7 @@ export class UserEditComponent implements OnInit {
       if (this.isManager) {
         if (this.isBranchLeaderUser) {
           this.basicInfoForm.get('circleIds')?.enable();
+          this.loadCircles();
         } else {
           this.basicInfoForm.get('circleIds')?.disable();
         }
@@ -425,6 +428,10 @@ export class UserEditComponent implements OnInit {
     }
 
     this.basicInfoForm.patchValue({ teacherIds }, { emitEvent: false });
+
+    if (this.isBranchLeaderUser) {
+      return;
+    }
 
     if (!(teacherIds && teacherIds.length)) {
       this.circles = [];
