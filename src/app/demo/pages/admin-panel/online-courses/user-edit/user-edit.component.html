@@ -381,7 +381,7 @@
                       [searchable]="true"
                       [disabled]="!(basicInfoForm.get('managerIds')?.value?.length)"
                       placeholder="اختر المعلم"
-                      (change)="onTeacherChange($event.value)"
+                      (change)="onTeacherChange($event?.value ?? $event)"
                     ></ng-select>
                   </div>
 
