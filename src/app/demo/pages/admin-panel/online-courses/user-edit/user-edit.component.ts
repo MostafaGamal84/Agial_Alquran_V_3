@@ -189,35 +189,13 @@ export class UserEditComponent implements OnInit {
           this.onTeachersChange(selectedTeacherIds);
         }
       } else if (this.isTeacher) {
-        if (this.currentUser.managers?.length) {
-          this.managers = this.currentUser.managers;
-          const selectedManagerIds = this.normalizeIds(this.currentUser.managers.map((manager) => manager.id));
-          this.basicInfoForm.patchValue({
-            managerIds: selectedManagerIds
-          });
-          const primaryManagerId = selectedManagerIds[0] ?? null;
-          this.basicInfoForm.patchValue({ managerId: primaryManagerId });
-        } else if (this.currentUser.managerId && this.currentUser.managerName) {
-          const manager: LookUpUserDto = {
-            id: this.currentUser.managerId,
-            fullName: this.currentUser.managerName,
-            email: '',
-            mobile: '',
-            secondMobile: '',
-            nationality: '',
-            nationalityId: 0,
-            residentId: 0,
-            governorate: '',
-            governorateId: 0,
-            branchId: 0
-
-          };
-          this.managers = [manager];
-          this.basicInfoForm.patchValue({
-            managerIds: [manager.id],
-            managerId: manager.id
-          });
-        }
+        const selectedManagerIds = this.getSelectedManagerIds(this.currentUser);
+        this.ensureSelectedManagersInList(selectedManagerIds);
+        const primaryManagerId = selectedManagerIds[0] ?? null;
+        this.basicInfoForm.patchValue({
+          managerIds: selectedManagerIds,
+          managerId: primaryManagerId
+        });
       } else if (this.isStudent) {
         if (this.currentUser.teachers?.length) {
           this.teachers = this.currentUser.teachers;
@@ -243,34 +221,13 @@ export class UserEditComponent implements OnInit {
             teacherId: teacher.id
           });
         }
-        if (this.currentUser.managers?.length) {
-          this.managers = this.currentUser.managers;
-          const selectedManagerIds = this.normalizeIds(this.currentUser.managers.map((manager) => manager.id));
-          this.basicInfoForm.patchValue({
-            managerIds: selectedManagerIds
-          });
-          const primaryManagerId = selectedManagerIds[0] ?? null;
-          this.basicInfoForm.patchValue({ managerId: primaryManagerId });
-        } else if (this.currentUser.managerId && this.currentUser.managerName) {
-          const manager: LookUpUserDto = {
-            id: this.currentUser.managerId,
-            fullName: this.currentUser.managerName,
-            email: '',
-            mobile: '',
-            secondMobile: '',
-            nationality: '',
-            nationalityId: 0,
-            residentId: 0,
-            governorate: '',
-            governorateId: 0,
-            branchId: 0
-          };
-          this.managers = [manager];
-          this.basicInfoForm.patchValue({
-            managerId: manager.id
-
-          });
-        }
+        const selectedManagerIds = this.getSelectedManagerIds(this.currentUser);
+        this.ensureSelectedManagersInList(selectedManagerIds);
+        const primaryManagerId = selectedManagerIds[0] ?? null;
+        this.basicInfoForm.patchValue({
+          managerIds: selectedManagerIds,
+          managerId: primaryManagerId
+        });
       }
 
       if ((this.isManager || this.isTeacher) && this.currentUser.students?.length) {
@@ -333,7 +290,8 @@ export class UserEditComponent implements OnInit {
       } else if (this.isStudent) {
         this.basicInfoForm.get('teacherId')?.disable();
         this.basicInfoForm.get('circleId')?.disable();
-        const mId = this.basicInfoForm.get('managerId')?.value;
+        const managerIds = this.normalizeIds(this.basicInfoForm.get('managerIds')?.value ?? []);
+        const mId = managerIds[0] ?? this.basicInfoForm.get('managerId')?.value;
         if (mId) {
           this.onManagerChange(mId, true);
           const tId = this.basicInfoForm.get('teacherId')?.value;
@@ -541,6 +499,32 @@ export class UserEditComponent implements OnInit {
     }
   }
 
+  onStudentManagersChange(selection: unknown): void {
+    const managerIds = this.normalizeIds(this.extractSelectIds(selection));
+    const primaryManagerId = managerIds[0] ?? null;
+
+    this.basicInfoForm.patchValue(
+      {
+        managerIds,
+        managerId: primaryManagerId,
+        teacherId: null,
+        circleId: null
+      },
+      { emitEvent: false }
+    );
+
+    this.circles = [];
+
+    if (primaryManagerId) {
+      this.onManagerChange(primaryManagerId);
+      return;
+    }
+
+    this.teachers = [];
+    this.basicInfoForm.get('teacherId')?.disable();
+    this.basicInfoForm.get('circleId')?.disable();
+  }
+
   private loadCircles() {
     const filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 100 };
     this.circleService.getAll(filter).subscribe((res) => {
@@ -626,7 +610,10 @@ export class UserEditComponent implements OnInit {
         governorateId: formValue.governorateId,
         branchId: formValue.branchId,
         managerId: this.isTeacher || this.isStudent ? formValue.managerId : undefined,
-        managerIds: this.isTeacher ? this.normalizeIds(formValue.managerIds ?? []) : undefined,
+        managerIds:
+          this.isTeacher || this.isStudent
+            ? this.normalizeIds(formValue.managerIds ?? [])
+            : undefined,
         teacherIds: managerTeacherIds,
         teacherId: this.isStudent ? formValue.teacherId : undefined,
 
@@ -692,5 +679,49 @@ export class UserEditComponent implements OnInit {
 
   private normalizeTeacherIds(ids: Array<number | null | undefined>): number[] {
     return this.normalizeIds(ids);
+  }
+
+  private getSelectedManagerIds(user: NonNullable<UserEditComponent['currentUser']>): number[] {
+    const relationManagerIds = Array.isArray(user.managers)
+      ? user.managers.map((manager) => manager.id)
+      : [];
+    const managerIds = Array.isArray(user.managerIds) ? user.managerIds : [];
+    const fallbackManagerId = typeof user.managerId === 'number' ? [user.managerId] : [];
+
+    return this.normalizeIds([...relationManagerIds, ...managerIds, ...fallbackManagerId]);
+  }
+
+  private ensureSelectedManagersInList(selectedManagerIds: number[]): void {
+    const existing = new Map(this.managers.map((manager) => [manager.id, manager]));
+    const relationManagers = Array.isArray(this.currentUser?.managers) ? this.currentUser.managers : [];
+
+    relationManagers.forEach((manager) => existing.set(manager.id, manager));
+
+    selectedManagerIds.forEach((managerId, index) => {
+      if (existing.has(managerId)) {
+        return;
+      }
+
+      const fallbackName =
+        this.currentUser?.managerNames?.[index] ??
+        (this.currentUser?.managerId === managerId ? this.currentUser?.managerName : undefined) ??
+        `المشرف #${managerId}`;
+
+      existing.set(managerId, {
+        id: managerId,
+        fullName: fallbackName,
+        email: '',
+        mobile: '',
+        secondMobile: '',
+        nationality: '',
+        nationalityId: 0,
+        residentId: 0,
+        governorate: '',
+        governorateId: 0,
+        branchId: this.currentUser?.branchId ?? 0
+      });
+    });
+
+    this.managers = Array.from(existing.values());
   }
 }
