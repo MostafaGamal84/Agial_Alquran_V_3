@@ -6,6 +6,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
 import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scrollbar';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
+import { getUserManagers } from 'src/app/demo/shared/utils/user-managers';
 
 interface Person {
   fullName?: string;
@@ -41,6 +42,8 @@ type TeacherVM = {
   branchId?: number;
   managerId?: number;
   managerName?: string;
+  managerIds?: number[];
+  managerNames?: string[];
   circleId?: number;
   circleName?: string;
   gender?: string;
@@ -99,6 +102,7 @@ export class TeacherDetailsComponent {
     branchId: 'الفرع',
     managerId: 'معرّف المشرف',
     managerName: 'اسم المشرف',
+    managerNames: 'المشرفون',
     circleId: 'معرّف الحلقة',
     circleName: 'اسم الحلقة',
     gender: 'النوع',
@@ -132,10 +136,13 @@ export class TeacherDetailsComponent {
 
     this.students = Array.isArray(data.students) ? data.students : [];
 
-    this.statEntries = this.buildStatEntries([
-      { key: 'managerName', label: 'المشرف' },
-      { key: 'circleName', label: 'الحلقة' }
-    ], data);
+    const managerNames = getUserManagers(data);
+    this.statEntries = [
+      ...(managerNames.length
+        ? [{ label: 'المشرف', value: managerNames.join('، ') }]
+        : []),
+      ...this.buildStatEntries([{ key: 'circleName', label: 'الحلقة' }], data)
+    ];
 
     const contactKeys: Array<keyof TeacherVM> = ['email', 'mobile', 'secondMobile'];
 
@@ -159,7 +166,7 @@ export class TeacherDetailsComponent {
     const exclude = new Set<string>([
       'students', 'managers',
       'email', 'mobile', 'secondMobile',
-      'fullName', 'managerName', 'circleName',  'residentId',
+      'fullName', 'managerName', 'managerNames', 'circleName',  'residentId',
       'governorateId',
       'teacherId',
       'managerId',  'branchId','nationalityId',
@@ -175,6 +182,7 @@ export class TeacherDetailsComponent {
       'userName',
       'identityNumber',
       'managerName',
+      'managerNames',
       'circleName',
       'nationalityId',
       'residentId',

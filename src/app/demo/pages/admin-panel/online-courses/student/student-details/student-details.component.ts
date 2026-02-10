@@ -5,6 +5,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
 import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scrollbar';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
+import { getUserManagers } from 'src/app/demo/shared/utils/user-managers';
 
 interface ContactEntry {
   key: string;
@@ -35,6 +36,8 @@ type StudentVM = {
   branchId?: number;
   managerId?: number;
   managerName?: string;
+  managerIds?: number[];
+  managerNames?: string[];
   teacherId?: number;
   teacherName?: string;
   circleId?: number;
@@ -72,6 +75,7 @@ export class StudentDetailsComponent {
     nationality: 'الجنسية',
     governorate: 'المحافظة',
     managerName: 'اسم المشرف',
+    managerNames: 'المشرفون',
     teacherName: 'اسم المعلم',
     circleName: 'اسم الحلقة',
     branchId: 'الفرع',
@@ -110,11 +114,16 @@ export class StudentDetailsComponent {
     this.vm = data;
     this.loading = false;
 
-    this.statEntries = this.buildStatEntries([
-      { key: 'managerName', label: 'المشرف' },
-      { key: 'teacherName', label: 'المعلم' },
-      { key: 'circleName', label: 'الحلقة' }
-    ], data);
+    const managerNames = getUserManagers(data);
+    this.statEntries = [
+      ...(managerNames.length
+        ? [{ label: 'المشرف', value: managerNames.join('، ') }]
+        : []),
+      ...this.buildStatEntries([
+        { key: 'teacherName', label: 'المعلم' },
+        { key: 'circleName', label: 'الحلقة' }
+      ], data)
+    ];
 
     const contactKeys: Array<keyof StudentVM> = ['email', 'mobile', 'secondMobile'];
 
@@ -137,7 +146,7 @@ export class StudentDetailsComponent {
 
     const exclude = new Set<string>([
       'email', 'mobile', 'secondMobile',
-      'fullName', 'managerName', 'teacherName', 'circleName',  'residentId',
+      'fullName', 'managerName', 'managerNames', 'teacherName', 'circleName',  'residentId',
       'governorateId',
       'teacherId',
       'managerId',   'nationalityId',
@@ -159,6 +168,7 @@ export class StudentDetailsComponent {
       'userName',
       'identityNumber',
       'managerName',
+      'managerNames',
       'teacherName',
       'circleName',
       'nationalityId',
