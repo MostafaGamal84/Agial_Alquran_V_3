@@ -55,7 +55,12 @@
       {{ typeAvailabilityMessage }}
     </div>
     <div class="col-12">
-      <button mat-flat-button color="primary" type="submit">{{ 'Save' | translate }}</button>
+      <button mat-flat-button color="primary" type="submit" [disabled]="isSubmitting">
+        @if (isSubmitting) {
+          <mat-icon>autorenew</mat-icon>
+        }
+        {{ isSubmitting ? ('Saving...' | translate) : ('Save' | translate) }}
+      </button>
     </div>
   </form>
 </app-card>

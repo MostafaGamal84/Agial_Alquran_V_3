@@ -405,8 +405,11 @@
         <!-- أزرار الإجراء -->
         <div class="col-12">
           <div class="form-actions">
-            <button mat-flat-button color="primary" type="submit" class="submit-btn">
-              تحديث البيانات
+            <button mat-flat-button color="primary" type="submit" class="submit-btn" [disabled]="isSaving">
+              @if (isSaving) {
+                <mat-icon>autorenew</mat-icon>
+              }
+              {{ isSaving ? "جاري التحديث..." : "تحديث البيانات" }}
             </button>
           </div>
         </div>

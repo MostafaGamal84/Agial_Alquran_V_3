@@ -444,3 +444,8 @@
 :host-context(.dark) ::ng-deep .ng-dropdown-panel .ng-dropdown-panel-items::-webkit-scrollbar-track {
   background: rgba(2, 6, 23, 0.35);
 }
+
+
+.loading-dot {
+  margin-inline-end: 6px;
+}
