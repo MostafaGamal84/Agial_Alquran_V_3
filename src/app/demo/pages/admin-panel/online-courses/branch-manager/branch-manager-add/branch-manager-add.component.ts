@@ -14,6 +14,7 @@ import { CountryService, Country } from 'src/app/@theme/services/country.service
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 import { isEgyptianNationality } from 'src/app/@theme/utils/nationality.utils';
 import { TranslateService } from '@ngx-translate/core';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-branch-manager-add',
@@ -32,6 +33,7 @@ export class BranchManagerAddComponent implements OnInit {
 
   basicInfoForm!: FormGroup;
   submitted = false;
+  isSubmitting = false;
 
   nationalities: NationalityDto[] = [];
   governorates: GovernorateDto[] = [];
@@ -115,6 +117,10 @@ export class BranchManagerAddComponent implements OnInit {
   }
 
   onSubmit() {
+    if (this.isSubmitting) {
+      return;
+    }
+
     this.submitted = true;
     if (this.basicInfoForm.valid) {
       const formValue = this.basicInfoForm.value;
@@ -131,7 +137,11 @@ export class BranchManagerAddComponent implements OnInit {
         branchId: formValue.branchId,
         userTypeId: Number(UserTypesEnum.BranchLeader)
       };
-      this.userService.createUser(model).subscribe({
+      this.isSubmitting = true;
+      this.userService
+        .createUser(model)
+        .pipe(finalize(() => (this.isSubmitting = false)))
+        .subscribe({
         next: (res) => {
           if (res?.isSuccess) {
             this.toast.success(res.message || this.translate.instant('تمت الاضافة بنجاح'));
@@ -143,8 +153,8 @@ export class BranchManagerAddComponent implements OnInit {
             this.toast.error(this.translate.instant('خطا في الاضافة'));
           }
         },
-        error: () => this.toast.error(this.translate.instant('خطا في الاضافة'))
-      });
+          error: () => this.toast.error(this.translate.instant('خطا في الاضافة'))
+        });
     } else {
       this.basicInfoForm.markAllAsTouched();
     }

@@ -271,6 +271,9 @@
               class="submit-btn"
               [disabled]="isSaving"
             >
+              @if (isSaving) {
+                <mat-icon class="btn-spinner">autorenew</mat-icon>
+              }
               {{ isSaving ? 'جاري التحديث...' : 'تحديث الحلقة' }}
             </button>
           </div>

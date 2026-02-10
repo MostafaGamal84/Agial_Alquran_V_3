@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { ActivatedRoute, Router } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { finalize, forkJoin } from 'rxjs';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -68,6 +68,7 @@ export class UserEditComponent implements OnInit {
   isStudent = false;
   isBranchLeaderUser = false;
   submitted = false;
+  isSaving = false;
   Branch = [
     { id: BranchesEnum.Mens, label: 'الرجال' },
     { id: BranchesEnum.Women, label: 'النساء' }
@@ -604,6 +605,10 @@ export class UserEditComponent implements OnInit {
   }
 
   onSubmit() {
+    if (this.isSaving) {
+      return;
+    }
+
     this.submitted = true;
     if (this.basicInfoForm.valid) {
       // Use getRawValue so disabled controls like circleId are included
@@ -629,7 +634,11 @@ export class UserEditComponent implements OnInit {
         circleIds: this.isManager ? formValue.circleIds : undefined,
         circleId: this.isTeacher || this.isStudent ? formValue.circleId : undefined
       };
-      this.userService.updateUser(model).subscribe({
+      this.isSaving = true;
+      this.userService
+        .updateUser(model)
+        .pipe(finalize(() => (this.isSaving = false)))
+        .subscribe({
         next: (res) => {
           if (res?.isSuccess) {
             this.toast.success(res.message || (this.isManager ? 'تم تحديث البيانات والعلاقات بنجاح' : 'تم تحديث البيانات بنجاح'));
@@ -640,8 +649,8 @@ export class UserEditComponent implements OnInit {
             this.toast.error('خطأ في تحديث البيانات');
           }
         },
-        error: () => this.toast.error('خطأ في تحديث البيانات')
-      });
+          error: () => this.toast.error('خطأ في تحديث البيانات')
+        });
     } else {
       this.basicInfoForm.markAllAsTouched();
     }

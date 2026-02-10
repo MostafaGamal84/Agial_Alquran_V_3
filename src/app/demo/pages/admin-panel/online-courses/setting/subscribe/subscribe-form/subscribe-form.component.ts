@@ -19,6 +19,7 @@ import {
 } from 'src/app/@theme/services/lookup.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { TranslateService } from '@ngx-translate/core';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-subscribe-form',
@@ -43,6 +44,7 @@ export class SubscribeFormComponent implements OnInit {
   });
 
   isEdit = false;
+  isSubmitting = false;
   types: SubscribeTypeDto[] = [];
   nationalities: NationalityDto[] = [];
   selectedResidentId: number | null = null;
@@ -67,9 +69,17 @@ export class SubscribeFormComponent implements OnInit {
   }
 
   submit() {
+    if (this.isSubmitting) {
+      return;
+    }
+
     const model = this.form.value as CreateSubscribeDto | UpdateSubscribeDto;
+    this.isSubmitting = true;
     if (this.isEdit) {
-      this.service.update(model as UpdateSubscribeDto).subscribe({
+      this.service
+        .update(model as UpdateSubscribeDto)
+        .pipe(finalize(() => (this.isSubmitting = false)))
+        .subscribe({
         next: () => {
           this.toast.success('Subscribe saved successfully');
           this.router.navigate(['/online-course/setting/subscribe/list']);
@@ -77,7 +87,10 @@ export class SubscribeFormComponent implements OnInit {
         error: () => this.toast.error('Error saving subscribe')
       });
     } else {
-      this.service.create(model as CreateSubscribeDto).subscribe({
+      this.service
+        .create(model as CreateSubscribeDto)
+        .pipe(finalize(() => (this.isSubmitting = false)))
+        .subscribe({
         next: () => {
           this.toast.success('Subscribe saved successfully');
           this.router.navigate(['/online-course/setting/subscribe/list']);

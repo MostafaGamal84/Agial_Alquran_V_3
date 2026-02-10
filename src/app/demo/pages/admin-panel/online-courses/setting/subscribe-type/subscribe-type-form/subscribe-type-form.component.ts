@@ -11,6 +11,7 @@ import {
   SubscribeTypeCategory
 } from 'src/app/@theme/services/subscribe.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-subscribe-type-form',
@@ -32,6 +33,7 @@ export class SubscribeTypeFormComponent implements OnInit {
   });
 
   isEdit = false;
+  isSubmitting = false;
   readonly groupOptions = [
     { value: SubscribeTypeCategory.Unknown, label: 'Unknown' },
     { value: SubscribeTypeCategory.Foreign, label: 'اجانب' },
@@ -60,8 +62,17 @@ export class SubscribeTypeFormComponent implements OnInit {
       return;
     }
     const model = this.form.value as CreateSubscribeTypeDto | UpdateSubscribeTypeDto;
+    if (this.isSubmitting) {
+      return;
+    }
+
+    this.isSubmitting = true;
+
     if (this.isEdit) {
-      this.service.updateType(model as UpdateSubscribeTypeDto).subscribe({
+      this.service
+        .updateType(model as UpdateSubscribeTypeDto)
+        .pipe(finalize(() => (this.isSubmitting = false)))
+        .subscribe({
         next: () => {
           this.toast.success('Subscribe type saved successfully');
           this.router.navigate(['/online-course/setting/subscribe-type/list']);
@@ -69,7 +80,10 @@ export class SubscribeTypeFormComponent implements OnInit {
         error: () => this.toast.error('Error saving subscribe type')
       });
     } else {
-      this.service.createType(model as CreateSubscribeTypeDto).subscribe({
+      this.service
+        .createType(model as CreateSubscribeTypeDto)
+        .pipe(finalize(() => (this.isSubmitting = false)))
+        .subscribe({
         next: () => {
           this.toast.success('Subscribe type saved successfully');
           this.router.navigate(['/online-course/setting/subscribe-type/list']);

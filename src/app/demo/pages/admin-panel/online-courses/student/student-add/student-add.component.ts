@@ -17,6 +17,7 @@ import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 import { isEgyptianNationality } from 'src/app/@theme/utils/nationality.utils';
 import { TranslateService } from '@ngx-translate/core';
+import { finalize } from 'rxjs';
 
 
 @Component({
@@ -37,6 +38,7 @@ export class StudentAddComponent implements OnInit {
 
   basicInfoForm!: FormGroup;
   submitted = false;
+  isSubmitting = false;
 
   nationalities: NationalityDto[] = [];
   governorates: GovernorateDto[] = [];
@@ -122,6 +124,10 @@ export class StudentAddComponent implements OnInit {
   }
 
   onSubmit() {
+    if (this.isSubmitting) {
+      return;
+    }
+
     this.submitted = true;
     if (this.basicInfoForm.valid) {
 
@@ -143,7 +149,11 @@ export class StudentAddComponent implements OnInit {
         userTypeId: Number(UserTypesEnum.Student),
       };
 
-      this.userService.createUser(model).subscribe({
+      this.isSubmitting = true;
+      this.userService
+        .createUser(model)
+        .pipe(finalize(() => (this.isSubmitting = false)))
+        .subscribe({
         next: (res) => {
           if (res?.isSuccess) {
             this.toast.success(res.message || this.translate.instant('تمت الاضافة بنجاح'));
@@ -155,8 +165,8 @@ export class StudentAddComponent implements OnInit {
             this.toast.error(this.translate.instant('خطا في الاضافة'));
           }
         },
-        error: () => this.toast.error(this.translate.instant('خطا في الاضافة'))
-      });
+          error: () => this.toast.error(this.translate.instant('خطا في الاضافة'))
+        });
     } else {
       this.basicInfoForm.markAllAsTouched();
     }

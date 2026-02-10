@@ -261,7 +261,10 @@
         إلغاء
       </button>
       <button class="btn" type="submit" [disabled]="isSubmitting">
-        {{ mode === 'update' ? 'تحديث' : 'إنشاء' }}
+        @if (isSubmitting) {
+          <span class="loading-dot">⏳</span>
+        }
+        {{ isSubmitting ? 'جاري الإرسال...' : (mode === 'update' ? 'تحديث' : 'إنشاء') }}
       </button>
     </div>
   </form>

@@ -5,7 +5,8 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { catchError, map, of, switchMap } from 'rxjs';
+import { MatIconModule } from '@angular/material/icon';
+import { catchError, finalize, map, of, switchMap } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import {
   StudentPaymentDto,
@@ -17,7 +18,7 @@ import {
 @Component({
   selector: 'app-payment-edit',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, ReactiveFormsModule, TranslateModule],
+  imports: [CommonModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatIconModule, ReactiveFormsModule, TranslateModule],
   templateUrl: './payment-edit.component.html',
   styleUrl: './payment-edit.component.scss'
 })
@@ -28,6 +29,7 @@ export class PaymentEditComponent {
   data = inject<StudentPaymentDto>(MAT_DIALOG_DATA);
   currencyLabel = getCurrencyLabel(this.data.currencyId ?? this.data.currency ?? null);
   receiptFile?: File;
+  isSubmitting = false;
 
   form = this.fb.group({
     subscribe: [{ value: this.data.subscribe, disabled: true }],
@@ -43,10 +45,16 @@ export class PaymentEditComponent {
   }
 
   confirm() {
+    if (this.isSubmitting) {
+      return;
+    }
     this.submitUpdate(true, false);
   }
 
   cancel() {
+    if (this.isSubmitting) {
+      return;
+    }
     this.submitUpdate(false, true);
   }
 
@@ -68,8 +76,13 @@ export class PaymentEditComponent {
           })
         );
 
+    this.isSubmitting = true;
+
     receipt$
-      .pipe(switchMap((receipt) => this.service.updatePayment(dto, receipt)))
+      .pipe(
+        switchMap((receipt) => this.service.updatePayment(dto, receipt)),
+        finalize(() => (this.isSubmitting = false))
+      )
       .subscribe({
         next: () => this.dialogRef.close(true),
         error: (error) =>
