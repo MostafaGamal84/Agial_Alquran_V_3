@@ -24,6 +24,7 @@ import { DisableUserConfirmDialogComponent } from './student-list.disable-user-c
 import { RESIDENCY_GROUP_OPTIONS, ResidencyGroupFilter } from 'src/app/@theme/types/residency-group';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 import { TranslateService } from '@ngx-translate/core';
+import { getUserManagers } from 'src/app/demo/shared/utils/user-managers';
 
 @Component({
   selector: 'app-student-list',
@@ -267,8 +268,7 @@ export class StudentListComponent implements OnInit, OnDestroy {
   }
 
   hasMissingAssignments(student: LookUpUserDto): boolean {
-    const hasManager =
-      typeof student.managerId === 'number' || !!String(student.managerName ?? '').trim();
+    const hasManager = getUserManagers(student).length > 0;
     const hasTeacher =
       typeof student.teacherId === 'number' || !!String(student.teacherName ?? '').trim();
     const hasCircle =

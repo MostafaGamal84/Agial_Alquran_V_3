@@ -355,6 +355,22 @@
 
                 @if (isStudent) {
                   <div class="col-md-6">
+                    <label class="form-label form-label-sm">المشرفون</label>
+                    <ng-select
+                      class="w-100"
+                      formControlName="managerIds"
+                      [items]="managers"
+                      bindLabel="fullName"
+                      bindValue="id"
+                      [multiple]="true"
+                      [closeOnSelect]="false"
+                      [searchable]="true"
+                      placeholder="اختر المشرفين"
+                      (change)="onStudentManagersChange($event?.value ?? $event)"
+                    ></ng-select>
+                  </div>
+
+                  <div class="col-md-6">
                     <label class="form-label form-label-sm">المعلم</label>
                     <ng-select
                       class="w-100"
@@ -363,23 +379,9 @@
                       bindLabel="fullName"
                       bindValue="id"
                       [searchable]="true"
-                      [disabled]="!basicInfoForm.get('managerId')?.value"
+                      [disabled]="!(basicInfoForm.get('managerIds')?.value?.length)"
                       placeholder="اختر المعلم"
                       (change)="onTeacherChange($event.value)"
-                    ></ng-select>
-                  </div>
-
-                  <div class="col-md-6">
-                    <label class="form-label form-label-sm">المشرف</label>
-                    <ng-select 
-                      class="w-100"
-                      formControlName="managerId"
-                      [items]="managers"
-                      bindLabel="fullName"
-                      bindValue="id"
-                      [searchable]="true"
-                      placeholder="اختر المشرف"
-                      (change)="onManagerChange($event.value)"
                     ></ng-select>
                   </div>
 

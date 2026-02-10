@@ -6,6 +6,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
 import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scrollbar';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
+import { getUserManagers } from 'src/app/demo/shared/utils/user-managers';
 
 interface Person {
   fullName?: string;
@@ -48,6 +49,8 @@ type ManagerVM = {
   teacherName?: string;
   managerId?: number;
   managerName?: string;
+  managerIds?: number[];
+  managerNames?: string[];
   circleId?: number;
   circleName?: string;
   gender?: string;
@@ -112,6 +115,7 @@ export class ManagerDetailsComponent {
     teacherName: 'اسم المعلم',
     managerId: 'معرّف المشرف',
     managerName: 'اسم المشرف',
+    managerNames: 'المشرفون',
     circleId: 'معرّف الحلقة',
     circleName: 'اسم الحلقة',
     gender: 'النوع',
@@ -152,11 +156,16 @@ export class ManagerDetailsComponent {
     this.managerCircles = Array.isArray(data.managerCircles) ? data.managerCircles : [];
 
     // بيانات موجزة في الأعلى
-    this.statEntries = this.buildStatEntries([
-      { key: 'managerName', label: 'المشرف' },
-      { key: 'teacherName', label: 'المعلم' },
-      { key: 'circleName', label: 'الحلقة' }
-    ], data);
+    const managerNames = getUserManagers(data);
+    this.statEntries = [
+      ...(managerNames.length
+        ? [{ label: 'المشرف', value: managerNames.join('، ') }]
+        : []),
+      ...this.buildStatEntries([
+        { key: 'teacherName', label: 'المعلم' },
+        { key: 'circleName', label: 'الحلقة' }
+      ], data)
+    ];
 
     // ===== Contacts =====
     const contactKeys: Array<keyof ManagerVM> = ['email', 'mobile', 'secondMobile'];
@@ -183,7 +192,7 @@ export class ManagerDetailsComponent {
       // ما نعرضهمش هنا لأنهم ظاهرين فوق أو قوائم
       'teachers', 'students', 'managers', 'managerCircles',
       'email', 'mobile', 'secondMobile',
-      'fullName', 'managerName', 'teacherName', 'circleName', 'nationalityId',
+      'fullName', 'managerName', 'managerNames', 'teacherName', 'circleName', 'nationalityId',
       'residentId',
       'governorateId',
       'teacherId',
@@ -199,6 +208,7 @@ export class ManagerDetailsComponent {
       'userName',
       'teacherName',
       'managerName',
+      'managerNames',
       'circleName',
      
       'circleId',

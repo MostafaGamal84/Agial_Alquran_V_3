@@ -23,6 +23,8 @@ export interface LookUpUserDto {
   inactive?: boolean;
   managerId?: number;
   managerName?: string;
+  managerIds?: number[];
+  managerNames?: string[];
   teacherId?: number;
   teacherName?: string;
   circleId?: number;
