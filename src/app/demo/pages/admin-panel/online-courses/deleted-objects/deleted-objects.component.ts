@@ -1,12 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTabChangeEvent } from '@angular/material/tabs';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { finalize } from 'rxjs/operators';
-import { DeletedObjectsService } from 'src/app/@theme/services/deleted-objects.service';
+import { DeletedObjectsService, DeletedTabKey } from 'src/app/@theme/services/deleted-objects.service';
 import { FilteredResultRequestDto } from 'src/app/@theme/services/lookup.service';
+import { ToastService } from 'src/app/@theme/services/toast.service';
 import { SharedModule } from 'src/app/demo/shared/shared.module';
-
-type DeletedTabKey = 'students' | 'teachers' | 'managers' | 'branchLeaders' | 'circles' | 'circleReports';
 
 interface DeletedTabState {
   searchTerm: string;
@@ -34,12 +37,15 @@ interface DeletedTabConfig {
 @Component({
   selector: 'app-deleted-objects',
   standalone: true,
-  imports: [CommonModule, SharedModule],
+  imports: [CommonModule, SharedModule, MatProgressSpinnerModule],
   templateUrl: './deleted-objects.component.html',
   styleUrl: './deleted-objects.component.scss'
 })
 export class DeletedObjectsComponent implements OnInit, OnDestroy {
   private deletedObjectsService = inject(DeletedObjectsService);
+  private dialog = inject(MatDialog);
+  private toast = inject(ToastService);
+  private translate = inject(TranslateService);
 
   readonly pageSizeOptions = [10, 20, 50];
   activeTabIndex = 0;
@@ -47,7 +53,7 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
   private readonly userColumns: DeletedColumn[] = [
     { key: 'fullName', label: 'الاسم الكامل' },
     { key: 'mobile', label: 'رقم الجوال' },
-    { key: 'email', label: 'البريد الإلكتروني' },
+    { key: 'email', label: 'البريد الإلكتروني' }
   ];
 
   readonly tabs: DeletedTabConfig[] = [
@@ -55,34 +61,31 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
       key: 'students',
       label: 'الطلاب المحذوفون',
       columns: this.userColumns,
-      columnKeys: this.userColumns.map((column) => column.key)
+      columnKeys: [...this.userColumns.map((column) => column.key), 'actions']
     },
     {
       key: 'teachers',
       label: 'المعلمون المحذوفون',
       columns: this.userColumns,
-      columnKeys: this.userColumns.map((column) => column.key)
+      columnKeys: [...this.userColumns.map((column) => column.key), 'actions']
     },
     {
       key: 'managers',
       label: 'المديرون المحذوفون',
       columns: this.userColumns,
-      columnKeys: this.userColumns.map((column) => column.key)
+      columnKeys: [...this.userColumns.map((column) => column.key), 'actions']
     },
     {
       key: 'branchLeaders',
       label: 'قادة الفروع المحذوفون',
       columns: this.userColumns,
-      columnKeys: this.userColumns.map((column) => column.key)
+      columnKeys: [...this.userColumns.map((column) => column.key), 'actions']
     },
     {
       key: 'circles',
       label: 'الحلقات المحذوفة',
-      columns: [
-     
-        { key: 'name', label: 'اسم الحلقة' },
-      ],
-      columnKeys: [ 'name', ]
+      columns: [{ key: 'name', label: 'اسم الحلقة' }],
+      columnKeys: ['name', 'actions']
     },
     {
       key: 'circleReports',
@@ -93,7 +96,7 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
         { key: 'circleName', label: 'اسم الحلقة' },
         { key: 'minutes', label: 'الدقائق' }
       ],
-      columnKeys: [ 'studentName', 'teacherName', 'circleName', 'minutes']
+      columnKeys: ['studentName', 'teacherName', 'circleName', 'minutes', 'actions']
     }
   ];
 
@@ -107,6 +110,7 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
   };
 
   private searchDebounceTimers: Partial<Record<DeletedTabKey, ReturnType<typeof setTimeout>>> = {};
+  private pendingRestoreIdsByTab: Partial<Record<DeletedTabKey, Set<number>>> = {};
 
   ngOnInit(): void {
     this.loadActiveTab();
@@ -163,6 +167,37 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
 
   retry(tab: DeletedTabKey): void {
     this.loadTab(tab, true);
+  }
+
+  onRestore(tab: DeletedTabKey, row: Record<string, unknown>): void {
+    const id = Number(row['id']);
+    if (!Number.isFinite(id) || id <= 0 || this.isRestoreLoading(tab, row)) {
+      return;
+    }
+
+    const dialogRef = this.dialog.open(RestoreDeletedItemConfirmDialogComponent, {
+      width: '420px',
+      data: {
+        title: this.translate.instant('Restore'),
+        message: this.translate.instant('Are you sure you want to restore this item?'),
+        confirmText: this.translate.instant('Restore')
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+      if (confirmed) {
+        this.restoreDeletedItem(tab, id);
+      }
+    });
+  }
+
+  isRestoreLoading(tab: DeletedTabKey, row: Record<string, unknown>): boolean {
+    const id = Number(row['id']);
+    if (!Number.isFinite(id) || id <= 0) {
+      return false;
+    }
+
+    return this.pendingRestoreIdsByTab[tab]?.has(id) ?? false;
   }
 
   getRowValue(row: Record<string, unknown>, column: string): string {
@@ -281,6 +316,45 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
     }
   }
 
+  private restoreDeletedItem(tab: DeletedTabKey, id: number): void {
+    this.markRestoreLoading(tab, id, true);
+
+    this.deletedObjectsService
+      .restoreDeletedItem(tab, id)
+      .pipe(finalize(() => this.markRestoreLoading(tab, id, false)))
+      .subscribe({
+        next: (res) => {
+          if (res?.isSuccess && res?.data === true) {
+            const state = this.stateByTab[tab];
+            state.rows = state.rows.filter((row) => Number(row['id']) !== id);
+            state.totalCount = Math.max(0, state.totalCount - 1);
+            this.toast.success(this.translate.instant('Record restored successfully'));
+            return;
+          }
+
+          const errorMessage = res?.errors?.[0]?.message || this.translate.instant('Failed to restore record');
+          this.toast.error(errorMessage);
+        },
+        error: () => {
+          this.toast.error(this.translate.instant('Server connection error while restoring item'));
+        }
+      });
+  }
+
+  private markRestoreLoading(tab: DeletedTabKey, id: number, isLoading: boolean): void {
+    if (!this.pendingRestoreIdsByTab[tab]) {
+      this.pendingRestoreIdsByTab[tab] = new Set<number>();
+    }
+
+    const pendingIds = this.pendingRestoreIdsByTab[tab] as Set<number>;
+    if (isLoading) {
+      pendingIds.add(id);
+      return;
+    }
+
+    pendingIds.delete(id);
+  }
+
   private createDefaultState(): DeletedTabState {
     return {
       searchTerm: '',
@@ -292,5 +366,39 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
       error: null,
       hasLoaded: false
     };
+  }
+}
+
+interface RestoreDeletedItemConfirmDialogData {
+  title: string;
+  message: string;
+  confirmText: string;
+}
+
+@Component({
+  selector: 'app-restore-deleted-item-confirm-dialog',
+  standalone: true,
+  imports: [CommonModule, MatDialogModule, MatButtonModule, TranslateModule],
+  template: `
+    <h2 mat-dialog-title>{{ data.title }}</h2>
+    <mat-dialog-content>
+      {{ data.message }}
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button type="button" (click)="onCancel()">{{ 'Cancel' | translate }}</button>
+      <button mat-flat-button color="primary" type="button" (click)="onConfirm()">{{ data.confirmText }}</button>
+    </mat-dialog-actions>
+  `
+})
+class RestoreDeletedItemConfirmDialogComponent {
+  private dialogRef = inject(MatDialogRef<RestoreDeletedItemConfirmDialogComponent>);
+  readonly data = inject<RestoreDeletedItemConfirmDialogData>(MAT_DIALOG_DATA);
+
+  onCancel(): void {
+    this.dialogRef.close(false);
+  }
+
+  onConfirm(): void {
+    this.dialogRef.close(true);
   }
 }

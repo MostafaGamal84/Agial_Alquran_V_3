@@ -695,5 +695,9 @@
   "Hey! Please check out this site later. We are doing": "مرحبًا! يرجى زيارة الموقع لاحقًا، نحن نقوم",
   "some maintenance on it right now.": "ببعض أعمال الصيانة في الوقت الحالي.",
   "Record restored successfully": "تم استعادة السجل بنجاح",
-  "Failed to restore record": "فشل في استعادة السجل"
+  "Failed to restore record": "فشل في استعادة السجل",
+  "Restore": "استعادة",
+  "Restoring...": "جارٍ الاستعادة...",
+  "Are you sure you want to restore this item?": "هل تريد استعادة هذا العنصر؟",
+  "Server connection error while restoring item": "حدث خطأ أثناء الاتصال بالخادم"
 }
