@@ -45,13 +45,9 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
   activeTabIndex = 0;
 
   private readonly userColumns: DeletedColumn[] = [
-    { key: 'id', label: 'المعرف' },
     { key: 'fullName', label: 'الاسم الكامل' },
     { key: 'mobile', label: 'رقم الجوال' },
     { key: 'email', label: 'البريد الإلكتروني' },
-    { key: 'nationality', label: 'الجنسية' },
-    { key: 'governorate', label: 'المحافظة' },
-    { key: 'branchId', label: 'الفرع' }
   ];
 
   readonly tabs: DeletedTabConfig[] = [
@@ -83,11 +79,9 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
       key: 'circles',
       label: 'الحلقات المحذوفة',
       columns: [
-        { key: 'id', label: 'المعرف' },
+     
         { key: 'name', label: 'اسم الحلقة' },
         { key: 'teacher', label: 'المعلم' },
-        { key: 'branchId', label: 'الفرع' },
-        { key: 'daysSummary', label: 'ملخص الأيام' }
       ],
       columnKeys: ['id', 'name', 'teacher', 'branchId', 'daysSummary']
     },
@@ -100,8 +94,6 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
         { key: 'teacherName', label: 'اسم المعلم' },
         { key: 'circleName', label: 'اسم الحلقة' },
         { key: 'minutes', label: 'الدقائق' },
-        { key: 'creationTime', label: 'وقت الإنشاء' },
-        { key: 'other', label: 'ملاحظات' }
       ],
       columnKeys: ['id', 'studentName', 'teacherName', 'circleName', 'minutes', 'creationTime', 'other']
     }
