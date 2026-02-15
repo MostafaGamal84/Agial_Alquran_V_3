@@ -364,7 +364,7 @@ export const menus: Navigation[] = [
 
           {
             id: 'deleted-objects',
-            title: 'Deleted Objects',
+            title: 'المحذوفات',
             type: 'item',
             url: '/online-course/deleted-objects',
             role: [UserTypesEnum.Admin.toString()]

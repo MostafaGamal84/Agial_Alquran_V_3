@@ -1,11 +1,11 @@
 <div class="row">
   <div class="col-12">
-    <app-card cardTitle="Deleted Objects">
+    <app-card cardTitle="المحذوفات">
       <mat-tab-group [selectedIndex]="activeTabIndex" (selectedTabChange)="onTabChanged($event)">
         <mat-tab *ngFor="let tab of tabs" [label]="tab.label">
           <div class="tab-content" *ngIf="stateByTab[tab.key] as state">
             <mat-form-field appearance="outline" class="w-100">
-              <mat-label>Search</mat-label>
+              <mat-label>بحث</mat-label>
               <input
                 matInput
                 [value]="state.searchTerm"
@@ -25,14 +25,14 @@
                 <tr mat-row *matRowDef="let row; columns: tab.columns"></tr>
               </table>
 
-              <div class="state-message" *ngIf="state.isLoading">Loading...</div>
-              <div class="state-message" *ngIf="!state.isLoading && state.rows.length === 0">No deleted records found</div>
+              <div class="state-message" *ngIf="state.isLoading">جاري التحميل...</div>
+              <div class="state-message" *ngIf="!state.isLoading && state.rows.length === 0">لا توجد سجلات محذوفة</div>
 
               <div class="pagination-bar" *ngIf="!state.isLoading && state.totalCount > 0">
                 <div>{{ getPageStatus(tab.key) }}</div>
                 <div class="pagination-controls">
                   <mat-form-field appearance="outline" class="page-size-select">
-                    <mat-label>Page size</mat-label>
+                    <mat-label>حجم الصفحة</mat-label>
                     <mat-select
                       [value]="state.pageSize"
                       (selectionChange)="onPageSizeChange(tab.key, $event.value)"
@@ -41,15 +41,15 @@
                     </mat-select>
                   </mat-form-field>
 
-                  <button mat-stroked-button (click)="prevPage(tab.key)" [disabled]="state.page === 0">Previous</button>
-                  <button mat-stroked-button (click)="nextPage(tab.key)" [disabled]="!canGoToNextPage(tab.key)">Next</button>
+                  <button mat-stroked-button (click)="prevPage(tab.key)" [disabled]="state.page === 0">السابق</button>
+                  <button mat-stroked-button (click)="nextPage(tab.key)" [disabled]="!canGoToNextPage(tab.key)">التالي</button>
                 </div>
               </div>
             </div>
 
             <div class="state-message error" *ngIf="state.error">
               {{ state.error }}
-              <button mat-stroked-button color="warn" (click)="retry(tab.key)">Retry</button>
+              <button mat-stroked-button color="warn" (click)="retry(tab.key)">اعادة المحاولة</button>
             </div>
           </div>
         </mat-tab>

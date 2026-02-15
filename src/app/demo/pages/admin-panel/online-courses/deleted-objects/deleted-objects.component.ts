@@ -35,38 +35,38 @@ interface DeletedTabConfig {
 export class DeletedObjectsComponent implements OnInit, OnDestroy {
   private deletedObjectsService = inject(DeletedObjectsService);
 
-  readonly pageSizeOptions = [10, 20, 50];
+  readonly pageSizeOptions = [10, 20, 50, 100, 200, 500, 1000];
   activeTabIndex = 0;
 
   readonly tabs: DeletedTabConfig[] = [
     {
       key: 'students',
-      label: 'Deleted Students',
+      label: 'الطلاب المحذوفين',
       columns: ['id', 'fullName', 'mobile', 'email', 'nationality', 'governorate', 'branchId']
     },
     {
       key: 'teachers',
-      label: 'Deleted Teachers',
+      label: 'المعلمين المحذوفين',
       columns: ['id', 'fullName', 'mobile', 'email', 'nationality', 'governorate', 'branchId']
     },
     {
       key: 'managers',
-      label: 'Deleted Managers',
+      label: 'المشرفين المحذوفين',
       columns: ['id', 'fullName', 'mobile', 'email', 'nationality', 'governorate', 'branchId']
     },
     {
       key: 'branchLeaders',
-      label: 'Deleted Branch Leaders',
+      label: ' مديرين الفروع المحذوفين',
       columns: ['id', 'fullName', 'mobile', 'email', 'nationality', 'governorate', 'branchId']
     },
     {
       key: 'circles',
-      label: 'Deleted Circles',
+      label: 'الحلقات المحذوفة',
       columns: ['id', 'name', 'teacher', 'branchId', 'daysSummary']
     },
     {
       key: 'circleReports',
-      label: 'Deleted Circle Reports',
+      label: 'تقارير الحلقات المحذوفة',
       columns: ['id', 'studentName', 'teacherName', 'circleName', 'minutes', 'creationTime', 'other']
     }
   ];
