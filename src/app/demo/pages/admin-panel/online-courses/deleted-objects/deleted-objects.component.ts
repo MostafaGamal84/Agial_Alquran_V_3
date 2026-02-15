@@ -178,9 +178,9 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
     const dialogRef = this.dialog.open(RestoreDeletedItemConfirmDialogComponent, {
       width: '420px',
       data: {
-        title: this.translate.instant('Restore'),
-        message: this.translate.instant('Are you sure you want to restore this item?'),
-        confirmText: this.translate.instant('Restore')
+        title: this.translate.instant('استعادة العنصر'),
+        message: this.translate.instant('هل أنت متأكد أنك تريد استعادة هذا العنصر؟'),
+        confirmText: this.translate.instant('استعادة')
       }
     });
 
@@ -385,7 +385,7 @@ interface RestoreDeletedItemConfirmDialogData {
       {{ data.message }}
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button type="button" (click)="onCancel()">{{ 'Cancel' | translate }}</button>
+      <button mat-button type="button" (click)="onCancel()">{{ 'تراجع' }}</button>
       <button mat-flat-button color="primary" type="button" (click)="onConfirm()">{{ data.confirmText }}</button>
     </mat-dialog-actions>
   `
