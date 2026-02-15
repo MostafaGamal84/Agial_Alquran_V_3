@@ -15,6 +15,13 @@
   text-align: right;
 }
 
+.restore-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 110px;
+}
+
 .state-message {
   padding: 1rem;
   text-align: center;

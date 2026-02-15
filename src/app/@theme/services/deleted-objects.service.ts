@@ -5,6 +5,8 @@ import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { ApiResponse, FilteredResultRequestDto, PagedResultDto, normalizePagedResult } from './lookup.service';
 
+export type DeletedTabKey = 'students' | 'teachers' | 'managers' | 'branchLeaders' | 'circles' | 'circleReports';
+
 @Injectable({ providedIn: 'root' })
 export class DeletedObjectsService {
   private http = inject(HttpClient);
@@ -33,6 +35,20 @@ export class DeletedObjectsService {
     return this.getPaged('/api/CircleReport/Deleted', filter);
   }
 
+  restoreDeletedItem(tab: DeletedTabKey, id: number): Observable<ApiResponse<boolean>> {
+    switch (tab) {
+      case 'students':
+      case 'teachers':
+      case 'managers':
+      case 'branchLeaders':
+        return this.restoreByEndpoint('/api/User/Restore', id);
+      case 'circles':
+        return this.restoreByEndpoint('/api/Circle/Restore', id);
+      case 'circleReports':
+        return this.restoreByEndpoint('/api/CircleReport/Restore', id);
+    }
+  }
+
   private getDeletedUsersByEndpoint(endpoint: string, filter: FilteredResultRequestDto): Observable<ApiResponse<PagedResultDto<unknown>>> {
     return this.getPaged(endpoint, filter);
   }
@@ -43,6 +59,11 @@ export class DeletedObjectsService {
     return this.http
       .get<ApiResponse<PagedResultDto<unknown>>>(`${environment.apiUrl}${endpoint}`, { params })
       .pipe(map((response) => normalizePagedResult(response, { skipCount: filter.skipCount })));
+  }
+
+  private restoreByEndpoint(endpoint: string, id: number): Observable<ApiResponse<boolean>> {
+    const params = new HttpParams().set('id', id.toString());
+    return this.http.post<ApiResponse<boolean>>(`${environment.apiUrl}${endpoint}`, null, { params });
   }
 
   private buildQueryParams(filter: FilteredResultRequestDto): HttpParams {
