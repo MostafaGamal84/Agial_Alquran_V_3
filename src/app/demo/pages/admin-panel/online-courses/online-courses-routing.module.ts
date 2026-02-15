@@ -71,6 +71,15 @@ const routes: Routes = [
           roles: [UserTypesEnum.Admin, UserTypesEnum.Manager, UserTypesEnum.BranchLeader, UserTypesEnum.Student, UserTypesEnum.Teacher]
         }
       },
+
+      {
+        path: 'deleted-objects',
+        loadComponent: () =>
+          import('./deleted-objects/deleted-objects.component').then((c) => c.DeletedObjectsComponent),
+        data: {
+          roles: [UserTypesEnum.Admin]
+        }
+      },
       {
         path: 'report',
         loadChildren: () => import('./report/report-routing.module').then((m) => m.ReportRoutingModule),
