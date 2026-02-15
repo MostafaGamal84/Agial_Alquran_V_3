@@ -81,21 +81,19 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
       columns: [
      
         { key: 'name', label: 'اسم الحلقة' },
-        { key: 'teacher', label: 'المعلم' },
       ],
-      columnKeys: ['id', 'name', 'teacher', 'branchId', 'daysSummary']
+      columnKeys: [ 'name', ]
     },
     {
       key: 'circleReports',
       label: 'تقارير الحلقات المحذوفة',
       columns: [
-        { key: 'id', label: 'المعرف' },
         { key: 'studentName', label: 'اسم الطالب' },
         { key: 'teacherName', label: 'اسم المعلم' },
         { key: 'circleName', label: 'اسم الحلقة' },
-        { key: 'minutes', label: 'الدقائق' },
+        { key: 'minutes', label: 'الدقائق' }
       ],
-      columnKeys: ['id', 'studentName', 'teacherName', 'circleName', 'minutes', 'creationTime', 'other']
+      columnKeys: [ 'studentName', 'teacherName', 'circleName', 'minutes']
     }
   ];
 
