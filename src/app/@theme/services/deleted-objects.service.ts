@@ -33,8 +33,42 @@ export class DeletedObjectsService {
     return this.getPaged('/api/CircleReport/Deleted', filter);
   }
 
+  restoreStudent(id: number): Observable<ApiResponse<boolean>> {
+    return this.restoreUser(id);
+  }
+
+  restoreTeacher(id: number): Observable<ApiResponse<boolean>> {
+    return this.restoreUser(id);
+  }
+
+  restoreManager(id: number): Observable<ApiResponse<boolean>> {
+    return this.restoreUser(id);
+  }
+
+  restoreBranchLeader(id: number): Observable<ApiResponse<boolean>> {
+    return this.restoreUser(id);
+  }
+
+  restoreCircle(id: number): Observable<ApiResponse<boolean>> {
+    return this.restoreByEndpoint('/api/Circle/Restore', id);
+  }
+
+  restoreCircleReport(id: number): Observable<ApiResponse<boolean>> {
+    return this.restoreByEndpoint('/api/CircleReport/Restore', id);
+  }
+
   private getDeletedUsersByEndpoint(endpoint: string, filter: FilteredResultRequestDto): Observable<ApiResponse<PagedResultDto<unknown>>> {
     return this.getPaged(endpoint, filter);
+  }
+
+  private restoreUser(id: number): Observable<ApiResponse<boolean>> {
+    const params = new HttpParams().set('id', id.toString()).set('statue', 'true');
+    return this.http.get<ApiResponse<boolean>>(`${environment.apiUrl}/api/User/DisableUser`, { params });
+  }
+
+  private restoreByEndpoint(endpoint: string, id: number): Observable<ApiResponse<boolean>> {
+    const params = new HttpParams().set('id', id.toString());
+    return this.http.post<ApiResponse<boolean>>(`${environment.apiUrl}${endpoint}`, null, { params });
   }
 
   private getPaged(endpoint: string, filter: FilteredResultRequestDto): Observable<ApiResponse<PagedResultDto<unknown>>> {

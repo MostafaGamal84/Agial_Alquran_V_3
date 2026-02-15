@@ -18,7 +18,21 @@
               <table mat-table [dataSource]="state.rows" class="mat-elevation-z8 w-100" *ngIf="state.rows.length > 0">
                 <ng-container *ngFor="let col of tab.columns" [matColumnDef]="col">
                   <th mat-header-cell *matHeaderCellDef>{{ col }}</th>
-                  <td mat-cell *matCellDef="let row">{{ getRowValue(row, col) }}</td>
+                  <td mat-cell *matCellDef="let row">
+                    <ng-container *ngIf="col !== 'actions'; else actionsCell">
+                      {{ getRowValue(row, col) }}
+                    </ng-container>
+                    <ng-template #actionsCell>
+                      <button
+                        mat-stroked-button
+                        color="primary"
+                        (click)="restoreRecord(tab.key, row)"
+                        [disabled]="isRestoring(tab.key, row)"
+                      >
+                        {{ isRestoring(tab.key, row) ? 'جاري الاستعادة...' : 'استعادة' }}
+                      </button>
+                    </ng-template>
+                  </td>
                 </ng-container>
 
                 <tr mat-header-row *matHeaderRowDef="tab.columns"></tr>
