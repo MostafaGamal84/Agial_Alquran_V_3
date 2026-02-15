@@ -1,0 +1,59 @@
+<div class="row deleted-objects-page" dir="rtl">
+  <div class="col-12">
+    <app-card cardTitle="العناصر المحذوفة">
+      <mat-tab-group [selectedIndex]="activeTabIndex" (selectedTabChange)="onTabChanged($event)">
+        <mat-tab *ngFor="let tab of tabs" [label]="tab.label">
+          <div class="tab-content" *ngIf="stateByTab[tab.key] as state">
+            <mat-form-field appearance="outline" class="w-100">
+              <mat-label>بحث</mat-label>
+              <input
+                matInput
+                [value]="state.searchTerm"
+                (input)="onSearchChange(tab.key, $any($event.target).value)"
+                placeholder="ابحث في السجلات المحذوفة"
+              />
+            </mat-form-field>
+
+            <div class="table-wrapper" *ngIf="!state.error">
+              <table mat-table [dataSource]="state.rows" class="mat-elevation-z8 w-100" *ngIf="state.rows.length > 0">
+                <ng-container *ngFor="let col of tab.columns" [matColumnDef]="col.key">
+                  <th mat-header-cell *matHeaderCellDef>{{ col.label }}</th>
+                  <td mat-cell *matCellDef="let row">{{ getRowValue(row, col.key) }}</td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="tab.columnKeys"></tr>
+                <tr mat-row *matRowDef="let row; columns: tab.columnKeys"></tr>
+              </table>
+
+              <div class="state-message" *ngIf="state.isLoading">جاري التحميل...</div>
+              <div class="state-message" *ngIf="!state.isLoading && state.rows.length === 0">لا توجد بيانات محذوفة</div>
+
+              <div class="pagination-bar" *ngIf="!state.isLoading && state.totalCount > 0">
+                <div>{{ getPageStatus(tab.key) }}</div>
+                <div class="pagination-controls">
+                  <mat-form-field appearance="outline" class="page-size-select">
+                    <mat-label>حجم الصفحة</mat-label>
+                    <mat-select
+                      [value]="state.pageSize"
+                      (selectionChange)="onPageSizeChange(tab.key, $event.value)"
+                    >
+                      <mat-option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+
+                  <button mat-stroked-button (click)="prevPage(tab.key)" [disabled]="state.page === 0">السابق</button>
+                  <button mat-stroked-button (click)="nextPage(tab.key)" [disabled]="!canGoToNextPage(tab.key)">التالي</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="state-message error" *ngIf="state.error">
+              {{ state.error }}
+              <button mat-stroked-button color="warn" (click)="retry(tab.key)">إعادة المحاولة</button>
+            </div>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </app-card>
+  </div>
+</div>
