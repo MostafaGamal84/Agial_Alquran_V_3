@@ -1,9 +1,18 @@
+.deleted-objects-page {
+  direction: rtl;
+}
+
 .tab-content {
   padding: 1rem 0;
 }
 
 .table-wrapper {
   overflow-x: auto;
+}
+
+.table-wrapper th,
+.table-wrapper td {
+  text-align: right;
 }
 
 .state-message {
@@ -34,11 +43,5 @@
 }
 
 .page-size-select {
-  width: 120px;
-}
-
-:host ::ng-deep td.mat-column-actions,
-:host ::ng-deep th.mat-column-actions {
-  min-width: 120px;
-  text-align: center;
+  width: 140px;
 }
