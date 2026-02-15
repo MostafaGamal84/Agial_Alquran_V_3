@@ -36,3 +36,9 @@
 .page-size-select {
   width: 120px;
 }
+
+:host ::ng-deep td.mat-column-actions,
+:host ::ng-deep th.mat-column-actions {
+  min-width: 120px;
+  text-align: center;
+}
