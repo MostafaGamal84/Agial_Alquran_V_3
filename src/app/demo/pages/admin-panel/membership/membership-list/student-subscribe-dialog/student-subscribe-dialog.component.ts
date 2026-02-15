@@ -109,7 +109,7 @@ export class StudentSubscribeDialogComponent implements OnInit {
     this.subscribeService.getAllTypes(filter).subscribe({
       next: (res) => {
         const fetchedTypes = res.isSuccess && res.data?.items ? res.data.items : [];
-        this.types = this.applyResidencyFilterToTypes(fetchedTypes);
+        this.types = this.applyResidencyFilterToTypes(this.normalizeIds(fetchedTypes));
         const selectedTypeId = this.resolveDefaultSubscribeTypeSelection();
         this.loadSubscribes(selectedTypeId);
       },
@@ -152,11 +152,27 @@ export class StudentSubscribeDialogComponent implements OnInit {
     this.lookupService.getSubscribesByTypeId(typeId ?? undefined).subscribe({
       next: (lookupRes) => {
         const options = this.extractSubscriptionOptions(lookupRes);
-        this.subscribes = options;
+        this.subscribes = this.normalizeIds(options);
       },
       error: () => {
         this.subscribes = [];
       }
+    });
+  }
+
+  /**
+   * Normalizes arrays coming from the API to make sure IDs are always numbers.
+   * This avoids mat-select label mismatches when the server returns numeric strings.
+   */
+  private normalizeIds<T extends { id?: number | string | null }>(items: T[]): (T & { id: number | null })[] {
+    return (items ?? []).map((item) => {
+      const parsedId = item?.id != null ? Number(item.id) : null;
+      const normalizedId = Number.isFinite(parsedId) ? parsedId : null;
+
+      return {
+        ...item,
+        id: normalizedId
+      };
     });
   }
 
