@@ -63,15 +63,21 @@
              *ngFor="let c of contactEntries"
              [href]="c.href || null"
              [class.is-link]="!!c.href"
-             (click)="$event.stopPropagation()">
+             (mousedown)="onContactPressStart(c.value, $event)"
+             (mouseup)="onContactPressEnd()"
+             (mouseleave)="onContactPressEnd()"
+             (touchstart)="onContactPressStart(c.value, $event)"
+             (touchend)="onContactPressEnd()"
+             (touchcancel)="onContactPressEnd()"
+             (click)="onContactClick($event)">
 
             <div class="c-ico"><i [class]="c.icon"></i></div>
-            <div class="c-body">
+            <div class="c-body" *ngIf="!isCompactContact(c.key)">
               <div class="c-label">{{ c.label }}</div>
               <div class="c-value">{{ c.value || '—' }}</div>
             </div>
 
-            <i class="ti ti-external-link hint" *ngIf="c.href"></i>
+            <i class="ti ti-external-link hint" *ngIf="c.href && !isCompactContact(c.key)"></i>
           </a>
         </div>
       </section>
