@@ -77,7 +77,7 @@ const routes: Routes = [
         loadComponent: () =>
           import('./deleted-objects/deleted-objects.component').then((c) => c.DeletedObjectsComponent),
         data: {
-          roles: [UserTypesEnum.Admin]
+          roles: [UserTypesEnum.Admin, UserTypesEnum.BranchLeader]
         }
       },
       {

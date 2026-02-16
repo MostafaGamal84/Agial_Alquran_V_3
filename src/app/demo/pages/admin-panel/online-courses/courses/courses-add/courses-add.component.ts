@@ -21,7 +21,7 @@ import { ProfileDto, UserService } from 'src/app/@theme/services/user.service';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 
 import { timeStringToTimeSpanString } from 'src/app/@theme/utils/time';
-import { Subject } from 'rxjs';
+import { Subject, merge, startWith } from 'rxjs';
 import { takeUntil, finalize } from 'rxjs/operators';
 import { Router } from '@angular/router';
 
@@ -73,6 +73,7 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
   isManager = false;
   submitted = false;
   isSaving = false;
+  missingRequiredFields: string[] = [];
 
   ngOnInit(): void {
     this.isManager = this.auth.getRole() === UserTypesEnum.Manager;
@@ -144,6 +145,8 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
     if (initialManagerId !== null && this.lastLoadedManagerId !== initialManagerId) {
       this.loadTeachers(initialManagerId);
     }
+
+    this.setupMissingRequiredFieldsTracking();
   }
 
   ngOnDestroy(): void {
@@ -435,6 +438,63 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
       dayId: [initial?.dayId ?? null, Validators.required],
       startTime: [initial?.startTime ?? '', Validators.required]
     });
+  }
+
+  get isSubmitDisabled(): boolean {
+    return this.isSaving || this.circleForm.invalid;
+  }
+
+  get submitValidationMessage(): string {
+    if (this.isSaving || this.circleForm.valid) {
+      return '';
+    }
+
+    if (this.missingRequiredFields.length) {
+      return `البيانات المطلوبة غير مكتملة: ${this.missingRequiredFields.join('، ')}`;
+    }
+
+    return 'يرجى استكمال الحقول المطلوبة قبل الحفظ.';
+  }
+
+  private getMissingRequiredFields(): string[] {
+    const missing: string[] = [];
+
+    if (this.isRequiredControlMissing('name')) {
+      missing.push('اسم الحلقة');
+    }
+
+    if (this.isRequiredControlMissing('branchId')) {
+      missing.push('الفرع');
+    }
+
+    if (this.isRequiredControlMissing('teacherId')) {
+      missing.push('المعلم');
+    }
+
+    if (this.daysArray.controls.some((dayGroup) => this.isRequiredControlMissing('dayId', dayGroup))) {
+      missing.push('اليوم');
+    }
+
+    if (this.daysArray.controls.some((dayGroup) => this.isRequiredControlMissing('startTime', dayGroup))) {
+      missing.push('وقت الحلقة');
+    }
+
+    return missing;
+  }
+
+  private isRequiredControlMissing(controlName: string, group: FormGroup = this.circleForm): boolean {
+    const control = group.get(controlName);
+    return !!control && control.enabled && control.hasError('required');
+  }
+
+  private refreshMissingRequiredFields(): void {
+    this.missingRequiredFields = this.getMissingRequiredFields();
+  }
+
+  private setupMissingRequiredFieldsTracking(): void {
+    merge(this.circleForm.statusChanges, this.circleForm.valueChanges)
+      .pipe(startWith(null), takeUntil(this.destroy$))
+      .subscribe(() => this.refreshMissingRequiredFields());
   }
 
   // ========== Submit ==========

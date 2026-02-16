@@ -13,6 +13,7 @@ import { MenuItemVerticalComponent } from './menu-item/menu-item.component';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { MenuCollapseComponent } from './menu-collapse/menu-collapse.component';
 import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scrollbar';
+import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 
 @Component({
   selector: 'app-vertical-menu',
@@ -79,5 +80,24 @@ export class VerticalMenuComponent {
   // تسجيل خروج المستخدم
   logout() {
     this.authenticationService.logout();
+  }
+
+  get currentUserRoleLabel(): string {
+    const role = this.authenticationService.getRole();
+
+    switch (role) {
+      case UserTypesEnum.Admin:
+        return 'مسؤول النظام';
+      case UserTypesEnum.Teacher:
+        return 'معلم';
+      case UserTypesEnum.Student:
+        return 'طالب';
+      case UserTypesEnum.BranchLeader:
+        return 'مدير فرع';
+      case UserTypesEnum.Manager:
+        return 'مشرف';
+      default:
+        return 'مستخدم';
+    }
   }
 }

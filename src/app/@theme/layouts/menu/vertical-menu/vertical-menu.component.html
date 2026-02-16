@@ -7,7 +7,7 @@
         </div>
         <div class="flex-grow-1 user-details">
           <div class="f-w-600">{{ this.authenticationService.currentUserName }}</div>
-          <div class="mat-caption">مسؤول النظام</div>
+          <div class="mat-caption">{{ currentUserRoleLabel }}</div>
         </div>
         <div class="user-setting">
           <a href="javascript:" [matMenuTriggerFor]="menu" class="text-muted">
