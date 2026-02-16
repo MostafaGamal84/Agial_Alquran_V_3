@@ -82,7 +82,7 @@ export class ManagerListComponent implements OnInit, OnDestroy {
   }
 
   getSerialNumber(index: number): number {
-    return (this.filter.skipCount ?? 0) + index + 1;
+    return index + 1;
   }
 
 
