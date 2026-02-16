@@ -178,3 +178,36 @@
   background-color: #f44336;
   color: #fff;
 }
+
+body.blind-mode {
+  filter: contrast(1.2);
+
+  * {
+    font-size: 1.08em !important;
+    letter-spacing: 0.02em;
+    line-height: 1.7;
+  }
+
+  a,
+  button,
+  input,
+  textarea,
+  select,
+  [tabindex] {
+    &:focus-visible {
+      outline: 3px solid #ffbf47 !important;
+      outline-offset: 3px;
+      box-shadow: none !important;
+    }
+  }
+
+  .mat-mdc-form-field,
+  .mat-mdc-raised-button,
+  .mat-mdc-outlined-button,
+  .mat-mdc-unelevated-button,
+  .mat-mdc-icon-button,
+  .mat-mdc-checkbox {
+    transform: scale(1.03);
+    transform-origin: center;
+  }
+}

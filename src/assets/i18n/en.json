@@ -34,7 +34,11 @@
       "NoAccount": "Don't have an account?",
       "CreateAccount": "Create account",
       "Success": "Logged in successfully",
-      "Failure": "Login failed"
+      "Failure": "Login failed",
+      "EnableBlindMode": "Enable blind mode",
+      "DisableBlindMode": "Disable blind mode",
+      "BlindModeEnabled": "Blind mode is currently enabled",
+      "BlindModeDisabled": "Blind mode is currently disabled"
     },
     "FORGOT_PASSWORD": {
       "Title": "Forgot password",

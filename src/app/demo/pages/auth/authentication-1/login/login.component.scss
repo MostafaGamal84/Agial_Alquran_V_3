@@ -1,1 +1,18 @@
-// This file is intentionally left empty to allow customers to add custom CSS if needed.
+.blind-mode-toggle {
+  margin: 1rem 0 1.25rem;
+
+  button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-weight: 600;
+  }
+
+  .blind-mode-status {
+    margin: 0.5rem 0 0;
+    text-align: center;
+    font-size: 0.875rem;
+    color: #5b6b79;
+  }
+}
