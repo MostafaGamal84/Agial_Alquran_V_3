@@ -114,6 +114,9 @@
                 <mat-select formControlName="governorateId" [placeholder]="'Select Governorate' | translate" appOpenSelectOnType>
                   <mat-option *ngFor="let g of governorates" [value]="g.id">{{ g.name }}</mat-option>
                 </mat-select>
+                @if (submitted && basicInfoForm.get('governorateId')?.hasError('required')) {
+                  <mat-error>{{ 'Governorate is required' | translate }}</mat-error>
+                }
               </mat-form-field>
             </div>
           }
