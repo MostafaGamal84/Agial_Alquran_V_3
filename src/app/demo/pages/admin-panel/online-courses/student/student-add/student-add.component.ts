@@ -104,9 +104,14 @@ export class StudentAddComponent implements OnInit {
 
     const nationality = this.nationalities.find((n) => n.id === Number(residentId)) ?? null;
     this.showGovernorateSelect = isEgyptianNationality(nationality);
-    if (!this.showGovernorateSelect) {
+    if (this.showGovernorateSelect) {
+      governorateControl.setValidators([Validators.required]);
+    } else {
+      governorateControl.clearValidators();
       governorateControl.setValue(null);
     }
+
+    governorateControl.updateValueAndValidity();
   }
 
   onCountryCodeChange(
