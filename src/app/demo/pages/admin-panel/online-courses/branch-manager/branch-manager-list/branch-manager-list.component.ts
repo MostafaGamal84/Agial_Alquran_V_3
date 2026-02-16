@@ -34,7 +34,7 @@ export class BranchManagerListComponent implements OnInit, OnDestroy {
   isLoading = false;
 
   // public props
-  displayedColumns: string[] = ['serial', 'fullName', 'email', 'mobile', 'action'];
+  displayedColumns: string[] = ['serial', 'fullName', 'email', 'mobile', 'nationality', 'action'];
   dataSource = new MatTableDataSource<LookUpUserDto>();
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };

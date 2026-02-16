@@ -33,7 +33,7 @@ export class ManagerListComponent implements OnInit, OnDestroy {
   dialog = inject(MatDialog);
 
   // public props
-  displayedColumns: string[] = ['serial', 'fullName', 'email', 'mobile', 'action'];
+  displayedColumns: string[] = ['serial', 'fullName', 'email', 'mobile', 'nationality', 'action'];
   dataSource = new MatTableDataSource<LookUpUserDto>();
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
