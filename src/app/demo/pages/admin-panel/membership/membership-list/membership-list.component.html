@@ -42,10 +42,10 @@
             </div>
           </div>
           <div class="table-responsive">
-            <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+            <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
               <!-- Name Column -->
               <ng-container matColumnDef="name">
-                <th mat-header-cell *matHeaderCellDef class="p-l-25">{{ 'Name' | translate }}</th>
+                <th mat-header-cell *matHeaderCellDef mat-sort-header="name" class="p-l-25">{{ 'Name' | translate }}</th>
                 <td mat-cell *matCellDef="let element" class="p-l-25">
                   <div class="flex align-item-center">
                     <div class="flex-shrink-0">
@@ -64,7 +64,7 @@
 
               <!-- mobile Column -->
               <ng-container matColumnDef="mobile">
-                <th mat-header-cell *matHeaderCellDef>{{ 'Mobile' | translate }}</th>
+                <th mat-header-cell *matHeaderCellDef mat-sort-header="mobile">{{ 'Mobile' | translate }}</th>
                 <td mat-cell *matCellDef="let element" class="text-nowrap">
                   {{ element.studentMobile || ('لا يوجد' | translate) }}
                 </td>
@@ -72,7 +72,7 @@
 
               <!-- order Column -->
               <ng-container matColumnDef="date">
-                <th mat-header-cell *matHeaderCellDef>{{ 'Start Date' | translate }}</th>
+                <th mat-header-cell *matHeaderCellDef mat-sort-header="date">{{ 'Start Date' | translate }}</th>
                 <td mat-cell *matCellDef="let element" class="text-nowrap">
                   {{ element.startDate ? (element.startDate | date: 'shortDate') : ('لا يوجد' | translate) }}
                   <span class="text-muted mat-small block">
@@ -83,7 +83,7 @@
 
               <!-- spent Column -->
               <ng-container matColumnDef="status">
-                <th mat-header-cell *matHeaderCellDef>{{ 'Status' | translate }}</th>
+                <th mat-header-cell *matHeaderCellDef mat-sort-header="status">{{ 'Status' | translate }}</th>
                 <td mat-cell *matCellDef="let element" class="text-nowrap">
                   @if (element.payStatus === true) {
                     <div class="text-success-500">
@@ -117,7 +117,7 @@
 
               <!-- STATUS Column -->
               <ng-container matColumnDef="plan">
-                <th mat-header-cell *matHeaderCellDef>{{ 'الباقة' | translate }}</th>
+                <th mat-header-cell *matHeaderCellDef mat-sort-header="plan">{{ 'الباقة' | translate }}</th>
                 <td mat-cell *matCellDef="let element" class="text-nowrap">
                   {{ element.plan || ('لا يوجد' | translate) }}
                 </td>

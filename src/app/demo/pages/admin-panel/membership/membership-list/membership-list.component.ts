@@ -1,11 +1,12 @@
 // angular import
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild, inject, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { finalize } from 'rxjs/operators';
 
 // angular material
 import { MatTableDataSource } from '@angular/material/table';
+import { MatSort } from '@angular/material/sort';
 import { MatDialog } from '@angular/material/dialog';
 
 // project import
@@ -32,7 +33,7 @@ import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overl
   templateUrl: './membership-list.component.html',
   styleUrl: './membership-list.component.scss'
 })
-export class MembershipListComponent implements OnInit, OnDestroy {
+export class MembershipListComponent implements OnInit, AfterViewInit, OnDestroy {
   private service = inject(StudentSubscribeService);
   private lookupService = inject(LookupService);
   private paymentService = inject(StudentPaymentService);
@@ -50,6 +51,7 @@ export class MembershipListComponent implements OnInit, OnDestroy {
   selectedResidencyGroup: ResidencyGroupFilter = 'all';
   isLoading = false;
   isLoadingMore = false;
+  readonly sort = viewChild(MatSort);
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;
 
@@ -62,6 +64,27 @@ export class MembershipListComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.loadNationalities();
     this.load();
+  }
+
+
+  ngAfterViewInit(): void {
+    this.dataSource.sort = this.sort()!;
+    this.dataSource.sortingDataAccessor = (item, property) => {
+      switch (property) {
+        case "name":
+          return (item.studentName ?? "").toLowerCase();
+        case "mobile":
+          return item.studentMobile ?? "";
+        case "date":
+          return item.startDate ? new Date(item.startDate).getTime() : 0;
+        case "status":
+          return item.payStatus === true ? 2 : item.payStatus === false ? 1 : 0;
+        case "plan":
+          return (item.plan ?? "").toLowerCase();
+        default:
+          return (item as unknown as Record<string, unknown>)[property] as string | number;
+      }
+    };
   }
 
   ngOnDestroy(): void {
