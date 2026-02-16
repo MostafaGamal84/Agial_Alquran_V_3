@@ -6,15 +6,15 @@ import { environment } from 'src/environments/environment';
 import { ApiResponse, FilteredResultRequestDto, PagedResultDto, normalizePagedResult } from './lookup.service';
 
 export enum CurrencyEnum {
-  LE = 1,
+  EGP = 1,
   SAR = 2,
   USD = 3
 }
 
 export const CurrencyLabels: Record<number, string> = {
-  [CurrencyEnum.LE]: 'LE',
-  [CurrencyEnum.SAR]: 'SAR',
-  [CurrencyEnum.USD]: 'USD'
+  [CurrencyEnum.EGP]: 'جنيه مصري',
+  [CurrencyEnum.SAR]: 'ريال سعودي',
+  [CurrencyEnum.USD]: 'دولار أمريكي'
 };
 
 export function getCurrencyLabel(currencyId?: number | null): string {
@@ -43,6 +43,7 @@ export interface StudentPaymentDto {
 export interface UpdatePaymentDto {
   id: number;
   amount?: number | null;
+  currencyId?: number | null;
   receiptPath?: string | null;
   payStatue?: boolean | null;
   isCancelled?: boolean | null;

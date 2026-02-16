@@ -5,20 +5,22 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
 import { catchError, finalize, map, of, switchMap } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 import {
+  CurrencyEnum,
+  CurrencyLabels,
   StudentPaymentDto,
   UpdatePaymentDto,
-  StudentPaymentService,
-  getCurrencyLabel
+  StudentPaymentService
 } from 'src/app/@theme/services/student-payment.service';
 
 @Component({
   selector: 'app-payment-edit',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatIconModule, ReactiveFormsModule, TranslateModule],
+  imports: [CommonModule, MatDialogModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatIconModule, ReactiveFormsModule, TranslateModule],
   templateUrl: './payment-edit.component.html',
   styleUrl: './payment-edit.component.scss'
 })
@@ -27,14 +29,18 @@ export class PaymentEditComponent {
   private service = inject(StudentPaymentService);
   private dialogRef = inject(MatDialogRef<PaymentEditComponent>);
   data = inject<StudentPaymentDto>(MAT_DIALOG_DATA);
-  currencyLabel = getCurrencyLabel(this.data.currencyId ?? this.data.currency ?? null);
+  readonly currencyOptions = [
+    { id: CurrencyEnum.EGP, label: CurrencyLabels[CurrencyEnum.EGP] },
+    { id: CurrencyEnum.SAR, label: CurrencyLabels[CurrencyEnum.SAR] },
+    { id: CurrencyEnum.USD, label: CurrencyLabels[CurrencyEnum.USD] }
+  ];
   receiptFile?: File;
   isSubmitting = false;
 
   form = this.fb.group({
     subscribe: [{ value: this.data.subscribe, disabled: true }],
     amount: [this.data.amount, Validators.required],
-    currency: [{ value: this.currencyLabel, disabled: true }]
+    currencyId: [this.data.currencyId ?? this.data.currency ?? null, Validators.required]
   });
 
   onFileChange(event: Event) {
@@ -62,6 +68,7 @@ export class PaymentEditComponent {
     const dto: UpdatePaymentDto = {
       id: this.data.invoiceId,
       amount: this.form.get('amount')?.value ?? undefined,
+      currencyId: this.form.get('currencyId')?.value ?? undefined,
       payStatue,
       isCancelled
     };
