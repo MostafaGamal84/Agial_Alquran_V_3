@@ -18,33 +18,66 @@
       <div class="p-b-15">
         <div class="table-containe table-reponsive">
           <div class="table-search p-t-15 p-x-15">
-            <mat-form-field appearance="outline" class="w-100">
-              <input matInput (keyup)="applyFilter($event)" [placeholder]="'Search...' | translate" #input />
-            </mat-form-field>
+            <div class="row g-3">
+              <div class="col-12 col-md-6">
+                <mat-form-field appearance="outline" class="w-100">
+                  <input matInput (keyup)="applyFilter($event)" [placeholder]="'Search...' | translate" #input />
+                </mat-form-field>
+              </div>
+              <div class="col-12 col-md-6">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>{{ 'Status' | translate }}</mat-label>
+                  <mat-select [value]="statusFilter" (selectionChange)="onStatusFilterChange($event.value)">
+                    <mat-option value="all">{{ 'All' | translate }}</mat-option>
+                    <mat-option value="active">{{ 'نشط' | translate }}</mat-option>
+                    <mat-option value="inactive">{{ 'غير نشط' | translate }}</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+            </div>
           </div>
           <div class="table-responsive">
-            <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+            <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
+              <ng-container matColumnDef="serial">
+                <th mat-header-cell *matHeaderCellDef>#</th>
+                <td mat-cell *matCellDef="let element; let i = index" class="text-nowrap">{{ getSerialNumber(i) }}</td>
+              </ng-container>
+
               <!-- Full Name Column -->
               <ng-container matColumnDef="fullName">
-                <th mat-header-cell *matHeaderCellDef class="p-l-25">{{ 'Name' | translate }}</th>
+                <th mat-header-cell *matHeaderCellDef class="p-l-25" mat-sort-header="fullName">{{ 'Name' | translate }}</th>
                 <td mat-cell *matCellDef="let element" class="p-l-25 text-nowrap">{{ element.fullName }}</td>
               </ng-container>
 
               <!-- Email Column -->
               <ng-container matColumnDef="email">
-                <th mat-header-cell *matHeaderCellDef>{{ 'Email' | translate }}</th>
-                <td mat-cell *matCellDef="let element" class="text-nowrap">{{ element.email }}</td>
+                <th mat-header-cell *matHeaderCellDef mat-sort-header="email">{{ 'Email' | translate }}</th>
+                <td mat-cell *matCellDef="let element" class="text-nowrap"><a *ngIf="buildMailtoLink(element.email) as mailto; else noEmail"
+                     [href]="mailto"
+                     class="avatar avatar-xs text-muted"
+                     [matTooltip]="'البريد الإلكتروني' | translate">
+                    <i class="ti ti-mail f-18"></i>
+                  </a>
+                  <ng-template #noEmail>—</ng-template></td>
               </ng-container>
 
               <!-- Mobile Column -->
               <ng-container matColumnDef="mobile">
-                <th mat-header-cell *matHeaderCellDef>{{ 'Mobile' | translate }}</th>
-                <td mat-cell *matCellDef="let element" class="text-nowrap">{{ element.mobile }}</td>
+                <th mat-header-cell *matHeaderCellDef mat-sort-header="mobile">{{ 'Mobile' | translate }}</th>
+                <td mat-cell *matCellDef="let element" class="text-nowrap"><a *ngIf="buildWhatsAppLink(element.mobile) as whatsapp; else noMobile"
+                     [href]="whatsapp"
+                     target="_blank"
+                     rel="noopener"
+                     class="avatar avatar-xs text-muted"
+                     [matTooltip]="'واتساب' | translate">
+                    <i class="ti ti-brand-whatsapp f-18"></i>
+                  </a>
+                  <ng-template #noMobile>—</ng-template></td>
               </ng-container>
 
               <!-- Nationality Column -->
               <ng-container matColumnDef="nationality">
-                <th mat-header-cell *matHeaderCellDef>{{ 'Nationality' | translate }}</th>
+                <th mat-header-cell *matHeaderCellDef mat-sort-header="nationality">{{ 'Nationality' | translate }}</th>
                 <td mat-cell *matCellDef="let element" class="text-nowrap">{{ element.nationality }}</td>
               </ng-container>
 
@@ -92,7 +125,7 @@
 
               <!-- Row shown when there is no matching data. -->
               <tr class="mat-row" *matNoDataRow>
-                <td class="mat-cell" colspan="5">
+                <td class="mat-cell" colspan="6">
                   {{ 'No data matching the filter "{{ value }}"' | translate: { value: input.value } }}
                 </td>
               </tr>
