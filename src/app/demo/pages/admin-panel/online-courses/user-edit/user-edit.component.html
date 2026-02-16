@@ -407,12 +407,15 @@
         <!-- أزرار الإجراء -->
         <div class="col-12">
           <div class="form-actions">
-            <button mat-flat-button color="primary" type="submit" class="submit-btn" [disabled]="isSaving">
+            <button mat-flat-button color="primary" type="submit" class="submit-btn" [disabled]="isSubmitDisabled">
               @if (isSaving) {
                 <mat-icon>autorenew</mat-icon>
               }
               {{ isSaving ? "جاري التحديث..." : "تحديث البيانات" }}
             </button>
+          <div class="text-danger small mt-2 text-center" *ngIf="submitValidationMessage">
+            {{ submitValidationMessage }}
+          </div>
           </div>
         </div>
       </form>
