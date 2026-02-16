@@ -1,1 +1,3 @@
-<img src="{{ data.imagePath }}" [alt]="'Image' | translate" class="dialog-images w-100 img-fluid" />
+<div cdkTrapFocus [cdkTrapFocusAutoCapture]="true" role="dialog" aria-modal="true" aria-label="Image preview dialog">
+  <img src="{{ data.imagePath }}" [alt]="'Preview image' | translate" class="dialog-images w-100 img-fluid" />
+</div>
