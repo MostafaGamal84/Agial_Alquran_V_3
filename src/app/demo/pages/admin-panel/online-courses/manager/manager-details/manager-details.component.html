@@ -16,11 +16,7 @@
   </div>
 
   <!-- المحتوى الرئيسي -->
-  <app-scrollbar
-    *ngIf="!loading && vm as m"
-    [customStyle]="{ maxHeight: 'calc(100vh - 155px)', position: 'relative' }"
-  >
-    <div class="wrap">
+  <div class="wrap" *ngIf="!loading && vm as m">
       <!-- ====== كرت العنوان / الهيرو ====== -->
       <section class="card hero">
         <div class="hero-left">
@@ -190,6 +186,5 @@
           </mat-expansion-panel>
         </mat-accordion>
       </section>
-    </div>
-  </app-scrollbar>
+  </div>
 </mat-dialog-content>

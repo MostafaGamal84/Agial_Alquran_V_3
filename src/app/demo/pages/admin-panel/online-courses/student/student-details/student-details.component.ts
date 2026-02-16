@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatButtonModule } from '@angular/material/button';
-import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scrollbar';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 import { getUserManagers } from 'src/app/demo/shared/utils/user-managers';
 
@@ -57,8 +56,7 @@ type StudentVM = {
     CommonModule,
     MatDialogModule,
     MatProgressSpinnerModule,
-    MatButtonModule,
-    NgxScrollbar
+    MatButtonModule
   ],
   templateUrl: './student-details.component.html',
   styleUrl: './student-details.component.scss'

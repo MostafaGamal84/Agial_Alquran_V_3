@@ -53,6 +53,10 @@
 
 .dialog-content {
   padding: 0;
+  max-height: calc(100vh - 155px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ========== حالة التحميل ========== */

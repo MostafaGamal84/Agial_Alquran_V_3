@@ -4,7 +4,6 @@ import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
-import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scrollbar';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 import { getUserManagers } from 'src/app/demo/shared/utils/user-managers';
 
@@ -65,8 +64,7 @@ type TeacherVM = {
     MatDialogModule,
     MatProgressSpinnerModule,
     MatButtonModule,
-    MatExpansionModule,
-    NgxScrollbar
+    MatExpansionModule
   ],
   templateUrl: './teacher-details.component.html',
   styleUrl: './teacher-details.component.scss'
