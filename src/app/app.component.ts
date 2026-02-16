@@ -27,6 +27,14 @@ export class AppComponent implements OnInit {
   // public props
   isSpinnerVisible = true;
 
+  get isBlindModeEnabled(): boolean {
+    return this.accessibilityModeService.enabled;
+  }
+
+  toggleBlindMode(): void {
+    this.accessibilityModeService.toggle();
+  }
+
 
 
   ngOnInit() {
