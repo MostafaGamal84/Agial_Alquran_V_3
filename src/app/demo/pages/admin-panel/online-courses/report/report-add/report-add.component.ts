@@ -645,6 +645,48 @@ export class ReportAddComponent implements OnInit, OnDestroy {
     return lines.join('\n');
   }
 
+  get isSubmitDisabled(): boolean {
+    return this.isSubmitting || this.reportForm.invalid;
+  }
+
+  get submitValidationMessage(): string {
+    if (this.isSubmitting || this.reportForm.valid) {
+      return '';
+    }
+
+    const missingFields = this.getMissingRequiredFields();
+    if (missingFields.length) {
+      return `البيانات المطلوبة غير مكتملة: ${missingFields.join('، ')}`;
+    }
+
+    return 'يرجى مراجعة القيم غير الصحيحة قبل الإرسال.';
+  }
+
+  private getMissingRequiredFields(): string[] {
+    const labels: Record<string, string> = {
+      managerId: 'المشرف',
+      teacherId: 'المعلم',
+      circleId: 'الحلقة',
+      studentId: 'الطالب',
+      attendStatueId: 'حالة الحضور',
+      minutes: 'عدد الدقائق'
+    };
+
+    return Object.entries(labels)
+      .filter(([controlName]) => this.isRequiredControlMissing(controlName))
+      .map(([, label]) => label);
+  }
+
+  private isRequiredControlMissing(controlName: string): boolean {
+    const control = this.reportForm.get(controlName);
+    if (!control || !control.enabled) {
+      return false;
+    }
+
+    control.updateValueAndValidity({ onlySelf: true, emitEvent: false });
+    return control.getError('required') === true;
+  }
+
   // =========================
   // Submit
   // =========================
