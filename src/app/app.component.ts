@@ -5,6 +5,7 @@ import { Router, NavigationStart, NavigationEnd, NavigationCancel, NavigationErr
 // project import
 import { BuyNowLinkService } from './@theme/services/buy-now-link.service';
 import { LanguageService } from './@theme/services/language.service';
+import { AccessibilityModeService } from './@theme/services/accessibility-mode.service';
 
 // Angular material
 import { MatProgressBar } from '@angular/material/progress-bar';
@@ -21,12 +22,14 @@ export class AppComponent implements OnInit {
   activeRoute = inject(ActivatedRoute);
   private productIdService = inject(BuyNowLinkService);
   private languageService = inject(LanguageService);
+  private accessibilityModeService = inject(AccessibilityModeService);
 
   // public props
   isSpinnerVisible = true;
 
   ngOnInit() {
     this.languageService.initialize();
+    this.accessibilityModeService.initialize();
     // Use ngOnInit instead of ngAfterViewInit
     this.router.events.subscribe(
       (event) => {

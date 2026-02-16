@@ -8,6 +8,22 @@
             <img src="assets/images/logo-dark.svg" class="app-logo" alt="logo" />
           </a>
         </div>
+        <div class="blind-mode-toggle" aria-live="polite">
+          <button
+            type="button"
+            mat-stroked-button
+            color="primary"
+            class="w-100"
+            (click)="toggleBlindMode()"
+            [attr.aria-pressed]="isBlindModeEnabled"
+          >
+            <mat-icon>{{ isBlindModeEnabled ? 'visibility' : 'visibility_off' }}</mat-icon>
+            {{ (isBlindModeEnabled ? 'AUTH.LOGIN.DisableBlindMode' : 'AUTH.LOGIN.EnableBlindMode') | translate }}
+          </button>
+          <p class="blind-mode-status">
+            {{ (isBlindModeEnabled ? 'AUTH.LOGIN.BlindModeEnabled' : 'AUTH.LOGIN.BlindModeDisabled') | translate }}
+          </p>
+        </div>
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="text-start">
           <label for="email" class="f-w-500 text-start">{{ 'AUTH.LOGIN.UsernameLabel' | translate }}</label>
           <mat-form-field appearance="outline" class="w-100 m-t-5">

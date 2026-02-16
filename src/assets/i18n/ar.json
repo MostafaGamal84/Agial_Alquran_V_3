@@ -34,7 +34,11 @@
       "NoAccount": "لا تملك حساباً؟",
       "CreateAccount": "إنشاء حساب",
       "Success": "تم تسجيل الدخول بنجاح",
-      "Failure": "فشل تسجيل الدخول"
+      "Failure": "فشل تسجيل الدخول",
+      "EnableBlindMode": "تفعيل وضع المكفوفين",
+      "DisableBlindMode": "إيقاف وضع المكفوفين",
+      "BlindModeEnabled": "وضع المكفوفين مفعل حالياً",
+      "BlindModeDisabled": "وضع المكفوفين غير مفعل حالياً"
     },
     "FORGOT_PASSWORD": {
       "Title": "نسيت كلمة المرور",
