@@ -1,11 +1,12 @@
 // angular import
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild, inject, viewChild } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { NgFor, NgIf } from '@angular/common';
 import { finalize } from 'rxjs/operators';
 
 // angular material
 import { MatTableDataSource } from '@angular/material/table';
+import { MatSort } from '@angular/material/sort';
 import {
   MAT_DIALOG_DATA,
   MatDialog,
@@ -67,7 +68,7 @@ interface CourseParticipantsDialogOptions {
   templateUrl: './courses-view.component.html',
   styleUrl: './courses-view.component.scss'
 })
-export class CoursesViewComponent implements OnInit, OnDestroy {
+export class CoursesViewComponent implements OnInit, AfterViewInit, OnDestroy {
   private circleService = inject(CircleService);
   private dialog = inject(MatDialog);
   private toast = inject(ToastService);
@@ -91,6 +92,7 @@ export class CoursesViewComponent implements OnInit, OnDestroy {
   pageSize = 10;
   isLoading = false;
   isLoadingMore = false;
+  readonly sort = viewChild(MatSort);
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;
 
@@ -103,6 +105,23 @@ export class CoursesViewComponent implements OnInit, OnDestroy {
   isTeacherOrStudent = [UserTypesEnum.Teacher, UserTypesEnum.Student].includes(this.auth.getRole()!);
   ngOnInit() {
     this.loadCircles();
+  }
+
+
+  ngAfterViewInit(): void {
+    this.dataSource.sort = this.sort()!;
+    this.dataSource.sortingDataAccessor = (item, property) => {
+      switch (property) {
+        case "name":
+          return (item.name ?? "").toLowerCase();
+        case "branch":
+          return this.getBranchLabel(item.branchId).toLowerCase();
+        case "teacher":
+          return (item.teacher?.fullName ?? item.teacherName ?? "").toLowerCase();
+        default:
+          return (item as unknown as Record<string, unknown>)[property] as string | number;
+      }
+    };
   }
 
   ngOnDestroy(): void {

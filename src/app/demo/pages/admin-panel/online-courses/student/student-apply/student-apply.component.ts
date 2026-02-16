@@ -1,9 +1,10 @@
 // angular import
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild, inject, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 // angular material
 import { MatTableDataSource } from '@angular/material/table';
+import { MatSort } from '@angular/material/sort';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -21,7 +22,7 @@ import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
   templateUrl: './student-apply.component.html',
   styleUrl: './student-apply.component.scss'
 })
-export class StudentApplyComponent implements OnInit, OnDestroy {
+export class StudentApplyComponent implements OnInit, AfterViewInit, OnDestroy {
   private lookupService = inject(LookupService);
   private userService = inject(UserService);
 
@@ -38,6 +39,7 @@ export class StudentApplyComponent implements OnInit, OnDestroy {
   pageSize = 10;
   isLoading = false;
   isLoadingMore = false;
+  readonly sort = viewChild(MatSort);
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;
 
@@ -58,6 +60,10 @@ export class StudentApplyComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadStudents();
+  }
+
+  ngAfterViewInit(): void {
+    this.dataSource.sort = this.sort()!;
   }
 
   ngOnDestroy(): void {
