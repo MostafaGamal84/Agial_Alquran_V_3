@@ -26,14 +26,6 @@
               </div>
               <div class="col-12 col-md-4">
                 <mat-form-field appearance="outline" class="w-100">
-                  <mat-label>{{ 'Status' | translate }}</mat-label>
-                  <mat-select [value]="statusFilter" (selectionChange)="onStatusFilterChange()">
-                    <mat-option value="all">{{ 'All' | translate }}</mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
-              <div class="col-12 col-md-4">
-                <mat-form-field appearance="outline" class="w-100">
                   <mat-label>{{ 'Residency' | translate }}</mat-label>
                   <mat-select
                     [value]="selectedResidentId ?? null"
