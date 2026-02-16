@@ -155,16 +155,7 @@ export class ManagerAddComponent implements OnInit {
 
   private isRequiredControlMissing(controlName: string): boolean {
     const control = this.basicInfoForm.get(controlName);
-    if (!control || !control.enabled || !control.hasValidator(Validators.required)) {
-      return false;
-    }
-
-    const value = control.value;
-    if (Array.isArray(value)) {
-      return value.length === 0;
-    }
-
-    return value === null || value === undefined || value === '';
+    return !!control && control.enabled && control.hasError('required');
   }
 
   onSubmit() {
