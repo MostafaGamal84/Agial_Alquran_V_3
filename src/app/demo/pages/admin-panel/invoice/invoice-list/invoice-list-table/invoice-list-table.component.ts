@@ -64,7 +64,7 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
   private dialog = inject(MatDialog);
 
   // public props
-  displayedColumns: string[] = ['id', 'name', 'create_date', 'due_date', 'qty', 'status', 'action'];
+  displayedColumns: string[] = ['index', 'name', 'create_date', 'due_date', 'qty', 'status', 'action'];
   dataSource = new MatTableDataSource<InvoiceTableItem>([]);
   searchTerm = '';
   totalCount = 0;
@@ -372,5 +372,9 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
 
   hasMoreResults(): boolean {
     return this.dataSource.data.length < this.totalCount;
+  }
+
+  getRowIndex(index: number): number {
+    return index + 1;
   }
 }

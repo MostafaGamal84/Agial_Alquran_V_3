@@ -13,9 +13,9 @@
 
   <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
     <!-- id Column -->
-    <ng-container matColumnDef="id">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-center">{{ 'Invoice ID' | translate }}</th>
-      <td mat-cell *matCellDef="let element" class="text-nowrap text-center">{{ element.id }}</td>
+    <ng-container matColumnDef="index">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-center">{{ 'Index' | translate }}</th>
+      <td mat-cell *matCellDef="let element; let i = index" class="text-nowrap text-center">{{ getRowIndex(i) }}</td>
     </ng-container>
 
     <!-- Name Column -->
