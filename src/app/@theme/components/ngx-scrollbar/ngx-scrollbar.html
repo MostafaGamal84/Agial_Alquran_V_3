@@ -1,11 +1,3 @@
-<ng-container *ngIf="!useNativeScroll; else nativeScrollContent">
-  <ng-scrollbar [style]="customStyle" visibility="hover" [dir]="direction" appearance="compact" orientation="vertical">
-    <ng-content />
-  </ng-scrollbar>
-</ng-container>
-
-<ng-template #nativeScrollContent>
-  <div class="native-scroll" [ngStyle]="customStyle" [dir]="direction">
-    <ng-content />
-  </div>
-</ng-template>
+<ng-scrollbar [style]="customStyle" visibility="hover" [dir]="direction" appearance="compact" orientation="vertical">
+  <ng-content />
+</ng-scrollbar>
