@@ -7,8 +7,10 @@ import { MatTabChangeEvent } from '@angular/material/tabs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { finalize } from 'rxjs/operators';
 import { DeletedObjectsService, DeletedTabKey } from 'src/app/@theme/services/deleted-objects.service';
+import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { FilteredResultRequestDto } from 'src/app/@theme/services/lookup.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
+import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 
 interface DeletedTabState {
@@ -43,6 +45,7 @@ interface DeletedTabConfig {
 })
 export class DeletedObjectsComponent implements OnInit, OnDestroy {
   private deletedObjectsService = inject(DeletedObjectsService);
+  private authenticationService = inject(AuthenticationService);
   private dialog = inject(MatDialog);
   private toast = inject(ToastService);
   private translate = inject(TranslateService);
@@ -56,7 +59,7 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
     { key: 'email', label: 'البريد الإلكتروني' }
   ];
 
-  readonly tabs: DeletedTabConfig[] = [
+  private readonly allTabs: DeletedTabConfig[] = [
     {
       key: 'students',
       label: 'الطلاب المحذوفون',
@@ -99,6 +102,11 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
       columnKeys: ['studentName', 'teacherName', 'circleName', 'minutes', 'actions']
     }
   ];
+
+  readonly tabs: DeletedTabConfig[] =
+    this.authenticationService.getRole() === UserTypesEnum.BranchLeader
+      ? this.allTabs.filter((tab) => tab.key === 'students')
+      : this.allTabs;
 
   stateByTab: Record<DeletedTabKey, DeletedTabState> = {
     students: this.createDefaultState(),
