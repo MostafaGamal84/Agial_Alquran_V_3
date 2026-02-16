@@ -97,6 +97,23 @@ export class UserEditComponent implements OnInit {
     return (this.isTeacher || this.isStudent) && this.auth.getRole() === UserTypesEnum.Manager;
   }
 
+  get isSubmitDisabled(): boolean {
+    return this.isSaving || this.basicInfoForm.invalid;
+  }
+
+  get submitValidationMessage(): string {
+    if (this.isSaving || this.basicInfoForm.valid) {
+      return '';
+    }
+
+    const missingFields = this.getMissingRequiredFields();
+    if (missingFields.length) {
+      return `البيانات المطلوبة غير مكتملة: ${missingFields.join('، ')}`;
+    }
+
+    return 'يرجى مراجعة الحقول غير الصحيحة.';
+  }
+
   private getEffectiveManagerId(managerId?: number | null): number {
     return this.loggedInManagerId ?? managerId ?? 0;
   }
@@ -786,5 +803,36 @@ export class UserEditComponent implements OnInit {
     });
 
     this.managers = Array.from(existing.values());
+  }
+
+  private getMissingRequiredFields(): string[] {
+    const requiredFieldLabels: Record<string, string> = {
+      fullName: 'الاسم الكامل',
+      email: 'البريد الإلكتروني',
+      mobileCountryDialCode: 'مفتاح الدولة للجوال',
+      mobile: 'رقم الجوال',
+      nationalityId: 'الجنسية',
+      residentId: 'مكان الإقامة',
+      governorateId: 'المحافظة',
+      branchId: 'الفرع'
+    };
+
+    return Object.entries(requiredFieldLabels)
+      .filter(([controlName]) => this.isRequiredControlMissing(controlName))
+      .map(([, label]) => label);
+  }
+
+  private isRequiredControlMissing(controlName: string): boolean {
+    const control = this.basicInfoForm.get(controlName);
+    if (!control || !control.enabled || !control.hasValidator(Validators.required)) {
+      return false;
+    }
+
+    const value = control.value;
+    if (Array.isArray(value)) {
+      return value.length === 0;
+    }
+
+    return value === null || value === undefined || value === '';
   }
 }

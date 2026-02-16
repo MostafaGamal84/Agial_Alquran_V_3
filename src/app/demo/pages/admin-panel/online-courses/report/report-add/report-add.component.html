@@ -260,12 +260,13 @@
       <button class="btn ghost" type="button" routerLink="../">
         إلغاء
       </button>
-      <button class="btn" type="submit" [disabled]="isSubmitting">
+      <button class="btn" type="submit" [disabled]="isSubmitDisabled">
         @if (isSubmitting) {
           <span class="loading-dot">⏳</span>
         }
         {{ isSubmitting ? 'جاري الإرسال...' : (mode === 'update' ? 'تحديث' : 'إنشاء') }}
       </button>
+      <div class="text-danger small mt-2" *ngIf="submitValidationMessage">{{ submitValidationMessage }}</div>
     </div>
   </form>
 </section>
