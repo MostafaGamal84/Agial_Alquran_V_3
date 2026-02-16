@@ -76,6 +76,7 @@ export class CoursesViewComponent implements OnInit, AfterViewInit, OnDestroy {
 
 
   displayedColumns: string[] = [
+    'index',
     'name',
     'branch',
     'teacher',
