@@ -1,1 +1,14 @@
-// This file is intentionally left empty to allow customers to add custom CSS if needed.
+.accessibility-toggle-footer {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.accessibility-toggle-button:focus-visible,
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+[role='button']:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
