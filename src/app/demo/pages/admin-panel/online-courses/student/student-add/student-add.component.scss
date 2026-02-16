@@ -9,6 +9,14 @@ form {
   }
 }
 
+.phone-row {
+  width: 100%;
+}
+
+.phone-country-select {
+  min-width: 130px;
+}
+
 .file-upload {
   display: block;
   border: 1px solid var(--accent-300);
