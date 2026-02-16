@@ -6,6 +6,7 @@ import { finalize } from 'rxjs/operators';
 
 // angular material
 import { MatTableDataSource } from '@angular/material/table';
+import { MatSort } from '@angular/material/sort';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 
@@ -32,7 +33,7 @@ export class ManagerListComponent implements OnInit, OnDestroy {
   dialog = inject(MatDialog);
 
   // public props
-  displayedColumns: string[] = ['fullName', 'email', 'mobile', 'nationality', 'action'];
+  displayedColumns: string[] = ['serial', 'fullName', 'email', 'mobile', 'action'];
   dataSource = new MatTableDataSource<LookUpUserDto>();
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
@@ -40,8 +41,26 @@ export class ManagerListComponent implements OnInit, OnDestroy {
   pageSize = 10;
   isLoading = false;
   isLoadingMore = false;
+  statusFilter: 'all' | 'active' | 'inactive' = 'all';
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;
+
+
+  @ViewChild(MatSort)
+  set matSort(sort: MatSort | undefined) {
+    if (!sort) {
+      return;
+    }
+
+    this.dataSource.sort = sort;
+    this.dataSource.sortingDataAccessor = (item, property) => {
+      const value = item[property as keyof LookUpUserDto];
+      if (value === null || value === undefined) {
+        return '';
+      }
+      return typeof value === 'string' ? value.toLowerCase() : String(value);
+    };
+  }
 
   @ViewChild('loadMoreTrigger')
   set loadMoreTrigger(element: ElementRef<HTMLElement> | undefined) {
@@ -62,6 +81,26 @@ export class ManagerListComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.loadManagers();
   }
+
+  onStatusFilterChange(value: 'all' | 'active' | 'inactive'): void {
+    this.statusFilter = value;
+    if (value === 'all') {
+      delete this.filter.filter;
+    } else if (value === 'inactive') {
+      this.filter.filter = 'inactive=true';
+    } else {
+      this.filter.filter = 'inactive=false';
+    }
+
+    this.pageIndex = 0;
+    this.filter.skipCount = 0;
+    this.loadManagers();
+  }
+
+  getSerialNumber(index: number): number {
+    return (this.filter.skipCount ?? 0) + index + 1;
+  }
+
 
   ngOnDestroy(): void {
     this.intersectionObserver?.disconnect();
@@ -156,6 +195,16 @@ export class ManagerListComponent implements OnInit, OnDestroy {
     this.filter.skipCount = this.pageIndex * this.pageSize;
     this.filter.maxResultCount = this.pageSize;
     this.loadManagers(true);
+  }
+
+  buildWhatsAppLink(phone: string | null | undefined): string | undefined {
+    const digits = String(phone ?? "").replace(/[^\d]/g, "");
+    return digits ? `https://wa.me/${digits}` : undefined;
+  }
+
+  buildMailtoLink(email: string | null | undefined): string | undefined {
+    const value = String(email ?? "").trim();
+    return value ? `mailto:${value}` : undefined;
   }
 
   hasMoreResults(): boolean {
