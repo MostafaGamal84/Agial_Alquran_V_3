@@ -24,7 +24,7 @@ export class SubscribeComponent implements OnInit, OnDestroy {
   private toast = inject(ToastService);
   private translate = inject(TranslateService);
 
-  displayedColumns: string[] = ['name', 'minutes', 'type', 'action'];
+  displayedColumns: string[] = ['name', 'minutes','price', 'type', 'action'];
   dataSource = new MatTableDataSource<SubscribeDto>();
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
