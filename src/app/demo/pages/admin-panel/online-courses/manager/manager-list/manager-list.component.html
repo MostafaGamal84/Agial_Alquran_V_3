@@ -24,14 +24,6 @@
                   <input matInput (keyup)="applyFilter($event)" [placeholder]="'Search...' | translate" #input />
                 </mat-form-field>
               </div>
-              <div class="col-12 col-md-6">
-                <mat-form-field appearance="outline" class="w-100">
-                  <mat-label>{{ 'Status' | translate }}</mat-label>
-                  <mat-select [value]="statusFilter" (selectionChange)="onStatusFilterChange()">
-                    <mat-option value="all">{{ 'All' | translate }}</mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
             </div>
           </div>
           <div class="table-responsive">

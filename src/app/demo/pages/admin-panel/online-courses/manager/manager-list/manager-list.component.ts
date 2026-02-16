@@ -41,7 +41,6 @@ export class ManagerListComponent implements OnInit, OnDestroy {
   pageSize = 10;
   isLoading = false;
   isLoadingMore = false;
-  statusFilter = 'all' as const;
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;
 
@@ -79,15 +78,6 @@ export class ManagerListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.loadManagers();
-  }
-
-  onStatusFilterChange(): void {
-    this.statusFilter = 'all';
-    delete this.filter.filter;
-
-    this.pageIndex = 0;
-    this.filter.skipCount = 0;
     this.loadManagers();
   }
 

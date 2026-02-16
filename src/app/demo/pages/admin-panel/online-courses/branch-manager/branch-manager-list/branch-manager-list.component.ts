@@ -42,7 +42,6 @@ export class BranchManagerListComponent implements OnInit, OnDestroy {
   pageSize = 10;
   private pendingBranchManagerIds = new Set<number>();
   isLoadingMore = false;
-  statusFilter = 'all' as const;
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;
 
@@ -79,15 +78,6 @@ export class BranchManagerListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.loadBranchManagers();
-  }
-
-  onStatusFilterChange(): void {
-    this.statusFilter = 'all';
-    delete this.filter.filter;
-
-    this.pageIndex = 0;
-    this.filter.skipCount = 0;
     this.loadBranchManagers();
   }
 

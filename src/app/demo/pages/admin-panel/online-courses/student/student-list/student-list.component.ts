@@ -55,7 +55,6 @@ export class StudentListComponent implements OnInit, OnDestroy {
   private pendingStudentIds = new Set<number>();
   isLoading = false;
   isLoadingMore = false;
-  statusFilter = 'all' as const;
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;
 
@@ -105,15 +104,6 @@ export class StudentListComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadNationalities();
-    this.loadStudents();
-  }
-
-  onStatusFilterChange(): void {
-    this.statusFilter = 'all';
-    delete this.filter.filter;
-
-    this.pageIndex = 0;
-    this.filter.skipCount = 0;
     this.loadStudents();
   }
 

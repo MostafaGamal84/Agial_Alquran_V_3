@@ -47,7 +47,6 @@ export class TeacherListComponent implements OnInit, OnDestroy {
   pageSize = 10;
   isLoading = false;
   isLoadingMore = false;
-  statusFilter = 'all' as const;
   private pendingTeacherIds = new Set<number>();
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;
@@ -86,14 +85,6 @@ export class TeacherListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.loadTeachers();
-  }
-  onStatusFilterChange(): void {
-    this.statusFilter = 'all';
-    delete this.filter.filter;
-
-    this.pageIndex = 0;
-    this.filter.skipCount = 0;
     this.loadTeachers();
   }
 
