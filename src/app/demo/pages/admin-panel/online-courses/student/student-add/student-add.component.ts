@@ -165,7 +165,12 @@ export class StudentAddComponent implements OnInit {
 
   private isRequiredControlMissing(controlName: string): boolean {
     const control = this.basicInfoForm.get(controlName);
-    return !!control && control.enabled && control.hasError('required');
+    if (!control || !control.enabled) {
+      return false;
+    }
+
+    control.updateValueAndValidity({ onlySelf: true, emitEvent: false });
+    return control.getError('required') === true;
   }
 
   onSubmit() {
