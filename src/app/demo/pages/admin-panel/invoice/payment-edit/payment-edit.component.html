@@ -8,10 +8,14 @@
     <mat-label>{{ 'المبلغ' | translate }}</mat-label>
     <input matInput type="number" formControlName="amount" />
   </mat-form-field>
-  <!-- <mat-form-field appearance="outline" class="w-100">
+  <mat-form-field appearance="outline" class="w-100">
     <mat-label>{{ 'العملة' | translate }}</mat-label>
-    <input matInput formControlName="currency" />
-  </mat-form-field> -->
+    <mat-select formControlName="currencyId">
+      @for (option of currencyOptions; track option.id) {
+        <mat-option [value]="option.id">{{ option.label }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
   <input type="file" (change)="onFileChange($event)" />
 </div>
 <div mat-dialog-actions align="end">

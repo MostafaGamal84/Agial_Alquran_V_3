@@ -1,9 +1,10 @@
-import { ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnInit, ViewChild, inject, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 import { MatTableDataSource } from '@angular/material/table';
+import { MatSort } from '@angular/material/sort';
 import { MatButtonModule } from '@angular/material/button';
 import {
   MatDialog,
@@ -72,7 +73,7 @@ interface StudentOption {
   templateUrl: './report-list.component.html',
   styleUrl: './report-list.component.scss'
 })
-export class ReportListComponent implements OnInit, OnDestroy {
+export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
   private reportService = inject(CircleReportService);
   private circleService = inject(CircleService);
   private lookupService = inject(LookupService);
@@ -114,6 +115,7 @@ export class ReportListComponent implements OnInit, OnDestroy {
   isLoading = false;
   isLoadingStudents = false;
   isLoadingMore = false;
+  readonly sort = viewChild(MatSort);
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;
 
@@ -172,6 +174,27 @@ export class ReportListComponent implements OnInit, OnDestroy {
       .get('residentGroup')
       ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe((group: ResidencyGroupFilter | null) => this.onResidencyGroupChange(group));
+  }
+
+
+  ngAfterViewInit(): void {
+    this.dataSource.sort = this.sort()!;
+    this.dataSource.sortingDataAccessor = (item, property) => {
+      switch (property) {
+        case "student":
+          return this.getStudentDisplay(item).toLowerCase();
+        case "circle":
+          return this.getCircleDisplay(item).toLowerCase();
+        case "status":
+          return Number(item.attendStatueId ?? 0);
+        case "creationTime":
+          return item.creationTime ? new Date(item.creationTime).getTime() : 0;
+        case "minutes":
+          return Number(item.minutes ?? 0);
+        default:
+          return (item as unknown as Record<string, unknown>)[property] as string | number;
+      }
+    };
   }
 
   ngOnDestroy(): void {
