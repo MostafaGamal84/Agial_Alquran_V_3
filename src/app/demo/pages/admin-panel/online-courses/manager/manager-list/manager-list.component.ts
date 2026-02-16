@@ -197,6 +197,16 @@ export class ManagerListComponent implements OnInit, OnDestroy {
     this.loadManagers(true);
   }
 
+  buildWhatsAppLink(phone: string | null | undefined): string | undefined {
+    const digits = String(phone ?? "").replace(/[^\d]/g, "");
+    return digits ? `https://wa.me/${digits}` : undefined;
+  }
+
+  buildMailtoLink(email: string | null | undefined): string | undefined {
+    const value = String(email ?? "").trim();
+    return value ? `mailto:${value}` : undefined;
+  }
+
   hasMoreResults(): boolean {
     return this.dataSource.data.length < this.totalCount;
   }
