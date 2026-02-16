@@ -14,7 +14,7 @@ import { CountryService, Country } from 'src/app/@theme/services/country.service
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 import { isEgyptianNationality } from 'src/app/@theme/utils/nationality.utils';
 import { TranslateService } from '@ngx-translate/core';
-import { finalize } from 'rxjs';
+import { finalize, merge, startWith } from 'rxjs';
 
 @Component({
   selector: 'app-manager-add',
@@ -34,6 +34,7 @@ export class ManagerAddComponent implements OnInit {
   basicInfoForm!: FormGroup;
   submitted = false;
   isSubmitting = false;
+  missingRequiredFields: string[] = [];
 
   nationalities: NationalityDto[] = [];
   governorates: GovernorateDto[] = [];
@@ -89,6 +90,8 @@ export class ManagerAddComponent implements OnInit {
     this.countryService.getCountries().subscribe((data) => {
       this.countries = data;
     });
+
+    this.setupMissingRequiredFieldsTracking();
   }
 
   private updateGovernorateVisibility(residentId: number | null): void {
@@ -127,9 +130,8 @@ export class ManagerAddComponent implements OnInit {
       return '';
     }
 
-    const missingFields = this.getMissingRequiredFields();
-    if (missingFields.length) {
-      return `البيانات المطلوبة غير مكتملة: ${missingFields.join('، ')}`;
+    if (this.missingRequiredFields.length) {
+      return `البيانات المطلوبة غير مكتملة: ${this.missingRequiredFields.join('، ')}`;
     }
 
     return 'يرجى مراجعة الحقول غير الصحيحة قبل الإرسال.';
@@ -155,12 +157,17 @@ export class ManagerAddComponent implements OnInit {
 
   private isRequiredControlMissing(controlName: string): boolean {
     const control = this.basicInfoForm.get(controlName);
-    if (!control || !control.enabled) {
-      return false;
-    }
+    return !!control && control.enabled && control.hasError('required');
+  }
 
-    control.updateValueAndValidity({ onlySelf: true, emitEvent: false });
-    return control.getError('required') === true;
+  private refreshMissingRequiredFields(): void {
+    this.missingRequiredFields = this.getMissingRequiredFields();
+  }
+
+  private setupMissingRequiredFieldsTracking(): void {
+    merge(this.basicInfoForm.statusChanges, this.basicInfoForm.valueChanges)
+      .pipe(startWith(null))
+      .subscribe(() => this.refreshMissingRequiredFields());
   }
 
   onSubmit() {

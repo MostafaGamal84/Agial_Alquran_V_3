@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { ActivatedRoute, Router } from '@angular/router';
-import { finalize, forkJoin } from 'rxjs';
+import { finalize, forkJoin, merge, startWith } from 'rxjs';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -69,6 +69,7 @@ export class UserEditComponent implements OnInit {
   isBranchLeaderUser = false;
   submitted = false;
   isSaving = false;
+  missingRequiredFields: string[] = [];
   Branch = [
     { id: BranchesEnum.Mens, label: 'الرجال' },
     { id: BranchesEnum.Women, label: 'النساء' }
@@ -106,9 +107,8 @@ export class UserEditComponent implements OnInit {
       return '';
     }
 
-    const missingFields = this.getMissingRequiredFields();
-    if (missingFields.length) {
-      return `البيانات المطلوبة غير مكتملة: ${missingFields.join('، ')}`;
+    if (this.missingRequiredFields.length) {
+      return `البيانات المطلوبة غير مكتملة: ${this.missingRequiredFields.join('، ')}`;
     }
 
     return 'يرجى مراجعة الحقول غير الصحيحة.';
@@ -147,6 +147,8 @@ export class UserEditComponent implements OnInit {
     this.basicInfoForm
       .get('residentId')
       ?.valueChanges.subscribe((residentId) => this.applyGovernorateRequirement(residentId));
+
+    this.setupMissingRequiredFieldsTracking();
 
     this.lookupService.getAllNationalities().subscribe((res) => {
       if (res.isSuccess) {
@@ -643,6 +645,7 @@ export class UserEditComponent implements OnInit {
     }
 
     governorateControl.updateValueAndValidity({ emitEvent: false });
+    this.refreshMissingRequiredFields();
   }
 
   private getListRoute(): string {
@@ -824,11 +827,16 @@ export class UserEditComponent implements OnInit {
 
   private isRequiredControlMissing(controlName: string): boolean {
     const control = this.basicInfoForm.get(controlName);
-    if (!control || !control.enabled) {
-      return false;
-    }
+    return !!control && control.enabled && control.hasError('required');
+  }
 
-    control.updateValueAndValidity({ onlySelf: true, emitEvent: false });
-    return control.getError('required') === true;
+  private refreshMissingRequiredFields(): void {
+    this.missingRequiredFields = this.getMissingRequiredFields();
+  }
+
+  private setupMissingRequiredFieldsTracking(): void {
+    merge(this.basicInfoForm.statusChanges, this.basicInfoForm.valueChanges)
+      .pipe(startWith(null))
+      .subscribe(() => this.refreshMissingRequiredFields());
   }
 }
