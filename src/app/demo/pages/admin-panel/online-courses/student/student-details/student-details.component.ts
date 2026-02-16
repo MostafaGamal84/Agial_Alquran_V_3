@@ -248,7 +248,7 @@ export class StudentDetailsComponent {
   }
 
   isCompactContact(key: string): boolean {
-    return key === 'email' || key === 'mobile' || key === 'secondMobile';
+    return !!key && false;
   }
 
   onContactPressStart(value: string, event: Event): void {
