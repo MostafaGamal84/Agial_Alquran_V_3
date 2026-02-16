@@ -118,6 +118,55 @@ export class ManagerAddComponent implements OnInit {
     }
   }
 
+  get isSubmitDisabled(): boolean {
+    return this.isSubmitting || this.basicInfoForm.invalid;
+  }
+
+  get submitValidationMessage(): string {
+    if (this.isSubmitting || this.basicInfoForm.valid) {
+      return '';
+    }
+
+    const missingFields = this.getMissingRequiredFields();
+    if (missingFields.length) {
+      return `Required data is missing: ${missingFields.join(', ')}`;
+    }
+
+    return 'Please review invalid fields before submitting.';
+  }
+
+  private getMissingRequiredFields(): string[] {
+    const requiredFieldLabels: Record<string, string> = {
+      fullName: 'Full Name',
+      email: 'Email',
+      mobileCountryDialCode: 'Mobile Country Code',
+      mobile: 'Mobile',
+      passwordHash: 'Password',
+      nationalityId: 'Nationality',
+      residentId: 'Place of residence',
+      governorateId: 'Governorate',
+      branchId: 'Branch'
+    };
+
+    return Object.entries(requiredFieldLabels)
+      .filter(([controlName]) => this.isRequiredControlMissing(controlName))
+      .map(([, label]) => label);
+  }
+
+  private isRequiredControlMissing(controlName: string): boolean {
+    const control = this.basicInfoForm.get(controlName);
+    if (!control || !control.enabled || !control.hasValidator(Validators.required)) {
+      return false;
+    }
+
+    const value = control.value;
+    if (Array.isArray(value)) {
+      return value.length === 0;
+    }
+
+    return value === null || value === undefined || value === '';
+  }
+
   onSubmit() {
     if (this.isSubmitting) {
       return;
