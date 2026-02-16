@@ -26,7 +26,7 @@ export class StudentApplyComponent implements OnInit, OnDestroy {
   private userService = inject(UserService);
 
   // public props
-  displayedColumns: string[] = ['fullName', 'email', 'mobile', 'nationality', 'action'];
+  displayedColumns: string[] = ['fullName', 'email', 'mobile', 'action'];
   dataSource = new MatTableDataSource<LookUpUserDto>();
   totalCount = 0;
   filter: FilteredResultRequestDto = {
