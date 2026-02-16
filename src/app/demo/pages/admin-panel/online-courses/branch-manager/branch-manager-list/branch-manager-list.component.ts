@@ -42,7 +42,7 @@ export class BranchManagerListComponent implements OnInit, OnDestroy {
   pageSize = 10;
   private pendingBranchManagerIds = new Set<number>();
   isLoadingMore = false;
-  statusFilter: 'all' | 'active' | 'inactive' = 'all';
+  statusFilter = 'all' as const;
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;
 
@@ -82,15 +82,9 @@ export class BranchManagerListComponent implements OnInit, OnDestroy {
     this.loadBranchManagers();
   }
 
-  onStatusFilterChange(value: 'all' | 'active' | 'inactive'): void {
-    this.statusFilter = value;
-    if (value === 'all') {
-      delete this.filter.filter;
-    } else if (value === 'inactive') {
-      this.filter.filter = 'inactive=true';
-    } else {
-      this.filter.filter = 'inactive=false';
-    }
+  onStatusFilterChange(): void {
+    this.statusFilter = 'all';
+    delete this.filter.filter;
 
     this.pageIndex = 0;
     this.filter.skipCount = 0;
