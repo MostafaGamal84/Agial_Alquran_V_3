@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { ActivatedRoute, Router } from '@angular/router';
-import { finalize, forkJoin } from 'rxjs';
+import { finalize, forkJoin, merge, startWith } from 'rxjs';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -69,6 +69,7 @@ export class UserEditComponent implements OnInit {
   isBranchLeaderUser = false;
   submitted = false;
   isSaving = false;
+  missingRequiredFields: string[] = [];
   Branch = [
     { id: BranchesEnum.Mens, label: 'الرجال' },
     { id: BranchesEnum.Women, label: 'النساء' }
@@ -95,6 +96,22 @@ export class UserEditComponent implements OnInit {
 
   private get shouldLockManagerAssignment(): boolean {
     return (this.isTeacher || this.isStudent) && this.auth.getRole() === UserTypesEnum.Manager;
+  }
+
+  get isSubmitDisabled(): boolean {
+    return this.isSaving || this.basicInfoForm.invalid;
+  }
+
+  get submitValidationMessage(): string {
+    if (this.isSaving || this.basicInfoForm.valid) {
+      return '';
+    }
+
+    if (this.missingRequiredFields.length) {
+      return `البيانات المطلوبة غير مكتملة: ${this.missingRequiredFields.join('، ')}`;
+    }
+
+    return 'يرجى مراجعة الحقول غير الصحيحة.';
   }
 
   private getEffectiveManagerId(managerId?: number | null): number {
@@ -130,6 +147,8 @@ export class UserEditComponent implements OnInit {
     this.basicInfoForm
       .get('residentId')
       ?.valueChanges.subscribe((residentId) => this.applyGovernorateRequirement(residentId));
+
+    this.setupMissingRequiredFieldsTracking();
 
     this.lookupService.getAllNationalities().subscribe((res) => {
       if (res.isSuccess) {
@@ -626,6 +645,7 @@ export class UserEditComponent implements OnInit {
     }
 
     governorateControl.updateValueAndValidity({ emitEvent: false });
+    this.refreshMissingRequiredFields();
   }
 
   private getListRoute(): string {
@@ -786,5 +806,37 @@ export class UserEditComponent implements OnInit {
     });
 
     this.managers = Array.from(existing.values());
+  }
+
+  private getMissingRequiredFields(): string[] {
+    const requiredFieldLabels: Record<string, string> = {
+      fullName: 'الاسم الكامل',
+      email: 'البريد الإلكتروني',
+      mobileCountryDialCode: 'مفتاح الدولة للجوال',
+      mobile: 'رقم الجوال',
+      nationalityId: 'الجنسية',
+      residentId: 'مكان الإقامة',
+      governorateId: 'المحافظة',
+      branchId: 'الفرع'
+    };
+
+    return Object.entries(requiredFieldLabels)
+      .filter(([controlName]) => this.isRequiredControlMissing(controlName))
+      .map(([, label]) => label);
+  }
+
+  private isRequiredControlMissing(controlName: string): boolean {
+    const control = this.basicInfoForm.get(controlName);
+    return !!control && control.enabled && control.hasError('required');
+  }
+
+  private refreshMissingRequiredFields(): void {
+    this.missingRequiredFields = this.getMissingRequiredFields();
+  }
+
+  private setupMissingRequiredFieldsTracking(): void {
+    merge(this.basicInfoForm.statusChanges, this.basicInfoForm.valueChanges)
+      .pipe(startWith(null))
+      .subscribe(() => this.refreshMissingRequiredFields());
   }
 }

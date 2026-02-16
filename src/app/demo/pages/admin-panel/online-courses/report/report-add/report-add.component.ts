@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, merge, startWith, takeUntil } from 'rxjs';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 import { NgSelectModule } from '@ng-select/ng-select';
@@ -73,6 +73,7 @@ export class ReportAddComponent implements OnInit, OnDestroy {
   isLoadingCircles = false;
   isLoadingStudents = false;
   isSubmitting = false;
+  missingRequiredFields: string[] = [];
 
   // mode
   mode: 'add' | 'update' = 'add';
@@ -148,6 +149,7 @@ export class ReportAddComponent implements OnInit, OnDestroy {
     this.applyRoleBasedValidators();   // ✅ مهم
     this.wireFormReactions();
     this.initRoleFlow();              // ✅ مهم
+    this.setupMissingRequiredFieldsTracking();
 
     if (this.mode === 'update' && this.reportId) {
       const patchedFromState = this.tryPatchFromState(this.reportId);
@@ -643,6 +645,52 @@ export class ReportAddComponent implements OnInit, OnDestroy {
     }
 
     return lines.join('\n');
+  }
+
+  get isSubmitDisabled(): boolean {
+    return this.isSubmitting || this.reportForm.invalid;
+  }
+
+  get submitValidationMessage(): string {
+    if (this.isSubmitting || this.reportForm.valid) {
+      return '';
+    }
+
+    if (this.missingRequiredFields.length) {
+      return `البيانات المطلوبة غير مكتملة: ${this.missingRequiredFields.join('، ')}`;
+    }
+
+    return 'يرجى مراجعة القيم غير الصحيحة قبل الإرسال.';
+  }
+
+  private getMissingRequiredFields(): string[] {
+    const labels: Record<string, string> = {
+      managerId: 'المشرف',
+      teacherId: 'المعلم',
+      circleId: 'الحلقة',
+      studentId: 'الطالب',
+      attendStatueId: 'حالة الحضور',
+      minutes: 'عدد الدقائق'
+    };
+
+    return Object.entries(labels)
+      .filter(([controlName]) => this.isRequiredControlMissing(controlName))
+      .map(([, label]) => label);
+  }
+
+  private isRequiredControlMissing(controlName: string): boolean {
+    const control = this.reportForm.get(controlName);
+    return !!control && control.enabled && control.hasError('required');
+  }
+
+  private refreshMissingRequiredFields(): void {
+    this.missingRequiredFields = this.getMissingRequiredFields();
+  }
+
+  private setupMissingRequiredFieldsTracking(): void {
+    merge(this.reportForm.statusChanges, this.reportForm.valueChanges)
+      .pipe(startWith(null), takeUntil(this.destroy$))
+      .subscribe(() => this.refreshMissingRequiredFields());
   }
 
   // =========================
