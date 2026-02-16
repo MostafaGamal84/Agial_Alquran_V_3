@@ -32,10 +32,8 @@
               <div class="col-12 col-md-6">
                 <mat-form-field appearance="outline" class="w-100">
                   <mat-label>{{ 'Status' | translate }}</mat-label>
-                  <mat-select [value]="statusFilter" (selectionChange)="onStatusFilterChange($event.value)">
+                  <mat-select [value]="statusFilter" (selectionChange)="onStatusFilterChange()">
                     <mat-option value="all">{{ 'All' | translate }}</mat-option>
-                    <mat-option value="active">{{ 'نشط' | translate }}</mat-option>
-                    <mat-option value="inactive">{{ 'غير نشط' | translate }}</mat-option>
                   </mat-select>
                 </mat-form-field>
               </div>
