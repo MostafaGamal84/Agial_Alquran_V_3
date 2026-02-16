@@ -1,4 +1,18 @@
 <app-loading-overlay [isLoading]="loading" [showHadith]="true">
+  <button
+    type="button"
+    class="blind-mode-toggle"
+    (click)="toggleBlindMode()"
+    [attr.aria-pressed]="isBlindModeEnabled"
+    [attr.aria-label]="isBlindModeEnabled ? 'إيقاف وضع المكفوفين' : 'تفعيل وضع المكفوفين'"
+  >
+    <span class="toggle-icon" aria-hidden="true">👁️</span>
+    <span>{{ isBlindModeEnabled ? 'إيقاف وضع المكفوفين' : 'تفعيل وضع المكفوفين' }}</span>
+  </button>
+
+  <p class="sr-only" aria-live="polite">
+    {{ isBlindModeEnabled ? 'تم تفعيل وضع المكفوفين' : 'تم إيقاف وضع المكفوفين' }}
+  </p>
   <div class="auth-main">
     <div class="auth-wrapper version-1">
       <div class="auth-form">
