@@ -1,8 +1,5 @@
 // angular import
 import { Component, OnInit, inject } from '@angular/core';
-// import { CommonModule } from '@angular/common';
-// import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-// import { FormBuilder, FormGroup, FormsModule, Validators } from '@angular/forms';
 import { first } from 'rxjs/operators';
 
 // project import
@@ -15,13 +12,7 @@ import { ToastService } from 'src/app/@theme/services/toast.service';
 import { TranslateService } from '@ngx-translate/core';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 import { DASHBOARD_PATH } from 'src/app/app-config';
-
-interface Roles {
-  name: string;
-  email: string;
-  password: string;
-  role: string;
-}
+import { AccessibilityService } from 'src/app/core/services/accessibility.service';
 
 @Component({
   selector: 'app-login',
@@ -36,6 +27,7 @@ export class LoginComponent implements OnInit {
   authenticationService = inject(AuthenticationService);
   private toast = inject(ToastService);
   private translate = inject(TranslateService);
+  private accessibilityService = inject(AccessibilityService);
 
   // public props
   hide = true;
@@ -43,12 +35,16 @@ export class LoginComponent implements OnInit {
   loading = false;
   submitted = false;
   returnUrl: string;
+  ariaLiveMessage = '';
+  accessibilityModeEnabled = false;
 
   ngOnInit() {
     this.loginForm = this.formBuilder.group({
       email: ['', Validators.required],
       password: ['', Validators.required]
     });
+
+    this.accessibilityModeEnabled = this.accessibilityService.isAccessibilityModeEnabled();
 
     // get return url from route parameters or fall back to dashboard
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || DASHBOARD_PATH;
@@ -65,15 +61,47 @@ export class LoginComponent implements OnInit {
     return this.loginForm.controls;
   }
 
+  get emailHasError(): boolean {
+    return !!(this.submitted && this.formValues?.['email'].errors);
+  }
+
+  get passwordHasError(): boolean {
+    return !!(this.submitted && this.formValues?.['password'].errors);
+  }
+
+  get hasErrors(): boolean {
+    return this.emailHasError || this.passwordHasError;
+  }
+
+  toggleAccessibilityMode(): void {
+    this.accessibilityService.toggleMode();
+    this.accessibilityModeEnabled = this.accessibilityService.isAccessibilityModeEnabled();
+    this.ariaLiveMessage = this.accessibilityModeEnabled
+      ? 'Accessibility mode enabled. Screen reader support is active.'
+      : 'Normal mode enabled.';
+  }
+
   onSubmit() {
     this.submitted = true;
 
     // stop here if form is invalid
     if (this.loginForm.invalid) {
+      const messages: string[] = [];
+
+      if (this.formValues['email'].errors) {
+        messages.push(this.translate.instant('AUTH.COMMON.Validation.EmailRequired'));
+      }
+
+      if (this.formValues['password'].errors) {
+        messages.push(this.translate.instant('AUTH.COMMON.Validation.PasswordRequired'));
+      }
+
+      this.ariaLiveMessage = messages.join(' ');
       return;
     }
 
     this.loading = true;
+    this.ariaLiveMessage = '';
     this.authenticationService
       .login(this.formValues['email'].value, this.formValues['password'].value)
       .pipe(first())
@@ -84,37 +112,19 @@ export class LoginComponent implements OnInit {
             this.toast.success('تم تسجيل الدخول بنجاح');
             this.router.navigateByUrl(this.returnUrl);
           } else if (res?.errors?.length && res.errors[0].message) {
+            this.ariaLiveMessage = res.errors[0].message;
             this.toast.error(res.errors[0].message);
           } else {
-            this.toast.error('فشل تسجيل الدخول. حاول مرة أخرى.');
+            const fallbackMessage = 'فشل تسجيل الدخول. حاول مرة أخرى.';
+            this.ariaLiveMessage = fallbackMessage;
+            this.toast.error(fallbackMessage);
           }
         },
         error: () => {
           this.loading = false;
+          this.ariaLiveMessage = 'فشل تسجيل الدخول. حاول مرة أخرى.';
           this.toast.error('فشل تسجيل الدخول. حاول مرة أخرى.');
         }
       });
-  }
-
-  roles: Roles[] = [
-    {
-      name: 'Admin',
-      email: 'admin@gmail.com',
-      password: 'Admin@123',
-      role: 'Admin'
-    },
-    {
-      name: 'User',
-      email: 'user@gmail.com',
-      password: 'User@123',
-      role: 'User'
-    }
-  ];
-
-  // Default to the first role
-  selectedRole = this.roles[0];
-
-  onSelectRole(role: Roles) {
-    this.selectedRole = role;
   }
 }

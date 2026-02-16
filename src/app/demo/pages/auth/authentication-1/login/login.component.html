@@ -1,68 +1,120 @@
 <app-loading-overlay [isLoading]="loading" [showHadith]="true">
-  <div class="auth-main">
+  <main class="auth-main" role="main" aria-labelledby="login-page-title">
     <div class="auth-wrapper version-1">
-      <div class="auth-form">
+      <section class="auth-form" aria-describedby="login-page-description">
         <app-card [showHeader]="false" class="auth-form-card" padding="40">
-        <div class="text-center">
-          <a href="javascript:">
-            <img src="assets/images/logo-dark.svg" class="app-logo" alt="logo" />
-          </a>
-        </div>
-        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="text-start">
-          <label for="email" class="f-w-500 text-start">{{ 'AUTH.LOGIN.UsernameLabel' | translate }}</label>
-          <mat-form-field appearance="outline" class="w-100 m-t-5">
-            <input
-              type="text"
-              matInput
-              formControlName="email"
-              [ngClass]="{ 'is-invalid': submitted && formValues?.['email'].errors }"
-            />
-            @if (submitted && formValues?.['email'].errors) {
-              <mat-hint class="text-warn-500">{{ 'AUTH.COMMON.Validation.EmailRequired' | translate }}</mat-hint>
-            }
-          </mat-form-field>
-          <label for="password" class="f-w-500 text-start">{{ 'AUTH.LOGIN.PasswordLabel' | translate }}</label>
-          <mat-form-field appearance="outline" class="w-100 m-t-5">
-            <input
-              [type]="hide ? 'password' : 'text'"
-              id="password"
-              matInput
-              formControlName="password"
-              [ngClass]="{ 'is-invalid': submitted && formValues?.['password'].errors }"
-            />
-            @if (submitted && formValues?.['password'].errors) {
-              <mat-hint class="text-warn-500">{{ 'AUTH.COMMON.Validation.PasswordRequired' | translate }}</mat-hint>
-            }
+          <header class="text-center">
+            <a href="javascript:" aria-label="Application home">
+              <img src="assets/images/logo-dark.svg" class="app-logo" alt="Agial Alquran application logo" />
+            </a>
+            <h1 id="login-page-title" class="sr-only">Login</h1>
+            <p id="login-page-description" class="sr-only">
+              Login form with email and password fields.
+            </p>
+          </header>
+
+          <div class="accessibility-toggle-container" role="region" aria-label="Accessibility preferences">
             <button
-              mat-icon-button
-              matSuffix
-              (click)="hide = !hide"
-              [attr.aria-label]="('AUTH.LOGIN.TogglePassword' | translate)"
-              [attr.aria-pressed]="hide"
+              mat-stroked-button
+              type="button"
+              (click)="toggleAccessibilityMode()"
+              [attr.aria-pressed]="accessibilityModeEnabled"
+              [attr.aria-label]="
+                accessibilityModeEnabled
+                  ? 'Switch to normal mode'
+                  : 'Switch to accessibility mode for screen readers'
+              "
             >
-              <mat-icon>{{ hide ? 'visibility_off' : 'visibility' }}</mat-icon>
+              {{ accessibilityModeEnabled ? 'Accessibility Mode' : 'Normal Mode' }}
             </button>
-          </mat-form-field>
-          <div class="check-me">
-            <mat-checkbox class="float-start" color="primary">{{ 'AUTH.LOGIN.RememberMe' | translate }}</mat-checkbox>
-            <a class="f-w-400 text-primary-500 m-b-0" [routerLink]="['/forgot-password']">
-              {{ 'AUTH.LOGIN.ForgotPassword' | translate }}
+          </div>
+
+          <p class="sr-only" aria-live="polite" aria-atomic="true">{{ ariaLiveMessage }}</p>
+
+          <form
+            [formGroup]="loginForm"
+            (ngSubmit)="onSubmit()"
+            class="text-start"
+            role="form"
+            aria-describedby="form-errors"
+            novalidate
+          >
+            <label for="email" class="f-w-500 text-start">{{ 'AUTH.LOGIN.UsernameLabel' | translate }}</label>
+            <mat-form-field appearance="outline" class="w-100 m-t-5">
+              <input
+                id="email"
+                type="text"
+                matInput
+                formControlName="email"
+                autocomplete="username"
+                [attr.aria-invalid]="emailHasError"
+                [attr.aria-describedby]="emailHasError ? 'email-error' : null"
+                [ngClass]="{ 'is-invalid': emailHasError }"
+              />
+              @if (emailHasError) {
+                <mat-hint id="email-error" class="text-warn-500" role="alert">
+                  {{ 'AUTH.COMMON.Validation.EmailRequired' | translate }}
+                </mat-hint>
+              }
+            </mat-form-field>
+
+            <label for="password" class="f-w-500 text-start">{{ 'AUTH.LOGIN.PasswordLabel' | translate }}</label>
+            <mat-form-field appearance="outline" class="w-100 m-t-5">
+              <input
+                [type]="hide ? 'password' : 'text'"
+                id="password"
+                matInput
+                formControlName="password"
+                autocomplete="current-password"
+                [attr.aria-invalid]="passwordHasError"
+                [attr.aria-describedby]="passwordHasError ? 'password-error' : null"
+                [ngClass]="{ 'is-invalid': passwordHasError }"
+              />
+              @if (passwordHasError) {
+                <mat-hint id="password-error" class="text-warn-500" role="alert">
+                  {{ 'AUTH.COMMON.Validation.PasswordRequired' | translate }}
+                </mat-hint>
+              }
+              <button
+                mat-icon-button
+                matSuffix
+                type="button"
+                (click)="hide = !hide"
+                [attr.aria-label]="hide ? 'Show password characters' : 'Hide password characters'"
+                [attr.aria-pressed]="!hide"
+              >
+                <mat-icon aria-hidden="true">{{ hide ? 'visibility_off' : 'visibility' }}</mat-icon>
+              </button>
+            </mat-form-field>
+
+            <div id="form-errors" class="sr-only" [attr.aria-live]="hasErrors ? 'assertive' : 'off'" aria-atomic="true">
+              {{ ariaLiveMessage }}
+            </div>
+
+            <nav class="check-me" aria-label="Login secondary actions">
+              <mat-checkbox class="float-start" color="primary" aria-label="Remember my login">
+                {{ 'AUTH.LOGIN.RememberMe' | translate }}
+              </mat-checkbox>
+              <a class="f-w-400 text-primary-500 m-b-0" [routerLink]="['/forgot-password']" aria-label="Forgot password">
+                {{ 'AUTH.LOGIN.ForgotPassword' | translate }}
+              </a>
+            </nav>
+
+            <div class="grid">
+              <button mat-flat-button color="primary" class="b-rad-20 m-t-15" aria-label="Submit login form">
+                {{ 'AUTH.LOGIN.Submit' | translate }}
+              </button>
+            </div>
+          </form>
+
+          <div class="check-me m-t-20" role="contentinfo" aria-label="Registration options">
+            <div class="text-muted">{{ 'AUTH.LOGIN.NoAccount' | translate }}</div>
+            <a [routerLink]="['/register']" class="text-primary-500" aria-label="Create a new account">
+              {{ 'AUTH.LOGIN.CreateAccount' | translate }}
             </a>
           </div>
-          <div class="grid">
-            <button mat-flat-button color="primary" class="b-rad-20 m-t-15">
-              {{ 'AUTH.LOGIN.Submit' | translate }}
-            </button>
-          </div>
-        </form>
-        <div class="check-me m-t-20">
-          <div class="text-muted">{{ 'AUTH.LOGIN.NoAccount' | translate }}</div>
-          <a [routerLink]="['/register']" class="text-primary-500">
-            {{ 'AUTH.LOGIN.CreateAccount' | translate }}
-          </a>
-        </div>
         </app-card>
-      </div>
+      </section>
     </div>
-  </div>
+  </main>
 </app-loading-overlay>
