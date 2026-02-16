@@ -73,6 +73,9 @@ type ManagerVM = {
   styleUrl: './branch-manager-details.component.scss'
 })
 export class BranchManagerDetailsComponent {
+  private readonly longPressDuration = 500;
+  private longPressTimer?: ReturnType<typeof setTimeout>;
+  private longPressTriggered = false;
   loading = true;
   vm?: ManagerVM;
 
@@ -229,6 +232,63 @@ export class BranchManagerDetailsComponent {
       mobile: 'ti ti-brand-whatsapp',
       secondMobile: 'ti ti-brand-whatsapp'
     }[key] ?? 'ti ti-circle';
+  }
+
+
+  isCompactContact(key: string): boolean {
+    return key === 'email' || key === 'mobile' || key === 'secondMobile';
+  }
+
+  onContactPressStart(value: string, event: Event): void {
+    this.longPressTriggered = false;
+    this.clearLongPressTimer();
+    this.longPressTimer = setTimeout(() => {
+      this.longPressTriggered = true;
+      void this.copyToClipboard(value);
+      event.preventDefault();
+    }, this.longPressDuration);
+  }
+
+  onContactPressEnd(): void {
+    this.clearLongPressTimer();
+  }
+
+  onContactClick(event: Event): void {
+    if (!this.longPressTriggered) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    this.longPressTriggered = false;
+  }
+
+  private clearLongPressTimer(): void {
+    if (this.longPressTimer) {
+      clearTimeout(this.longPressTimer);
+      this.longPressTimer = undefined;
+    }
+  }
+
+  private async copyToClipboard(value: string): Promise<void> {
+    if (!value) {
+      return;
+    }
+
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(value);
+      return;
+    }
+
+    const textArea = document.createElement('textarea');
+    textArea.value = value;
+    textArea.style.position = 'fixed';
+    textArea.style.opacity = '0';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
   }
 
   buildWhatsAppLink(phone: string): string | undefined {

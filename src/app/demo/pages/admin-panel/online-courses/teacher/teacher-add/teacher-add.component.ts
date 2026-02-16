@@ -129,23 +129,23 @@ export class TeacherAddComponent implements OnInit {
 
     const missingFields = this.getMissingRequiredFields();
     if (missingFields.length) {
-      return `Required data is missing: ${missingFields.join(', ')}`;
+      return `البيانات المطلوبة غير مكتملة: ${missingFields.join('، ')}`;
     }
 
-    return 'Please review invalid fields before submitting.';
+    return 'يرجى مراجعة الحقول غير الصحيحة قبل الإرسال.';
   }
 
   private getMissingRequiredFields(): string[] {
     const requiredFieldLabels: Record<string, string> = {
-      fullName: 'Full Name',
-      email: 'Email',
-      mobileCountryDialCode: 'Mobile Country Code',
-      mobile: 'Mobile',
-      passwordHash: 'Password',
-      nationalityId: 'Nationality',
-      residentId: 'Place of residence',
-      governorateId: 'Governorate',
-      branchId: 'Branch'
+      fullName: 'الاسم الكامل',
+      email: 'البريد الإلكتروني',
+      mobileCountryDialCode: 'مفتاح الدولة للجوال',
+      mobile: 'رقم الجوال',
+      passwordHash: 'كلمة المرور',
+      nationalityId: 'الجنسية',
+      residentId: 'مكان الإقامة',
+      governorateId: 'المحافظة',
+      branchId: 'الفرع'
     };
 
     return Object.entries(requiredFieldLabels)
