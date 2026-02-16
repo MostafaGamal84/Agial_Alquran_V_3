@@ -161,12 +161,13 @@
           </div>
 
           <div class="col-md-12 text-end">
-            <button mat-flat-button color="primary" type="submit" [disabled]="isSubmitting">
+            <button mat-flat-button color="primary" type="submit" [disabled]="isSubmitDisabled">
               @if (isSubmitting) {
                 <mat-icon>autorenew</mat-icon>
               }
               {{ isSubmitting ? ('Submitting...' | translate) : ('Submit' | translate) }}
             </button>
+            <div class="text-danger small mt-2" *ngIf="submitValidationMessage">{{ submitValidationMessage }}</div>
           </div>
         </div>
       </form>

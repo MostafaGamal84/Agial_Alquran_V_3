@@ -437,6 +437,54 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
     });
   }
 
+  get isSubmitDisabled(): boolean {
+    return this.isSaving || this.circleForm.invalid;
+  }
+
+  get submitValidationMessage(): string {
+    if (this.isSaving || this.circleForm.valid) {
+      return '';
+    }
+
+    const missingFields = this.getMissingRequiredFields();
+    if (missingFields.length) {
+      return `البيانات المطلوبة غير مكتملة: ${missingFields.join('، ')}`;
+    }
+
+    return 'يرجى استكمال الحقول المطلوبة قبل الحفظ.';
+  }
+
+  private getMissingRequiredFields(): string[] {
+    const missing: string[] = [];
+
+    if (this.isRequiredControlMissing('name')) {
+      missing.push('اسم الحلقة');
+    }
+
+    if (this.isRequiredControlMissing('branchId')) {
+      missing.push('الفرع');
+    }
+
+    if (this.isRequiredControlMissing('teacherId')) {
+      missing.push('المعلم');
+    }
+
+    if (this.daysArray.controls.some((dayGroup) => this.isRequiredControlMissing('dayId', dayGroup))) {
+      missing.push('اليوم');
+    }
+
+    if (this.daysArray.controls.some((dayGroup) => this.isRequiredControlMissing('startTime', dayGroup))) {
+      missing.push('وقت الحلقة');
+    }
+
+    return missing;
+  }
+
+  private isRequiredControlMissing(controlName: string, group: FormGroup = this.circleForm): boolean {
+    const control = group.get(controlName);
+    return !!control && control.enabled && control.hasError('required');
+  }
+
   // ========== Submit ==========
   onSubmit() {
     this.submitted = true;

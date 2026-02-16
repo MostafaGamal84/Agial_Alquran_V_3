@@ -267,7 +267,7 @@
               color="primary"
               type="submit"
               class="submit-btn"
-              [disabled]="isSaving"
+              [disabled]="isSubmitDisabled"
             >
               <span class="btn-label">
                 <mat-icon *ngIf="isSaving" class="btn-spinner">autorenew</mat-icon>
@@ -285,6 +285,7 @@
             >
               إعادة تعيين
             </button>
+            <div class="text-danger small mt-2" *ngIf="submitValidationMessage">{{ submitValidationMessage }}</div>
           </div>
         </div>
       </form>
