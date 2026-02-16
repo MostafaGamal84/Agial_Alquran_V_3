@@ -124,16 +124,17 @@
               </div>
             </div>
           </div>
-        </div>
-
-        <div class="col-12">
-          <div class="section-card">
-            <div class="section-header">
-              <div class="section-icon section-icon-green"><mat-icon>location_on</mat-icon></div>
-              <div>
-                <h5 class="section-title">الجنسية ومكان الإقامة</h5>
-                <p class="section-subtitle">اختر الجنسية ومكان الإقامة والمحافظة والفرع.</p>
-              </div>
+          @if (showGovernorateSelect) {
+            <div class="col-md-6">
+              <mat-form-field appearance="outline" class="w-100 m-b-10">
+                <mat-label>{{ 'Governorate' | translate }}</mat-label>
+                <mat-select formControlName="governorateId" [placeholder]="'Select Governorate' | translate" appOpenSelectOnType>
+                  <mat-option *ngFor="let g of governorates" [value]="g.id">{{ g.name }}</mat-option>
+                </mat-select>
+                @if (submitted && basicInfoForm.get('governorateId')?.hasError('required')) {
+                  <mat-error>{{ 'Governorate is required' | translate }}</mat-error>
+                }
+              </mat-form-field>
             </div>
 
             <div class="row g-3">
