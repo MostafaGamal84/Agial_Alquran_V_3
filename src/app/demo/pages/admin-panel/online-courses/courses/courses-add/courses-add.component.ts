@@ -482,16 +482,7 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
 
   private isRequiredControlMissing(controlName: string, group: FormGroup = this.circleForm): boolean {
     const control = group.get(controlName);
-    if (!control || !control.enabled || !control.hasValidator(Validators.required)) {
-      return false;
-    }
-
-    const value = control.value;
-    if (Array.isArray(value)) {
-      return value.length === 0;
-    }
-
-    return value === null || value === undefined || value === '';
+    return !!control && control.enabled && control.hasError('required');
   }
 
   // ========== Submit ==========
