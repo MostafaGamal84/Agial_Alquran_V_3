@@ -17,19 +17,28 @@
             <button
               mat-stroked-button
               type="button"
+              class="accessibility-toggle-button"
               (click)="toggleAccessibilityMode()"
               [attr.aria-pressed]="accessibilityModeEnabled"
-              [attr.aria-label]="
-                accessibilityModeEnabled
-                  ? 'Switch to normal mode'
-                  : 'Switch to accessibility mode for screen readers'
-              "
+              [attr.aria-label]="accessibilityToggleAriaLabel"
+              aria-controls="accessibility-live-region"
             >
-              {{ accessibilityModeEnabled ? 'Accessibility Mode' : 'Normal Mode' }}
+              <span>Accessibility Mode</span>
+              <span class="accessibility-status" [attr.aria-hidden]="true">
+                {{ accessibilityModeStatusText }}
+              </span>
             </button>
           </div>
 
-          <p class="sr-only" aria-live="polite" aria-atomic="true">{{ ariaLiveMessage }}</p>
+          <div
+            id="accessibility-live-region"
+            class="sr-only"
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {{ ariaLiveMessage }}
+          </div>
 
           <form
             [formGroup]="loginForm"
@@ -43,13 +52,14 @@
             <mat-form-field appearance="outline" class="w-100 m-t-5">
               <input
                 id="email"
-                type="text"
+                type="email"
                 matInput
                 formControlName="email"
                 autocomplete="username"
                 [attr.aria-invalid]="emailHasError"
                 [attr.aria-describedby]="emailHasError ? 'email-error' : null"
                 [ngClass]="{ 'is-invalid': emailHasError }"
+                aria-label="Email address"
               />
               @if (emailHasError) {
                 <mat-hint id="email-error" class="text-warn-500" role="alert">
@@ -69,6 +79,7 @@
                 [attr.aria-invalid]="passwordHasError"
                 [attr.aria-describedby]="passwordHasError ? 'password-error' : null"
                 [ngClass]="{ 'is-invalid': passwordHasError }"
+                aria-label="Password"
               />
               @if (passwordHasError) {
                 <mat-hint id="password-error" class="text-warn-500" role="alert">
@@ -101,7 +112,7 @@
             </nav>
 
             <div class="grid">
-              <button mat-flat-button color="primary" class="b-rad-20 m-t-15" aria-label="Submit login form">
+              <button mat-flat-button color="primary" class="b-rad-20 m-t-15" type="submit" aria-label="Submit login form">
                 {{ 'AUTH.LOGIN.Submit' | translate }}
               </button>
             </div>

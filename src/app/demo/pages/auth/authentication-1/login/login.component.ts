@@ -38,6 +38,16 @@ export class LoginComponent implements OnInit {
   ariaLiveMessage = '';
   accessibilityModeEnabled = false;
 
+  get accessibilityModeStatusText(): string {
+    return this.accessibilityModeEnabled ? 'ON' : 'OFF';
+  }
+
+  get accessibilityToggleAriaLabel(): string {
+    return this.accessibilityModeEnabled
+      ? 'Accessibility mode is on. Activate to switch to normal mode.'
+      : 'Accessibility mode is off. Activate to switch on accessibility mode.';
+  }
+
   ngOnInit() {
     this.loginForm = this.formBuilder.group({
       email: ['', Validators.required],
@@ -76,9 +86,19 @@ export class LoginComponent implements OnInit {
   toggleAccessibilityMode(): void {
     this.accessibilityService.toggleMode();
     this.accessibilityModeEnabled = this.accessibilityService.isAccessibilityModeEnabled();
-    this.ariaLiveMessage = this.accessibilityModeEnabled
-      ? 'Accessibility mode enabled. Screen reader support is active.'
-      : 'Normal mode enabled.';
+
+    this.announceToScreenReaders(
+      this.accessibilityModeEnabled
+        ? 'Accessibility mode enabled. Screen reader optimizations are now active.'
+        : 'Accessibility mode disabled. Normal mode is now active.'
+    );
+  }
+
+  private announceToScreenReaders(message: string): void {
+    this.ariaLiveMessage = '';
+    setTimeout(() => {
+      this.ariaLiveMessage = message;
+    });
   }
 
   onSubmit() {
