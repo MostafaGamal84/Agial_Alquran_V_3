@@ -25,6 +25,8 @@ export class AppComponent implements OnInit {
   // public props
   isSpinnerVisible = true;
 
+
+
   ngOnInit() {
     this.languageService.initialize();
     // Use ngOnInit instead of ngAfterViewInit

@@ -15,6 +15,7 @@ import { ToastService } from 'src/app/@theme/services/toast.service';
 import { TranslateService } from '@ngx-translate/core';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 import { DASHBOARD_PATH } from 'src/app/app-config';
+import { AccessibilityModeService } from 'src/app/@theme/services/accessibility-mode.service';
 
 interface Roles {
   name: string;
@@ -36,6 +37,7 @@ export class LoginComponent implements OnInit {
   authenticationService = inject(AuthenticationService);
   private toast = inject(ToastService);
   private translate = inject(TranslateService);
+  private accessibilityModeService = inject(AccessibilityModeService);
 
   // public props
   hide = true;
@@ -58,6 +60,15 @@ export class LoginComponent implements OnInit {
       this.router.navigateByUrl(targetUrl, { replaceUrl: true });
       return;
     }
+  }
+
+
+  get isBlindModeEnabled(): boolean {
+    return this.accessibilityModeService.enabled;
+  }
+
+  toggleBlindMode(): void {
+    this.accessibilityModeService.toggle();
   }
 
   // convenience getter for easy access to form fields
