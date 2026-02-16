@@ -4,7 +4,6 @@ import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
-import { NgxScrollbar } from 'src/app/@theme/components/ngx-scrollbar/ngx-scrollbar';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 
 interface Person {
@@ -66,8 +65,7 @@ type ManagerVM = {
     MatDialogModule,
     MatProgressSpinnerModule,
     MatButtonModule,
-    MatExpansionModule,
-    NgxScrollbar
+    MatExpansionModule
   ],
   templateUrl: './branch-manager-details.component.html',
   styleUrl: './branch-manager-details.component.scss'

@@ -15,9 +15,7 @@
     <div class="loading-text">جاري تحميل البيانات...</div>
   </div>
 
-  <app-scrollbar *ngIf="!loading && vm as s" [customStyle]="{ maxHeight: 'calc(100vh - 155px)', position: 'relative' }">
-
-    <div class="wrap">
+  <div class="wrap" *ngIf="!loading && vm as s">
 
       <!-- ====== Header Card ====== -->
       <section class="card hero">
@@ -97,7 +95,5 @@
         </div>
       </section>
 
-    </div>
-
-  </app-scrollbar>
+  </div>
 </mat-dialog-content>
