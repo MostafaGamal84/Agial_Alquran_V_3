@@ -178,3 +178,63 @@
   background-color: #f44336;
   color: #fff;
 }
+
+body.blind-mode-enabled {
+  background: #000 !important;
+  color: #fff !important;
+  font-size: 120%;
+  line-height: 1.9;
+  letter-spacing: 0.03em;
+
+  * {
+    text-shadow: none !important;
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+
+  a,
+  button,
+  [role='button'],
+  input,
+  select,
+  textarea,
+  [tabindex] {
+    &:focus-visible {
+      outline: 4px solid #ffeb3b !important;
+      outline-offset: 4px;
+    }
+  }
+
+  a {
+    color: #00e5ff !important;
+    text-decoration: underline !important;
+  }
+
+  .card,
+  .mat-mdc-card,
+  .table,
+  .mat-mdc-table,
+  .mat-mdc-dialog-surface,
+  .dropdown-menu,
+  .mat-mdc-menu-panel {
+    background-color: #111 !important;
+    color: #fff !important;
+    border-color: #fff !important;
+  }
+
+  .mat-mdc-button,
+  .mat-mdc-unelevated-button,
+  .mat-mdc-raised-button,
+  .mat-mdc-outlined-button,
+  button {
+    font-size: 1rem !important;
+    font-weight: 700;
+  }
+
+  img,
+  video,
+  iframe {
+    filter: contrast(1.15);
+  }
+}
