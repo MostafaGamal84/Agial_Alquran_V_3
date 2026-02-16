@@ -1,186 +1,183 @@
 <div class="row justify-content-center">
   <div class="col-xl-10 col-lg-11 col-12">
     <app-card cardTitle="إضافة طالب جديد">
+
       <div class="user-header">
         <h2 class="page-title">إضافة طالب جديد</h2>
-        <p class="page-subtitle">قم بإدخال البيانات الأساسية وبيانات التواصل ومكان الإقامة لطالب.</p>
+        <p class="page-subtitle">
+          قم بإدخال البيانات الأساسية وبيانات التواصل ومكان الإقامة لطالب.
+        </p>
       </div>
 
       <form [formGroup]="basicInfoForm" (ngSubmit)="onSubmit()" class="user-form row g-3">
+
+        <!-- ==================== البيانات الأساسية ==================== -->
         <div class="col-12">
           <div class="section-card">
             <div class="section-header">
-              <div class="section-icon"><mat-icon>person</mat-icon></div>
+              <div class="section-icon">
+                <mat-icon>person</mat-icon>
+              </div>
               <div>
                 <h5 class="section-title">البيانات الأساسية</h5>
-                <p class="section-subtitle">الاسم الكامل والبريد الإلكتروني وكلمة المرور.</p>
+                <p class="section-subtitle">
+                  الاسم الكامل والبريد الإلكتروني وكلمة المرور.
+                </p>
               </div>
             </div>
 
             <div class="row g-3">
+
               <div class="col-md-6">
                 <mat-form-field appearance="outline" class="w-100">
                   <mat-label>الاسم الكامل</mat-label>
-                  <input matInput type="text" placeholder="أدخل الاسم الكامل" formControlName="fullName" />
-                  @if (submitted && basicInfoForm.get('fullName')?.errors) {
-                    <mat-error>{{ 'Full name is required' | translate }}</mat-error>
-                  }
+                  <input matInput formControlName="fullName" />
                 </mat-form-field>
               </div>
 
               <div class="col-md-6">
                 <mat-form-field appearance="outline" class="w-100">
                   <mat-label>البريد الإلكتروني</mat-label>
-                  <input matInput type="email" placeholder="أدخل البريد الإلكتروني" formControlName="email" />
-                  @if (submitted && basicInfoForm.get('email')?.errors) {
-                    <mat-error>{{ 'Email is required' | translate }}</mat-error>
-                  }
+                  <input matInput type="email" formControlName="email" />
                 </mat-form-field>
               </div>
 
               <div class="col-md-6">
                 <mat-form-field appearance="outline" class="w-100">
                   <mat-label>كلمة المرور</mat-label>
-                  <input matInput type="password" placeholder="أدخل كلمة المرور" formControlName="passwordHash" />
-                  @if (submitted && basicInfoForm.get('passwordHash')?.errors) {
-                    <mat-error>{{ 'Password is required' | translate }}</mat-error>
-                  }
+                  <input matInput type="password" formControlName="passwordHash" />
                 </mat-form-field>
               </div>
+
             </div>
           </div>
         </div>
 
+        <!-- ==================== بيانات التواصل ==================== -->
         <div class="col-12">
           <div class="section-card">
             <div class="section-header">
-              <div class="section-icon section-icon-blue"><mat-icon>phone</mat-icon></div>
+              <div class="section-icon section-icon-blue">
+                <mat-icon>phone</mat-icon>
+              </div>
               <div>
                 <h5 class="section-title">بيانات التواصل</h5>
-                <p class="section-subtitle">الجوال الأساسي والبديل مع مفتاح الدولة.</p>
+                <p class="section-subtitle">
+                  الجوال الأساسي والبديل مع مفتاح الدولة.
+                </p>
               </div>
             </div>
 
             <div class="row g-3">
+
               <div class="col-md-6">
-                <label class="form-label form-label-sm d-block">الجوال</label>
-                <div class="d-flex gap-2 align-items-start phone-row">
+                <label class="form-label form-label-sm">الجوال</label>
+                <div class="d-flex gap-2 phone-row">
                   <ng-select
-                    class="flex-shrink-0 w-100 phone-country-select"
                     [items]="countries"
                     bindLabel="name"
                     bindValue="dialCode"
-                    formControlName="mobileCountryDialCode"
-                    (change)="onCountryCodeChange('mobileCountryDialCode')"
-                    placeholder="+1"
-                    [searchable]="true"
-                  ></ng-select>
+                    formControlName="mobileCountryDialCode">
+                  </ng-select>
 
                   <mat-form-field appearance="outline" class="w-100">
-                    <input
-                      matInput
-                      type="text"
-                      formControlName="mobile"
-                      [mask]="mobileMask"
-                      [placeholder]="mobilePlaceholder"
-                      [dropSpecialCharacters]="false"
-                      [validation]="!!mobileMask"
-                      (click)="$event.stopPropagation()"
-                    />
+                    <input matInput formControlName="mobile" />
                   </mat-form-field>
                 </div>
-                @if (submitted && basicInfoForm.get('mobile')?.errors) {
-                  <div class="text-danger small">{{ 'Mobile is required' | translate }}</div>
-                }
               </div>
 
               <div class="col-md-6">
-                <label class="form-label form-label-sm d-block">الجوال البديل</label>
-                <div class="d-flex gap-2 align-items-start phone-row">
+                <label class="form-label form-label-sm">الجوال البديل</label>
+                <div class="d-flex gap-2 phone-row">
                   <ng-select
-                    class="flex-shrink-0 w-100 phone-country-select"
                     [items]="countries"
                     bindLabel="name"
                     bindValue="dialCode"
-                    formControlName="secondMobileCountryDialCode"
-                    (change)="onCountryCodeChange('secondMobileCountryDialCode')"
-                    placeholder="+1"
-                    [searchable]="true"
-                  ></ng-select>
+                    formControlName="secondMobileCountryDialCode">
+                  </ng-select>
 
                   <mat-form-field appearance="outline" class="w-100">
-                    <input
-                      matInput
-                      type="text"
-                      formControlName="secondMobile"
-                      [mask]="secondMobileMask"
-                      [placeholder]="secondMobilePlaceholder"
-                      [dropSpecialCharacters]="false"
-                      [validation]="!!secondMobileMask"
-                      (click)="$event.stopPropagation()"
-                    />
+                    <input matInput formControlName="secondMobile" />
                   </mat-form-field>
                 </div>
               </div>
+
             </div>
           </div>
-          @if (showGovernorateSelect) {
-            <div class="col-md-6">
-              <mat-form-field appearance="outline" class="w-100 m-b-10">
-                <mat-label>{{ 'Governorate' | translate }}</mat-label>
-                <mat-select formControlName="governorateId" [placeholder]="'Select Governorate' | translate" appOpenSelectOnType>
-                  <mat-option *ngFor="let g of governorates" [value]="g.id">{{ g.name }}</mat-option>
-                </mat-select>
-                @if (submitted && basicInfoForm.get('governorateId')?.hasError('required')) {
-                  <mat-error>{{ 'Governorate is required' | translate }}</mat-error>
-                }
-              </mat-form-field>
+        </div>
+
+        <!-- ==================== الجنسية ومكان الإقامة ==================== -->
+        <div class="col-12">
+          <div class="section-card">
+            <div class="section-header">
+              <div class="section-icon section-icon-green">
+                <mat-icon>location_on</mat-icon>
+              </div>
+              <div>
+                <h5 class="section-title">الجنسية ومكان الإقامة</h5>
+                <p class="section-subtitle">
+                  اختر الجنسية ومكان الإقامة والمحافظة والفرع.
+                </p>
+              </div>
             </div>
 
             <div class="row g-3">
+
               <div class="col-md-6">
                 <label class="form-label form-label-sm">الجنسية</label>
-                <ng-select class="w-100" formControlName="nationalityId" [items]="nationalities" bindLabel="name" bindValue="id" placeholder="اختر الجنسية" [searchable]="true"></ng-select>
-                @if (submitted && basicInfoForm.get('nationalityId')?.errors) {
-                  <div class="text-danger small">{{ 'Nationality is required' | translate }}</div>
-                }
+                <ng-select
+                  [items]="nationalities"
+                  bindLabel="name"
+                  bindValue="id"
+                  formControlName="nationalityId">
+                </ng-select>
               </div>
 
               <div class="col-md-6">
                 <label class="form-label form-label-sm">مكان الإقامة</label>
-                <ng-select class="w-100" formControlName="residentId" [items]="nationalities" bindLabel="name" bindValue="id" placeholder="اختر مكان الإقامة" [searchable]="true"></ng-select>
-                @if (submitted && basicInfoForm.get('residentId')?.errors) {
-                  <div class="text-danger small">{{ 'Place of residence is required' | translate }}</div>
-                }
+                <ng-select
+                  [items]="nationalities"
+                  bindLabel="name"
+                  bindValue="id"
+                  formControlName="residentId">
+                </ng-select>
               </div>
 
-              @if (showGovernorateSelect) {
-                <div class="col-md-6">
-                  <label class="form-label form-label-sm">المحافظة</label>
-                  <ng-select class="w-100" formControlName="governorateId" [items]="governorates" bindLabel="name" bindValue="id" placeholder="اختر المحافظة" [searchable]="true"></ng-select>
-                </div>
-              }
+              <div class="col-md-6" *ngIf="showGovernorateSelect">
+                <label class="form-label form-label-sm">المحافظة</label>
+                <ng-select
+                  [items]="governorates"
+                  bindLabel="name"
+                  bindValue="id"
+                  formControlName="governorateId">
+                </ng-select>
+              </div>
 
               <div class="col-md-6">
                 <label class="form-label form-label-sm">الفرع</label>
-                <ng-select class="w-100" formControlName="branchId" [items]="Branch" bindLabel="label" bindValue="id" placeholder="اختر الفرع" [searchable]="false"></ng-select>
-                @if (submitted && basicInfoForm.get('branchId')?.errors) {
-                  <div class="text-danger small">{{ 'Branch is required' | translate }}</div>
-                }
+                <ng-select
+                  [items]="Branch"
+                  bindLabel="label"
+                  bindValue="id"
+                  formControlName="branchId">
+                </ng-select>
               </div>
+
             </div>
           </div>
         </div>
 
-          <div class="col-md-12 text-end">
-            <button mat-flat-button color="primary" type="submit" [disabled]="isSubmitDisabled">
-              @if (isSubmitting) {
-                <mat-icon>autorenew</mat-icon>
-              }
-              {{ isSubmitting ? ('Submitting...' | translate) : ('Submit' | translate) }}
-            </button>
-            <div class="text-danger small mt-2" *ngIf="submitValidationMessage">{{ submitValidationMessage }}</div>
+        <!-- ==================== زر الإرسال ==================== -->
+        <div class="col-12 text-end">
+          <button mat-flat-button color="primary" type="submit">
+            {{ isSubmitting ? 'جاري الإرسال...' : 'إرسال' }}
+          </button>
+
+          <div class="text-danger small mt-2" *ngIf="submitValidationMessage">
+            {{ submitValidationMessage }}
           </div>
+        </div>
+
       </form>
     </app-card>
   </div>
