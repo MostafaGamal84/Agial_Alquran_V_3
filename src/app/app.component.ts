@@ -6,7 +6,6 @@ import { Router, NavigationStart, NavigationEnd, NavigationCancel, NavigationErr
 import { BuyNowLinkService } from './@theme/services/buy-now-link.service';
 import { LanguageService } from './@theme/services/language.service';
 import { AccessibilityService } from './core/services/accessibility.service';
-import { SeasonalThemeService } from './@theme/services/seasonal-theme.service';
 
 // Angular material
 import { MatProgressBar } from '@angular/material/progress-bar';
@@ -24,7 +23,6 @@ export class AppComponent implements OnInit {
   private productIdService = inject(BuyNowLinkService);
   private languageService = inject(LanguageService);
   private accessibilityService = inject(AccessibilityService);
-  private seasonalThemeService = inject(SeasonalThemeService);
 
   // public props
   isSpinnerVisible = true;
@@ -32,7 +30,6 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     this.languageService.initialize();
     this.accessibilityService.initializeMode();
-    this.seasonalThemeService.applySeasonalTheme();
     // Use ngOnInit instead of ngAfterViewInit
     this.router.events.subscribe(
       (event) => {
