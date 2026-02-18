@@ -1,12 +1,22 @@
 <app-loading-overlay [isLoading]="loading" [showHadith]="true">
   <main class="auth-main" role="main" aria-labelledby="login-page-title">
     <div class="auth-wrapper version-1">
-      <section class="auth-form" aria-describedby="login-page-description">
+      <section class="auth-form ramadan-theme" aria-describedby="login-page-description">
         <app-card [showHeader]="false" class="auth-form-card" padding="40">
+          <div class="ramadan-decoration" aria-hidden="true">
+            <span class="moon"></span>
+            <span class="star star-1"></span>
+            <span class="star star-2"></span>
+            <span class="star star-3"></span>
+            <span class="lantern lantern-left"></span>
+            <span class="lantern lantern-right"></span>
+          </div>
+
           <header class="text-center">
             <a href="javascript:" aria-label="Application home">
               <img src="assets/images/logo-dark.svg" class="app-logo" alt="Agial Alquran application logo" />
             </a>
+            <p class="ramadan-greeting">رمضان كريم 🌙</p>
             <h1 id="login-page-title" class="sr-only">Login</h1>
             <p id="login-page-description" class="sr-only">
               Login form with email and password fields.

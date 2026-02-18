@@ -4,6 +4,163 @@
   justify-content: center;
 }
 
+.ramadan-theme {
+  position: relative;
+
+  .auth-form-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 20px;
+    border: 1px solid rgba(201, 168, 104, 0.45);
+    background: linear-gradient(170deg, #0b1f3a 0%, #123c61 45%, #1f5f8a 100%);
+    color: #ffffff;
+    box-shadow: 0 18px 40px rgba(11, 31, 58, 0.35);
+  }
+
+  .ramadan-decoration {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .moon {
+    position: absolute;
+    top: 14px;
+    right: 26px;
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 28% 28%, #fff4c7 0%, #f7d987 75%);
+    box-shadow: -12px 0 0 0 #0e2d4e, 0 0 22px rgba(247, 217, 135, 0.45);
+  }
+
+  .star {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    transform: rotate(45deg);
+    background: #ffe9a8;
+    box-shadow: 0 0 8px rgba(255, 233, 168, 0.7);
+    animation: twinkle 2.2s ease-in-out infinite;
+  }
+
+  .star-1 {
+    top: 28px;
+    right: 102px;
+    animation-delay: 0.2s;
+  }
+
+  .star-2 {
+    top: 68px;
+    right: 52px;
+    animation-delay: 0.9s;
+  }
+
+  .star-3 {
+    top: 84px;
+    right: 128px;
+    animation-delay: 1.4s;
+  }
+
+  .lantern {
+    position: absolute;
+    top: -2px;
+    width: 22px;
+    height: 58px;
+    border-radius: 7px;
+    background: linear-gradient(180deg, #ffd77d 0%, #d08a2b 100%);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #c6d4e4;
+    }
+
+    &::before {
+      top: -12px;
+      width: 2px;
+      height: 12px;
+    }
+
+    &::after {
+      bottom: 8px;
+      width: 13px;
+      height: 2px;
+      border-radius: 2px;
+    }
+  }
+
+  .lantern-left {
+    left: 22px;
+  }
+
+  .lantern-right {
+    right: 22px;
+  }
+
+  .ramadan-greeting {
+    margin: 14px 0 6px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffe29b;
+    letter-spacing: 0.4px;
+  }
+
+  label,
+  .text-muted,
+  .text-primary-500,
+  a,
+  span,
+  .mat-mdc-checkbox label {
+    color: #f2f6fb !important;
+  }
+
+  .mat-mdc-form-field {
+    --mdc-outlined-text-field-outline-color: rgba(242, 246, 251, 0.5);
+    --mdc-outlined-text-field-hover-outline-color: #ffe29b;
+    --mdc-outlined-text-field-focus-outline-color: #ffe29b;
+    --mdc-outlined-text-field-input-text-color: #ffffff;
+    --mdc-outlined-text-field-label-text-color: #f2f6fb;
+    --mdc-outlined-text-field-focus-label-text-color: #ffe29b;
+    --mdc-outlined-text-field-caret-color: #ffe29b;
+  }
+
+  .mat-mdc-input-element::placeholder {
+    color: rgba(242, 246, 251, 0.65);
+  }
+
+  .mat-mdc-checkbox .mdc-checkbox__background {
+    border-color: #ffe29b !important;
+  }
+
+  button[mat-flat-button] {
+    background: linear-gradient(90deg, #f3c86f 0%, #d99b37 100%) !important;
+    color: #102742 !important;
+    font-weight: 700;
+  }
+
+  .accessibility-toggle-button {
+    border-color: rgba(255, 226, 155, 0.8);
+    color: #ffe29b;
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: rotate(45deg) scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: rotate(45deg) scale(1.15);
+  }
+}
+
 .accessibility-toggle-button:focus-visible,
 a:focus-visible,
 button:focus-visible,
