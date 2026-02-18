@@ -215,6 +215,7 @@
   }
 
   .mat-mdc-form-field {
+    direction: rtl;
     --mdc-outlined-text-field-outline-color: rgba(242, 246, 251, 0.5);
     --mdc-outlined-text-field-hover-outline-color: #ffe29b;
     --mdc-outlined-text-field-focus-outline-color: #ffe29b;
@@ -222,6 +223,21 @@
     --mdc-outlined-text-field-label-text-color: #f2f6fb;
     --mdc-outlined-text-field-focus-label-text-color: #ffe29b;
     --mdc-outlined-text-field-caret-color: #ffe29b;
+
+    .mat-mdc-form-field-infix {
+      text-align: right;
+    }
+
+    .mdc-floating-label {
+      left: auto !important;
+      right: 0 !important;
+      transform-origin: top right !important;
+    }
+
+    .mat-mdc-form-field-icon-suffix {
+      padding-right: 0;
+      padding-left: 8px;
+    }
   }
 
   .mat-mdc-input-element::placeholder {

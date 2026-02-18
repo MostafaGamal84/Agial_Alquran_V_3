@@ -36,8 +36,8 @@
             role="form"
             novalidate
           >
-            <label for="email" class="f-w-500 text-start">{{ 'AUTH.LOGIN.UsernameLabel' | translate }}</label>
             <mat-form-field appearance="outline" class="w-100 m-t-5">
+              <mat-label>{{ 'AUTH.LOGIN.UsernameLabel' | translate }}</mat-label>
               <input
                 id="email"
                 type="email"
@@ -56,8 +56,8 @@
               }
             </mat-form-field>
 
-            <label for="password" class="f-w-500 text-start">{{ 'AUTH.LOGIN.PasswordLabel' | translate }}</label>
             <mat-form-field appearance="outline" class="w-100 m-t-5">
+              <mat-label>{{ 'AUTH.LOGIN.PasswordLabel' | translate }}</mat-label>
               <input
                 [type]="hide ? 'password' : 'text'"
                 id="password"
