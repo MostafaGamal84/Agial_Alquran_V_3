@@ -1,7 +1,7 @@
 <app-loading-overlay [isLoading]="loading" [showHadith]="true">
-  <main class="auth-main" role="main" aria-labelledby="login-page-title">
+  <main class="auth-main" role="main">
     <div class="auth-wrapper version-1">
-      <section class="auth-form ramadan-theme" aria-describedby="login-page-description">
+      <section class="auth-form ramadan-theme">
         <app-card [showHeader]="false" class="auth-form-card" padding="40">
           <div class="ramadan-decoration" aria-hidden="true">
             <span class="moon"></span>
@@ -26,33 +26,18 @@
             <a href="javascript:" aria-label="Application home">
               <img src="assets/images/logo-dark.svg" class="app-logo" alt="Agial Alquran application logo" />
             </a>
-<p class="ramadan-greeting">رمضان كريم ✨  🌙</p>
-            <h1 id="login-page-title" class="sr-only">Login</h1>
-            <p id="login-page-description" class="sr-only">
-              Login form with email and password fields.
-            </p>
+            <p class="ramadan-greeting">رمضان كريم ✨  🌙</p>
           </header>
-
-          <div
-            id="accessibility-live-region"
-            class="sr-only"
-            role="status"
-            aria-live="polite"
-            aria-atomic="true"
-          >
-            {{ ariaLiveMessage }}
-          </div>
 
           <form
             [formGroup]="loginForm"
             (ngSubmit)="onSubmit()"
             class="text-start"
             role="form"
-            aria-describedby="form-errors"
             novalidate
           >
-            <label for="email" class="f-w-500 text-start">{{ 'AUTH.LOGIN.UsernameLabel' | translate }}</label>
             <mat-form-field appearance="outline" class="w-100 m-t-5">
+              <mat-label>{{ 'AUTH.LOGIN.UsernameLabel' | translate }}</mat-label>
               <input
                 id="email"
                 type="email"
@@ -71,8 +56,8 @@
               }
             </mat-form-field>
 
-            <label for="password" class="f-w-500 text-start">{{ 'AUTH.LOGIN.PasswordLabel' | translate }}</label>
             <mat-form-field appearance="outline" class="w-100 m-t-5">
+              <mat-label>{{ 'AUTH.LOGIN.PasswordLabel' | translate }}</mat-label>
               <input
                 [type]="hide ? 'password' : 'text'"
                 id="password"
@@ -101,10 +86,6 @@
               </button>
             </mat-form-field>
 
-            <div id="form-errors" class="sr-only" [attr.aria-live]="hasErrors ? 'assertive' : 'off'" aria-atomic="true">
-              {{ ariaLiveMessage }}
-            </div>
-
             <nav class="check-me" aria-label="Login secondary actions">
               <mat-checkbox class="float-start" color="primary" aria-label="Remember my login">
                 {{ 'AUTH.LOGIN.RememberMe' | translate }}
@@ -127,21 +108,6 @@
               {{ 'AUTH.LOGIN.CreateAccount' | translate }}
             </a>
           </div>
-
-          <footer class="accessibility-toggle-footer" role="region" aria-label="Accessibility preferences">
-            <button
-              mat-stroked-button
-              type="button"
-              class="accessibility-toggle-button"
-              (click)="toggleAccessibilityMode()"
-              [attr.aria-pressed]="accessibilityModeEnabled"
-              [attr.aria-label]="accessibilityToggleAriaLabel"
-              aria-controls="accessibility-live-region"
-            >
-              <span>Accessibility Mode</span>
-              <span class="accessibility-status" [attr.aria-hidden]="true">{{ accessibilityModeStatusText }}</span>
-            </button>
-          </footer>
         </app-card>
       </section>
     </div>
