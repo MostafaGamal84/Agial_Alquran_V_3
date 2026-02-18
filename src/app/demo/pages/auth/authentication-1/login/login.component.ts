@@ -10,8 +10,6 @@ import { AuthenticationService } from 'src/app/@theme/services/authentication.se
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 import { DASHBOARD_PATH } from 'src/app/app-config';
-import { AccessibilityService } from 'src/app/@theme/services/accessibility.service';
-import { AnnouncerService } from 'src/app/@theme/services/announcer.service';
 
 // لو عندك LanguageService زي اللي بتستخدمه في interceptor
 import { LanguageService } from 'src/app/@theme/services/language.service';
@@ -35,8 +33,6 @@ export class LoginComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private toast = inject(ToastService);
-  private accessibilityService = inject(AccessibilityService);
-  private announcerService = inject(AnnouncerService);
   private auth = inject(AuthenticationService);
   private lang = inject(LanguageService);
 
@@ -45,11 +41,6 @@ export class LoginComponent implements OnInit {
 
   loading = false;
   submitted = false;
-  returnUrl: string;
-  formErrorSummary = '';
-
-  get screenReaderModeEnabled(): boolean {
-    return this.accessibilityService.isEnabled();
   returnUrl!: string;
 
   get dir(): 'rtl' | 'ltr' {
@@ -85,13 +76,8 @@ export class LoginComponent implements OnInit {
 
   onSubmit(): void {
     this.submitted = true;
-    this.formErrorSummary = '';
 
-    // stop here if form is invalid
-    if (this.loginForm.invalid) {
-      this.handleInvalidSubmit();
-      return;
-    }
+    if (this.loginForm.invalid) return;
 
     this.loading = true;
 
@@ -123,26 +109,5 @@ export class LoginComponent implements OnInit {
           this.toast.error('فشل تسجيل الدخول. حاول مرة أخرى.');
         }
       });
-  }
-
-  toggleScreenReaderMode(): void {
-    const isEnabled = this.accessibilityService.toggle();
-    const message = isEnabled
-      ? 'تم تفعيل وضع المكفوفين. Screen Reader Mode enabled.'
-      : 'تم إيقاف وضع المكفوفين. Screen Reader Mode disabled.';
-
-    this.toast.success(message, 'OK', 2500);
-    this.announcerService.announceAssertive(message);
-  }
-
-  private handleInvalidSubmit(): void {
-    this.formErrorSummary = 'يرجى استكمال الحقول المطلوبة. Please complete all required fields.';
-    this.announcerService.announceAssertive(this.formErrorSummary);
-
-    const firstInvalidControl = this.loginForm.invalid
-      ? (document.querySelector('form .ng-invalid[formControlName]') as HTMLElement | null)
-      : null;
-
-    firstInvalidControl?.focus();
   }
 }

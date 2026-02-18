@@ -9,12 +9,14 @@
       horizontal: currentLayout === 'horizontal'
     }"
   >
-    <nav aria-label="Main sidebar navigation">
+    <nav>
       <div class="navbar-wrapper">
         <div class="m-header">
-          <a href="/" class="flex align-item-center" aria-label="Application home">
+          <a href="/" class="flex align-item-center">
             <img src="assets/images/logo-dark.svg" class="app-logo app-logo--sm" alt="logo" />
-            <span class="version" aria-label="Application version">v{{ 1.0.0 }}</span>
+            <a href="https://phoenixcoded.gitbook.io/able-pro/versioning" target="_blank" class="version">
+              v{{ 1.0.0 }}
+            </a>
           </a>
         </div>
         @if (currentLayout === 'vertical') {
@@ -27,28 +29,28 @@
     </nav>
   </mat-drawer>
   <div>
-    <header role="banner"><app-nav-bar
+    <app-nav-bar
       [ngClass]="{
         'horizontal-navbar': currentLayout === 'horizontal'
       }"
-    /></header>
+    />
     @if (currentLayout === 'horizontal') {
-      <nav aria-label="Horizontal navigation"><app-horizontal-menu
+      <app-horizontal-menu
         [menus]="menus"
         [ngClass]="{
           'horizontal-menu': currentLayout === 'horizontal'
         }"
-      /></nav>
+      />
     }
     <div class="app-container">
       <!-- <app-breadcrumb [dashboard]="true" /> -->
-      <main id="main-content" class="main-body" role="main">
+      <div class="main-body">
         <div class="page-wrapper">
           <router-outlet />
         </div>
-      </main>
+      </div>
     </div>
-    <footer role="contentinfo"><app-footer></app-footer></footer>
+    <app-footer></app-footer>
   </div>
 </mat-drawer-container>
 <app-configuration />

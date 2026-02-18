@@ -12,7 +12,6 @@ import { AppRoutingModule } from './app/app-routing.module';
 import { SharedModule } from './app/demo/shared/shared.module';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { BrowserModule, bootstrapApplication } from '@angular/platform-browser';
-import { A11yModule } from '@angular/cdk/a11y';
 import { GuestModule } from './app/demo/layout/front';
 import { AppComponent } from './app/app.component';
 import { MAT_SELECT_CONFIG, MatSelectConfig } from '@angular/material/select';
@@ -32,7 +31,7 @@ const matSelectConfig: MatSelectConfig = {
 
 bootstrapApplication(AppComponent, {
   providers: [
-    importProvidersFrom(AppRoutingModule, SharedModule, BrowserModule, GuestModule, A11yModule),
+    importProvidersFrom(AppRoutingModule, SharedModule, BrowserModule, GuestModule),
 
     // ✅ Interceptors
     { provide: HTTP_INTERCEPTORS, useClass: BasicAuthInterceptor, multi: true },

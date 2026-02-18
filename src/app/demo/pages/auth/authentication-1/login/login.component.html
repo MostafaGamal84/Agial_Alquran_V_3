@@ -26,30 +26,16 @@
             </span>
           </div>
 
-
-
-          <section class="screen-reader-mode-toggle" aria-label="Screen reader preferences">
-            <button
-              type="button"
-              class="screen-reader-toggle-btn"
-              (click)="toggleScreenReaderMode()"
-              role="switch"
-              [attr.aria-checked]="screenReaderModeEnabled"
-              [attr.aria-label]="'وضع المكفوفين / Screen Reader Mode: ' + (screenReaderModeEnabled ? 'On' : 'Off')"
-            >
-              <span>وضع المكفوفين / Screen Reader Mode</span>
-              <strong>{{ screenReaderModeEnabled ? 'ON' : 'OFF' }}</strong>
-            </button>
-          </section>
-
           <header class="text-center">
-            <a [routerLink]="['/']" aria-label="Application home">
-              <img src="assets/images/logo-dark.svg" class="app-logo" alt="Agial Alquran application logo" />
+            <a href="javascript:" aria-label="Application home">
+              <img
+                src="assets/images/logo-dark.svg"
+                class="app-logo"
+                alt="Agial Alquran application logo"
+              />
             </a>
             <p class="ramadan-greeting">رمضان كريم ✨ 🌙</p>
           </header>
-
-          <div class="sr-only" role="alert" aria-live="assertive" aria-atomic="true">{{ formErrorSummary }}</div>
 
           <form
             [formGroup]="loginForm"
