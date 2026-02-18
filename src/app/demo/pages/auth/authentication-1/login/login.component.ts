@@ -11,6 +11,8 @@ import { CommonModule } from '@angular/common';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 import { DASHBOARD_PATH } from 'src/app/app-config';
+import { AccessibilityService } from 'src/app/@theme/services/accessibility.service';
+import { AnnouncerService } from 'src/app/@theme/services/announcer.service';
 
 @Component({
   selector: 'app-login',
@@ -24,6 +26,8 @@ export class LoginComponent implements OnInit {
   private router = inject(Router);
   authenticationService = inject(AuthenticationService);
   private toast = inject(ToastService);
+  private accessibilityService = inject(AccessibilityService);
+  private announcerService = inject(AnnouncerService);
 
   // public props
   hide = true;
@@ -31,6 +35,11 @@ export class LoginComponent implements OnInit {
   loading = false;
   submitted = false;
   returnUrl: string;
+  formErrorSummary = '';
+
+  get screenReaderModeEnabled(): boolean {
+    return this.accessibilityService.isEnabled();
+  }
 
   ngOnInit() {
     this.loginForm = this.formBuilder.group({
@@ -63,9 +72,11 @@ export class LoginComponent implements OnInit {
 
   onSubmit() {
     this.submitted = true;
+    this.formErrorSummary = '';
 
     // stop here if form is invalid
     if (this.loginForm.invalid) {
+      this.handleInvalidSubmit();
       return;
     }
 
@@ -91,5 +102,26 @@ export class LoginComponent implements OnInit {
           this.toast.error('فشل تسجيل الدخول. حاول مرة أخرى.');
         }
       });
+  }
+
+  toggleScreenReaderMode(): void {
+    const isEnabled = this.accessibilityService.toggle();
+    const message = isEnabled
+      ? 'تم تفعيل وضع المكفوفين. Screen Reader Mode enabled.'
+      : 'تم إيقاف وضع المكفوفين. Screen Reader Mode disabled.';
+
+    this.toast.success(message, 'OK', 2500);
+    this.announcerService.announceAssertive(message);
+  }
+
+  private handleInvalidSubmit(): void {
+    this.formErrorSummary = 'يرجى استكمال الحقول المطلوبة. Please complete all required fields.';
+    this.announcerService.announceAssertive(this.formErrorSummary);
+
+    const firstInvalidControl = this.loginForm.invalid
+      ? (document.querySelector('form .ng-invalid[formControlName]') as HTMLElement | null)
+      : null;
+
+    firstInvalidControl?.focus();
   }
 }

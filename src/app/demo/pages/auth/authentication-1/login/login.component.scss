@@ -308,3 +308,32 @@ input:focus-visible,
   outline: 2px solid currentColor;
   outline-offset: 2px;
 }
+
+.screen-reader-mode-toggle {
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.screen-reader-toggle-btn {
+  border: 1px solid rgba(255, 226, 155, 0.6);
+  border-radius: 14px;
+  padding: 0.6rem 0.9rem;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 3px solid #ffe29b;
+    outline-offset: 2px;
+  }
+}
+
+.login-page-title {
+  margin: 0 0 1rem;
+  color: #ffe29b;
+  text-align: center;
+}
