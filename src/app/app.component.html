@@ -1,5 +1,10 @@
+<a href="#main-content" class="skip-link" (click)="skipToContent($event)">تخطي إلى المحتوى الرئيسي / Skip to content</a>
+
 <div appAutoTranslate>
   <router-outlet></router-outlet>
+
+  <div class="sr-only" aria-live="polite" aria-atomic="true">{{ politeLiveMessage }}</div>
+  <div class="sr-only" aria-live="assertive" aria-atomic="true">{{ assertiveLiveMessage }}</div>
 
   @if (isSpinnerVisible) {
     <mat-progress-bar class="loader" mode="indeterminate" value="40"></mat-progress-bar>

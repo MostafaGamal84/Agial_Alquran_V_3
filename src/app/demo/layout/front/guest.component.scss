@@ -110,3 +110,16 @@
     }
   }
 }
+
+.guest-link-button {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  text-align: inherit;
+
+  &:focus-visible {
+    outline: 3px solid #ffbf47;
+    outline-offset: 2px;
+  }
+}
