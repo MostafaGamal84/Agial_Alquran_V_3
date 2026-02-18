@@ -42,35 +42,11 @@
     animation: twinkle 2.2s ease-in-out infinite;
   }
 
-  .star-1 {
-    top: 28px;
-    right: 102px;
-    animation-delay: 0.2s;
-  }
-
-  .star-2 {
-    top: 68px;
-    right: 52px;
-    animation-delay: 0.9s;
-  }
-
-  .star-3 {
-    top: 84px;
-    right: 128px;
-    animation-delay: 1.4s;
-  }
-
-  .star-4 {
-    top: 34px;
-    left: 112px;
-    animation-delay: 0.6s;
-  }
-
-  .star-5 {
-    top: 94px;
-    left: 74px;
-    animation-delay: 1.8s;
-  }
+  .star-1 { top: 28px; right: 102px; animation-delay: 0.2s; }
+  .star-2 { top: 68px; right: 52px; animation-delay: 0.9s; }
+  .star-3 { top: 84px; right: 128px; animation-delay: 1.4s; }
+  .star-4 { top: 34px; left: 112px; animation-delay: 0.6s; }
+  .star-5 { top: 94px; left: 74px; animation-delay: 1.8s; }
 
   .glow-orb {
     position: absolute;
@@ -129,20 +105,9 @@
     }
   }
 
-  .lantern-left {
-    left: 22px;
-  }
-
-  .lantern-middle {
-    left: 50%;
-    margin-left: -11px;
-    animation-delay: 0.8s;
-  }
-
-  .lantern-right {
-    right: 22px;
-    animation-delay: 1.6s;
-  }
+  .lantern-left { left: 22px; }
+  .lantern-middle { left: 50%; margin-left: -11px; animation-delay: 0.8s; }
+  .lantern-right { right: 22px; animation-delay: 1.6s; }
 
   .mosque-silhouette {
     position: absolute;
@@ -198,113 +163,169 @@
     }
   }
 
+  .app-logo {
+    width: 330px;
+    height: auto;
+    display: inline-block;
+    margin-top: 8px;
+  }
+
   .ramadan-greeting {
     margin: 14px 0 8px;
     font-size: 1rem;
-    font-weight: 700;
+    font-weight: 800;
     color: #ffe29b;
     letter-spacing: 0.4px;
   }
 
-  label,
-  .text-muted,
-  .text-primary-500,
-  a,
-  .mat-mdc-checkbox label {
-    color: #f2f6fb !important;
+  .login-form {
+    margin-top: 10px;
   }
 
-  .mat-mdc-form-field {
-    direction: rtl;
-    --mdc-outlined-text-field-outline-color: rgba(242, 246, 251, 0.5);
-    --mdc-outlined-text-field-hover-outline-color: #ffe29b;
+  .secondary-actions {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    .forgot {
+      color: #f2f6fb;
+      text-decoration: none;
+      font-weight: 600;
+      opacity: 0.95;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  .submit-btn {
+    margin-top: 14px;
+    width: 100%;
+    border-radius: 999px !important;
+    padding: 12px 14px !important;
+    background: linear-gradient(90deg, #f3c86f 0%, #d99b37 100%) !important;
+    color: #102742 !important;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+  }
+
+  .register-row {
+    margin-top: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .text-muted {
+      color: rgba(242, 246, 251, 0.9) !important;
+    }
+
+    .register-link {
+      color: #ffe29b !important;
+      font-weight: 800;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  /* ========= INPUTS (FIXED) ========= */
+  :host ::ng-deep .ramadan-field.mat-mdc-form-field {
+    width: 100%;
+
+    /* tokens */
+    --mdc-outlined-text-field-container-color: rgba(255, 255, 255, 0.06);
+    --mdc-outlined-text-field-outline-color: rgba(242, 246, 251, 0.45);
+    --mdc-outlined-text-field-hover-outline-color: rgba(255, 226, 155, 0.75);
     --mdc-outlined-text-field-focus-outline-color: #ffe29b;
+
     --mdc-outlined-text-field-input-text-color: #ffffff;
-    --mdc-outlined-text-field-label-text-color: #f2f6fb;
+    --mdc-outlined-text-field-label-text-color: rgba(242, 246, 251, 0.85);
     --mdc-outlined-text-field-focus-label-text-color: #ffe29b;
     --mdc-outlined-text-field-caret-color: #ffe29b;
-
-    .mat-mdc-form-field-infix {
-      text-align: right;
-    }
-
-    .mdc-floating-label {
-      left: auto !important;
-      right: 0 !important;
-      transform-origin: top right !important;
-    }
-
-    .mat-mdc-form-field-icon-suffix {
-      padding-right: 0;
-      padding-left: 8px;
-    }
   }
 
-  .mat-mdc-input-element::placeholder {
+  :host ::ng-deep .ramadan-field .mat-mdc-text-field-wrapper {
+    border-radius: 16px;
+    backdrop-filter: blur(6px);
+  }
+
+  :host ::ng-deep .ramadan-field .mat-mdc-form-field-infix {
+    min-height: 54px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+
+  :host ::ng-deep .ramadan-field .mat-mdc-input-element::placeholder {
     color: rgba(242, 246, 251, 0.65);
   }
 
-  .mat-mdc-checkbox .mdc-checkbox__background {
-    border-color: #ffe29b !important;
+  :host ::ng-deep .ramadan-field .eye-btn {
+    color: rgba(242, 246, 251, 0.9);
   }
 
-  button[mat-flat-button] {
-    background: linear-gradient(90deg, #f3c86f 0%, #d99b37 100%) !important;
-    color: #102742 !important;
+  :host ::ng-deep .ramadan-field mat-error {
+    color: #ffb4b4;
     font-weight: 700;
   }
-}
 
-@keyframes twinkle {
-  0%,
-  100% {
-    opacity: 0.45;
-    transform: rotate(45deg) scale(0.8);
+  :host ::ng-deep .ramadan-field.mat-mdc-form-field.mat-mdc-form-field-invalid {
+    --mdc-outlined-text-field-outline-color: rgba(255, 107, 107, 0.9);
+    --mdc-outlined-text-field-focus-outline-color: rgba(255, 107, 107, 1);
+    --mdc-outlined-text-field-focus-label-text-color: rgba(255, 170, 170, 1);
   }
-  50% {
-    opacity: 1;
-    transform: rotate(45deg) scale(1.15);
-  }
-}
 
-@keyframes moonPulse {
-  0%,
-  100% {
-    filter: brightness(1);
+  /* ✅ RTL alignment without breaking outline notch */
+  :host-context([dir='rtl']) ::ng-deep .ramadan-field .mat-mdc-form-field-infix {
+    text-align: right;
   }
-  50% {
-    filter: brightness(1.15);
-  }
-}
 
-@keyframes lanternSwing {
-  0%,
-  100% {
-    transform: rotate(-3deg);
-    transform-origin: top center;
+  :host-context([dir='rtl']) ::ng-deep .ramadan-field .mdc-floating-label {
+    left: auto;
+    right: 0;
+    transform-origin: top right;
   }
-  50% {
-    transform: rotate(3deg);
-    transform-origin: top center;
+
+  :host-context([dir='rtl']) ::ng-deep .ramadan-field .mdc-notched-outline__notch {
+    text-align: right;
+  }
+
+  :host-context([dir='rtl']) ::ng-deep .ramadan-field .mat-mdc-form-field-icon-suffix {
+    padding-left: 10px;
+    padding-right: 0;
   }
 }
 
-@keyframes floatUpDown {
-  0%,
-  100% {
-    transform: translateY(0);
-    opacity: 0.65;
-  }
-  50% {
-    transform: translateY(-6px);
-    opacity: 1;
-  }
-}
-
+/* Focus outline for accessibility */
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
 [role='button']:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 2px;
+}
+
+/* Animations */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.45; transform: rotate(45deg) scale(0.8); }
+  50% { opacity: 1; transform: rotate(45deg) scale(1.15); }
+}
+
+@keyframes moonPulse {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.15); }
+}
+
+@keyframes lanternSwing {
+  0%, 100% { transform: rotate(-3deg); transform-origin: top center; }
+  50% { transform: rotate(3deg); transform-origin: top center; }
+}
+
+@keyframes floatUpDown {
+  0%, 100% { transform: translateY(0); opacity: 0.65; }
+  50% { transform: translateY(-6px); opacity: 1; }
 }
