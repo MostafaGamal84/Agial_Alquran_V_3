@@ -1,37 +1,48 @@
-// angular import
+import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { first } from 'rxjs/operators';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
-import { FormBuilder, FormGroup, FormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { CommonModule } from '@angular/common';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 import { DASHBOARD_PATH } from 'src/app/app-config';
 import { AccessibilityService } from 'src/app/@theme/services/accessibility.service';
 import { AnnouncerService } from 'src/app/@theme/services/announcer.service';
 
+// لو عندك LanguageService زي اللي بتستخدمه في interceptor
+import { LanguageService } from 'src/app/@theme/services/language.service';
+
 @Component({
   selector: 'app-login',
-  imports: [CommonModule, SharedModule, RouterModule, FormsModule, LoadingOverlayComponent],
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    ReactiveFormsModule,
+    SharedModule,
+    LoadingOverlayComponent
+  ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss', '../authentication-1.scss', '../../authentication.scss']
 })
 export class LoginComponent implements OnInit {
-  private formBuilder = inject(FormBuilder);
+  private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  authenticationService = inject(AuthenticationService);
   private toast = inject(ToastService);
   private accessibilityService = inject(AccessibilityService);
   private announcerService = inject(AnnouncerService);
+  private auth = inject(AuthenticationService);
+  private lang = inject(LanguageService);
 
-  // public props
   hide = true;
-  loginForm: FormGroup;
+  loginForm!: FormGroup;
+
   loading = false;
   submitted = false;
   returnUrl: string;
@@ -39,38 +50,40 @@ export class LoginComponent implements OnInit {
 
   get screenReaderModeEnabled(): boolean {
     return this.accessibilityService.isEnabled();
+  returnUrl!: string;
+
+  get dir(): 'rtl' | 'ltr' {
+    return  'ltr';
   }
 
-  ngOnInit() {
-    this.loginForm = this.formBuilder.group({
+  ngOnInit(): void {
+    this.loginForm = this.fb.group({
       email: ['', Validators.required],
       password: ['', Validators.required]
     });
 
-    // get return url from route parameters or fall back to dashboard
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || DASHBOARD_PATH;
 
-    if (this.authenticationService.isLoggedIn()) {
+    if (this.auth.isLoggedIn()) {
       const targetUrl = this.returnUrl.startsWith('/login') ? DASHBOARD_PATH : this.returnUrl;
       this.router.navigateByUrl(targetUrl, { replaceUrl: true });
       return;
     }
   }
 
-  // convenience getter for easy access to form fields
   get formValues() {
     return this.loginForm.controls;
   }
 
   get emailHasError(): boolean {
-    return !!(this.submitted && this.formValues?.['email'].errors);
+    return !!(this.submitted && this.formValues?.['email']?.errors);
   }
 
   get passwordHasError(): boolean {
-    return !!(this.submitted && this.formValues?.['password'].errors);
+    return !!(this.submitted && this.formValues?.['password']?.errors);
   }
 
-  onSubmit() {
+  onSubmit(): void {
     this.submitted = true;
     this.formErrorSummary = '';
 
@@ -81,21 +94,29 @@ export class LoginComponent implements OnInit {
     }
 
     this.loading = true;
-    this.authenticationService
-      .login(this.formValues['email'].value, this.formValues['password'].value)
+
+    const email = this.formValues['email'].value;
+    const password = this.formValues['password'].value;
+
+    this.auth
+      .login(email, password)
       .pipe(first())
       .subscribe({
         next: (res) => {
           this.loading = false;
+
           if (res?.isSuccess && res?.data) {
             this.toast.success('تم تسجيل الدخول بنجاح');
             this.router.navigateByUrl(this.returnUrl);
-          } else if (res?.errors?.length && res.errors[0].message) {
-            this.toast.error(res.errors[0].message);
-          } else {
-            const fallbackMessage = 'فشل تسجيل الدخول. حاول مرة أخرى.';
-            this.toast.error(fallbackMessage);
+            return;
           }
+
+          if (res?.errors?.length && res.errors[0]?.message) {
+            this.toast.error(res.errors[0].message);
+            return;
+          }
+
+          this.toast.error('فشل تسجيل الدخول. حاول مرة أخرى.');
         },
         error: () => {
           this.loading = false;

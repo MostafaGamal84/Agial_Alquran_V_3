@@ -1,8 +1,9 @@
 <app-loading-overlay [isLoading]="loading" [showHadith]="true">
-  <main class="auth-main" id="main-content" role="main">
+  <main class="auth-main" role="main" [attr.dir]="dir">
     <div class="auth-wrapper version-1">
       <section class="auth-form ramadan-theme">
         <app-card [showHeader]="false" class="auth-form-card" padding="40">
+          <!-- Decorations -->
           <div class="ramadan-decoration" aria-hidden="true">
             <span class="moon"></span>
             <span class="star star-1"></span>
@@ -10,11 +11,14 @@
             <span class="star star-3"></span>
             <span class="star star-4"></span>
             <span class="star star-5"></span>
+
             <span class="glow-orb glow-orb-1"></span>
             <span class="glow-orb glow-orb-2"></span>
+
             <span class="lantern lantern-left"></span>
             <span class="lantern lantern-middle"></span>
             <span class="lantern lantern-right"></span>
+
             <span class="mosque-silhouette">
               <span class="minaret minaret-left"></span>
               <span class="dome"></span>
@@ -42,7 +46,7 @@
             <a [routerLink]="['/']" aria-label="Application home">
               <img src="assets/images/logo-dark.svg" class="app-logo" alt="Agial Alquran application logo" />
             </a>
-            <p class="ramadan-greeting">رمضان كريم ✨  🌙</p>
+            <p class="ramadan-greeting">رمضان كريم ✨ 🌙</p>
           </header>
 
           <div class="sr-only" role="alert" aria-live="assertive" aria-atomic="true">{{ formErrorSummary }}</div>
@@ -50,14 +54,14 @@
           <form
             [formGroup]="loginForm"
             (ngSubmit)="onSubmit()"
-            class="text-start"
+            class="login-form"
             role="form"
             novalidate
           >
-            <h1 class="login-page-title">تسجيل الدخول / Login</h1>
-
-            <mat-form-field appearance="outline" class="w-100 m-t-5">
+            <!-- Username / Email -->
+            <mat-form-field appearance="outline" class="w-100 m-t-5 ramadan-field">
               <mat-label>{{ 'AUTH.LOGIN.UsernameLabel' | translate }}</mat-label>
+
               <input
                 id="email"
                 type="email"
@@ -66,18 +70,20 @@
                 autocomplete="username"
                 [attr.aria-invalid]="emailHasError"
                 [attr.aria-describedby]="emailHasError ? 'email-error' : null"
-                [ngClass]="{ 'is-invalid': emailHasError }"
                 aria-label="Email address"
               />
+
               @if (emailHasError) {
-                <mat-hint id="email-error" class="text-warn-500" role="alert">
+                <mat-error id="email-error" role="alert">
                   {{ 'AUTH.COMMON.Validation.EmailRequired' | translate }}
-                </mat-hint>
+                </mat-error>
               }
             </mat-form-field>
 
-            <mat-form-field appearance="outline" class="w-100 m-t-5">
+            <!-- Password -->
+            <mat-form-field appearance="outline" class="w-100 m-t-5 ramadan-field">
               <mat-label>{{ 'AUTH.LOGIN.PasswordLabel' | translate }}</mat-label>
+
               <input
                 [type]="hide ? 'password' : 'text'"
                 id="password"
@@ -86,45 +92,61 @@
                 autocomplete="current-password"
                 [attr.aria-invalid]="passwordHasError"
                 [attr.aria-describedby]="passwordHasError ? 'password-error' : null"
-                [ngClass]="{ 'is-invalid': passwordHasError }"
                 aria-label="Password"
               />
-              @if (passwordHasError) {
-                <mat-hint id="password-error" class="text-warn-500" role="alert">
-                  {{ 'AUTH.COMMON.Validation.PasswordRequired' | translate }}
-                </mat-hint>
-              }
+
               <button
                 mat-icon-button
                 matSuffix
                 type="button"
+                class="eye-btn"
                 (click)="hide = !hide"
                 [attr.aria-label]="hide ? 'Show password characters' : 'Hide password characters'"
                 [attr.aria-pressed]="!hide"
               >
-                <mat-icon aria-hidden="true">{{ hide ? 'visibility_off' : 'visibility' }}</mat-icon>
+                <mat-icon aria-hidden="true">
+                  {{ hide ? 'visibility_off' : 'visibility' }}
+                </mat-icon>
               </button>
+
+              @if (passwordHasError) {
+                <mat-error id="password-error" role="alert">
+                  {{ 'AUTH.COMMON.Validation.PasswordRequired' | translate }}
+                </mat-error>
+              }
             </mat-form-field>
 
-            <nav class="check-me" aria-label="Login secondary actions">
-              <mat-checkbox class="float-start" color="primary" aria-label="Remember my login">
+            <!-- Secondary actions -->
+            <div class="secondary-actions" aria-label="Login secondary actions">
+              <mat-checkbox class="remember" color="primary" aria-label="Remember my login">
                 {{ 'AUTH.LOGIN.RememberMe' | translate }}
               </mat-checkbox>
-              <a class="f-w-400 text-primary-500 m-b-0" [routerLink]="['/forgot-password']" aria-label="Forgot password">
+
+              <a
+                class="forgot"
+                [routerLink]="['/forgot-password']"
+                aria-label="Forgot password"
+              >
                 {{ 'AUTH.LOGIN.ForgotPassword' | translate }}
               </a>
-            </nav>
-
-            <div class="grid">
-              <button mat-flat-button color="primary" class="b-rad-20 m-t-15" type="submit" aria-label="Submit login form">
-                {{ 'AUTH.LOGIN.Submit' | translate }}
-              </button>
             </div>
+
+            <!-- Submit -->
+            <button
+              mat-flat-button
+              color="primary"
+              class="submit-btn"
+              type="submit"
+              aria-label="Submit login form"
+            >
+              {{ 'AUTH.LOGIN.Submit' | translate }}
+            </button>
           </form>
 
-          <div class="check-me m-t-20" role="contentinfo" aria-label="Registration options">
+          <!-- Register -->
+          <div class="register-row" role="contentinfo" aria-label="Registration options">
             <div class="text-muted">{{ 'AUTH.LOGIN.NoAccount' | translate }}</div>
-            <a [routerLink]="['/register']" class="text-primary-500" aria-label="Create a new account">
+            <a [routerLink]="['/register']" class="register-link" aria-label="Create a new account">
               {{ 'AUTH.LOGIN.CreateAccount' | translate }}
             </a>
           </div>
