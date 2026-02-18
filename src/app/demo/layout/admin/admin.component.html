@@ -1,3 +1,4 @@
+<app-configuration></app-configuration>
 <mat-drawer-container class="drawer-container" [dir]="direction">
   <mat-drawer
     #sidebar
@@ -9,14 +10,14 @@
       horizontal: currentLayout === 'horizontal'
     }"
   >
-    <nav>
+    <nav aria-label="Sidebar navigation">
       <div class="navbar-wrapper">
         <div class="m-header">
-          <a href="/" class="flex align-item-center">
-            <img src="assets/images/logo-dark.svg" class="app-logo app-logo--sm" alt="logo" />
-            <a href="https://phoenixcoded.gitbook.io/able-pro/versioning" target="_blank" class="version">
-              v{{ 1.0.0 }}
-            </a>
+          <a href="/" class="flex align-item-center" aria-label="Home">
+            <img src="assets/images/logo-dark.svg" class="app-logo app-logo--sm" alt="Agial Alquran logo" />
+          </a>
+          <a href="https://phoenixcoded.gitbook.io/able-pro/versioning" target="_blank" class="version" aria-label="App version">
+            v{{ 1.0.0 }}
           </a>
         </div>
         @if (currentLayout === 'vertical') {
@@ -29,38 +30,33 @@
     </nav>
   </mat-drawer>
   <div>
-    <app-nav-bar
-      [ngClass]="{
-        'horizontal-navbar': currentLayout === 'horizontal'
-      }"
-    />
-    @if (currentLayout === 'horizontal') {
-      <app-horizontal-menu
-        [menus]="menus"
+    <header>
+      <app-nav-bar
         [ngClass]="{
-          'horizontal-menu': currentLayout === 'horizontal'
+          'horizontal-navbar': currentLayout === 'horizontal'
         }"
       />
-    }
-    <div class="app-container">
-      <!-- <app-breadcrumb [dashboard]="true" /> -->
+      @if (currentLayout === 'horizontal') {
+        <app-horizontal-menu
+          [menus]="menus"
+          [ngClass]="{
+            'horizontal-menu': currentLayout === 'horizontal'
+          }"
+        />
+      }
+    </header>
+
+    <main class="app-container" aria-label="Dashboard content">
       <div class="main-body">
         <div class="page-wrapper">
           <router-outlet />
         </div>
       </div>
-    </div>
-    <app-footer></app-footer>
+    </main>
+
+    <footer>
+      <app-footer></app-footer>
+    </footer>
   </div>
 </mat-drawer-container>
 <app-configuration />
-<!-- <div class="floating-button">
-  <a mat-flat-button class="b-rad-20" color="warn" [href]="buyNowLinkService.buyNowLink" target="_blank">
-    <div class="flex align-item-center gap-1">
-      <svg class="pc-icon">
-        <use xlink:href="assets/fonts/custom-icon.svg#custom-shopping-cart"></use>
-      </svg>
-      <span>الوتساب</span>
-    </div>
-  </a>
-</div> -->

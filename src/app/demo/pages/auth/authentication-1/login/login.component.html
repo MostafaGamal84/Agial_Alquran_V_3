@@ -1,9 +1,8 @@
 <app-loading-overlay [isLoading]="loading" [showHadith]="true">
-  <main class="auth-main" role="main" [attr.dir]="dir">
+  <section class="auth-main" [attr.dir]="dir" aria-labelledby="login-title" data-main-heading="true">
     <div class="auth-wrapper version-1">
       <section class="auth-form ramadan-theme">
         <app-card [showHeader]="false" class="auth-form-card" padding="40">
-          <!-- Decorations -->
           <div class="ramadan-decoration" aria-hidden="true">
             <span class="moon"></span>
             <span class="star star-1"></span>
@@ -11,14 +10,11 @@
             <span class="star star-3"></span>
             <span class="star star-4"></span>
             <span class="star star-5"></span>
-
             <span class="glow-orb glow-orb-1"></span>
             <span class="glow-orb glow-orb-2"></span>
-
             <span class="lantern lantern-left"></span>
             <span class="lantern lantern-middle"></span>
             <span class="lantern lantern-right"></span>
-
             <span class="mosque-silhouette">
               <span class="minaret minaret-left"></span>
               <span class="dome"></span>
@@ -27,24 +23,37 @@
           </div>
 
           <header class="text-center">
-            <a href="javascript:" aria-label="Application home">
-              <img
-                src="assets/images/logo-dark.svg"
-                class="app-logo"
-                alt="Agial Alquran application logo"
-              />
+            <a routerLink="/" aria-label="Application home">
+              <img src="assets/images/logo-dark.svg" class="app-logo" alt="Agial Alquran application logo" />
             </a>
+            <h1 id="login-title" class="sr-only">Login / تسجيل الدخول</h1>
             <p class="ramadan-greeting">رمضان كريم ✨ 🌙</p>
           </header>
 
+          <div class="sr-mode-toggle-row">
+            <button
+              type="button"
+              class="sr-mode-toggle"
+              [attr.aria-pressed]="screenReaderModeEnabled"
+              (click)="toggleScreenReaderMode()"
+            >
+              وضع المكفوفين / Screen Reader Mode:
+              <span>{{ screenReaderModeEnabled ? 'On' : 'Off' }}</span>
+            </button>
+          </div>
+
+          @if (errorSummary) {
+            <div class="error-summary" role="alert" aria-live="assertive">{{ errorSummary }}</div>
+          }
+
           <form
+            #loginFormElement
             [formGroup]="loginForm"
             (ngSubmit)="onSubmit()"
             class="login-form"
             role="form"
             novalidate
           >
-            <!-- Username / Email -->
             <mat-form-field appearance="outline" class="w-100 m-t-5 ramadan-field">
               <mat-label>{{ 'AUTH.LOGIN.UsernameLabel' | translate }}</mat-label>
 
@@ -66,7 +75,6 @@
               }
             </mat-form-field>
 
-            <!-- Password -->
             <mat-form-field appearance="outline" class="w-100 m-t-5 ramadan-field">
               <mat-label>{{ 'AUTH.LOGIN.PasswordLabel' | translate }}</mat-label>
 
@@ -102,35 +110,22 @@
               }
             </mat-form-field>
 
-            <!-- Secondary actions -->
             <div class="secondary-actions" aria-label="Login secondary actions">
               <mat-checkbox class="remember" color="primary" aria-label="Remember my login">
                 {{ 'AUTH.LOGIN.RememberMe' | translate }}
               </mat-checkbox>
 
-              <a
-                class="forgot"
-                [routerLink]="['/forgot-password']"
-                aria-label="Forgot password"
-              >
+              <a class="forgot" [routerLink]="['/forgot-password']" aria-label="Forgot password">
                 {{ 'AUTH.LOGIN.ForgotPassword' | translate }}
               </a>
             </div>
 
-            <!-- Submit -->
-            <button
-              mat-flat-button
-              color="primary"
-              class="submit-btn"
-              type="submit"
-              aria-label="Submit login form"
-            >
+            <button mat-flat-button color="primary" class="submit-btn" type="submit" aria-label="Submit login form">
               {{ 'AUTH.LOGIN.Submit' | translate }}
             </button>
           </form>
 
-          <!-- Register -->
-          <div class="register-row" role="contentinfo" aria-label="Registration options">
+          <div class="register-row" aria-label="Registration options">
             <div class="text-muted">{{ 'AUTH.LOGIN.NoAccount' | translate }}</div>
             <a [routerLink]="['/register']" class="register-link" aria-label="Create a new account">
               {{ 'AUTH.LOGIN.CreateAccount' | translate }}
@@ -139,5 +134,5 @@
         </app-card>
       </section>
     </div>
-  </main>
+  </section>
 </app-loading-overlay>

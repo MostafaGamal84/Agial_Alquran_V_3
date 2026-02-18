@@ -5,3 +5,24 @@
   position: fixed;
   z-index: 9999;
 }
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: 0;
+  transform: translateY(-150%);
+  background: #0f3154;
+  color: #fff;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  z-index: 10000;
+
+  &:focus,
+  &:focus-visible {
+    transform: translateY(0.5rem);
+  }
+}
+
+.app-main-content {
+  outline: none;
+}

@@ -329,3 +329,36 @@ input:focus-visible,
   0%, 100% { transform: translateY(0); opacity: 0.65; }
   50% { transform: translateY(-6px); opacity: 1; }
 }
+
+.sr-mode-toggle-row {
+  display: flex;
+  justify-content: center;
+  margin: 0.5rem 0 1rem;
+}
+
+.sr-mode-toggle {
+  border: 1px solid rgba(255, 226, 155, 0.75);
+  border-radius: 999px;
+  background: rgba(8, 29, 50, 0.6);
+  color: #ffffff;
+  padding: 0.35rem 0.9rem;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+  }
+
+  span {
+    font-weight: 700;
+  }
+}
+
+.error-summary {
+  margin: 0.5rem 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgba(255, 144, 144, 0.8);
+  border-radius: 0.5rem;
+  background: rgba(128, 0, 0, 0.22);
+  color: #fff4f4;
+}
