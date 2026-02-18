@@ -8,6 +8,13 @@ export class AbleProConfig {
   static menu_caption = false; // true false
   static isLanding = true;
   static i18n = 'ar'; // en, fr, ro, cn, ar
+
+  static ramadanTheme = {
+    enabled: true,
+    startDate: '2026-02-18', // YYYY-MM-DD
+    endDate: '2026-03-20' // YYYY-MM-DD
+  };
+
 }
 
 export const DASHBOARD_PATH = '/online-course/dashboard';

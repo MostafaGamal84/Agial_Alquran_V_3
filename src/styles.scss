@@ -198,3 +198,64 @@ body.accessibility-mode {
     position: absolute;
   }
 }
+
+body.ramadan-theme {
+  --ramadan-primary: #0e1f4d;
+  --ramadan-secondary: #1f4a8a;
+  --ramadan-accent: #c9a227;
+
+  background-image: radial-gradient(circle at top right, rgba(201, 162, 39, 0.16), transparent 28%),
+    radial-gradient(circle at 14% 20%, rgba(255, 255, 255, 0.12), transparent 18%),
+    linear-gradient(145deg, rgba(14, 31, 77, 0.96), rgba(31, 74, 138, 0.92));
+  background-attachment: fixed;
+}
+
+body.ramadan-theme .pc-container {
+  position: relative;
+}
+
+body.ramadan-theme .pc-container::before {
+  content: 'رمضان كريم 🌙';
+  position: fixed;
+  top: 88px;
+  inset-inline-end: 18px;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(10, 22, 55, 0.88);
+  color: #f6de91;
+  border: 1px solid rgba(246, 222, 145, 0.38);
+  font-size: 0.9rem;
+  font-weight: 700;
+  z-index: 1000;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.22);
+}
+
+body.ramadan-theme .pc-header,
+body.ramadan-theme .pc-sidebar {
+  backdrop-filter: saturate(112%) blur(3px);
+}
+
+body.ramadan-theme .pc-header {
+  background: linear-gradient(95deg, rgba(11, 25, 65, 0.96), rgba(26, 58, 116, 0.93));
+}
+
+body.ramadan-theme .pc-sidebar {
+  background: linear-gradient(180deg, rgba(13, 27, 63, 0.98), rgba(8, 16, 39, 0.95));
+}
+
+body.ramadan-theme .card,
+body.ramadan-theme .mat-mdc-card {
+  border: 1px solid rgba(201, 162, 39, 0.18);
+  box-shadow: 0 14px 30px rgba(9, 16, 39, 0.22);
+}
+
+body.ramadan-theme .pc-head-link.active,
+body.ramadan-theme .pc-link.active,
+body.ramadan-theme .pc-link:hover {
+  color: #f6de91 !important;
+}
+
+body.ramadan-theme .mat-mdc-raised-button.mat-primary,
+body.ramadan-theme .mat-mdc-unelevated-button.mat-primary {
+  --mdc-filled-button-container-color: var(--ramadan-secondary);
+}
