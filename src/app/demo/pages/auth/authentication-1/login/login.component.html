@@ -128,20 +128,7 @@
             </a>
           </div>
 
-          <footer class="accessibility-toggle-footer" role="region" aria-label="Accessibility preferences">
-            <button
-              mat-stroked-button
-              type="button"
-              class="accessibility-toggle-button"
-              (click)="toggleAccessibilityMode()"
-              [attr.aria-pressed]="accessibilityModeEnabled"
-              [attr.aria-label]="accessibilityToggleAriaLabel"
-              aria-controls="accessibility-live-region"
-            >
-              <span>Accessibility Mode</span>
-              <span class="accessibility-status" [attr.aria-hidden]="true">{{ accessibilityModeStatusText }}</span>
-            </button>
-          </footer>
+        
         </app-card>
       </section>
     </div>
