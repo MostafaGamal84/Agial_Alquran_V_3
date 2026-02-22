@@ -1,6 +1,7 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, ViewChild, inject } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
+import { MatSort } from '@angular/material/sort';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
@@ -31,6 +32,22 @@ export class CoursesDetailsComponent implements OnInit {
   students: CircleStudentDto[] = [];
   displayedColumns = ['fullName', 'action'];
   dataSource = new MatTableDataSource<CircleStudentDto>();
+
+  @ViewChild(MatSort)
+  set matSort(sort: MatSort | undefined) {
+    if (!sort) {
+      return;
+    }
+
+    this.dataSource.sort = sort;
+    this.dataSource.sortingDataAccessor = (item, property) => {
+      if (property === 'fullName') {
+        return this.getStudentName(item).toLowerCase();
+      }
+      const value = item[property as keyof CircleStudentDto];
+      return value === null || value === undefined ? '' : String(value).toLowerCase();
+    };
+  }
   ngOnInit() {
     const course = history.state.course as CircleDto | undefined;
     if (course) {

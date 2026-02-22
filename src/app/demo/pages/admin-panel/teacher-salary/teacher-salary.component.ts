@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
 import { MatDatepicker, MatDatepickerModule } from '@angular/material/datepicker';
 import {
@@ -137,6 +138,7 @@ class InvoicePrintContextError extends Error {
     MatProgressBarModule,
     MatTooltipModule,
     MatTableModule,
+    MatSortModule,
     MatSlideToggleModule,
     TranslateModule,
     LoadingOverlayComponent
@@ -195,6 +197,37 @@ export class TeacherSalaryComponent
   isLoadingMore = false;
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;
+
+
+  @ViewChild(MatSort)
+  set matSort(sort: MatSort | undefined) {
+    if (!sort) {
+      return;
+    }
+
+    this.dataSource.sort = sort;
+    this.dataSource.sortingDataAccessor = (item, property) => {
+      switch (property) {
+        case 'teacher':
+          return (item.teacherName ?? '').toLowerCase();
+        case 'month':
+          return this.toSortableMonthValue(item.month);
+        case 'salary':
+          return this.extractSalaryValue(item);
+        case 'status':
+          return this.isInvoicePaid(item) ? 1 : 0;
+        case 'paidAt':
+          return item.payedAt ? new Date(item.payedAt).getTime() : 0;
+        default: {
+          const value = item[property as keyof TeacherSalaryInvoice];
+          if (value === null || value === undefined) {
+            return '';
+          }
+          return typeof value === 'string' ? value.toLowerCase() : String(value);
+        }
+      }
+    };
+  }
 
   @ViewChild('loadMoreTrigger')
   set loadMoreTrigger(element: ElementRef<HTMLElement> | undefined) {
@@ -751,6 +784,33 @@ export class TeacherSalaryComponent
 
   getMonthDisplay(invoice: TeacherSalaryInvoice): string {
     return this.formatMonth(invoice);
+  }
+
+  private toSortableMonthValue(month: string | undefined): number {
+    if (!month) {
+      return 0;
+    }
+
+    const parsed = moment(month);
+    return parsed.isValid() ? parsed.valueOf() : 0;
+  }
+
+  private extractSalaryValue(invoice: TeacherSalaryInvoice): number {
+    const candidates: unknown[] = [
+      invoice.salaryAmount,
+      invoice.totalSalary,
+      invoice.salary,
+      (invoice as Record<string, unknown>)['amount']
+    ];
+
+    for (const candidate of candidates) {
+      const value = Number(candidate);
+      if (!Number.isNaN(value)) {
+        return value;
+      }
+    }
+
+    return 0;
   }
 
   handleRowKey(index: number, invoice: TeacherSalaryInvoice): number {

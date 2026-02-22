@@ -203,3 +203,30 @@ body.sr-mode {
     animation: none !important;
   }
 }
+
+/* Show clear sort arrows for table headers (asc / desc) */
+.mat-sort-header-container {
+  gap: 6px;
+}
+
+.mat-sort-header-arrow {
+  opacity: 1 !important;
+}
+
+.mat-sort-header-content::after {
+  content: '↕';
+  font-size: 12px;
+  color: currentColor;
+  opacity: 0.55;
+  margin-inline-start: 4px;
+}
+
+.mat-sort-header[aria-sort='ascending'] .mat-sort-header-content::after {
+  content: '↑';
+  opacity: 1;
+}
+
+.mat-sort-header[aria-sort='descending'] .mat-sort-header-content::after {
+  content: '↓';
+  opacity: 1;
+}
