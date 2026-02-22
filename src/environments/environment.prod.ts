@@ -5,5 +5,4 @@ export const environment = {
   production: true,
   // apiUrl: 'https://ajyalbackend.somee.com'  
     apiUrl: 'https://localhost:7260'
-  
 };
