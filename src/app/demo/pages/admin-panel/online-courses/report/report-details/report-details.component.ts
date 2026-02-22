@@ -133,6 +133,17 @@ export class ReportDetailsComponent implements OnInit {
     return String(value);
   }
 
+
+  getVisualLabel(value?: boolean | null): string {
+    if (value === true) {
+      return 'نعم';
+    }
+    if (value === false) {
+      return 'لا';
+    }
+    return '—';
+  }
+
   getStudentName(): string {
     const report = this.report;
     if (!report) {

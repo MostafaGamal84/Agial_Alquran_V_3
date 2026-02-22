@@ -204,8 +204,14 @@
         </div>
 
         <div class="field">
-          <label class="lbl">تقدير الدرس الجديد</label>
-          <input class="inp" formControlName="newRate" />
+          <label class="lbl">التقييم العام</label>
+          <select class="inp" formControlName="generalRate">
+            <option value="">اختر التقييم</option>
+            <option value="ممتاز">ممتاز</option>
+            <option value="جيد جداً">جيد جداً</option>
+            <option value="جيد">جيد</option>
+            <option value="إعادة">إعادة</option>
+          </select>
         </div>
 
         <div class="field">
@@ -213,30 +219,18 @@
           <input class="inp" formControlName="recentPast" />
         </div>
 
-        <div class="field">
-          <label class="lbl">تقدير المراجعة القريبة</label>
-          <input class="inp" formControlName="recentPastRate" />
-        </div>
 
         <div class="field">
           <label class="lbl">المراجعة البعيدة</label>
           <input class="inp" formControlName="distantPast" />
         </div>
 
-        <div class="field">
-          <label class="lbl">تقدير المراجعة البعيدة</label>
-          <input class="inp" formControlName="distantPastRate" />
-        </div>
 
         <div class="field">
           <label class="lbl">المراجعة الأبعد</label>
           <input class="inp" formControlName="farthestPast" />
         </div>
 
-        <div class="field">
-          <label class="lbl">تقدير المراجعة الأبعد</label>
-          <input class="inp" formControlName="farthestPastRate" />
-        </div>
 
         <div class="field">
           <label class="lbl">كلمات غريب القرآن</label>
@@ -246,6 +240,29 @@
         <div class="field">
           <label class="lbl">التجويد</label>
           <input class="inp" formControlName="intonation" />
+        </div>
+
+
+        <div class="field">
+          <label class="lbl">الحصة مرئية؟</label>
+          <ng-select
+            formControlName="isVisual"
+            [items]="[
+              { label: 'غير محدد', value: null },
+              { label: 'نعم', value: true },
+              { label: 'لا', value: false }
+            ]"
+            bindLabel="label"
+            bindValue="value"
+            [searchable]="false"
+            [clearable]="false"
+            placeholder="اختر الحالة"
+          ></ng-select>
+        </div>
+
+        <div class="field span-2">
+          <label class="lbl">مقرر الحصة القادمة</label>
+          <input class="inp" formControlName="nextCircleOrder" />
         </div>
 
         <div class="field span-2">

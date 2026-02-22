@@ -93,7 +93,7 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     residentGroup: ['all']
   });
 
-  displayedColumns: string[] = ['index', 'student', 'circle', 'status', 'creationTime', 'minutes', 'actions'];
+  displayedColumns: string[] = ['index', 'student', 'circle', 'status', 'generalRate', 'isVisual', 'nextCircleOrder', 'creationTime', 'minutes', 'actions'];
   dataSource = new MatTableDataSource<CircleReportListDto>();
 
   // 🔢 خصائص الباجينيتور – سيرفر سايد
@@ -533,6 +533,12 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     return date.toLocaleString();
   }
 
+  getVisualLabel(value: unknown): string {
+    if (value === true) return 'نعم';
+    if (value === false) return 'لا';
+    return '—';
+  }
+
   getTeacherDisplay(report: CircleReportListDto): string {
     return (
       (report.teacherName as string | undefined) ||
@@ -574,13 +580,13 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     if (surahName) lines.push(`السورة الجديدة: ${surahName}`);
     if (model.newFrom) lines.push(`الجديد من: ${model.newFrom}`);
     if (model.newTo) lines.push(`الجديد إلى: ${model.newTo}`);
-    if (model.newRate) lines.push(`تقييم الجديد: ${model.newRate}`);
+    if (model.generalRate) lines.push(`التقييم العام: ${model.generalRate}`);
     if (model.recentPast) lines.push(`الماضي القريب: ${model.recentPast}`);
-    if (model.recentPastRate) lines.push(`تقييم الماضي القريب: ${model.recentPastRate}`);
     if (model.distantPast) lines.push(`الماضي البعيد: ${model.distantPast}`);
-    if (model.distantPastRate) lines.push(`تقييم الماضي البعيد: ${model.distantPastRate}`);
     if (model.farthestPast) lines.push(`الأبعد: ${model.farthestPast}`);
-    if (model.farthestPastRate) lines.push(`تقييم الأبعد: ${model.farthestPastRate}`);
+    if (model.isVisual === true) lines.push(`الحصة المرئية: نعم`);
+    if (model.isVisual === false) lines.push(`الحصة المرئية: لا`);
+    if (model.nextCircleOrder) lines.push(`مقرر الحصة القادمة: ${model.nextCircleOrder}`);
     if (model.theWordsQuranStranger) lines.push(`غريب القرآن: ${model.theWordsQuranStranger}`);
     if (model.intonation) lines.push(`التجويد: ${model.intonation}`);
     if (model.other) lines.push(`ملاحظات: ${model.other}`);

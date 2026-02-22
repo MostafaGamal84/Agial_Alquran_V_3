@@ -12,13 +12,10 @@ export interface CircleReportAddDto {
   newId?: number;
   newFrom?: string;
   newTo?: string;
-  newRate?: string;
   recentPast?: string;
-  recentPastRate?: string;
   distantPast?: string;
-  distantPastRate?: string;
   farthestPast?: string;
-  farthestPastRate?: string;
+  generalRate?: string;
   theWordsQuranStranger?: string;
   intonation?: string;
   other?: string;
@@ -27,6 +24,8 @@ export interface CircleReportAddDto {
   studentId?: number;
   teacherId?: number;
   attendStatueId?: number;
+  isVisual?: boolean | null;
+  nextCircleOrder?: string | null;
 }
 
 export interface CircleReportListDto {
