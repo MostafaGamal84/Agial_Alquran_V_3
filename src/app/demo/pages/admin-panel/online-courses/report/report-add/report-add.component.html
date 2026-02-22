@@ -203,16 +203,7 @@
           <input class="inp" formControlName="newTo" />
         </div>
 
-        <div class="field">
-          <label class="lbl">التقييم العام</label>
-          <select class="inp" formControlName="generalRate">
-            <option value="">اختر التقييم</option>
-            <option value="ممتاز">ممتاز</option>
-            <option value="جيد جداً">جيد جداً</option>
-            <option value="جيد">جيد</option>
-            <option value="إعادة">إعادة</option>
-          </select>
-        </div>
+        
 
         <div class="field">
           <label class="lbl">المراجعة القريبة</label>
@@ -231,6 +222,24 @@
           <input class="inp" formControlName="farthestPast" />
         </div>
 
+
+        <div class="field">
+          <label class="lbl">التقييم العام</label>
+          <ng-select
+            formControlName="generalRate"
+            [items]="[
+              { label: 'ممتاز', value: 'ممتاز' },
+              { label: 'جيد جداً', value: 'جيد جداً' },
+              { label: 'جيد', value: 'جيد' },
+              { label: 'إعادة', value: 'إعادة' }
+            ]"
+            bindLabel="label"
+            bindValue="value"
+            [searchable]="false"
+            [clearable]="false"
+            placeholder="اختر التقييم العام"
+          ></ng-select>
+        </div>
 
         <div class="field">
           <label class="lbl">كلمات غريب القرآن</label>
