@@ -226,6 +226,41 @@
   font-weight: 600;
 }
 
+
+.compact-range-field {
+  .range-group {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .range-item {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .range-label {
+    display: block;
+    margin: 0 0 4px;
+    font-size: 12px;
+    color: var(--hint-color);
+  }
+
+  .range-separator {
+    align-self: center;
+    color: var(--hint-color);
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  .range-inp {
+    height: 38px;
+    border-radius: 8px;
+    padding: 0 10px;
+  }
+}
+
 /* Actions */
 
 .actions {

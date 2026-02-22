@@ -193,14 +193,21 @@
           ></ng-select>
         </div>
 
-        <div class="field">
-          <label class="lbl">من</label>
-          <input class="inp" formControlName="newFrom" />
-        </div>
+        <div class="field span-2 compact-range-field">
+          <label class="lbl">من - إلى</label>
+          <div class="range-group">
+            <div class="range-item">
+              <label class="range-label">من</label>
+              <input class="inp range-inp" formControlName="newFrom" />
+            </div>
 
-        <div class="field">
-          <label class="lbl">إلى</label>
-          <input class="inp" formControlName="newTo" />
+            <span class="range-separator">—</span>
+
+            <div class="range-item">
+              <label class="range-label">إلى</label>
+              <input class="inp range-inp" formControlName="newTo" />
+            </div>
+          </div>
         </div>
 
         
