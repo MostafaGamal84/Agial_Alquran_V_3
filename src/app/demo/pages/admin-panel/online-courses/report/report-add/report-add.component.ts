@@ -185,13 +185,12 @@ export class ReportAddComponent implements OnInit, OnDestroy {
       newId: [null],
       newFrom: [''],
       newTo: [''],
-      newRate: [''],
+      generalRate: [''],
+      isVisual: [null],
+      nextCircleOrder: [''],
       recentPast: [''],
-      recentPastRate: [''],
       distantPast: [''],
-      distantPastRate: [''],
       farthestPast: [''],
-      farthestPastRate: [''],
       theWordsQuranStranger: [''],
       intonation: [''],
       other: [''],
@@ -481,13 +480,12 @@ export class ReportAddComponent implements OnInit, OnDestroy {
       'newId',
       'newFrom',
       'newTo',
-      'newRate',
+      'generalRate',
+      'isVisual',
+      'nextCircleOrder',
       'recentPast',
-      'recentPastRate',
       'distantPast',
-      'distantPastRate',
       'farthestPast',
-      'farthestPastRate',
       'theWordsQuranStranger',
       'intonation',
       'other'
@@ -613,26 +611,26 @@ export class ReportAddComponent implements OnInit, OnDestroy {
     if (model.newTo) {
       lines.push(`الجديد إلى: ${model.newTo}`);
     }
-    if (model.newRate) {
-      lines.push(`تقييم الجديد: ${model.newRate}`);
+    if (model.generalRate) {
+      lines.push(`التقييم العام: ${model.generalRate}`);
     }
     if (model.recentPast) {
       lines.push(`الماضي القريب: ${model.recentPast}`);
     }
-    if (model.recentPastRate) {
-      lines.push(`تقييم الماضي القريب: ${model.recentPastRate}`);
-    }
     if (model.distantPast) {
       lines.push(`الماضي البعيد: ${model.distantPast}`);
-    }
-    if (model.distantPastRate) {
-      lines.push(`تقييم الماضي البعيد: ${model.distantPastRate}`);
     }
     if (model.farthestPast) {
       lines.push(`الأبعد: ${model.farthestPast}`);
     }
-    if (model.farthestPastRate) {
-      lines.push(`تقييم الأبعد: ${model.farthestPastRate}`);
+    if (model.isVisual === true) {
+      lines.push(`الحصة المرئية: نعم`);
+    }
+    if (model.isVisual === false) {
+      lines.push(`الحصة المرئية: لا`);
+    }
+    if (model.nextCircleOrder) {
+      lines.push(`مقرر الحصة القادمة: ${model.nextCircleOrder}`);
     }
     if (model.theWordsQuranStranger) {
       lines.push(`غريب القرآن: ${model.theWordsQuranStranger}`);
