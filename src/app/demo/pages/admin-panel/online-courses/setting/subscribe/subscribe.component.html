@@ -20,9 +20,9 @@
               </mat-form-field>
             </div>
             <div class="table-responsive">
-              <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+              <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
                 <ng-container matColumnDef="name">
-                  <th mat-header-cell *matHeaderCellDef class="p-l-25">{{ 'Name' | translate }}</th>
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header="name" class="p-l-25">{{ 'Name' | translate }}</th>
                   <td mat-cell *matCellDef="let element" class="p-l-25 text-nowrap">
                     {{ element.name }}
                     ({{ element.subscribeType?.group === 3 ? 'مصريين' :
@@ -31,20 +31,20 @@
                   </td>
                 </ng-container>
                 <ng-container matColumnDef="minutes">
-                  <th mat-header-cell *matHeaderCellDef>{{ 'Minutes' | translate }}</th>
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header="minutes">{{ 'Minutes' | translate }}</th>
                   <td mat-cell *matCellDef="let element" class="text-nowrap">
                     {{ element.minutes }} 
                   </td>
                   
                 </ng-container>
                   <ng-container matColumnDef="price">
-                  <th mat-header-cell *matHeaderCellDef>{{ 'Price' | translate }}</th>
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header="price">{{ 'Price' | translate }}</th>
                   <td mat-cell *matCellDef="let element" class="text-nowrap">
                     {{ element.price }} 
                   </td>
                 </ng-container>
                 <ng-container matColumnDef="type">
-                  <th mat-header-cell *matHeaderCellDef>{{ 'Type' | translate }}</th>
+                  <th mat-header-cell *matHeaderCellDef mat-sort-header="type">{{ 'Type' | translate }}</th>
                   <td mat-cell *matCellDef="let element" class="text-nowrap">
                     {{ element.subscribeType?.name }}
                   </td>
