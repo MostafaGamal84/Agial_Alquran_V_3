@@ -62,6 +62,16 @@
                 <span class="label">{{ 'تاريخ الإنشاء' | translate }}</span>
                 <span class="value">{{ formatDate(report?.creationTime) }}</span>
               </div>
+
+              <div class="detail-item">
+                <span class="label">{{ 'الحصة مرئية' | translate }}</span>
+                <span class="value">{{ getVisualLabel(report?.isVisual) }}</span>
+              </div>
+
+              <div class="detail-item">
+                <span class="label">{{ 'مقرر الحصة القادمة' | translate }}</span>
+                <span class="value">{{ displayValue(report?.nextCircleOrder) }}</span>
+              </div>
             </section>
 
             <!-- قسم: الدرس الجديد -->
@@ -85,7 +95,7 @@
 
               <div class="detail-item">
                 <span class="label">{{ 'التقدير' | translate }}</span>
-                <span class="value">{{ displayValue(report?.newRate) }}</span>
+                <span class="value">{{ displayValue(report?.generalRate) }}</span>
               </div>
             </section>
 
@@ -99,18 +109,8 @@
               </div>
 
               <div class="detail-item">
-                <span class="label">{{ 'تقدير المراجعة القريبة' | translate }}</span>
-                <span class="value">{{ displayValue(report?.recentPastRate) }}</span>
-              </div>
-
-              <div class="detail-item">
                 <span class="label">{{ 'المراجعة البعيدة' | translate }}</span>
                 <span class="value">{{ displayValue(report?.distantPast) }}</span>
-              </div>
-
-              <div class="detail-item">
-                <span class="label">{{ 'تقدير المراجعة البعيدة' | translate }}</span>
-                <span class="value">{{ displayValue(report?.distantPastRate) }}</span>
               </div>
 
               <div class="detail-item">
@@ -118,10 +118,6 @@
                 <span class="value">{{ displayValue(report?.farthestPast) }}</span>
               </div>
 
-              <div class="detail-item">
-                <span class="label">{{ 'تقدير المراجعة الأبعد' | translate }}</span>
-                <span class="value">{{ displayValue(report?.farthestPastRate) }}</span>
-              </div>
             </section>
 
             <!-- قسم: ملاحظات إضافية -->
