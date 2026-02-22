@@ -203,3 +203,34 @@ body.sr-mode {
     animation: none !important;
   }
 }
+
+/* Show clear sort arrows for table headers (asc / desc) */
+[mat-sort-header] .mat-sort-header-container {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px;
+}
+
+/* Hide built-in arrow and render deterministic indicators */
+[mat-sort-header] .mat-sort-header-arrow {
+  display: none !important;
+}
+
+[mat-sort-header] .mat-sort-header-container::after {
+  content: '⇅';
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  color: currentColor;
+  opacity: 0.75;
+}
+
+[mat-sort-header][aria-sort='ascending'] .mat-sort-header-container::after {
+  content: '▲';
+  opacity: 1;
+}
+
+[mat-sort-header][aria-sort='descending'] .mat-sort-header-container::after {
+  content: '▼';
+  opacity: 1;
+}

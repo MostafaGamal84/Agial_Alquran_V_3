@@ -2,6 +2,7 @@ import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@an
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
+import { MatSort } from '@angular/material/sort';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import { StudentSubscribeService, ViewStudentSubscribeReDto } from 'src/app/@theme/services/student-subscribe.service';
@@ -36,6 +37,31 @@ export class MembershipViewComponent implements OnInit, OnDestroy {
   isLoadingMore = false;
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;
+
+  @ViewChild(MatSort)
+  set matSort(sort: MatSort | undefined) {
+    if (!sort) {
+      return;
+    }
+
+    this.dataSource.sort = sort;
+    this.dataSource.sortingDataAccessor = (item, property) => {
+      switch (property) {
+        case 'status':
+          return item.payStatus === true ? 1 : item.payStatus === false ? 0 : -1;
+        case 'startDate':
+          return item.startDate ? new Date(item.startDate).getTime() : 0;
+        default: {
+          const value = item[property as keyof ViewStudentSubscribeReDto];
+          return value === null || value === undefined
+            ? ''
+            : typeof value === 'string'
+              ? value.toLowerCase()
+              : Number(value);
+        }
+      }
+    };
+  }
 
   @ViewChild('loadMoreTrigger')
   set loadMoreTrigger(element: ElementRef<HTMLElement> | undefined) {

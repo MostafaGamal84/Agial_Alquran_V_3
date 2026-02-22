@@ -1,5 +1,5 @@
 // angular import
-import { ChangeDetectorRef, Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, ViewChild, inject } from '@angular/core';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -8,6 +8,7 @@ import { AddressDialogComponent } from './address-dialog/address-dialog.componen
 // angular material
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
+import { MatSort } from '@angular/material/sort';
 
 export interface PeriodicElement {
   no: number;
@@ -40,6 +41,14 @@ export class InvoiceCreateComponent {
   // public props
   displayedColumns: string[] = ['no', 'name', 'description', 'qty', 'price', 'amount', 'action'];
   dataSource = new MatTableDataSource<PeriodicElement>(this.elements);
+
+  @ViewChild(MatSort)
+  set matSort(sort: MatSort | undefined) {
+    if (!sort) {
+      return;
+    }
+    this.dataSource.sort = sort;
+  }
   selectedAddress: AddressType | null = null;
   newAddress: AddressType | null = null;
   discountPercent = 0;

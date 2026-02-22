@@ -1,6 +1,7 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
+import { MatSort } from '@angular/material/sort';
 import { MatDialog, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
 import { MatButton } from '@angular/material/button';
 import { MatSelectChange } from '@angular/material/select';
@@ -48,6 +49,26 @@ export class SubscribeTypeComponent implements OnInit, OnDestroy {
   isLoadingMore = false;
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;
+
+  @ViewChild(MatSort)
+  set matSort(sort: MatSort | undefined) {
+    if (!sort) {
+      return;
+    }
+
+    this.dataSource.sort = sort;
+    this.dataSource.sortingDataAccessor = (item, property) => {
+      if (property === 'name') {
+        return (item.name ?? '').toLowerCase();
+      }
+      const value = item[property as keyof SubscribeTypeDto];
+      return value === null || value === undefined
+        ? ''
+        : typeof value === 'string'
+          ? value.toLowerCase()
+          : Number(value);
+    };
+  }
 
   @ViewChild('loadMoreTrigger')
   set loadMoreTrigger(element: ElementRef<HTMLElement> | undefined) {
