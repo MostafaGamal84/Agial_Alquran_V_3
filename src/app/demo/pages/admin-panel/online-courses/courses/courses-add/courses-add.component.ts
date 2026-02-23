@@ -506,19 +506,7 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
     }
 
     const formValue = this.circleForm.getRawValue() as CircleFormValue;
-
-    const schedule: CircleDayRequestDto[] = Array.isArray(formValue.days)
-      ? formValue.days.reduce<CircleDayRequestDto[]>((acc, entry) => {
-        const dayValue = coerceDayValue(entry?.dayId ?? undefined);
-        if (dayValue === undefined) {
-          return acc;
-        }
-
-        const startTimeValue = timeStringToTimeSpanString(entry?.startTime);
-        acc.push({ dayId: dayValue, time: startTimeValue ?? null });
-        return acc;
-      }, [])
-      : [];
+    const schedule = this.buildSchedulePayload();
 
     const managerId =
       typeof formValue.managers === 'number' && formValue.managers > 0
@@ -548,7 +536,6 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
           if (res.isSuccess) {
             this.toast.success('تم اضافة الحلقة بنجاح');
             this.router.navigate(['/online-course/courses/view']);
-            []
             this.resetForm();
           } else if (res.errors?.length) {
             res.errors.forEach((e) => this.toast.error(e.message));
@@ -558,6 +545,22 @@ export class CoursesAddComponent implements OnInit, OnDestroy {
         },
         error: () => this.toast.error('خطأ في الحفظ')
       });
+  }
+
+  private buildSchedulePayload(): CircleDayRequestDto[] {
+    return this.daysArray.controls.reduce<CircleDayRequestDto[]>((acc, dayGroup) => {
+      const rawDay = dayGroup.get('dayId')?.value;
+      const dayValue = coerceDayValue(rawDay ?? undefined);
+      if (dayValue === undefined) {
+        return acc;
+      }
+
+      const startTime = dayGroup.get('startTime')?.value as string | null | undefined;
+      const startTimeValue = timeStringToTimeSpanString(startTime ?? undefined);
+
+      acc.push({ dayId: dayValue, time: startTimeValue ?? null });
+      return acc;
+    }, []);
   }
 
   resetForm(): void {
