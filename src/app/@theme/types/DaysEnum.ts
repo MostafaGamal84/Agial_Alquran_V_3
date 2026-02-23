@@ -62,6 +62,13 @@ function normalizeDayLabel(value: string): string {
     .replace(/\s+/g, '');
 }
 
+
+function normalizeNumericString(value: string): string {
+  return value
+    .replace(/[٠-٩]/g, (digit) => String(digit.charCodeAt(0) - 0x0660))
+    .replace(/[۰-۹]/g, (digit) => String(digit.charCodeAt(0) - 0x06F0));
+}
+
 export function coerceDayValue(value: DayValue): DaysEnum | undefined {
   if (value === null || value === undefined) {
     return undefined;
@@ -103,7 +110,8 @@ export function coerceDayValue(value: DayValue): DaysEnum | undefined {
     return undefined;
   }
 
-  const numericValue = Number(trimmed);
+  const normalizedNumericInput = normalizeNumericString(trimmed);
+  const numericValue = Number(normalizedNumericInput);
   if (!Number.isNaN(numericValue) && DAY_LABELS.has(numericValue as DaysEnum)) {
     return numericValue as DaysEnum;
   }
