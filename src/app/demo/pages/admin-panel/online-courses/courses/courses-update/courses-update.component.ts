@@ -694,7 +694,7 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
 
   private buildSchedulePayload(): CircleDayRequestDto[] {
     return this.daysArray.controls
-      .map((dayGroup) => {
+      .map((dayGroup): CircleDayRequestDto | null => {
         const rawDay = dayGroup.get('dayId')?.value;
         const dayValue = coerceDayValue(rawDay ?? undefined);
 
