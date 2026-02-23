@@ -614,8 +614,8 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
 
   private createDayGroup(initial?: Partial<CircleScheduleFormValue>): FormGroup {
     return this.fb.group({
-      dayId: [initial?.dayId ?? null],
-      startTime: [initial?.startTime ?? '']
+      dayId: [initial?.dayId ?? null, Validators.required],
+      startTime: [initial?.startTime ?? '', Validators.required]
     });
   }
 
@@ -652,11 +652,7 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
               startTime: startTime ? startTime : ''
             };
           })
-          .filter(
-            (entry) =>
-              entry.dayId !== null ||
-              (typeof entry.startTime === 'string' && entry.startTime.trim().length > 0)
-          )
+          .filter((entry) => entry.dayId !== null)
         : [];
 
     if (normalized.length) {
@@ -697,19 +693,24 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
 
 
   private buildSchedulePayload(): CircleDayRequestDto[] {
-    return this.daysArray.controls.reduce<CircleDayRequestDto[]>((acc, dayGroup) => {
-      const rawDay = dayGroup.get('dayId')?.value;
-      const dayValue = coerceDayValue(rawDay ?? undefined);
-      if (dayValue === undefined) {
-        return acc;
-      }
+    return this.daysArray.controls
+      .map((dayGroup) => {
+        const rawDay = dayGroup.get('dayId')?.value;
+        const dayValue = coerceDayValue(rawDay ?? undefined);
 
-      const startTime = dayGroup.get('startTime')?.value as string | null | undefined;
-      const startTimeValue = timeStringToTimeSpanString(startTime ?? undefined);
+        if (dayValue === undefined) {
+          return null;
+        }
 
-      acc.push({ dayId: dayValue, time: startTimeValue ?? null });
-      return acc;
-    }, []);
+        const startTime = dayGroup.get('startTime')?.value as string | null;
+        const startTimeValue = timeStringToTimeSpanString(startTime ?? undefined);
+
+        return {
+          dayId: dayValue,
+          time: startTimeValue ?? null
+        };
+      })
+      .filter((item): item is CircleDayRequestDto => item !== null);
   }
 
   onSubmit() {
@@ -732,12 +733,17 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
 
     const schedule = this.buildSchedulePayload();
 
+    if (!schedule.length) {
+      this.toast.error('يجب إدخال موعد واحد على الأقل');
+      return;
+    }
+
     const model: UpdateCircleDto = {
       id: this.id,
       name: formValue.name,
       branchId: formValue.branchId,
       teacherId: formValue.teacherId,
-      days: schedule.length ? schedule : null,
+      days: schedule,
       managers: formValue.managers,
       studentsIds: formValue.studentsIds
     };
