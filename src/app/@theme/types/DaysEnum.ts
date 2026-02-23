@@ -51,6 +51,24 @@ const EN_DAY_LOOKUP: Record<string, DaysEnum> = {
   friday: DaysEnum.الجمعة
 };
 
+function normalizeDayLabel(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[\u064B-\u065F\u0670]/g, '')
+    .replace(/[أإآ]/g, 'ا')
+    .replace(/ى/g, 'ي')
+    .replace(/ة/g, 'ه')
+    .replace(/\s+/g, '');
+}
+
+
+function normalizeNumericString(value: string): string {
+  return value
+    .replace(/[٠-٩]/g, (digit) => String(digit.charCodeAt(0) - 0x0660))
+    .replace(/[۰-۹]/g, (digit) => String(digit.charCodeAt(0) - 0x06F0));
+}
+
 export function coerceDayValue(value: DayValue): DaysEnum | undefined {
   if (value === null || value === undefined) {
     return undefined;
@@ -86,12 +104,14 @@ export function coerceDayValue(value: DayValue): DaysEnum | undefined {
     return DAY_LABELS.has(value as DaysEnum) ? (value as DaysEnum) : undefined;
   }
 
-  const trimmed = `${value}`.trim();
+  const raw = `${value}`;
+  const trimmed = raw.trim();
   if (!trimmed) {
     return undefined;
   }
 
-  const numericValue = Number(trimmed);
+  const normalizedNumericInput = normalizeNumericString(trimmed);
+  const numericValue = Number(normalizedNumericInput);
   if (!Number.isNaN(numericValue) && DAY_LABELS.has(numericValue as DaysEnum)) {
     return numericValue as DaysEnum;
   }
@@ -101,8 +121,17 @@ export function coerceDayValue(value: DayValue): DaysEnum | undefined {
     return englishMatch;
   }
 
+  const normalizedInput = normalizeDayLabel(raw);
+  const normalizedEnglishInput = normalizedInput.replace(/\s+/g, '');
+  const normalizedEnglishMatch = EN_DAY_LOOKUP[normalizedEnglishInput];
+  if (normalizedEnglishMatch) {
+    return normalizedEnglishMatch;
+  }
+
   const matchedOption = DAY_OPTIONS.find(
-    (option) => option.label.toLowerCase() === trimmed.toLowerCase()
+    (option) =>
+      option.label.toLowerCase() === trimmed.toLowerCase() ||
+      normalizeDayLabel(option.label) === normalizedInput
   );
 
   return matchedOption?.value;
