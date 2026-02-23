@@ -614,8 +614,8 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
 
   private createDayGroup(initial?: Partial<CircleScheduleFormValue>): FormGroup {
     return this.fb.group({
-      dayId: [initial?.dayId ?? null, Validators.required],
-      startTime: [initial?.startTime ?? '', Validators.required]
+      dayId: [initial?.dayId ?? null],
+      startTime: [initial?.startTime ?? '']
     });
   }
 
