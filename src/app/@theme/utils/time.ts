@@ -182,6 +182,38 @@ export function formatTimeValue(
     }
   }
 
+  const meridiemMatch = trimmed.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(am|pm|a\.m\.|p\.m\.|ص|م|صباحا|مساء|مساءً)$/i);
+  if (meridiemMatch) {
+    const hoursPart = Number(meridiemMatch[1]);
+    const minutesPart = Number(meridiemMatch[2]);
+    const meridiemToken = meridiemMatch[3]
+      .toLowerCase()
+      .replace(/\./g, '')
+      .replace('ً', '');
+
+    if (
+      !Number.isNaN(hoursPart) &&
+      !Number.isNaN(minutesPart) &&
+      hoursPart >= 1 &&
+      hoursPart <= 12 &&
+      minutesPart >= 0 &&
+      minutesPart <= 59
+    ) {
+      const isPm = ['pm', 'م', 'مساء'].includes(meridiemToken);
+      const isAm = ['am', 'ص', 'صباحا'].includes(meridiemToken);
+
+      if (isPm || isAm) {
+        let normalizedHours = hoursPart % 12;
+        if (isPm) {
+          normalizedHours += 12;
+        }
+
+        return `${normalizedHours.toString().padStart(2, '0')}:${minutesPart
+          .toString()
+          .padStart(2, '0')}`;
+      }
+    }
+  }
+
   return trimmed;
 }
-
