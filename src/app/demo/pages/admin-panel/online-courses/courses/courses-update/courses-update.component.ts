@@ -1,6 +1,13 @@
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AbstractControl, FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormArray,
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ValidatorFn
+} from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -40,6 +47,9 @@ interface CircleFormValue {
   managers: number[];
   studentsIds: number[];
 }
+
+type DayOptionNormalized = { label: string; value: any };
+
 @Component({
   selector: 'app-courses-update',
   imports: [SharedModule, CommonModule],
@@ -54,8 +64,8 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private auth = inject(AuthenticationService);
   private userService = inject(UserService);
-    private router = inject(Router);
-  
+  private router = inject(Router);
+
   private destroy$ = new Subject<void>();
   private readonly userFilter: FilteredResultRequestDto = { lookupOnly: true };
   private readonly fullListFilter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 1000 };
@@ -65,26 +75,41 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
   managers: LookUpUserDto[] = [];
   students: LookUpUserDto[] = [];
   id!: number;
+
   isManager = false;
   private currentManagerId: number | null = null;
   private lastLoadedManagerId: number | null = null;
   private managerFallback: LookUpUserDto | null = null;
-  days = DAY_OPTIONS;
+
+  // ✅ تطبيع DAY_OPTIONS عشان ng-select (bindValue="value") يشتغل 100%
+  days: DayOptionNormalized[] = [];
+
   branchOptions = [
     { id: BranchesEnum.Mens, label: 'الرجال' },
     { id: BranchesEnum.Women, label: 'النساء' }
   ];
+
   submitted = false;
   isSaving = false;
 
   ngOnInit(): void {
+
+
+
+    // ✅ جهز قائمة الأيام بشكل ثابت {label,value}
+    this.days = this.normalizeDayOptions(DAY_OPTIONS as any);
+
     this.isManager = this.auth.getRole() === UserTypesEnum.Manager;
     this.currentManagerId = this.isManager ? this.resolveCurrentManagerId() : null;
+
     this.circleForm = this.fb.group({
       name: ['', Validators.required],
       branchId: [null, Validators.required],
       teacherId: [{ value: null, disabled: true }, Validators.required],
-      days: this.fb.array([this.createDayGroup()]),
+
+      // ✅ Validator عام على FormArray
+      days: this.fb.array([this.createDayGroup()], this.daysArrayValidator()),
+
       managers: [
         {
           value: this.currentManagerId !== null ? [this.currentManagerId] : [],
@@ -93,6 +118,16 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
       ],
       studentsIds: [{ value: [], disabled: true }]
     });
+
+    // ✅ مهم جدًا: إعادة تقييم الـ FormArray فور أي تغيير داخل أي صف (حل رسالة “اليوم مطلوب” اللي بتفضل)
+    this.daysArray.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.daysArray.updateValueAndValidity({ onlySelf: false, emitEvent: false });
+      });
+
+
+
     const teacherControl = this.circleForm.get('teacherId');
     const managersControl = this.circleForm.get('managers');
 
@@ -141,6 +176,7 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
           }
         }
       });
+
     const initialManagerId = this.resolvePrimaryId(managersControl?.value as number[] | null);
     if (initialManagerId !== null && this.lastLoadedManagerId !== initialManagerId) {
       this.loadTeachers(initialManagerId);
@@ -172,7 +208,28 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
       }
     }
   }
+private extractDayValueFromEvent(event: any): any {
+  // مع bindValue غالباً event = رقم (DaysEnum)
+  if (event === null || event === undefined) return null;
 
+  // أحيانًا ng-select يبعث object كامل
+  return event?.value ?? event?.id ?? event?.dayId ?? event;
+}
+
+onDayChanged(index: number, event: any): void {
+  const ctrl = this.daysArray.at(index)?.get('dayId');
+  if (!ctrl) return;
+
+  const value = this.extractDayValueFromEvent(event);
+
+  ctrl.setValue(value ?? null, { emitEvent: true });
+  ctrl.markAsDirty();
+  ctrl.markAsTouched();
+  ctrl.updateValueAndValidity({ onlySelf: true, emitEvent: false });
+
+  // مهم: حدث حالة الـ FormArray عشان الرسائل تتحدث فورًا
+  this.daysArray.updateValueAndValidity({ onlySelf: false, emitEvent: false });
+}
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
@@ -191,7 +248,7 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
 
   removeDay(index: number): void {
     if (this.daysArray.length <= 1) {
-      this.daysArray.at(0).reset({ dayId: null, startTime: '' });
+      this.daysArray.at(0).reset({ dayId: null, startTime: null });
       this.daysArray.markAsDirty();
       this.daysArray.markAsTouched();
       this.daysArray.updateValueAndValidity();
@@ -207,6 +264,120 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
   trackByIndex(index: number): number {
     return index;
   }
+
+  // ✅ تطبيع DAY_OPTIONS لأي شكل (id/value/dayId...) لــ {label,value}
+  private normalizeDayOptions(options: any[]): DayOptionNormalized[] {
+    const list = Array.isArray(options) ? options : [];
+    return list
+      .map((o) => {
+        const label = String(o?.label ?? o?.name ?? o?.text ?? o?.dayName ?? '');
+        const value = o?.value ?? o?.id ?? o?.dayId ?? o?.key ?? o?.code;
+        return { label, value };
+      })
+      .filter((x) => x.label && x.value !== undefined);
+  }
+
+  // ✅ مهم: لا تستخدم !!day عشان لو القيمة 0 (الأحد = 0) مايتحسبش فاضي
+  private isEmptyValue(v: any): boolean {
+    return v === null || v === undefined || v === '';
+  }
+
+  // ✅ Validator عام: لازم صف واحد مكتمل على الأقل
+  private daysArrayValidator(): ValidatorFn {
+  return (control: AbstractControl) => {
+    const array = control as FormArray;
+    if (!array?.controls?.length) return { noValidDay: true };
+
+    const hasOneCompleteRow = array.controls.some((g) => {
+      const day = g.get('dayId')?.value;
+      const time = g.get('startTime')?.value;
+
+      const dayOk = day !== null && day !== undefined && day !== '';
+      const timeOk =
+        time !== null &&
+        time !== undefined &&
+        String(time).trim().length > 0;
+
+      return dayOk && timeOk;
+    });
+
+    return hasOneCompleteRow ? null : { noValidDay: true };
+  };
+}
+
+  // ✅ createDayGroup (موجودة فعلًا داخل الكلاس)
+private createDayGroup(initial?: Partial<CircleScheduleFormValue>): FormGroup {
+  return this.fb.group({
+    dayId: [initial?.dayId ?? null, Validators.required],
+    startTime: [initial?.startTime ?? null, Validators.required]
+  });
+}
+
+  // ✅ شيل الصفوف الفاضية بالكامل قبل الإرسال عشان ما تمنعش الطلب
+  private pruneEmptyDaysRows(): void {
+    for (let i = this.daysArray.length - 1; i >= 0; i--) {
+      const g = this.daysArray.at(i);
+      const day = g.get('dayId')?.value;
+      const time = g.get('startTime')?.value;
+
+      const dayEmpty = this.isEmptyValue(day);
+      const timeEmpty = this.isEmptyValue(time) || (typeof time === 'string' && time.trim().length === 0);
+
+      if (dayEmpty && timeEmpty && this.daysArray.length > 1) {
+        this.daysArray.removeAt(i);
+      }
+    }
+  }
+
+  // ✅ يحول أي قيمة (رقم/سترنج/أوبجكت) لرقم dayId أو null
+  private toDayIdNumber(raw: any): number | null {
+    if (raw === null || raw === undefined || raw === '') return null;
+
+    if (typeof raw === 'number' && Number.isFinite(raw)) return raw;
+
+    if (typeof raw === 'string') {
+      const n = Number(raw);
+      return Number.isFinite(n) ? n : null;
+    }
+
+    if (typeof raw === 'object') {
+      const candidate = raw.value ?? raw.id ?? raw.dayId ?? raw.key ?? raw.code;
+      const n = this.toDayIdNumber(candidate);
+      if (n !== null) return n;
+    }
+
+    const coerced = coerceDayValue(raw);
+    if (coerced === undefined || coerced === null) return null;
+
+    return this.toDayIdNumber(coerced as any);
+  }
+
+  private buildSchedulePayload(): CircleDayRequestDto[] {
+    return this.daysArray.controls
+      .map((dayGroup): CircleDayRequestDto | null => {
+        const rawDay = dayGroup.get('dayId')?.value;
+
+        // ✅ هنا بنضمن رقم حتى لو الأحد = 0
+        const dayIdNum = this.toDayIdNumber(rawDay);
+        if (dayIdNum === null) return null;
+
+        const startTime = (dayGroup.get('startTime')?.value as string | null) ?? '';
+        const trimmed = startTime.trim();
+        if (!trimmed) return null;
+
+        const startTimeValue = timeStringToTimeSpanString(trimmed);
+
+        return {
+          dayId: dayIdNum, // ✅ number مؤكد
+          time: startTimeValue ?? null
+        };
+      })
+      .filter((item): item is CircleDayRequestDto => item !== null);
+  }
+
+  // ===========================
+  // باقي كودك كما هو (بدون تغيير)
+  // ===========================
 
   private initializeFromCourse(course: CircleDto | null | undefined): void {
     if (!course) {
@@ -612,13 +783,6 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
       .filter((student): student is LookUpUserDto => Boolean(student) && typeof student.id === 'number');
   }
 
-  private createDayGroup(initial?: Partial<CircleScheduleFormValue>): FormGroup {
-    return this.fb.group({
-      dayId: [initial?.dayId ?? null, Validators.required],
-      startTime: [initial?.startTime ?? '', Validators.required]
-    });
-  }
-
   private setDays(schedule: CircleScheduleFormValue[]): void {
     const array = this.daysArray;
     while (array.length) {
@@ -648,7 +812,7 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
             const resolvedDay = coerceDayValue(day?.dayId ?? day?.dayName ?? undefined);
             const startTime = formatTimeValue(day?.time);
             return {
-              dayId: resolvedDay ?? null,
+              dayId: (resolvedDay ?? null) as DayValue | null,
               startTime: startTime ? startTime : ''
             };
           })
@@ -666,9 +830,10 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
         circle.dayIds?.[0] ??
         circle.dayNames?.[0] ??
         circle.dayId ??
-        circle.day
+        (circle as any).day
       ) ?? null;
-    const fallbackTime = formatTimeValue(primaryDay?.time ?? circle.startTime ?? circle.time);
+
+    const fallbackTime = formatTimeValue(primaryDay?.time ?? (circle as any).startTime ?? (circle as any).time);
     const trimmedFallbackTime = fallbackTime.trim();
 
     if (fallbackDayId === null && !trimmedFallbackTime) {
@@ -677,7 +842,7 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
 
     return [
       {
-        dayId: fallbackDayId,
+        dayId: (fallbackDayId ?? null) as DayValue | null,
         startTime: trimmedFallbackTime || ''
       }
     ];
@@ -690,31 +855,30 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
 
     return circle.days.find((day): day is CircleDayDto => Boolean(day)) ?? undefined;
   }
+onTimeChanged(index: number, value: string | null): void {
+  const ctrl = this.daysArray.at(index)?.get('startTime');
+  if (!ctrl) return;
 
+  const v = (value ?? '').toString().trim();
 
-  private buildSchedulePayload(): CircleDayRequestDto[] {
-    return this.daysArray.controls
-      .map((dayGroup): CircleDayRequestDto | null => {
-        const rawDay = dayGroup.get('dayId')?.value;
-        const dayValue = coerceDayValue(rawDay ?? undefined);
+  ctrl.setValue(v.length ? v : null, { emitEvent: true });
+  ctrl.markAsDirty();
+  ctrl.markAsTouched();
+  ctrl.updateValueAndValidity({ onlySelf: true, emitEvent: false });
 
-        if (dayValue === undefined) {
-          return null;
-        }
-
-        const startTime = dayGroup.get('startTime')?.value as string | null;
-        const startTimeValue = timeStringToTimeSpanString(startTime ?? undefined);
-
-        return {
-          dayId: dayValue,
-          time: startTimeValue ?? null
-        };
-      })
-      .filter((item): item is CircleDayRequestDto => item !== null);
-  }
-
+  // حدّث حالة الـ FormArray عشان noValidDay تتشال فورًا
+  this.daysArray.updateValueAndValidity({ onlySelf: false, emitEvent: false });
+}
   onSubmit() {
     this.submitted = true;
+console.log('Days raw:', this.daysArray.getRawValue());
+console.log('Days errors:', this.circleForm.get('days')?.errors);
+console.log('Row0 dayId:', this.daysArray.at(0).get('dayId')?.value);
+console.log('Row0 startTime:', this.daysArray.at(0).get('startTime')?.value);
+    // ✅ شيل صفوف فاضية بالكامل قبل التحقق
+    this.pruneEmptyDaysRows();
+    this.circleForm.updateValueAndValidity({ onlySelf: false, emitEvent: false });
+
     if (this.circleForm.invalid) {
       this.circleForm.markAllAsTouched();
       return;
@@ -747,6 +911,7 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
       managers: formValue.managers,
       studentsIds: formValue.studentsIds
     };
+
     this.isSaving = true;
     this.circle.update(model).subscribe({
       next: (res) => {
@@ -754,7 +919,6 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
         if (res.isSuccess) {
           this.toast.success('تم تحديث البيانات بنجاح ');
           this.router.navigate(['/online-course/courses/view']);
-
         } else if (res.errors?.length) {
           res.errors.forEach((e) => this.toast.error(e.message));
         } else {

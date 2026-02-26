@@ -37,7 +37,7 @@
                     formControlName="name"
                     placeholder="ادخل اسم الحلقة"
                   />
-                  <mat-error *ngIf="submitted && circleForm.get('name')?.errors">
+                  <mat-error *ngIf="submitted && circleForm.get('name')?.hasError('required')">
                     اسم الحلقة مطلوب
                   </mat-error>
                 </mat-form-field>
@@ -57,7 +57,7 @@
                 ></ng-select>
                 <div
                   class="text-danger small mt-1"
-                  *ngIf="submitted && circleForm.get('branchId')?.errors"
+                  *ngIf="submitted && circleForm.get('branchId')?.hasError('required')"
                 >
                   الفرع مطلوب
                 </div>
@@ -135,21 +135,24 @@
                     <div class="col-md-6">
                       <label class="form-label form-label-sm">اليوم</label>
                       <ng-select
-                        class="w-100"
-                        formControlName="dayId"
-                        [items]="days"
-                        bindLabel="label"
-                        bindValue="value"
-                        [searchable]="false"
-                        [clearable]="true"
-                        placeholder="اختر اليوم"
-                      ></ng-select>
-                      <div
-                        class="text-danger small mt-1"
-                        *ngIf="submitted && daysArray.at(i).get('dayId')?.errors"
-                      >
-                        اليوم مطلوب
-                      </div>
+  class="w-100"
+  formControlName="dayId"
+  [items]="days"
+  bindLabel="label"
+  bindValue="value"
+  [searchable]="false"
+  [clearable]="true"
+  placeholder="اختر اليوم"
+  (change)="onDayChanged(i, $event)"
+  (clear)="onDayChanged(i, null)"
+></ng-select>
+
+                     <div
+  class="text-danger small mt-1"
+  *ngIf="submitted && daysArray.at(i).get('dayId')?.hasError('required')"
+>
+  اليوم مطلوب
+</div>
                     </div>
 
                     <div class="col-md-6">
@@ -158,14 +161,16 @@
                         class="w-100 course-input"
                       >
                         <mat-label>وقت الحلقة</mat-label>
-                        <input
-                          matInput
-                          type="time"
-                          formControlName="startTime"
-                          placeholder="ادخل الساعة"
-                        />
+                       <input
+  matInput
+  type="time"
+  formControlName="startTime"
+  placeholder="ادخل الساعة"
+  (input)="onTimeChanged(i, $any($event.target).value)"
+  (change)="onTimeChanged(i, $any($event.target).value)"
+/>
                         <mat-error
-                          *ngIf="submitted && daysArray.at(i).get('startTime')?.errors"
+                          *ngIf="submitted && daysArray.at(i).get('startTime')?.hasError('required')"
                         >
                           الوقت مطلوب
                         </mat-error>
@@ -187,6 +192,14 @@
                   <span>إضافة يوم</span>
                 </button>
               </div>
+            </div>
+
+            <!-- ✅ رسالة عامة لو مفيش ولا موعد صحيح -->
+            <div
+              class="text-danger small mt-2"
+              *ngIf="submitted && circleForm.get('days')?.errors?.['noValidDay']"
+            >
+              يجب إدخال موعد واحد صحيح على الأقل
             </div>
           </div>
         </div>
@@ -237,7 +250,7 @@
                 ></ng-select>
                 <div
                   class="text-danger small mt-1"
-                  *ngIf="submitted && circleForm.get('teacherId')?.errors"
+                  *ngIf="submitted && circleForm.get('teacherId')?.hasError('required')"
                 >
                   المعلم مطلوب
                 </div>
