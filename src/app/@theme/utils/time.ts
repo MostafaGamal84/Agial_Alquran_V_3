@@ -26,12 +26,53 @@ export function timeStringToMinutes(time?: string | null): number | undefined {
     return undefined;
   }
 
-  const [hoursPart, minutesPart] = trimmed.split(':');
+  const normalized = trimmed
+    .replace(/[٠-٩]/g, (digit) => String(digit.charCodeAt(0) - 0x0660))
+    .replace(/[۰-۹]/g, (digit) => String(digit.charCodeAt(0) - 0x06f0));
 
-  const hours = Number(hoursPart);
-  const minutes = Number(minutesPart);
+  const meridiemMatch = normalized.match(
+    /^(\d{1,2}):(\d{2})(?::\d{2})?\s*(am|pm|a\.m\.|p\.m\.|ص|م|صباحا|مساء|مساءً)$/i
+  );
+
+  if (meridiemMatch) {
+    const hoursPart = Number(meridiemMatch[1]);
+    const minutesPart = Number(meridiemMatch[2]);
+    const meridiemToken = meridiemMatch[3].toLowerCase().replace(/\./g, '').replace('ً', '');
+
+    if (
+      !Number.isNaN(hoursPart) &&
+      !Number.isNaN(minutesPart) &&
+      hoursPart >= 1 &&
+      hoursPart <= 12 &&
+      minutesPart >= 0 &&
+      minutesPart <= 59
+    ) {
+      const isPm = ['pm', 'م', 'مساء'].includes(meridiemToken);
+      const isAm = ['am', 'ص', 'صباحا'].includes(meridiemToken);
+      if (isPm || isAm) {
+        let normalizedHours = hoursPart % 12;
+        if (isPm) {
+          normalizedHours += 12;
+        }
+
+        return normalizedHours * 60 + minutesPart;
+      }
+    }
+  }
+
+  const segments = normalized.split(':');
+  if (segments.length < 2) {
+    return undefined;
+  }
+
+  const hours = Number(segments[0]);
+  const minutes = Number(segments[1]);
 
   if (Number.isNaN(hours) || Number.isNaN(minutes)) {
+    return undefined;
+  }
+
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
     return undefined;
   }
 
