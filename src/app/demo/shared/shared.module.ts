@@ -51,7 +51,7 @@ import { CardComponent } from 'src/app/@theme/components/card/card.component';
 import { OpenSelectOnTypeDirective } from './directives/open-select-on-type.directive';
 import { AutoTranslateDirective } from './directives/auto-translate.directive';
 import { NormalizeSelectCompareDirective } from './directives/normalize-select-compare.directive';
-
+import { MatSortModule } from '@angular/material/sort';
 const MaterialModules = [
   MatToolbarModule,
   MatSidenavModule,
@@ -86,7 +86,8 @@ const MaterialModules = [
   MatTableModule,
   MatAutocompleteModule,
   MatChipsModule,
-  MatSnackBarModule
+  MatSnackBarModule,
+  MatSortModule
 ];
 
 @NgModule({
@@ -100,6 +101,7 @@ const MaterialModules = [
     NgScrollbarModule,
     NgSelectModule,
     PaginatorModule,
+    MatSortModule,
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,

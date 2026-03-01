@@ -1,15 +1,12 @@
-// angular import
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
-// angular material
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { finalize } from 'rxjs/operators';
 
-// project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
   LookupService,
@@ -29,6 +26,7 @@ import { getUserManagers } from 'src/app/demo/shared/utils/user-managers';
 
 @Component({
   selector: 'app-student-list',
+  standalone: true,
   imports: [CommonModule, SharedModule, RouterModule, MatDialogModule, LoadingOverlayComponent],
   templateUrl: './student-list.component.html',
   styleUrl: './student-list.component.scss'
@@ -40,53 +38,56 @@ export class StudentListComponent implements OnInit, OnDestroy {
   private translate = inject(TranslateService);
   dialog = inject(MatDialog);
 
-  // public props
   displayedColumns: string[] = ['serial', 'fullName', 'email', 'mobile', 'action'];
+
   dataSource = new MatTableDataSource<LookUpUserDto>();
   allLoadedStudents: LookUpUserDto[] = [];
   showMissingAssignmentsOnly = false;
+
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 20 };
   pageIndex = 0;
   pageSize = 20;
+
   showInactive = false;
+
   nationalities: NationalityDto[] = [];
   selectedResidentId: number | null = null;
+
   residencyGroupOptions = RESIDENCY_GROUP_OPTIONS;
   selectedResidencyGroup: ResidencyGroupFilter = 'all';
+
   private pendingStudentIds = new Set<number>();
+
   isLoading = false;
   isLoadingMore = false;
+
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;
 
-
   @ViewChild(MatSort)
   set matSort(sort: MatSort | undefined) {
-    if (!sort) {
-      return;
-    }
+    if (!sort) return;
 
     this.dataSource.sort = sort;
+
+    // accessor
     this.dataSource.sortingDataAccessor = (item, property) => {
       const value = item[property as keyof LookUpUserDto];
-      if (value === null || value === undefined) {
-        return '';
-      }
+      if (value === null || value === undefined) return '';
       return typeof value === 'string' ? value : String(value);
     };
 
+    // Arabic + English sort
     this.dataSource.sortData = (data, matSort) => {
-      if (!matSort.active || matSort.direction === '') {
-        return data;
-      }
+      if (!matSort.active || matSort.direction === '') return data;
 
       const collator = new Intl.Collator(['ar', 'en'], {
         sensitivity: 'base',
-        numeric: true,
+        numeric: true
       });
-      const isAsc = matSort.direction === 'asc';
 
+      const isAsc = matSort.direction === 'asc';
       return [...data].sort((a, b) => {
         const valueA = this.dataSource.sortingDataAccessor(a, matSort.active);
         const valueB = this.dataSource.sortingDataAccessor(b, matSort.active);
@@ -103,22 +104,19 @@ export class StudentListComponent implements OnInit, OnDestroy {
     this.setupIntersectionObserver();
   }
 
-  // table search filter
-  applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.filter.searchTerm = filterValue.trim().toLowerCase();
-    this.pageIndex = 0;
-    this.filter.skipCount = 0;
+  ngOnInit() {
+    this.loadNationalities();
     this.loadStudents();
   }
 
-  toggleInactiveFilter(): void {
-    this.showInactive = !this.showInactive;
-    if (this.showInactive) {
-      this.filter.filter = 'inactive=true';
-    } else {
-      delete this.filter.filter;
-    }
+  ngOnDestroy(): void {
+    this.intersectionObserver?.disconnect();
+  }
+
+  // ✅ Search (server-side like your original)
+  applyFilter(event: Event) {
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.filter.searchTerm = filterValue.trim().toLowerCase();
     this.pageIndex = 0;
     this.filter.skipCount = 0;
     this.loadStudents();
@@ -129,18 +127,8 @@ export class StudentListComponent implements OnInit, OnDestroy {
     this.applyDisplayData();
   }
 
-  ngOnInit() {
-    this.loadNationalities();
-    this.loadStudents();
-  }
-
   getSerialNumber(index: number): number {
     return index + 1;
-  }
-
-
-  ngOnDestroy(): void {
-    this.intersectionObserver?.disconnect();
   }
 
   private loadNationalities(): void {
@@ -157,6 +145,7 @@ export class StudentListComponent implements OnInit, OnDestroy {
     this.filter.residentGroup = this.selectedResidencyGroup;
     this.isLoading = !append;
     this.isLoadingMore = append;
+
     this.lookupService
       .getUsersForSelects(
         this.filter,
@@ -179,8 +168,9 @@ export class StudentListComponent implements OnInit, OnDestroy {
             this.allLoadedStudents = append
               ? [...this.allLoadedStudents, ...res.data.items]
               : res.data.items;
-            this.applyDisplayData();
+
             this.totalCount = res.data.totalCount;
+            this.applyDisplayData();
           } else {
             if (!append) {
               this.allLoadedStudents = [];
@@ -231,9 +221,7 @@ export class StudentListComponent implements OnInit, OnDestroy {
   }
 
   confirmDisable(student: LookUpUserDto): void {
-    if (this.isProcessing(student.id)) {
-      return;
-    }
+    if (this.isProcessing(student.id)) return;
 
     const dialogRef = this.dialog.open(DisableUserConfirmDialogComponent, {
       data: { fullName: student.fullName }
@@ -251,9 +239,7 @@ export class StudentListComponent implements OnInit, OnDestroy {
   }
 
   changeStatus(student: LookUpUserDto, statue: boolean): void {
-    if (this.pendingStudentIds.has(student.id)) {
-      return;
-    }
+    if (this.pendingStudentIds.has(student.id)) return;
 
     this.pendingStudentIds.add(student.id);
 
@@ -286,9 +272,7 @@ export class StudentListComponent implements OnInit, OnDestroy {
   }
 
   private setupIntersectionObserver(): void {
-    if (!this.loadMoreElement) {
-      return;
-    }
+    if (!this.loadMoreElement) return;
 
     this.intersectionObserver?.disconnect();
     this.intersectionObserver = new IntersectionObserver(
@@ -299,17 +283,13 @@ export class StudentListComponent implements OnInit, OnDestroy {
       },
       { root: null, rootMargin: '0px 0px 20% 0px' }
     );
+
     this.intersectionObserver.observe(this.loadMoreElement.nativeElement);
   }
 
   private loadNextPage(): void {
-    if (this.isLoading || this.isLoadingMore) {
-      return;
-    }
-
-    if (!this.hasMoreResults()) {
-      return;
-    }
+    if (this.isLoading || this.isLoadingMore) return;
+    if (!this.hasMoreResults()) return;
 
     this.pageIndex += 1;
     this.filter.skipCount = this.pageIndex * this.pageSize;
@@ -318,12 +298,12 @@ export class StudentListComponent implements OnInit, OnDestroy {
   }
 
   buildWhatsAppLink(phone: string | null | undefined): string | undefined {
-    const digits = String(phone ?? "").replace(/[^\d]/g, "");
+    const digits = String(phone ?? '').replace(/[^\d]/g, '');
     return digits ? `https://wa.me/${digits}` : undefined;
   }
 
   buildMailtoLink(email: string | null | undefined): string | undefined {
-    const value = String(email ?? "").trim();
+    const value = String(email ?? '').trim();
     return value ? `mailto:${value}` : undefined;
   }
 
@@ -332,12 +312,13 @@ export class StudentListComponent implements OnInit, OnDestroy {
   }
 
   private applyDisplayData(): void {
-    const filteredData = this.showMissingAssignmentsOnly
-      ? this.allLoadedStudents.filter((student) => this.hasMissingAssignments(student))
+    const filtered = this.showMissingAssignmentsOnly
+      ? this.allLoadedStudents.filter((s) => this.hasMissingAssignments(s))
       : this.allLoadedStudents;
 
-    this.dataSource.data = [...filteredData];
+    this.dataSource.data = [...filtered];
 
+    // keep current sort applied after data changes (append/filter)
     if (this.dataSource.sort) {
       this.dataSource.data = this.dataSource.sortData(this.dataSource.data, this.dataSource.sort);
     }
@@ -345,11 +326,8 @@ export class StudentListComponent implements OnInit, OnDestroy {
 
   hasMissingAssignments(student: LookUpUserDto): boolean {
     const hasManager = getUserManagers(student).length > 0;
-    const hasTeacher =
-      typeof student.teacherId === 'number' || !!String(student.teacherName ?? '').trim();
-    const hasCircle =
-      typeof student.circleId === 'number' || !!String(student.circleName ?? '').trim();
-
+    const hasTeacher = typeof student.teacherId === 'number' || !!String(student.teacherName ?? '').trim();
+    const hasCircle = typeof student.circleId === 'number' || !!String(student.circleName ?? '').trim();
     return !(hasManager && hasTeacher && hasCircle);
   }
 }
