@@ -58,19 +58,14 @@
                 <div class="state-message" *ngIf="state.isLoading">جاري التحميل...</div>
                 <div class="state-message" *ngIf="!state.isLoading && state.rows.length === 0">لا توجد بيانات محذوفة</div>
 
-                <div class="pagination-bar" *ngIf="!state.isLoading && state.totalCount > 0">
-                  <div>{{ getPageStatus(tab.key) }}</div>
-                  <div class="pagination-controls">
-                    <mat-form-field appearance="outline" class="page-size-select">
-                      <mat-label>حجم الصفحة</mat-label>
-                      <mat-select [value]="state.pageSize" (selectionChange)="onPageSizeChange(tab.key, $event.value)">
-                        <mat-option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</mat-option>
-                      </mat-select>
-                    </mat-form-field>
-
-                    <button mat-stroked-button (click)="prevPage(tab.key)" [disabled]="state.page === 0">السابق</button>
-                    <button mat-stroked-button (click)="nextPage(tab.key)" [disabled]="!canGoToNextPage(tab.key)">التالي</button>
-                  </div>
+                <div class="app-paginator" #loadMoreTrigger *ngIf="!state.error && state.rows.length > 0">
+                  <span class="text-muted" *ngIf="state.isLoadingMore">
+                    {{ 'Loading more...' | translate }}
+                  </span>
+                  <span class="text-muted" *ngIf="!state.isLoadingMore && !hasMoreResults(tab.key)">
+                    {{ 'تم تحميل كل البيانات' | translate }}
+                  </span>
+                  <span class="text-muted invisible" *ngIf="!state.isLoadingMore && hasMoreResults(tab.key)">&nbsp;</span>
                 </div>
               </div>
             </div>
