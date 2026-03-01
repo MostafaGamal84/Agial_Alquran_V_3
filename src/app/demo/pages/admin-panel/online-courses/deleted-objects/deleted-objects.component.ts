@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -20,6 +20,7 @@ interface DeletedTabState {
   totalCount: number;
   rows: Record<string, unknown>[];
   isLoading: boolean;
+  isLoadingMore: boolean;
   error: string | null;
   hasLoaded: boolean;
 }
@@ -50,7 +51,6 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
   private toast = inject(ToastService);
   private translate = inject(TranslateService);
 
-  readonly pageSizeOptions = [10, 20, 50];
   activeTabIndex = 0;
 
   private readonly userColumns: DeletedColumn[] = [
@@ -119,6 +119,14 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
 
   private searchDebounceTimers: Partial<Record<DeletedTabKey, ReturnType<typeof setTimeout>>> = {};
   private pendingRestoreIdsByTab: Partial<Record<DeletedTabKey, Set<number>>> = {};
+  private intersectionObserver?: IntersectionObserver;
+  private loadMoreElement?: ElementRef<HTMLElement>;
+
+  @ViewChild('loadMoreTrigger')
+  set loadMoreTrigger(element: ElementRef<HTMLElement> | undefined) {
+    this.loadMoreElement = element;
+    this.setupIntersectionObserver();
+  }
 
   ngOnInit(): void {
     this.loadActiveTab();
@@ -126,6 +134,7 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     Object.values(this.searchDebounceTimers).forEach((timer) => timer && clearTimeout(timer));
+    this.intersectionObserver?.disconnect();
   }
 
   onTabChanged(event: MatTabChangeEvent): void {
@@ -144,33 +153,6 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
     }
 
     this.searchDebounceTimers[tab] = setTimeout(() => this.loadTab(tab, true), 400);
-  }
-
-  onPageSizeChange(tab: DeletedTabKey, pageSize: number): void {
-    const state = this.stateByTab[tab];
-    state.pageSize = pageSize;
-    state.page = 0;
-    this.loadTab(tab, true);
-  }
-
-  nextPage(tab: DeletedTabKey): void {
-    const state = this.stateByTab[tab];
-    if (!this.canGoToNextPage(tab)) {
-      return;
-    }
-
-    state.page += 1;
-    this.loadTab(tab, true);
-  }
-
-  prevPage(tab: DeletedTabKey): void {
-    const state = this.stateByTab[tab];
-    if (state.page === 0) {
-      return;
-    }
-
-    state.page -= 1;
-    this.loadTab(tab, true);
   }
 
   retry(tab: DeletedTabKey): void {
@@ -208,6 +190,21 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
     return this.pendingRestoreIdsByTab[tab]?.has(id) ?? false;
   }
 
+  hasMoreResults(tab: DeletedTabKey): boolean {
+    const state = this.stateByTab[tab];
+    return state.rows.length < state.totalCount;
+  }
+
+  buildWhatsAppLink(phone: string | null | undefined): string | undefined {
+    const digits = String(phone ?? '').replace(/[^\d]/g, '');
+    return digits ? `https://wa.me/${digits}` : undefined;
+  }
+
+  buildMailtoLink(email: string | null | undefined): string | undefined {
+    const value = String(email ?? '').trim();
+    return value && value !== '—' ? `mailto:${value}` : undefined;
+  }
+
   getRowValue(row: Record<string, unknown>, column: string): string {
     const valueByColumn: Record<string, unknown> = {
       id: row['id'],
@@ -241,22 +238,6 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
     return String(value);
   }
 
-  getPageStatus(tab: DeletedTabKey): string {
-    const state = this.stateByTab[tab];
-    if (state.totalCount === 0) {
-      return 'لا توجد نتائج';
-    }
-
-    const start = state.page * state.pageSize + 1;
-    const end = Math.min((state.page + 1) * state.pageSize, state.totalCount);
-    return `${start} - ${end} من ${state.totalCount}`;
-  }
-
-  canGoToNextPage(tab: DeletedTabKey): boolean {
-    const state = this.stateByTab[tab];
-    return (state.page + 1) * state.pageSize < state.totalCount;
-  }
-
   private loadActiveTab(): void {
     const tab = this.tabs[this.activeTabIndex];
     if (!tab) {
@@ -266,7 +247,43 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
     this.loadTab(tab.key);
   }
 
-  private loadTab(tab: DeletedTabKey, forceReload = false): void {
+  private loadNextPage(tab: DeletedTabKey): void {
+    const state = this.stateByTab[tab];
+
+    if (state.isLoading || state.isLoadingMore || !this.hasMoreResults(tab)) {
+      return;
+    }
+
+    state.page += 1;
+    this.loadTab(tab, true, true);
+  }
+
+  private setupIntersectionObserver(): void {
+    if (!this.loadMoreElement) {
+      return;
+    }
+
+    this.intersectionObserver?.disconnect();
+    this.intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) {
+          return;
+        }
+
+        const tab = this.tabs[this.activeTabIndex];
+        if (!tab) {
+          return;
+        }
+
+        this.loadNextPage(tab.key);
+      },
+      { root: null, rootMargin: '0px 0px 20% 0px' }
+    );
+
+    this.intersectionObserver.observe(this.loadMoreElement.nativeElement);
+  }
+
+  private loadTab(tab: DeletedTabKey, forceReload = false, append = false): void {
     const state = this.stateByTab[tab];
 
     if (!forceReload && state.hasLoaded) {
@@ -279,28 +296,39 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
       searchTerm: state.searchTerm || undefined
     };
 
-    state.isLoading = true;
+    state.isLoading = !append;
+    state.isLoadingMore = append;
     state.error = null;
 
     this.getRequestByTab(tab, params)
-      .pipe(finalize(() => (state.isLoading = false)))
+      .pipe(
+        finalize(() => {
+          state.isLoading = false;
+          state.isLoadingMore = false;
+        })
+      )
       .subscribe({
         next: (res) => {
           if (!res.isSuccess || !res.data) {
-            state.rows = [];
-            state.totalCount = 0;
+            if (!append) {
+              state.rows = [];
+              state.totalCount = 0;
+            }
             state.error = 'تعذر تحميل البيانات';
             state.hasLoaded = true;
             return;
           }
 
-          state.rows = Array.isArray(res.data.items) ? (res.data.items as Record<string, unknown>[]) : [];
+          const nextRows = Array.isArray(res.data.items) ? (res.data.items as Record<string, unknown>[]) : [];
+          state.rows = append ? [...state.rows, ...nextRows] : nextRows;
           state.totalCount = Number(res.data.totalCount ?? 0);
           state.hasLoaded = true;
         },
         error: () => {
-          state.rows = [];
-          state.totalCount = 0;
+          if (!append) {
+            state.rows = [];
+            state.totalCount = 0;
+          }
           state.error = 'تعذر تحميل البيانات';
           state.hasLoaded = true;
         }
@@ -367,10 +395,11 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
     return {
       searchTerm: '',
       page: 0,
-      pageSize: 10,
+      pageSize: 20,
       totalCount: 0,
       rows: [],
       isLoading: false,
+      isLoadingMore: false,
       error: null,
       hasLoaded: false
     };
