@@ -122,6 +122,9 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;
 
+  private touchStartX: number | null = null;
+  private readonly swipeThreshold = 50;
+
   @ViewChild('loadMoreTrigger')
   set loadMoreTrigger(element: ElementRef<HTMLElement> | undefined) {
     this.loadMoreElement = element;
@@ -140,6 +143,38 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
   onTabChanged(event: MatTabChangeEvent): void {
     this.activeTabIndex = event.index;
     this.loadActiveTab();
+  }
+
+
+  onTouchStart(event: TouchEvent): void {
+    if (event.touches.length !== 1) {
+      this.touchStartX = null;
+      return;
+    }
+
+    this.touchStartX = event.touches[0].clientX;
+  }
+
+  onTouchEnd(event: TouchEvent): void {
+    if (this.touchStartX === null || event.changedTouches.length !== 1) {
+      this.touchStartX = null;
+      return;
+    }
+
+    const endX = event.changedTouches[0].clientX;
+    const deltaX = endX - this.touchStartX;
+    this.touchStartX = null;
+
+    if (Math.abs(deltaX) < this.swipeThreshold) {
+      return;
+    }
+
+    if (deltaX < 0) {
+      this.navigateToTab(this.activeTabIndex + 1);
+      return;
+    }
+
+    this.navigateToTab(this.activeTabIndex - 1);
   }
 
   onSearchChange(tab: DeletedTabKey, value: string): void {
@@ -228,6 +263,16 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
     return String(value);
   }
 
+
+
+  private navigateToTab(nextIndex: number): void {
+    if (nextIndex < 0 || nextIndex >= this.tabs.length || nextIndex === this.activeTabIndex) {
+      return;
+    }
+
+    this.activeTabIndex = nextIndex;
+    this.loadActiveTab();
+  }
   private loadActiveTab(): void {
     const tab = this.tabs[this.activeTabIndex];
     if (!tab) {

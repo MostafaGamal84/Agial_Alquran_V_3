@@ -1,7 +1,12 @@
 <div class="row deleted-objects-page" dir="rtl">
   <div class="col-12">
     <app-card cardTitle="العناصر المحذوفة">
-      <mat-tab-group [selectedIndex]="activeTabIndex" (selectedTabChange)="onTabChanged($event)">
+      <mat-tab-group
+        [selectedIndex]="activeTabIndex"
+        (selectedTabChange)="onTabChanged($event)"
+        (touchstart)="onTouchStart($event)"
+        (touchend)="onTouchEnd($event)"
+      >
         <mat-tab *ngFor="let tab of tabs" [label]="tab.label">
           <div class="tab-content" *ngIf="stateByTab[tab.key] as state">
             <div class="table-containe table-reponsive">
