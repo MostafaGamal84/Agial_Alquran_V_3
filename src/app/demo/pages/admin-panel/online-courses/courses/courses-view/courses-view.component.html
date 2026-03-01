@@ -15,9 +15,36 @@
       <div class="p-b-15">
         <div class="table-containe table-reponsive">
           <div class="table-search p-t-15 p-x-15">
-            <mat-form-field appearance="outline" class="w-100">
-              <input matInput (keyup)="applyFilter($event)" [placeholder]="'Search...' | translate" #input />
-            </mat-form-field>
+            <div class="row g-2">
+              <div class="col-12 col-md-4">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>تصفية حسب نوع الفرع</mat-label>
+                  <mat-select
+                    [value]="selectedGenderFilter"
+                    (selectionChange)="onGenderFilterChange($event.value)"
+                  >
+                    <mat-option *ngFor="let option of genderOptions" [value]="option.value">
+                      {{ option.label }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+              <div class="col-12 col-md-4">
+                <mat-form-field appearance="outline" class="w-100">
+                  <mat-label>بحث باسم المعلم</mat-label>
+                  <input
+                    matInput
+                    [value]="teacherNameFilter"
+                    (input)="onTeacherNameFilterChange($event)"
+                  />
+                </mat-form-field>
+              </div>
+              <div class="col-12 col-md-4">
+                <mat-form-field appearance="outline" class="w-100">
+                  <input matInput (keyup)="applyFilter($event)" [placeholder]="'Search...' | translate" #input />
+                </mat-form-field>
+              </div>
+            </div>
           </div>
           <div class="table-responsive">
             <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">

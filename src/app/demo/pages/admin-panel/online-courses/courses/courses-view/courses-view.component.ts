@@ -62,6 +62,13 @@ interface CourseParticipantsDialogOptions {
   showStudents?: boolean;
 }
 
+type BranchGenderFilter = 'all' | 'رجال' | 'نساء';
+
+interface CourseTableFilters {
+  gender: BranchGenderFilter;
+  teacherName: string;
+}
+
 @Component({
   selector: 'app-courses-view',
   imports: [SharedModule, RouterModule, LoadingOverlayComponent],
@@ -86,6 +93,13 @@ export class CoursesViewComponent implements OnInit, AfterViewInit, OnDestroy {
     'action'
   ];
   dataSource = new MatTableDataSource<CircleViewModel>();
+  readonly genderOptions: { value: BranchGenderFilter; label: string }[] = [
+    { value: 'all', label: 'الكل' },
+    { value: 'رجال', label: 'رجال' },
+    { value: 'نساء', label: 'نساء' }
+  ];
+  selectedGenderFilter: BranchGenderFilter = 'all';
+  teacherNameFilter = '';
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
   pageIndex = 0;
@@ -104,6 +118,8 @@ export class CoursesViewComponent implements OnInit, AfterViewInit, OnDestroy {
 
   isTeacherOrStudent = [UserTypesEnum.Teacher, UserTypesEnum.Student].includes(this.auth.getRole()!);
   ngOnInit() {
+    this.setupFilterPredicate();
+    this.applyTableFilters();
     this.loadCircles();
   }
 
@@ -180,6 +196,111 @@ export class CoursesViewComponent implements OnInit, AfterViewInit, OnDestroy {
     this.pageIndex = 0;
     this.filter.skipCount = 0;
     this.loadCircles();
+  }
+
+  onGenderFilterChange(value: BranchGenderFilter): void {
+    this.selectedGenderFilter = value;
+    this.applyTableFilters();
+  }
+
+  onTeacherNameFilterChange(event: Event): void {
+    this.teacherNameFilter = (event.target as HTMLInputElement).value;
+    this.applyTableFilters();
+  }
+
+  private setupFilterPredicate(): void {
+    this.dataSource.filterPredicate = (course: CircleViewModel, rawFilter: string): boolean => {
+      const parsedFilter = this.parseFilterValue(rawFilter);
+
+      if (parsedFilter.gender !== 'all') {
+        const currentBranchGender = this.resolveBranchGender(course.branchId);
+        if (currentBranchGender !== parsedFilter.gender) {
+          return false;
+        }
+      }
+
+      if (parsedFilter.teacherName) {
+        const teacherName = (course.teacher?.fullName ?? course.teacherName ?? '').trim();
+        if (!this.includesText(teacherName, parsedFilter.teacherName)) {
+          return false;
+        }
+      }
+
+      return true;
+    };
+  }
+
+  private applyTableFilters(): void {
+    const filterValue: CourseTableFilters = {
+      gender: this.selectedGenderFilter,
+      teacherName: this.teacherNameFilter.trim()
+    };
+    this.dataSource.filter = JSON.stringify(filterValue);
+  }
+
+  private parseFilterValue(rawFilter: string): CourseTableFilters {
+    try {
+      const parsed = JSON.parse(rawFilter) as Partial<CourseTableFilters>;
+      return {
+        gender: parsed.gender === 'رجال' || parsed.gender === 'نساء' ? parsed.gender : 'all',
+        teacherName: typeof parsed.teacherName === 'string' ? parsed.teacherName.trim() : ''
+      };
+    } catch {
+      return {
+        gender: 'all',
+        teacherName: ''
+      };
+    }
+  }
+
+  private resolveBranchGender(branchId: number | null | undefined): 'رجال' | 'نساء' | '' {
+    if (branchId === BranchesEnum.Mens) {
+      return 'رجال';
+    }
+
+    if (branchId === BranchesEnum.Women) {
+      return 'نساء';
+    }
+
+    return '';
+  }
+
+  private includesText(sourceValue: string, queryValue: string): boolean {
+    const normalizedSource = this.normalizeSearchText(sourceValue);
+    const normalizedQuery = this.normalizeSearchText(queryValue);
+
+    if (!normalizedQuery) {
+      return true;
+    }
+
+    if (normalizedSource.includes(normalizedQuery)) {
+      return true;
+    }
+
+    const sourceTokens = Array.from(normalizedSource);
+    const queryTokens = Array.from(normalizedQuery);
+    if (!sourceTokens.length || queryTokens.length > sourceTokens.length) {
+      return false;
+    }
+
+    const collator = new Intl.Collator('ar', { sensitivity: 'base', usage: 'search' });
+
+    for (let start = 0; start <= sourceTokens.length - queryTokens.length; start += 1) {
+      const candidate = sourceTokens.slice(start, start + queryTokens.length).join('');
+      if (collator.compare(candidate, normalizedQuery) === 0) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private normalizeSearchText(value: string): string {
+    return (value ?? '')
+      .normalize('NFKC')
+      .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g, '')
+      .toLocaleLowerCase('ar')
+      .trim();
   }
 
   private setupIntersectionObserver(): void {
