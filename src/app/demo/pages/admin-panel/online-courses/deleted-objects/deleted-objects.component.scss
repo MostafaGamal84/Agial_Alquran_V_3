@@ -7,7 +7,7 @@
 }
 
 .table-wrapper {
-  overflow-x: auto;
+  padding: 0 15px 10px;
 }
 
 .table-wrapper th,
@@ -15,11 +15,18 @@
   text-align: right;
 }
 
-.restore-btn {
+.restore-action {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  min-width: 110px;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
 }
 
 .state-message {
