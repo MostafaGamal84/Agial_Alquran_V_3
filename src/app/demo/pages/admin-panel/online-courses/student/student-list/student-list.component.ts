@@ -6,6 +6,9 @@ import { RouterModule } from '@angular/router';
 // angular material
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { finalize } from 'rxjs/operators';
 
@@ -25,11 +28,18 @@ import { DisableUserConfirmDialogComponent } from './student-list.disable-user-c
 import { RESIDENCY_GROUP_OPTIONS, ResidencyGroupFilter } from 'src/app/@theme/types/residency-group';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 import { TranslateService } from '@ngx-translate/core';
-import { getUserManagers } from 'src/app/demo/shared/utils/user-managers';
 
 @Component({
   selector: 'app-student-list',
-  imports: [CommonModule, SharedModule, RouterModule, MatDialogModule, LoadingOverlayComponent],
+  imports: [
+    CommonModule,
+    SharedModule,
+    RouterModule,
+    MatDialogModule,
+    MatPaginatorModule,
+    MatCheckboxModule,
+    LoadingOverlayComponent
+  ],
   templateUrl: './student-list.component.html',
   styleUrl: './student-list.component.scss'
 })
@@ -47,6 +57,7 @@ export class StudentListComponent implements OnInit, OnDestroy {
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 20 };
   pageIndex = 0;
   pageSize = 20;
+  showIncompleteOnly = false;
   showInactive = false;
   nationalities: NationalityDto[] = [];
   selectedResidentId: number | null = null;
@@ -57,6 +68,11 @@ export class StudentListComponent implements OnInit, OnDestroy {
   isLoadingMore = false;
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;
+  private readonly nameCollator = new Intl.Collator(['ar', 'en'], {
+    sensitivity: 'base',
+    numeric: true,
+    ignorePunctuation: true
+  });
 
 
   @ViewChild(MatSort)
@@ -66,13 +82,17 @@ export class StudentListComponent implements OnInit, OnDestroy {
     }
 
     this.dataSource.sort = sort;
-    this.dataSource.sortingDataAccessor = (item, property) => {
-      const value = item[property as keyof LookUpUserDto];
-      if (value === null || value === undefined) {
-        return '';
-      }
-      return typeof value === 'string' ? value.toLowerCase() : String(value);
-    };
+    this.configureTableHelpers();
+  }
+
+  @ViewChild(MatPaginator)
+  set matPaginator(paginator: MatPaginator | undefined) {
+    if (!paginator) {
+      return;
+    }
+
+    this.dataSource.paginator = paginator;
+    this.configureTableHelpers();
   }
 
   @ViewChild('loadMoreTrigger')
@@ -90,6 +110,11 @@ export class StudentListComponent implements OnInit, OnDestroy {
     this.loadStudents();
   }
 
+  toggleIncompleteOnly(checked: boolean): void {
+    this.showIncompleteOnly = checked;
+    this.applyFrontendFilters();
+  }
+
   toggleInactiveFilter(): void {
     this.showInactive = !this.showInactive;
     if (this.showInactive) {
@@ -103,12 +128,14 @@ export class StudentListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.configureTableHelpers();
     this.loadNationalities();
     this.loadStudents();
   }
 
   getSerialNumber(index: number): number {
-    return index + 1;
+    const pageOffset = (this.dataSource.paginator?.pageIndex ?? 0) * (this.dataSource.paginator?.pageSize ?? this.pageSize);
+    return pageOffset + index + 1;
   }
 
 
@@ -153,11 +180,13 @@ export class StudentListComponent implements OnInit, OnDestroy {
               ? [...this.dataSource.data, ...res.data.items]
               : res.data.items;
             this.totalCount = res.data.totalCount;
+            this.applyFrontendFilters();
           } else {
             if (!append) {
               this.dataSource.data = [];
             }
             this.totalCount = 0;
+            this.applyFrontendFilters();
           }
         },
         error: () => {
@@ -165,6 +194,7 @@ export class StudentListComponent implements OnInit, OnDestroy {
             this.dataSource.data = [];
           }
           this.totalCount = 0;
+          this.applyFrontendFilters();
         }
       });
   }
@@ -301,12 +331,65 @@ export class StudentListComponent implements OnInit, OnDestroy {
   }
 
   hasMissingAssignments(student: LookUpUserDto): boolean {
-    const hasManager = getUserManagers(student).length > 0;
-    const hasTeacher =
-      typeof student.teacherId === 'number' || !!String(student.teacherName ?? '').trim();
-    const hasCircle =
-      typeof student.circleId === 'number' || !!String(student.circleName ?? '').trim();
+    const supervisorId = (student as LookUpUserDto & { supervisorId?: number | null }).supervisorId;
+    const hasTeacher = !!student.teacherId;
+    const hasSupervisor = !!(supervisorId ?? student.managerId);
 
-    return !(hasManager && hasTeacher && hasCircle);
+    return !hasTeacher || !hasSupervisor;
+  }
+
+  private configureTableHelpers(): void {
+    this.dataSource.sortingDataAccessor = (item, property) => {
+      const value = item[property as keyof LookUpUserDto];
+      if (value === null || value === undefined) {
+        return '';
+      }
+
+      return typeof value === 'string' ? value.trim() : String(value);
+    };
+
+    this.dataSource.sortData = (data, sort) => {
+      if (!sort.active || sort.direction === '') {
+        return data;
+      }
+
+      const isAsc = sort.direction === 'asc';
+      return [...data].sort((a, b) => {
+        const aValue = this.dataSource.sortingDataAccessor(a, sort.active);
+        const bValue = this.dataSource.sortingDataAccessor(b, sort.active);
+
+        if (sort.active === 'fullName') {
+          const compared = this.nameCollator.compare(String(aValue), String(bValue));
+          return isAsc ? compared : -compared;
+        }
+
+        const compared = String(aValue).localeCompare(String(bValue), undefined, {
+          sensitivity: 'base',
+          numeric: true
+        });
+        return isAsc ? compared : -compared;
+      });
+    };
+
+    this.dataSource.filterPredicate = (student, rawFilter) => {
+      if (!rawFilter) {
+        return true;
+      }
+
+      const tableFilter = JSON.parse(rawFilter) as { showIncompleteOnly: boolean };
+      if (!tableFilter.showIncompleteOnly) {
+        return true;
+      }
+
+      return this.hasMissingAssignments(student);
+    };
+  }
+
+  private applyFrontendFilters(): void {
+    this.dataSource.filter = JSON.stringify({ showIncompleteOnly: this.showIncompleteOnly });
+
+    if (this.dataSource.paginator) {
+      this.dataSource.paginator.firstPage();
+    }
   }
 }
