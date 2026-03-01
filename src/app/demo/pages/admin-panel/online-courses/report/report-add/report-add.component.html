@@ -246,6 +246,9 @@
             [clearable]="false"
             placeholder="اختر التقييم العام"
           ></ng-select>
+          <div class="err" *ngIf="isInvalid('generalRate')">
+            {{ errorText('generalRate') }}
+          </div>
         </div>
 
         <div class="field">
@@ -264,7 +267,6 @@
           <ng-select
             formControlName="isVisual"
             [items]="[
-              { label: 'غير محدد', value: null },
               { label: 'نعم', value: true },
               { label: 'لا', value: false }
             ]"
@@ -274,16 +276,17 @@
             [clearable]="false"
             placeholder="اختر الحالة"
           ></ng-select>
+          <div class="err" *ngIf="isInvalid('isVisual')">
+            {{ errorText('isVisual') }}
+          </div>
         </div>
 
         <div class="field span-2">
           <label class="lbl">مقرر الحصة القادمة</label>
           <input class="inp" formControlName="nextCircleOrder" />
-        </div>
-
-        <div class="field span-2">
-          <label class="lbl">ملاحظات أخرى</label>
-          <textarea class="inp ta" formControlName="other"></textarea>
+          <div class="err" *ngIf="isInvalid('nextCircleOrder')">
+            {{ errorText('nextCircleOrder') }}
+          </div>
         </div>
 
       </ng-container>

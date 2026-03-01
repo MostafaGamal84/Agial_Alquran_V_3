@@ -589,8 +589,6 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     if (model.nextCircleOrder) lines.push(`مقرر الحصة القادمة: ${model.nextCircleOrder}`);
     if (model.theWordsQuranStranger) lines.push(`غريب القرآن: ${model.theWordsQuranStranger}`);
     if (model.intonation) lines.push(`التجويد: ${model.intonation}`);
-    if (model.other) lines.push(`ملاحظات: ${model.other}`);
-
     return lines.join('\n');
   }
 

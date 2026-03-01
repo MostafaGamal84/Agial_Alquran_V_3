@@ -18,7 +18,6 @@ export interface CircleReportAddDto {
   generalRate?: string;
   theWordsQuranStranger?: string;
   intonation?: string;
-  other?: string;
   creationTime?: Date | string | null;
   circleId?: number;
   studentId?: number;
