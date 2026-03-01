@@ -195,6 +195,16 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
     return state.rows.length < state.totalCount;
   }
 
+  buildWhatsAppLink(phone: string | null | undefined): string | undefined {
+    const digits = String(phone ?? '').replace(/[^\d]/g, '');
+    return digits ? `https://wa.me/${digits}` : undefined;
+  }
+
+  buildMailtoLink(email: string | null | undefined): string | undefined {
+    const value = String(email ?? '').trim();
+    return value && value !== '—' ? `mailto:${value}` : undefined;
+  }
+
   getRowValue(row: Record<string, unknown>, column: string): string {
     const valueByColumn: Record<string, unknown> = {
       id: row['id'],
