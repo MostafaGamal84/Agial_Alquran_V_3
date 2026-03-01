@@ -41,6 +41,8 @@ export class MembershipListComponent implements OnInit, AfterViewInit, OnDestroy
 
   displayedColumns: string[] = ['name', 'mobile', 'date', 'status', 'plan', 'action'];
   dataSource = new MatTableDataSource<ViewStudentSubscribeReDto>();
+  allLoadedSubscriptions: ViewStudentSubscribeReDto[] = [];
+  showZeroOrNegativeMinutesOnly = false;
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
   pageIndex = 0;
@@ -116,24 +118,32 @@ export class MembershipListComponent implements OnInit, AfterViewInit, OnDestroy
       .subscribe({
         next: (res) => {
           if (res.isSuccess && res.data?.items) {
-            this.dataSource.data = append
-              ? [...this.dataSource.data, ...res.data.items]
+            this.allLoadedSubscriptions = append
+              ? [...this.allLoadedSubscriptions, ...res.data.items]
               : res.data.items;
             this.totalCount = res.data.totalCount;
+            this.applyDisplayData();
           } else {
             if (!append) {
-              this.dataSource.data = [];
+              this.allLoadedSubscriptions = [];
+              this.applyDisplayData();
             }
             this.totalCount = 0;
           }
         },
         error: () => {
           if (!append) {
-            this.dataSource.data = [];
+            this.allLoadedSubscriptions = [];
+            this.applyDisplayData();
           }
           this.totalCount = 0;
         }
       });
+  }
+
+  onZeroOrNegativeMinutesOnlyChange(checked: boolean): void {
+    this.showZeroOrNegativeMinutesOnly = checked;
+    this.applyDisplayData();
   }
 
   // table search filter
@@ -192,7 +202,23 @@ export class MembershipListComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   hasMoreResults(): boolean {
-    return this.dataSource.data.length < this.totalCount;
+    return this.allLoadedSubscriptions.length < this.totalCount;
+  }
+
+  private applyDisplayData(): void {
+    const filtered = this.showZeroOrNegativeMinutesOnly
+      ? this.allLoadedSubscriptions.filter((student) => this.hasZeroOrNegativeRemainingMinutes(student))
+      : this.allLoadedSubscriptions;
+
+    this.dataSource.data = [...filtered];
+  }
+
+  hasZeroOrNegativeRemainingMinutes(student: ViewStudentSubscribeReDto): boolean {
+    const remainingMinutes = Number(student.remainingMinutes);
+    if (Number.isNaN(remainingMinutes)) {
+      return false;
+    }
+    return remainingMinutes <= 0;
   }
 
   openPaymentDetails(paymentId?: number) {
