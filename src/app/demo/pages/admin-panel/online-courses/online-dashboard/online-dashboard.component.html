@@ -57,7 +57,7 @@
     }
   }
 
-  @if (!isTeacher && !overviewLoading && financialMetricCards.length) {
+  @if (isAdmin && !overviewLoading && financialMetricCards.length) {
     <div class="col-12">
       <h5 class="section-title">{{ 'المعاملات المالية' | translate }}</h5>
     </div>
@@ -97,7 +97,7 @@
     </div>
   </div>
 
-  <div class="col-12" *ngIf="!isTeacher && financialChartHasData">
+  <div class="col-12" *ngIf="isAdmin && financialChartHasData">
     <app-statistics-chart
       [height]="260"
       [chartTitle]="'تحليل المعاملات المالية' | translate"
@@ -107,7 +107,7 @@
       [showRangeSelector]="false"
     />
   </div>
-  <div class="col-12" *ngIf="!isTeacher && !financialChartHasData && financialMetricCards.length && overviewLoaded">
+  <div class="col-12" *ngIf="isAdmin && !financialChartHasData && financialMetricCards.length && overviewLoaded">
     <app-card [showHeader]="false" [padding]="24">
       <div class="text-muted">{{ 'لا توجد بيانات مالية متاحة لهذه المدة.' | translate }}</div>
     </app-card>
@@ -178,7 +178,7 @@
     </app-card>
   </div>
 
-  <div class="col-12" *ngIf="!isTeacher && transactionsView.length">
+  <div class="col-12" *ngIf="isAdmin && transactionsView.length">
     <app-card [cardTitle]="'المعاملات الأخيرة' | translate" padding="0">
       <div class="table-responsive transactions-table">
         <table class="table table-hover m-b-0">
@@ -207,7 +207,7 @@
     </app-card>
   </div>
 
-  <div class="col-12" *ngIf="!isTeacher && overviewLoaded && !transactionsView.length">
+  <div class="col-12" *ngIf="isAdmin && overviewLoaded && !transactionsView.length">
     <app-card [showHeader]="false" [padding]="20">
       <div class="text-muted">{{ 'لا توجد معاملات حديثة لهذه المدة.' | translate }}</div>
     </app-card>
