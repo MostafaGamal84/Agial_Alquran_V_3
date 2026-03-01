@@ -53,6 +53,14 @@
               </div>
             </div>
           </div>
+          <div class="p-x-15 p-b-10">
+            <mat-checkbox
+              [checked]="showMissingAssignmentsOnly"
+              (change)="onMissingAssignmentsOnlyChange($event.checked)"
+            >
+              {{ 'عرض الطلاب غير المكتملين فقط' | translate }}
+            </mat-checkbox>
+          </div>
           <div class="table-responsive" >
             <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
               <ng-container matColumnDef="serial">

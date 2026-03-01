@@ -43,6 +43,8 @@ export class StudentListComponent implements OnInit, OnDestroy {
   // public props
   displayedColumns: string[] = ['serial', 'fullName', 'email', 'mobile', 'action'];
   dataSource = new MatTableDataSource<LookUpUserDto>();
+  allLoadedStudents: LookUpUserDto[] = [];
+  showMissingAssignmentsOnly = false;
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 20 };
   pageIndex = 0;
@@ -71,8 +73,28 @@ export class StudentListComponent implements OnInit, OnDestroy {
       if (value === null || value === undefined) {
         return '';
       }
-      return typeof value === 'string' ? value.toLowerCase() : String(value);
+      return typeof value === 'string' ? value : String(value);
     };
+
+    this.dataSource.sortData = (data, matSort) => {
+      if (!matSort.active || matSort.direction === '') {
+        return data;
+      }
+
+      const collator = new Intl.Collator(['ar', 'en'], {
+        sensitivity: 'base',
+        numeric: true,
+      });
+      const isAsc = matSort.direction === 'asc';
+
+      return [...data].sort((a, b) => {
+        const valueA = this.dataSource.sortingDataAccessor(a, matSort.active);
+        const valueB = this.dataSource.sortingDataAccessor(b, matSort.active);
+        return (isAsc ? 1 : -1) * collator.compare(String(valueA), String(valueB));
+      });
+    };
+
+    this.applyDisplayData();
   }
 
   @ViewChild('loadMoreTrigger')
@@ -100,6 +122,11 @@ export class StudentListComponent implements OnInit, OnDestroy {
     this.pageIndex = 0;
     this.filter.skipCount = 0;
     this.loadStudents();
+  }
+
+  onMissingAssignmentsOnlyChange(checked: boolean): void {
+    this.showMissingAssignmentsOnly = checked;
+    this.applyDisplayData();
   }
 
   ngOnInit() {
@@ -149,20 +176,23 @@ export class StudentListComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res) => {
           if (res.isSuccess && res.data?.items) {
-            this.dataSource.data = append
-              ? [...this.dataSource.data, ...res.data.items]
+            this.allLoadedStudents = append
+              ? [...this.allLoadedStudents, ...res.data.items]
               : res.data.items;
+            this.applyDisplayData();
             this.totalCount = res.data.totalCount;
           } else {
             if (!append) {
-              this.dataSource.data = [];
+              this.allLoadedStudents = [];
+              this.applyDisplayData();
             }
             this.totalCount = 0;
           }
         },
         error: () => {
           if (!append) {
-            this.dataSource.data = [];
+            this.allLoadedStudents = [];
+            this.applyDisplayData();
           }
           this.totalCount = 0;
         }
@@ -237,7 +267,8 @@ export class StudentListComponent implements OnInit, OnDestroy {
               student.inactive = false;
               this.toast.success(this.translate.instant('User restored successfully'));
             } else {
-              this.dataSource.data = this.dataSource.data.filter((s) => s.id !== student.id);
+              this.allLoadedStudents = this.allLoadedStudents.filter((s) => s.id !== student.id);
+              this.applyDisplayData();
               this.totalCount = Math.max(this.totalCount - 1, 0);
               this.toast.success(this.translate.instant('User disabled successfully'));
             }
@@ -297,7 +328,19 @@ export class StudentListComponent implements OnInit, OnDestroy {
   }
 
   hasMoreResults(): boolean {
-    return this.dataSource.data.length < this.totalCount;
+    return this.allLoadedStudents.length < this.totalCount;
+  }
+
+  private applyDisplayData(): void {
+    const filteredData = this.showMissingAssignmentsOnly
+      ? this.allLoadedStudents.filter((student) => this.hasMissingAssignments(student))
+      : this.allLoadedStudents;
+
+    this.dataSource.data = [...filteredData];
+
+    if (this.dataSource.sort) {
+      this.dataSource.data = this.dataSource.sortData(this.dataSource.data, this.dataSource.sort);
+    }
   }
 
   hasMissingAssignments(student: LookUpUserDto): boolean {
