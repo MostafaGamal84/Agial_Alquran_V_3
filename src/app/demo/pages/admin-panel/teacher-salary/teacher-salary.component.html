@@ -119,7 +119,7 @@
       }
     </div>
 
-    @if (generationResult) {
+    <!-- @if (generationResult) {
       <mat-card class="generation-card">
         <div class="generation-content">
           <div class="generation-title">{{ 'Last Generation Summary' | translate }}</div>
@@ -130,7 +130,7 @@
           </div>
         </div>
       </mat-card>
-    }
+    } -->
 
     <mat-card class="filters-card">
       <div class="filters-grid">
@@ -184,7 +184,7 @@
             }
           </mat-form-field>
 
-          <button
+          <!-- <button
             mat-stroked-button
             type="button"
             class="refresh-button"
@@ -193,7 +193,7 @@
           >
             <mat-icon>refresh</mat-icon>
             {{ 'Refresh' | translate }}
-          </button>
+          </button> -->
         } @else {
           <div class="teacher-context">
             <mat-icon>person</mat-icon>
@@ -201,7 +201,7 @@
           </div>
         }
 
-        <button
+        <!-- <button
           mat-stroked-button
           color="primary"
           type="button"
@@ -211,7 +211,7 @@
         >
           <mat-icon>refresh</mat-icon>
           {{ 'Reload' | translate }}
-        </button>
+        </button> -->
       </div>
     </mat-card>
 
@@ -378,18 +378,18 @@
         <div>
             <h3>{{ 'Monthly Summary' | translate }}</h3>
             <p class="summary-subtitle">
-              {{ 'Monthly Summary Subtitle' | translate }}
-              <strong>{{ formatSummaryMonth() }}</strong>.
+              <!-- {{ 'Monthly Summary Subtitle' | translate }} -->
+              <!-- <strong>{{ formatSummaryMonth() }}</strong>. -->
             </p>
           </div>
-          <button
+          <!-- <button
             mat-icon-button
             type="button"
             (click)="loadMonthlySummary()"
             [disabled]="summaryLoading"
           >
           <mat-icon>refresh</mat-icon>
-        </button>
+        </button> -->
       </div>
       @if (summaryLoading) {
         <div class="summary-loading">
