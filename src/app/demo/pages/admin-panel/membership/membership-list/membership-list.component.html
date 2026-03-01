@@ -40,6 +40,15 @@
                 </mat-form-field>
               </div>
             </div>
+
+            <div class="p-x-15 p-b-10">
+              <mat-checkbox
+                [checked]="showZeroOrNegativeMinutesOnly"
+                (change)="onZeroOrNegativeMinutesOnlyChange($event.checked)"
+              >
+                {{ 'عرض الطلاب بدقائق متبقية صفر أو أقل فقط' | translate }}
+              </mat-checkbox>
+            </div>
           </div>
           <div class="table-responsive">
             <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
@@ -52,7 +61,7 @@
                       <img src="assets/images/user/avatar-1.png" alt="user-image" class="wid-40 border-50" />
                     </div>
                     <div class="flex-grow-1 m-l-15">
-                      <div class="f-w-600">{{ element.studentName || ('لا يوجد' | translate) }}</div>
+                      <div class="f-w-600" [class.zero-minutes-name]="hasZeroOrNegativeRemainingMinutes(element)">{{ element.studentName || ('لا يوجد' | translate) }}</div>
                       <!-- <div class="mat-caption text-muted">
                         {{ 'Residency' | translate }}:
                         {{ element.resident || ('لا يوجد' | translate) }}
