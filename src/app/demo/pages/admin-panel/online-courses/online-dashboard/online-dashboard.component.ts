@@ -76,6 +76,7 @@ export class OnlineDashboardComponent implements OnInit {
   overviewRoleLabel: string | null = null;
   overviewRangeDescription: string | null = null;
   isTeacher = false;
+  isAdmin = false;
 
   summaryCards: DashboardSummaryCard[] = [];
   roleMetricCards: DashboardSummaryCard[] = [];
@@ -149,6 +150,7 @@ export class OnlineDashboardComponent implements OnInit {
     this.overviewRoleLabel = null;
     this.overviewRangeDescription = null;
     this.isTeacher = false;
+    this.isAdmin = false;
   }
 
   private applyOverviewData(data?: DashboardOverviewDto | null): void {
@@ -158,6 +160,7 @@ export class OnlineDashboardComponent implements OnInit {
     }
 
     this.isTeacher = this.isTeacherRole(data.role);
+    this.isAdmin = this.isAdminRole(data.role);
     this.overviewRoleLabel = this.formatRole(data.role);
     this.overviewRangeDescription = this.buildRangeDescription(data.rangeStart, data.rangeEnd, data.rangeLabel);
 
@@ -813,6 +816,15 @@ private toArabicMonthLabel(input: string): string {
 
     const normalized = role.trim().replace(/\s+|_/g, '').toLowerCase();
     return normalized === 'teacher';
+  }
+
+  private isAdminRole(role?: string | null): boolean {
+    if (typeof role !== 'string') {
+      return false;
+    }
+
+    const normalized = role.trim().replace(/\s+|_/g, '').toLowerCase();
+    return normalized === 'admin';
   }
 
   loadUpcomingCircles(take = 4): void {
