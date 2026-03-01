@@ -147,7 +147,10 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
 
 
   onTouchStart(event: TouchEvent): void {
-    if (event.touches.length !== 1) {
+    const target = event.target as HTMLElement | null;
+    const isFromTabHeader = !!target?.closest('.mat-mdc-tab-header, .mat-tab-header');
+
+    if (!isFromTabHeader || event.touches.length !== 1) {
       this.touchStartX = null;
       return;
     }
