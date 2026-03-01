@@ -193,7 +193,6 @@ export class ReportAddComponent implements OnInit, OnDestroy {
       farthestPast: [''],
       theWordsQuranStranger: [''],
       intonation: [''],
-      other: [''],
 
       creationTime: ['']
     });
@@ -487,8 +486,7 @@ export class ReportAddComponent implements OnInit, OnDestroy {
       'distantPast',
       'farthestPast',
       'theWordsQuranStranger',
-      'intonation',
-      'other'
+      'intonation'
     ];
   }
 
@@ -522,6 +520,14 @@ export class ReportAddComponent implements OnInit, OnDestroy {
       for (const k of this.evaluationFields()) {
         this.reportForm.get(k)?.enable({ emitEvent: false });
       }
+
+      this.reportForm.get('generalRate')?.setValidators([Validators.required]);
+      this.reportForm.get('isVisual')?.setValidators([Validators.required]);
+      this.reportForm.get('nextCircleOrder')?.setValidators([Validators.required]);
+
+      this.reportForm.get('generalRate')?.updateValueAndValidity({ emitEvent: false });
+      this.reportForm.get('isVisual')?.updateValueAndValidity({ emitEvent: false });
+      this.reportForm.get('nextCircleOrder')?.updateValueAndValidity({ emitEvent: false });
       return;
     }
 
@@ -638,10 +644,6 @@ export class ReportAddComponent implements OnInit, OnDestroy {
     if (model.intonation) {
       lines.push(`التجويد: ${model.intonation}`);
     }
-    if (model.other) {
-      lines.push(`ملاحظات: ${model.other}`);
-    }
-
     return lines.join('\n');
   }
 
@@ -668,7 +670,10 @@ export class ReportAddComponent implements OnInit, OnDestroy {
       circleId: 'الحلقة',
       studentId: 'الطالب',
       attendStatueId: 'حالة الحضور',
-      minutes: 'عدد الدقائق'
+      minutes: 'عدد الدقائق',
+      generalRate: 'التقييم العام',
+      isVisual: 'الحصة مرئية؟',
+      nextCircleOrder: 'مقرر الحصة القادمة'
     };
 
     return Object.entries(labels)
