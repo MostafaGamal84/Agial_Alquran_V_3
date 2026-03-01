@@ -14,3 +14,46 @@
   color: var(--warning-600, #d97706);
   font-weight: 600;
 }
+.table-options {
+  display: flex;
+  align-items: center;
+
+  @media (max-width: 575px) {
+    display: block;
+    .mdc-button {
+      margin-top: 10px;
+    }
+  }
+}
+
+/* لون اسم الطالب الناقص */
+::ng-deep .missing-assignments .mat-column-fullName {
+  color: var(--warning-600, #d97706);
+  font-weight: 600;
+}
+
+/* ✅ إصلاح ظهور أسهم الـ Sort (Angular Material MDC + Non-MDC) */
+:host ::ng-deep .mat-sort-header-arrow,
+:host ::ng-deep .mat-mdc-sort-header-arrow {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: inline-flex !important;
+}
+
+/* لو الهيدر غامق والسهم مش باين */
+:host ::ng-deep .mat-sort-header-arrow,
+:host ::ng-deep .mat-mdc-sort-header-arrow {
+  color: #fff !important;
+}
+
+/* أحيانًا الـ svg نفسه بيكون باهت */
+:host ::ng-deep .mat-sort-header-arrow svg,
+:host ::ng-deep .mat-mdc-sort-header-arrow svg {
+  fill: #fff !important;
+}
+
+/* تحسين محاذاة عنوان العمود + السهم */
+:host ::ng-deep .mat-sort-header-container,
+:host ::ng-deep .mat-mdc-sort-header-container {
+  align-items: center;
+}
