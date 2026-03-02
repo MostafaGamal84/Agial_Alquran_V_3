@@ -30,7 +30,7 @@ import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { DAY_OPTIONS, DayValue, coerceDayValue } from 'src/app/@theme/types/DaysEnum';
 import { formatTimeValue, timeStringToTimeSpanString } from 'src/app/@theme/utils/time';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, catchError, debounceTime, of, switchMap, takeUntil, tap } from 'rxjs';
 import { ProfileDto, UserService } from 'src/app/@theme/services/user.service';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 
@@ -78,8 +78,15 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
 
   isManager = false;
   private currentManagerId: number | null = null;
-  private lastLoadedManagerId: number | null = null;
   private managerFallback: LookUpUserDto | null = null;
+  private readonly managerSelection$ = new Subject<{
+    managerIds: number[];
+    preserveSelection: boolean;
+    preferredTeacherId?: number | null;
+    selectedStudents?: number[];
+    fallbackTeacher?: LookUpUserDto | null;
+    fallbackStudents?: LookUpUserDto[];
+  }>();
 
   // ✅ تطبيع DAY_OPTIONS عشان ng-select (bindValue="value") يشتغل 100%
   days: DayOptionNormalized[] = [];
@@ -91,6 +98,8 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
 
   submitted = false;
   isSaving = false;
+  teachersLoading = false;
+  selectedManagers: number[] = [];
 
   ngOnInit(): void {
 
@@ -137,6 +146,8 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
       this.applyManagerSelection(managersControl, this.currentManagerId);
     }
 
+    this.setupManagersTeacherStream();
+
     if (this.isManager) {
       this.resolveManagerFromProfile();
     }
@@ -144,8 +155,7 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
     managersControl
       ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe((managerIds: number[] | null) => {
-        const managerId = this.resolvePrimaryId(managerIds);
-        this.loadTeachers(managerId);
+        this.onManagerSelectionChange(managerIds ?? []);
       });
 
     teacherControl
@@ -177,10 +187,7 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
         }
       });
 
-    const initialManagerId = this.resolvePrimaryId(managersControl?.value as number[] | null);
-    if (initialManagerId !== null && this.lastLoadedManagerId !== initialManagerId) {
-      this.loadTeachers(initialManagerId);
-    }
+    this.onManagerSelectionChange((managersControl?.value as number[] | null) ?? [], true);
 
     if (course) {
       this.initializeFromCourse(course);
@@ -435,14 +442,9 @@ private createDayGroup(initial?: Partial<CircleScheduleFormValue>): FormGroup {
     const schedule = this.extractSchedule(course);
     this.setDays(schedule);
 
-    const primaryManagerId = this.resolvePrimaryId(effectiveManagerIds);
     const teacherId = typeof course.teacherId === 'number' ? course.teacherId : null;
 
-    this.loadTeachers(primaryManagerId, teacherId, studentIds, fallbackTeacher, courseStudents);
-
-    if (primaryManagerId === null && teacherId !== null) {
-      this.loadStudents(teacherId, studentIds, courseStudents);
-    }
+    this.onManagerSelectionChange(effectiveManagerIds, true, teacherId, studentIds, fallbackTeacher, courseStudents);
   }
 
   private requiresSupplementalData(course: CircleDto | null | undefined): boolean {
@@ -464,58 +466,102 @@ private createDayGroup(initial?: Partial<CircleScheduleFormValue>): FormGroup {
     return !hasDayValue || !hasTimeValue;
   }
 
-  private loadTeachers(
-    managerId: number | null,
-    selectedTeacherId: number | null = null,
+  private setupManagersTeacherStream(): void {
+    this.managerSelection$
+      .pipe(
+        debounceTime(200),
+        tap(({ managerIds, preserveSelection }) => {
+          this.selectedManagers = managerIds;
+          if (!preserveSelection) {
+            this.circleForm.patchValue({ teacherId: null }, { emitEvent: false });
+          }
+
+          this.students = [];
+          this.circleForm.get('studentsIds')?.reset([], { emitEvent: false });
+          this.circleForm.get('studentsIds')?.disable({ emitEvent: false });
+
+          if (managerIds.length === 0) {
+            this.teachersLoading = false;
+            this.teachers = [];
+            this.circleForm.patchValue({ teacherId: null }, { emitEvent: false });
+            this.circleForm.get('teacherId')?.disable({ emitEvent: false });
+          } else {
+            this.teachersLoading = true;
+            this.circleForm.get('teacherId')?.disable({ emitEvent: false });
+          }
+        }),
+        switchMap((request) => {
+          if (!request.managerIds.length) {
+            return of({ teachers: [] as LookUpUserDto[], request });
+          }
+
+          return this.lookup
+            .getUsersForSelects(this.fullListFilter, Number(UserTypesEnum.Teacher), 0, 0, this.getSelectedBranchId(), undefined, false, request.managerIds)
+            .pipe(
+              catchError(() => of(null)),
+              tap(() => (this.teachersLoading = false)),
+              switchMap((res) =>
+                of({
+                  teachers: res?.isSuccess ? res.data.items ?? [] : [],
+                  request
+                })
+              )
+            );
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(({ teachers, request }) => {
+        const fallbackTeacherList = request.fallbackTeacher && typeof request.fallbackTeacher.id === 'number' ? [request.fallbackTeacher] : [];
+        this.teachers = this.mergeUnique(teachers, fallbackTeacherList);
+
+        const teacherControl = this.circleForm.get('teacherId');
+        const preferredTeacherId = typeof request.preferredTeacherId === 'number' ? request.preferredTeacherId : (teacherControl?.value as number | null);
+        const teacherStillAvailable = !!preferredTeacherId && this.teachers.some((teacher) => teacher.id === preferredTeacherId);
+        const resolvedTeacherId = teacherStillAvailable ? preferredTeacherId : null;
+
+        teacherControl?.setValue(resolvedTeacherId, { emitEvent: false });
+        if (!resolvedTeacherId && teacherControl?.validator) {
+          teacherControl.markAsTouched();
+          teacherControl.markAsDirty();
+          teacherControl.updateValueAndValidity({ emitEvent: false });
+        }
+
+        if (this.selectedManagers.length > 0) {
+          teacherControl?.enable({ emitEvent: false });
+        }
+
+        this.loadStudents(resolvedTeacherId, request.selectedStudents ?? [], request.fallbackStudents ?? []);
+      });
+  }
+
+  private normalizeIds(ids: number[] | null | undefined): number[] {
+    if (!Array.isArray(ids)) {
+      return [];
+    }
+
+    return ids
+      .map((id) => Number(id))
+      .filter((id, index, arr) => Number.isFinite(id) && id > 0 && arr.indexOf(id) === index);
+  }
+
+  private onManagerSelectionChange(
+    managerIds: number[],
+    initial = false,
+    preferredTeacherId?: number | null,
     selectedStudents: number[] = [],
     fallbackTeacher?: LookUpUserDto | null,
     fallbackStudents: LookUpUserDto[] = []
   ): void {
-    const teacherControl = this.circleForm.get('teacherId');
-    const studentsControl = this.circleForm.get('studentsIds');
-
-    this.lastLoadedManagerId = managerId ?? null;
-
-    const normalizedSelectedStudents = Array.isArray(selectedStudents) ? selectedStudents : [];
-    const fallbackStudentLookups = Array.isArray(fallbackStudents) ? fallbackStudents : [];
-    const fallbackTeacherList =
-      fallbackTeacher && typeof fallbackTeacher.id === 'number' ? [fallbackTeacher] : [];
-
-    this.teachers = this.mergeUnique([], fallbackTeacherList);
-    teacherControl?.reset(selectedTeacherId ?? null, { emitEvent: false });
-    teacherControl?.disable({ emitEvent: false });
-
-    this.students = this.mergeUnique([], fallbackStudentLookups);
-    const initialStudentSelection = normalizedSelectedStudents.filter((id) =>
-      this.students.some((student) => student.id === id)
-    );
-    studentsControl?.reset(initialStudentSelection, { emitEvent: false });
-    studentsControl?.disable({ emitEvent: false });
-
-    if (!managerId) {
-      return;
-    }
-
-    this.lookup
-      .getUsersForSelects(this.fullListFilter, Number(UserTypesEnum.Teacher), 0, 0, this.getSelectedBranchId())
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (res) => {
-          if (res.isSuccess) {
-            const fetchedTeachers = res.data.items ?? [];
-            this.teachers = this.mergeUnique(fetchedTeachers, fallbackTeacherList);
-            teacherControl?.enable({ emitEvent: false });
-
-            if (selectedTeacherId !== null) {
-              teacherControl?.setValue(selectedTeacherId, { emitEvent: false });
-              this.loadStudents(selectedTeacherId, normalizedSelectedStudents, fallbackStudentLookups);
-            }
-          }
-        },
-        error: () => {
-          teacherControl?.disable({ emitEvent: false });
-        }
-      });
+    const normalizedManagerIds = this.normalizeIds(managerIds);
+    this.circleForm.patchValue({ managers: normalizedManagerIds }, { emitEvent: false });
+    this.managerSelection$.next({
+      managerIds: normalizedManagerIds,
+      preserveSelection: initial,
+      preferredTeacherId: preferredTeacherId ?? null,
+      selectedStudents,
+      fallbackTeacher,
+      fallbackStudents
+    });
   }
 
   private loadStudents(
@@ -711,18 +757,16 @@ private createDayGroup(initial?: Partial<CircleScheduleFormValue>): FormGroup {
           typeof currentTeacherId === 'number'
             ? this.teachers.find((teacher) => teacher.id === currentTeacherId) ?? null
             : null;
-        const fallbackStudents = this.students.filter((student) =>
-          normalizedStudents.includes(student.id)
+        const fallbackStudents = this.students.filter((student) => normalizedStudents.includes(student.id));
+
+        this.onManagerSelectionChange(
+          this.currentManagerId !== null ? [this.currentManagerId] : [],
+          true,
+          typeof currentTeacherId === 'number' ? currentTeacherId : null,
+          normalizedStudents,
+          fallbackTeacher,
+          fallbackStudents
         );
-        if (this.lastLoadedManagerId !== this.currentManagerId) {
-          this.loadTeachers(
-            this.currentManagerId,
-            typeof currentTeacherId === 'number' ? currentTeacherId : null,
-            normalizedStudents,
-            fallbackTeacher,
-            fallbackStudents
-          );
-        }
       });
   }
 
