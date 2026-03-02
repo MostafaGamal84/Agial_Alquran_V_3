@@ -207,30 +207,22 @@ export function formatTimeValue(
     return '';
   }
 
-  const numericValue = Number(trimmed);
+  const normalizedDigits = trimmed
+    .replace(/[٠-٩]/g, (digit) => String(digit.charCodeAt(0) - 0x0660))
+    .replace(/[۰-۹]/g, (digit) => String(digit.charCodeAt(0) - 0x06F0));
+
+  const numericValue = Number(normalizedDigits);
   if (!Number.isNaN(numericValue)) {
     return minutesToTimeString(numericValue);
   }
 
-  const segments = trimmed.split(':');
-  if (segments.length >= 2) {
-    const hours = Number(segments[0]);
-    const minutes = Number(segments[1]);
-    if (!Number.isNaN(hours) && !Number.isNaN(minutes)) {
-      const paddedHours = hours.toString().padStart(2, '0');
-      const paddedMinutes = minutes.toString().padStart(2, '0');
-      return `${paddedHours}:${paddedMinutes}`;
-    }
-  }
-
-  const meridiemMatch = trimmed.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(am|pm|a\.m\.|p\.m\.|ص|م|صباحا|مساء|مساءً)$/i);
+  const meridiemMatch = normalizedDigits.match(
+    /^(\d{1,2}):(\d{2})(?::\d{2})?\s*(am|pm|a\.m\.|p\.m\.|ص|م|صباحا|مساء|مساءً)$/i
+  );
   if (meridiemMatch) {
     const hoursPart = Number(meridiemMatch[1]);
     const minutesPart = Number(meridiemMatch[2]);
-    const meridiemToken = meridiemMatch[3]
-      .toLowerCase()
-      .replace(/\./g, '')
-      .replace('ً', '');
+    const meridiemToken = meridiemMatch[3].toLowerCase().replace(/\./g, '').replace('ً', '');
 
     if (
       !Number.isNaN(hoursPart) &&
@@ -256,5 +248,16 @@ export function formatTimeValue(
     }
   }
 
-  return trimmed;
+  const segments = normalizedDigits.split(':');
+  if (segments.length >= 2) {
+    const hours = Number(segments[0]);
+    const minutes = Number(segments[1]);
+    if (!Number.isNaN(hours) && !Number.isNaN(minutes)) {
+      const paddedHours = hours.toString().padStart(2, '0');
+      const paddedMinutes = minutes.toString().padStart(2, '0');
+      return `${paddedHours}:${paddedMinutes}`;
+    }
+  }
+
+  return normalizedDigits;
 }
