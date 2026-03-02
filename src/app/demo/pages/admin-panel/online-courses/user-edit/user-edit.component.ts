@@ -69,7 +69,7 @@ export class UserEditComponent implements OnInit, OnDestroy {
   circles: CircleDto[] = [];
   teachersLoading = false;
   selectedManagers: number[] = [];
-  private readonly studentManagerSelection$ = new Subject<number[]>();
+  private readonly studentManagerSelection$ = new Subject<{ managerIds: number[]; preserveSelection: boolean }>();
   private readonly destroy$ = new Subject<void>();
   isManager = false;
   isTeacher = false;
@@ -476,10 +476,12 @@ export class UserEditComponent implements OnInit, OnDestroy {
     this.studentManagerSelection$
       .pipe(
         debounceTime(200),
-        tap((managerIds) => {
+        tap(({ managerIds, preserveSelection }) => {
           this.selectedManagers = managerIds;
           this.circles = [];
-          this.basicInfoForm.patchValue({ circleId: null }, { emitEvent: false });
+          if (!preserveSelection) {
+            this.basicInfoForm.patchValue({ circleId: null }, { emitEvent: false });
+          }
 
           if (managerIds.length === 0) {
             this.teachersLoading = false;
@@ -493,7 +495,7 @@ export class UserEditComponent implements OnInit, OnDestroy {
             this.basicInfoForm.get('circleId')?.disable({ emitEvent: false });
           }
         }),
-        switchMap((managerIds) => {
+        switchMap(({ managerIds }) => {
           if (managerIds.length === 0) {
             return of<LookUpUserDto[]>([]);
           }
@@ -540,7 +542,10 @@ export class UserEditComponent implements OnInit, OnDestroy {
       this.basicInfoForm.patchValue({ teacherId: null, circleId: null }, { emitEvent: false });
     }
 
-    this.studentManagerSelection$.next(managerIds);
+    this.studentManagerSelection$.next({
+      managerIds,
+      preserveSelection: initial
+    });
   }
 
   onTeacherChange(selection: unknown) {
@@ -551,8 +556,10 @@ export class UserEditComponent implements OnInit, OnDestroy {
       this.circleService.getAll(circleFilter, undefined, teacherId).subscribe((res) => {
         if (res.isSuccess) {
           this.circles = res.data.items;
+          const currentCircleId = this.toNumberOrNull(this.basicInfoForm.get('circleId')?.value);
+          const hasCurrentCircle = !!currentCircleId && this.circles.some((circle) => circle.id === currentCircleId);
           const first = this.circles[0];
-          this.basicInfoForm.patchValue({ circleId: first ? first.id : null });
+          this.basicInfoForm.patchValue({ circleId: hasCurrentCircle ? currentCircleId : first ? first.id : null });
         }
       });
     } else {
