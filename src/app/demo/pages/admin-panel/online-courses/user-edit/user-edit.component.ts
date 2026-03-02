@@ -683,13 +683,21 @@ export class UserEditComponent implements OnInit {
           ? formValue.managerId
           : undefined;
       const managerIdsForUpdate =
-        this.isTeacher || this.isStudent
+        this.isTeacher
+          ? this.normalizeIds([
+              ...managerIdsFromForm,
+              ...(fallbackManagerId ? [fallbackManagerId] : [])
+            ])
+          : undefined;
+      const managerIdsForStudent =
+        this.isStudent
           ? this.normalizeIds([
               ...managerIdsFromForm,
               ...(fallbackManagerId ? [fallbackManagerId] : [])
             ])
           : undefined;
       const managerIdForUpdate = managerIdsForUpdate?.[0] ?? fallbackManagerId;
+      const studentManagerIdForUpdate = managerIdsForStudent?.[0] ?? fallbackManagerId;
       const model: UpdateUserDto = {
         id: this.userId,
         fullName: formValue.fullName,
@@ -700,8 +708,8 @@ export class UserEditComponent implements OnInit {
         residentId: formValue.residentId,
         governorateId: formValue.governorateId,
         branchId: formValue.branchId,
-        managerId: this.isTeacher || this.isStudent ? managerIdForUpdate : undefined,
-        managerIds: this.isTeacher || this.isStudent ? managerIdsForUpdate : undefined,
+        managerId: this.isTeacher ? managerIdForUpdate : this.isStudent ? studentManagerIdForUpdate : undefined,
+        managerIds: this.isTeacher ? managerIdsForUpdate : undefined,
         teacherIds: managerTeacherIds,
         teacherId: this.isStudent ? formValue.teacherId : undefined,
 
