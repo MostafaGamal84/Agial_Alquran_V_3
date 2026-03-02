@@ -1,5 +1,5 @@
 // angular import
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
@@ -7,7 +7,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FieldErrorComponent } from 'src/app/shared/validation/field-error/field-error.component';
 import { ValidationService } from 'src/app/shared/validation/validation.service';
 import { LiveErrorStateMatcher } from 'src/app/shared/validation/live-error-state-matcher';
-import { finalize, forkJoin, merge, startWith } from 'rxjs';
+import { Subject, catchError, debounceTime, finalize, forkJoin, merge, of, startWith, switchMap, takeUntil, tap } from 'rxjs';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -34,7 +34,7 @@ import { isEgyptianNationality } from 'src/app/@theme/utils/nationality.utils';
   styleUrl: './user-edit.component.scss',
   providers: [provideNgxMask()]
 })
-export class UserEditComponent implements OnInit {
+export class UserEditComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private userService = inject(UserService);
   private toast = inject(ToastService);
@@ -67,6 +67,10 @@ export class UserEditComponent implements OnInit {
   managers: LookUpUserDto[] = [];
   students: LookUpUserDto[] = [];
   circles: CircleDto[] = [];
+  teachersLoading = false;
+  selectedManagers: number[] = [];
+  private readonly studentManagerSelection$ = new Subject<number[]>();
+  private readonly destroy$ = new Subject<void>();
   isManager = false;
   isTeacher = false;
   isStudent = false;
@@ -149,6 +153,13 @@ export class UserEditComponent implements OnInit {
       circleId: [null]
     });
 
+    if (this.isStudent) {
+      this.basicInfoForm.get('teacherId')?.setValidators([Validators.required]);
+      this.basicInfoForm.get('teacherId')?.updateValueAndValidity({ emitEvent: false });
+    }
+
+    this.setupStudentManagersTeacherStream();
+
     this.basicInfoForm
       .get('residentId')
       ?.valueChanges.subscribe((residentId) => this.applyGovernorateRequirement(residentId));
@@ -176,6 +187,11 @@ export class UserEditComponent implements OnInit {
     } else {
       this.toast.error('No user id provided');
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private loadUserDetails(id: number) {
@@ -334,7 +350,7 @@ export class UserEditComponent implements OnInit {
         const managerIds = this.normalizeIds(this.basicInfoForm.get('managerIds')?.value ?? []);
         const mId = managerIds[0] ?? this.basicInfoForm.get('managerId')?.value;
         if (mId) {
-          this.onManagerChange(mId, true);
+          this.onStudentManagerSelectionChange(managerIds, true);
           const tId = this.basicInfoForm.get('teacherId')?.value;
           if (tId) {
             this.onTeacherChange(tId);
@@ -456,43 +472,75 @@ export class UserEditComponent implements OnInit {
 
   }
 
-  onManagerChange(managerId: number, initial = false) {
-    const fullListFilter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 1000 };
-    const effectiveManagerId = this.getEffectiveManagerId(managerId);
+  private setupStudentManagersTeacherStream(): void {
+    this.studentManagerSelection$
+      .pipe(
+        debounceTime(200),
+        tap((managerIds) => {
+          this.selectedManagers = managerIds;
+          this.circles = [];
+          this.basicInfoForm.patchValue({ circleId: null }, { emitEvent: false });
 
-    if (effectiveManagerId) {
-      this.lookupService
-        .getUsersForSelects(
-          fullListFilter,
-          Number(UserTypesEnum.Teacher),
-          effectiveManagerId,
-          0,
-          this.currentUser?.branchId || 0
-        )
-        .subscribe((res) => {
-          if (res.isSuccess) {
-            this.teachers = res.data.items;
-            const current = this.basicInfoForm.get('teacherId')?.value;
-            if (!initial) {
-              this.basicInfoForm.patchValue({ teacherId: null });
-            } else if (current && !this.teachers.some((t) => t.id === current)) {
-              this.basicInfoForm.patchValue({ teacherId: null });
-            }
+          if (managerIds.length === 0) {
+            this.teachersLoading = false;
+            this.teachers = [];
+            this.basicInfoForm.patchValue({ teacherId: null }, { emitEvent: false });
+            this.basicInfoForm.get('teacherId')?.disable({ emitEvent: false });
+            this.basicInfoForm.get('circleId')?.disable({ emitEvent: false });
+          } else {
+            this.teachersLoading = true;
+            this.basicInfoForm.get('teacherId')?.disable({ emitEvent: false });
+            this.basicInfoForm.get('circleId')?.disable({ emitEvent: false });
           }
-        });
-      this.basicInfoForm.get('teacherId')?.enable();
-      if (!initial) {
-        this.basicInfoForm.patchValue({ circleId: null });
-      }
-      this.circles = [];
-      this.basicInfoForm.get('circleId')?.disable();
-    } else {
-      this.teachers = [];
-      this.basicInfoForm.patchValue({ teacherId: null, circleId: null });
-      this.basicInfoForm.get('teacherId')?.disable();
-      this.circles = [];
-      this.basicInfoForm.get('circleId')?.disable();
+        }),
+        switchMap((managerIds) => {
+          if (managerIds.length === 0) {
+            return of<LookUpUserDto[]>([]);
+          }
+
+          const fullListFilter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 1000 };
+          return this.lookupService
+            .getUsersForSelects(
+              fullListFilter,
+              Number(UserTypesEnum.Teacher),
+              0,
+              0,
+              this.currentUser?.branchId || 0,
+              undefined,
+              false,
+              managerIds
+            )
+            .pipe(
+              catchError(() => of(null)),
+              tap(() => (this.teachersLoading = false)),
+              switchMap((res) => of(res?.isSuccess ? res.data.items : []))
+            );
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((teachers) => {
+        this.teachers = teachers;
+
+        const teacherControl = this.basicInfoForm.get('teacherId');
+        const currentTeacherId = teacherControl?.value;
+        const teacherStillAvailable = currentTeacherId && this.teachers.some((teacher) => teacher.id === currentTeacherId);
+
+        if (!teacherStillAvailable) {
+          this.basicInfoForm.patchValue({ teacherId: null }, { emitEvent: false });
+        }
+
+        if (this.selectedManagers.length > 0) {
+          teacherControl?.enable({ emitEvent: false });
+        }
+      });
+  }
+
+  onStudentManagerSelectionChange(managerIds: number[], initial = false): void {
+    if (!initial) {
+      this.basicInfoForm.patchValue({ teacherId: null, circleId: null }, { emitEvent: false });
     }
+
+    this.studentManagerSelection$.next(managerIds);
   }
 
   onTeacherChange(selection: unknown) {
@@ -590,16 +638,7 @@ export class UserEditComponent implements OnInit {
       { emitEvent: false }
     );
 
-    this.circles = [];
-
-    if (primaryManagerId) {
-      this.onManagerChange(primaryManagerId);
-      return;
-    }
-
-    this.teachers = [];
-    this.basicInfoForm.get('teacherId')?.disable();
-    this.basicInfoForm.get('circleId')?.disable();
+    this.onStudentManagerSelectionChange(managerIds);
   }
 
   private loadCircles() {

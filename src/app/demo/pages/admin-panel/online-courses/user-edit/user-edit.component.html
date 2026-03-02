@@ -355,10 +355,16 @@
                       bindLabel="fullName"
                       bindValue="id"
                       [searchable]="true"
-                      [disabled]="!(basicInfoForm.get('managerIds')?.value?.length)"
+                      [loading]="teachersLoading"
+                      [disabled]="teachersLoading || !(basicInfoForm.get('managerIds')?.value?.length)"
+                      [notFoundText]="selectedManagers.length ? 'لا يوجد معلمون مشتركون' : 'اختر مشرفاً واحداً على الأقل'"
                       placeholder="اختر المعلم"
                       (change)="onTeacherChange($event?.value ?? $event)"
                     ></ng-select>
+                    <app-field-error [control]="basicInfoForm.get('teacherId')" [label]="'المعلم'"></app-field-error>
+                    <small class="text-muted" *ngIf="!teachersLoading && selectedManagers.length && teachers.length === 0">
+                      لا يوجد معلمون مشتركون بين المشرفين المحددين.
+                    </small>
                   </div>
 
                   <div class="col-md-6">
