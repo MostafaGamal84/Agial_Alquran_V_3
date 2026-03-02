@@ -1,6 +1,8 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FieldErrorComponent } from 'src/app/shared/validation/field-error/field-error.component';
+import { ValidationService } from 'src/app/shared/validation/validation.service';
 import { Subject, merge, startWith, takeUntil } from 'rxjs';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
@@ -23,7 +25,7 @@ import { QuranSurahEnum } from 'src/app/@theme/types/QuranSurahEnum';
 @Component({
   selector: 'app-report-add',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NgSelectModule, RouterModule, MatDialogModule, MatButtonModule],
+  imports: [CommonModule, ReactiveFormsModule, NgSelectModule, RouterModule, MatDialogModule, MatButtonModule, FieldErrorComponent],
   templateUrl: './report-add.component.html',
   styleUrl: './report-add.component.scss'
 })
@@ -35,6 +37,7 @@ export class ReportAddComponent implements OnInit, OnDestroy {
   private auth = inject(AuthenticationService);
   private toast = inject(ToastService);
   private translate = inject(TranslateService);
+  readonly validationService = inject(ValidationService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private dialog = inject(MatDialog);
@@ -701,7 +704,7 @@ export class ReportAddComponent implements OnInit, OnDestroy {
   // =========================
   onSubmit(): void {
     if (this.reportForm.invalid) {
-      this.reportForm.markAllAsTouched();
+      this.validationService.markAllAsTouched(this.reportForm);
       return;
     }
 

@@ -17,12 +17,15 @@ import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 import { isEgyptianNationality } from 'src/app/@theme/utils/nationality.utils';
 import { TranslateService } from '@ngx-translate/core';
+import { FieldErrorComponent } from 'src/app/shared/validation/field-error/field-error.component';
+import { ValidationService } from 'src/app/shared/validation/validation.service';
+import { LiveErrorStateMatcher } from 'src/app/shared/validation/live-error-state-matcher';
 import { finalize, merge, startWith } from 'rxjs';
 
 
 @Component({
   selector: 'app-student-add',
-  imports: [CommonModule, SharedModule, NgxMaskDirective],
+  imports: [CommonModule, SharedModule, NgxMaskDirective, FieldErrorComponent],
   templateUrl: './student-add.component.html',
   styleUrl: './student-add.component.scss',
   providers: [provideNgxMask()]
@@ -34,10 +37,12 @@ export class StudentAddComponent implements OnInit {
   private lookupService = inject(LookupService);
   private countryService = inject(CountryService);
   private translate = inject(TranslateService);
+  readonly validationService = inject(ValidationService);
   private router = inject(Router);
 
   basicInfoForm!: FormGroup;
   submitted = false;
+  liveErrorStateMatcher = new LiveErrorStateMatcher();
   isSubmitting = false;
   missingRequiredFields: string[] = [];
 
@@ -225,7 +230,7 @@ export class StudentAddComponent implements OnInit {
           error: () => this.toast.error(this.translate.instant('خطا في الاضافة'))
         });
     } else {
-      this.basicInfoForm.markAllAsTouched();
+      this.validationService.markAllAsTouched(this.basicInfoForm);
     }
   }
 }
