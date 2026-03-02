@@ -55,6 +55,9 @@
                   [clearable]="true"
                   placeholder="اختر الفرع"
                 ></ng-select>
+                <small class="text-muted" *ngIf="!teachersLoading && selectedManagers.length && teachers.length === 0">
+                  لا يوجد معلمين مشتركين بين المشرفين المختارين
+                </small>
                 <div
                   class="text-danger small mt-1"
                   *ngIf="submitted && circleForm.get('branchId')?.hasError('required')"
@@ -232,6 +235,7 @@
                   [searchable]="true"
                   [clearable]="true"
                   [disabled]="isManager"
+                  [closeOnSelect]="false"
                   placeholder="اختر المشرفين"
                 ></ng-select>
               </div>
@@ -245,9 +249,15 @@
                   bindLabel="fullName"
                   bindValue="id"
                   [searchable]="true"
+                  [loading]="teachersLoading"
+                  [disabled]="teachersLoading || !(circleForm.get('managers')?.value?.length)"
                   [clearable]="true"
+                  [notFoundText]="selectedManagers.length ? 'لا يوجد معلمون مشتركون' : 'اختر مشرفاً واحداً على الأقل'"
                   placeholder="اختر المعلم"
                 ></ng-select>
+                <small class="text-muted" *ngIf="!teachersLoading && selectedManagers.length && teachers.length === 0">
+                  لا يوجد معلمين مشتركين بين المشرفين المختارين
+                </small>
                 <div
                   class="text-danger small mt-1"
                   *ngIf="submitted && circleForm.get('teacherId')?.hasError('required')"
