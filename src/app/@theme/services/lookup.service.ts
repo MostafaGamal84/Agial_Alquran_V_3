@@ -163,7 +163,8 @@ export class LookupService {
     teacherId = 0,
     branchId = 0,
     residentId?: number | null,
-    includeRelations = false
+    includeRelations = false,
+    managerIds: number[] = []
   ): Observable<ApiResponse<PagedResultDto<LookUpUserDto>>> {
     const role = this.auth.getRole();
     const effectiveBranchId = role === UserTypesEnum.Admin ? 0 : branchId;
@@ -171,9 +172,14 @@ export class LookupService {
     const shouldPaginate = !lookupMode;
     let params = new HttpParams()
       .set('UserTypeId', userTypeId.toString())
-      .set('managerId', managerId.toString())
       .set('teacherId', teacherId.toString())
       .set('branchId', effectiveBranchId.toString());
+
+    if (managerIds.length > 0) {
+      params = params.set('managerIds', managerIds.join(','));
+    } else {
+      params = params.set('managerId', managerId.toString());
+    }
     if (shouldPaginate && filter.skipCount !== undefined) {
       params = params.set('SkipCount', filter.skipCount.toString());
     }
