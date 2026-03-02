@@ -4,6 +4,9 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { ActivatedRoute, Router } from '@angular/router';
+import { FieldErrorComponent } from 'src/app/shared/validation/field-error/field-error.component';
+import { ValidationService } from 'src/app/shared/validation/validation.service';
+import { LiveErrorStateMatcher } from 'src/app/shared/validation/live-error-state-matcher';
 import { finalize, forkJoin, merge, startWith } from 'rxjs';
 
 // project import
@@ -26,7 +29,7 @@ import { isEgyptianNationality } from 'src/app/@theme/utils/nationality.utils';
 
 @Component({
   selector: 'app-user-edit',
-  imports: [CommonModule, SharedModule, NgxMaskDirective],
+  imports: [CommonModule, SharedModule, NgxMaskDirective, FieldErrorComponent],
   templateUrl: './user-edit.component.html',
   styleUrl: './user-edit.component.scss',
   providers: [provideNgxMask()]
@@ -41,6 +44,7 @@ export class UserEditComponent implements OnInit {
   private auth = inject(AuthenticationService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  readonly validationService = inject(ValidationService);
 
   basicInfoForm!: FormGroup;
   userId!: number;
@@ -68,6 +72,7 @@ export class UserEditComponent implements OnInit {
   isStudent = false;
   isBranchLeaderUser = false;
   submitted = false;
+  liveErrorStateMatcher = new LiveErrorStateMatcher();
   isSaving = false;
   missingRequiredFields: string[] = [];
   Branch = [
@@ -722,7 +727,7 @@ export class UserEditComponent implements OnInit {
           error: () => this.toast.error('خطأ في تحديث البيانات')
         });
     } else {
-      this.basicInfoForm.markAllAsTouched();
+      this.validationService.markAllAsTouched(this.basicInfoForm);
     }
   }
 

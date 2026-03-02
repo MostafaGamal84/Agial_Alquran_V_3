@@ -25,7 +25,7 @@
         <div class="field" *ngIf="showSupervisorSelector">
           <label class="lbl">المشرف</label>
           <ng-select
-            formControlName="managerId"
+            formControlName="managerId" [ngClass]="{ 'p-invalid': validationService.shouldShowError(reportForm.get('managerId')) }"
             [items]="managers"
             bindLabel="displayName"
             bindValue="id"
@@ -36,10 +36,7 @@
             [disabled]="lockManagerSelection"
             placeholder="اختر المشرف"
           ></ng-select>
-
-          <div class="err" *ngIf="isInvalid('managerId')">
-            {{ errorText('managerId') }}
-          </div>
+          <app-field-error [control]="reportForm.get('managerId')" [label]="'المشرف'"></app-field-error>
         </div>
       </ng-container>
       <ng-template #managerReadonly>
@@ -54,7 +51,7 @@
         <div class="field" *ngIf="showTeacherSelector">
           <label class="lbl">المعلم</label>
           <ng-select
-            formControlName="teacherId"
+            formControlName="teacherId" [ngClass]="{ 'p-invalid': validationService.shouldShowError(reportForm.get('teacherId')) }"
             [items]="teachers"
             bindLabel="displayName"
             bindValue="id"
@@ -65,10 +62,7 @@
             [disabled]="lockTeacherSelection"
             placeholder="اختر المعلم"
           ></ng-select>
-
-          <div class="err" *ngIf="isInvalid('teacherId')">
-            {{ errorText('teacherId') }}
-          </div>
+          <app-field-error [control]="reportForm.get('teacherId')" [label]="'المعلم'"></app-field-error>
         </div>
       </ng-container>
       <ng-template #teacherReadonly>
@@ -83,7 +77,7 @@
         <div class="field">
           <label class="lbl">الحلقة</label>
           <ng-select
-            formControlName="circleId"
+            formControlName="circleId" [ngClass]="{ 'p-invalid': validationService.shouldShowError(reportForm.get('circleId')) }"
             [items]="circles"
             bindLabel="name"
             bindValue="id"
@@ -94,10 +88,7 @@
             [disabled]="!reportForm.get('teacherId')?.value"
             placeholder="اختر الحلقة"
           ></ng-select>
-
-          <div class="err" *ngIf="isInvalid('circleId')">
-            {{ errorText('circleId') }}
-          </div>
+          <app-field-error [control]="reportForm.get('circleId')" [label]="'الحلقة'"></app-field-error>
         </div>
       </ng-container>
       <ng-template #circleReadonly>
@@ -112,7 +103,7 @@
         <div class="field">
           <label class="lbl">الطالب</label>
           <ng-select
-            formControlName="studentId"
+            formControlName="studentId" [ngClass]="{ 'p-invalid': validationService.shouldShowError(reportForm.get('studentId')) }"
             [items]="students"
             bindLabel="name"
             bindValue="id"
@@ -123,10 +114,7 @@
             [disabled]="!reportForm.get('circleId')?.value"
             placeholder="اختر الطالب"
           ></ng-select>
-
-          <div class="err" *ngIf="isInvalid('studentId')">
-            {{ errorText('studentId') }}
-          </div>
+          <app-field-error [control]="reportForm.get('studentId')" [label]="'الطالب'"></app-field-error>
         </div>
       </ng-container>
       <ng-template #studentReadonly>
@@ -154,7 +142,7 @@
       <div class="field">
         <label class="lbl">حالة الحضور</label>
         <ng-select
-          formControlName="attendStatueId"
+          formControlName="attendStatueId" [ngClass]="{ 'p-invalid': validationService.shouldShowError(reportForm.get('attendStatueId')) }"
           [items]="attendStatusOptions"
           bindLabel="label"
           bindValue="value"
@@ -162,19 +150,14 @@
           [clearable]="true"
           placeholder="اختر حالة الحضور"
         ></ng-select>
-
-        <div class="err" *ngIf="isInvalid('attendStatueId')">
-          {{ errorText('attendStatueId') }}
-        </div>
+          <app-field-error [control]="reportForm.get('attendStatueId')" [label]="'حالة الحضور'"></app-field-error>
       </div>
 
       <!-- عدد الدقائق -->
       <div class="field" *ngIf="selectedStatus !== AttendStatusEnum.ExcusedAbsence">
         <label class="lbl">عدد الدقائق</label>
-        <input class="inp" type="number" formControlName="minutes" />
-        <div class="err" *ngIf="isInvalid('minutes')">
-          {{ errorText('minutes') }}
-        </div>
+        <input class="inp" type="number" formControlName="minutes" [ngClass]="{ 'p-invalid': validationService.shouldShowError(reportForm.get('minutes')) }" />
+          <app-field-error [control]="reportForm.get('minutes')" [label]="'عدد الدقائق'"></app-field-error>
       </div>
 
       <!-- حقول إضافية عند الحضور -->
@@ -233,7 +216,7 @@
         <div class="field">
           <label class="lbl">التقييم العام</label>
           <ng-select
-            formControlName="generalRate"
+            formControlName="generalRate" [ngClass]="{ 'p-invalid': validationService.shouldShowError(reportForm.get('generalRate')) }"
             [items]="[
               { label: 'ممتاز', value: 'ممتاز' },
               { label: 'جيد جداً', value: 'جيد جداً' },
@@ -246,9 +229,7 @@
             [clearable]="false"
             placeholder="اختر التقييم العام"
           ></ng-select>
-          <div class="err" *ngIf="isInvalid('generalRate')">
-            {{ errorText('generalRate') }}
-          </div>
+          <app-field-error [control]="reportForm.get('generalRate')" [label]="'التقييم العام'"></app-field-error>
         </div>
 
         <div class="field">
@@ -265,7 +246,7 @@
         <div class="field">
           <label class="lbl">الحصة مرئية؟</label>
           <ng-select
-            formControlName="isVisual"
+            formControlName="isVisual" [ngClass]="{ 'p-invalid': validationService.shouldShowError(reportForm.get('isVisual')) }"
             [items]="[
               { label: 'نعم', value: true },
               { label: 'لا', value: false }
@@ -276,17 +257,13 @@
             [clearable]="false"
             placeholder="اختر الحالة"
           ></ng-select>
-          <div class="err" *ngIf="isInvalid('isVisual')">
-            {{ errorText('isVisual') }}
-          </div>
+          <app-field-error [control]="reportForm.get('isVisual')" [label]="'الحصة المرئية'"></app-field-error>
         </div>
 
         <div class="field span-2">
           <label class="lbl">مقرر الحصة القادمة</label>
-          <input class="inp" formControlName="nextCircleOrder" />
-          <div class="err" *ngIf="isInvalid('nextCircleOrder')">
-            {{ errorText('nextCircleOrder') }}
-          </div>
+          <input class="inp" formControlName="nextCircleOrder" [ngClass]="{ 'p-invalid': validationService.shouldShowError(reportForm.get('nextCircleOrder')) }" />
+          <app-field-error [control]="reportForm.get('nextCircleOrder')" [label]="'مقرر الحصة القادمة'"></app-field-error>
         </div>
 
       </ng-container>

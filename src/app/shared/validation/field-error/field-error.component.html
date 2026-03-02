@@ -1,0 +1,5 @@
+@if (validationService.shouldShowError(control)) {
+  <div class="field-error">
+    {{ validationService.getErrorMessage(control, label, customMessages) }}
+  </div>
+}

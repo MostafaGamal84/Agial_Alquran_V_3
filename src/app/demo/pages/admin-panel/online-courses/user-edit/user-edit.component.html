@@ -39,9 +39,7 @@
                     placeholder="أدخل الاسم الكامل"
                     formControlName="fullName"
                   />
-                  @if (submitted && basicInfoForm.get('fullName')?.errors) {
-                    <mat-error>{{ 'الاسم الكامل مطلوب' | translate }}</mat-error>
-                  }
+                  <app-field-error [control]="basicInfoForm.get('fullName')" [label]="'الاسم الكامل'"></app-field-error>
                 </mat-form-field>
               </div>
 
@@ -54,9 +52,7 @@
                     placeholder="أدخل البريد الإلكتروني"
                     formControlName="email"
                   />
-                  @if (submitted && basicInfoForm.get('email')?.errors) {
-                    <mat-error>{{ 'البريد الإلكتروني مطلوب' | translate }}</mat-error>
-                  }
+                  <app-field-error [control]="basicInfoForm.get('email')" [label]="'البريد الإلكتروني'"></app-field-error>
                 </mat-form-field>
               </div>
             </div>
@@ -88,7 +84,7 @@
                     [items]="countries"
                     bindLabel="name"
                     bindValue="dialCode"
-                    formControlName="mobileCountryDialCode"
+                    formControlName="mobileCountryDialCode" [ngClass]="{ 'p-invalid': validationService.shouldShowError(basicInfoForm.get('mobileCountryDialCode')) }"
                     (change)="onCountryCodeChange('mobileCountryDialCode')"
                     placeholder="+1"
                     [searchable]="true"
@@ -107,11 +103,7 @@
                     />
                   </mat-form-field>
                 </div>
-                @if (submitted && basicInfoForm.get('mobile')?.errors) {
-                  <div class="text-danger small">
-                    {{ 'رقم الجوال مطلوب' | translate }}
-                  </div>
-                }
+                <app-field-error [control]="basicInfoForm.get('mobile')" [label]="'رقم الجوال'"></app-field-error>
               </div>
 
               <!-- الجوال البديل -->
@@ -168,72 +160,56 @@
                 <label class="form-label form-label-sm">الجنسية</label>
                 <ng-select
                   class="w-100"
-                  formControlName="nationalityId"
+                  formControlName="nationalityId" [ngClass]="{ 'p-invalid': validationService.shouldShowError(basicInfoForm.get('nationalityId')) }"
                   [items]="nationalities"
                   bindLabel="name"
                   bindValue="id"
                   placeholder="اختر الجنسية"
                   [searchable]="true"
                 ></ng-select>
-                @if (submitted && basicInfoForm.get('nationalityId')?.errors) {
-                  <div class="text-danger small">
-                    {{ 'الجنسية مطلوبة' | translate }}
-                  </div>
-                }
+                <app-field-error [control]="basicInfoForm.get('nationalityId')" [label]="'الجنسية'"></app-field-error>
               </div>
 
               <div class="col-md-6">
                 <label class="form-label form-label-sm">مكان الإقامة</label>
                 <ng-select
                   class="w-100"
-                  formControlName="residentId"
+                  formControlName="residentId" [ngClass]="{ 'p-invalid': validationService.shouldShowError(basicInfoForm.get('residentId')) }"
                   [items]="nationalities"
                   bindLabel="name"
                   bindValue="id"
                   placeholder="اختر مكان الإقامة"
                   [searchable]="true"
                 ></ng-select>
-                @if (submitted && basicInfoForm.get('residentId')?.errors) {
-                  <div class="text-danger small">
-                    {{ 'مكان الإقامة مطلوب' | translate }}
-                  </div>
-                }
+                <app-field-error [control]="basicInfoForm.get('residentId')" [label]="'مكان الإقامة'"></app-field-error>
               </div>
 
               <div class="col-md-6">
                 <label class="form-label form-label-sm">المحافظة</label>
                 <ng-select
                   class="w-100"
-                  formControlName="governorateId"
+                  formControlName="governorateId" [ngClass]="{ 'p-invalid': validationService.shouldShowError(basicInfoForm.get('governorateId')) }"
                   [items]="governorates"
                   bindLabel="name"
                   bindValue="id"
                   placeholder="اختر المحافظة"
                   [searchable]="true"
                 ></ng-select>
-                @if (submitted && basicInfoForm.get('governorateId')?.errors) {
-                  <div class="text-danger small">
-                    {{ 'المحافظة مطلوبة' | translate }}
-                  </div>
-                }
+                <app-field-error [control]="basicInfoForm.get('governorateId')" [label]="'المحافظة'"></app-field-error>
               </div>
 
               <div class="col-md-6">
                 <label class="form-label form-label-sm">الفرع</label>
                 <ng-select
                   class="w-100"
-                  formControlName="branchId"
+                  formControlName="branchId" [ngClass]="{ 'p-invalid': validationService.shouldShowError(basicInfoForm.get('branchId')) }"
                   [items]="Branch"
                   bindLabel="label"
                   bindValue="id"
                   placeholder="اختر الفرع"
                   [searchable]="false"
                 ></ng-select>
-                @if (submitted && basicInfoForm.get('branchId')?.errors) {
-                  <div class="text-danger small">
-                    {{ 'الفرع مطلوب' | translate }}
-                  </div>
-                }
+                <app-field-error [control]="basicInfoForm.get('branchId')" [label]="'الفرع'"></app-field-error>
               </div>
             </div>
           </div>

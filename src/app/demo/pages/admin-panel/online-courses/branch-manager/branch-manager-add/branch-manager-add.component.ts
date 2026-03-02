@@ -15,10 +15,13 @@ import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 import { isEgyptianNationality } from 'src/app/@theme/utils/nationality.utils';
 import { TranslateService } from '@ngx-translate/core';
 import { finalize } from 'rxjs';
+import { FieldErrorComponent } from 'src/app/shared/validation/field-error/field-error.component';
+import { ValidationService } from 'src/app/shared/validation/validation.service';
+import { LiveErrorStateMatcher } from 'src/app/shared/validation/live-error-state-matcher';
 
 @Component({
   selector: 'app-branch-manager-add',
-  imports: [CommonModule, SharedModule, NgxMaskDirective],
+  imports: [CommonModule, SharedModule, NgxMaskDirective, FieldErrorComponent],
   templateUrl: './branch-manager-add.component.html',
   styleUrl: './branch-manager-add.component.scss',
   providers: [provideNgxMask()]
@@ -30,6 +33,8 @@ export class BranchManagerAddComponent implements OnInit {
   private lookupService = inject(LookupService);
   private countryService = inject(CountryService);
   private translate = inject(TranslateService);
+  readonly validationService = inject(ValidationService);
+  liveErrorStateMatcher = new LiveErrorStateMatcher();
 
   basicInfoForm!: FormGroup;
   submitted = false;
@@ -156,7 +161,7 @@ export class BranchManagerAddComponent implements OnInit {
           error: () => this.toast.error(this.translate.instant('خطا في الاضافة'))
         });
     } else {
-      this.basicInfoForm.markAllAsTouched();
+      this.validationService.markAllAsTouched(this.basicInfoForm);
     }
   }
 }
