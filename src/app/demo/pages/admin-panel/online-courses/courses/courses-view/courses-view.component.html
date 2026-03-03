@@ -4,7 +4,7 @@
       <app-card [cardTitle]="'Courses' | translate" padding="0" cardClass="sm-block">
       <ng-template #headerOptionsTemplate>
         <div class="table-options">
-          <button mat-flat-button color="primary" [routerLink]="['/online-course/courses/add']">
+          <button mat-flat-button color="primary" [routerLink]="['/online-course/courses/add']" *ngIf="!isTeacher">
             <div class="flex align-item-center">
               <i class="ti ti-plus f-18 m-r-5"></i>
               {{ 'Add Course' | translate }}
@@ -136,7 +136,7 @@
                           <i class="ti ti-edit f-18"></i>
                         </a>
                       </li>
-                      <li class="list-inline-item m-r-10" [matTooltip]="'حذف' | translate">
+                      <li class="list-inline-item m-r-10" [matTooltip]="'حذف' | translate" *ngIf="!isTeacher">
                         <a (click)="deleteCircle(element.id)" class="avatar avatar-xs text-muted">
                           <i class="ti ti-trash f-18"></i>
                         </a>

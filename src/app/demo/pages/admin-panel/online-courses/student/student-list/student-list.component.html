@@ -4,7 +4,7 @@
       <app-card [cardTitle]="'Student List' | translate" padding="0" cardClass="sm-block">
         <ng-template #headerOptionsTemplate>
           <div class="table-options">
-            <button mat-flat-button color="primary" [routerLink]="['/online-course/student/add']">
+            <button mat-flat-button color="primary" [routerLink]="['/online-course/student/add']" *ngIf="!isTeacher">
               <div class="flex align-item-center">
                 <i class="ti ti-plus f-18 m-r-5"></i>
                 {{ 'Add Student' | translate }}
@@ -23,7 +23,8 @@
                   </mat-form-field>
                 </div>
 
-                <div class="col-12 col-md-4">
+
+                <div class="col-12 col-md-4" *ngIf="!isTeacher">
                   <mat-form-field appearance="outline" class="w-100">
                     <mat-label>{{ 'Residency' | translate }}</mat-label>
                     <mat-select [value]="selectedResidentId ?? null" (selectionChange)="onResidencyChange($event.value)">
@@ -133,7 +134,7 @@
                           </a>
                         </li>
 
-                        <li class="list-inline-item m-r-10" [matTooltip]="'تعديل' | translate">
+                        <li class="list-inline-item m-r-10" [matTooltip]="'تعديل' | translate" *ngIf="!isTeacher">
                           <a
                             [routerLink]="['/online-course/student/edit', element.id]"
                             [state]="{ user: element }"
@@ -143,7 +144,7 @@
                           </a>
                         </li>
 
-                        <li class="list-inline-item m-r-10" [matTooltip]="'حذف' | translate">
+                        <li class="list-inline-item m-r-10" [matTooltip]="'حذف' | translate" *ngIf="!isTeacher">
                           <a
                             type="button"
                             class="avatar avatar-xs text-muted"
