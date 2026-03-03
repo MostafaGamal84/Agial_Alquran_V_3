@@ -269,7 +269,7 @@ export class TeacherSalaryComponent
   private readonly role = this.authenticationService.getRole();
   readonly canManagePayments =
     this.role === UserTypesEnum.Admin || this.role === UserTypesEnum.Manager;
-  readonly canGenerateInvoices = this.role === UserTypesEnum.Admin;
+  readonly canGenerateInvoices = this.role === UserTypesEnum.Admin || this.role === UserTypesEnum.Manager;
   readonly isTeacher = this.role === UserTypesEnum.Teacher;
 
   @ViewChild('detailDrawer') detailDrawer?: MatDrawer;
