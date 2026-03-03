@@ -198,19 +198,21 @@
                 <app-field-error [control]="basicInfoForm.get('governorateId')" [label]="'المحافظة'"></app-field-error>
               </div>
 
-              <div class="col-md-6">
-                <label class="form-label form-label-sm">الفرع</label>
-                <ng-select
-                  class="w-100"
-                  formControlName="branchId" [ngClass]="{ 'p-invalid': validationService.shouldShowError(basicInfoForm.get('branchId')) }"
-                  [items]="Branch"
-                  bindLabel="label"
-                  bindValue="id"
-                  placeholder="اختر الفرع"
-                  [searchable]="false"
-                ></ng-select>
-                <app-field-error [control]="basicInfoForm.get('branchId')" [label]="'الفرع'"></app-field-error>
-              </div>
+              @if (canEditBranch) {
+                <div class="col-md-6">
+                  <label class="form-label form-label-sm">الفرع</label>
+                  <ng-select
+                    class="w-100"
+                    formControlName="branchId" [ngClass]="{ 'p-invalid': validationService.shouldShowError(basicInfoForm.get('branchId')) }"
+                    [items]="Branch"
+                    bindLabel="label"
+                    bindValue="id"
+                    placeholder="اختر الفرع"
+                    [searchable]="false"
+                  ></ng-select>
+                  <app-field-error [control]="basicInfoForm.get('branchId')" [label]="'الفرع'"></app-field-error>
+                </div>
+              }
             </div>
           </div>
         </div>
