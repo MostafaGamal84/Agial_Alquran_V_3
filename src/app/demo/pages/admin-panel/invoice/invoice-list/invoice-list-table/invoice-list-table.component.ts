@@ -73,6 +73,7 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
   readonly sort = viewChild(MatSort);
   isLoading = false;
   isLoadingMore = false;
+  private hasTriggeredInitialLoad = false;
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;
 
@@ -95,20 +96,24 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
       );
     };
     this.searchTerm = this.search;
-    this.loadData();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (
+    const shouldReloadData =
       changes['tab'] ||
       changes['month'] ||
       changes['compareMonth'] ||
       changes['residentId'] ||
       changes['residentGroup'] ||
-      changes['refreshToken']
-    ) {
+      changes['refreshToken'];
+
+    if (shouldReloadData) {
       this.pageIndex = 0;
       this.loadData();
+      this.hasTriggeredInitialLoad = true;
+    } else if (!this.hasTriggeredInitialLoad) {
+      this.loadData();
+      this.hasTriggeredInitialLoad = true;
     }
     if (changes['search'] && !changes['search'].firstChange) {
       this.searchTerm = this.search;
