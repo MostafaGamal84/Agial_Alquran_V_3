@@ -107,6 +107,10 @@ export class UserEditComponent implements OnInit, OnDestroy {
     return (this.isTeacher || this.isStudent) && this.auth.getRole() === UserTypesEnum.Manager;
   }
 
+  get canEditBranch(): boolean {
+    return !((this.isStudent || this.isTeacher) && this.auth.getRole() === UserTypesEnum.Manager);
+  }
+
   get isSubmitDisabled(): boolean {
     return this.isSaving || this.basicInfoForm.invalid;
   }
@@ -156,6 +160,10 @@ export class UserEditComponent implements OnInit, OnDestroy {
     if (this.isStudent) {
       this.basicInfoForm.get('teacherId')?.setValidators([Validators.required]);
       this.basicInfoForm.get('teacherId')?.updateValueAndValidity({ emitEvent: false });
+    }
+
+    if (!this.canEditBranch) {
+      this.basicInfoForm.get('branchId')?.disable({ emitEvent: false });
     }
 
     this.setupStudentManagersTeacherStream();
