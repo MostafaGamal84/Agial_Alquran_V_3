@@ -155,9 +155,7 @@ export class StudentListComponent implements OnInit, OnDestroy {
       return;
     }
 
-    setTimeout(() => {
-      window.scrollTo({ top: restored.scrollY ?? 0, behavior: 'auto' });
-    }, 0);
+    this.restoreScrollPosition(restored.scrollY ?? 0);
   }
 
   ngOnDestroy(): void {
@@ -384,6 +382,30 @@ export class StudentListComponent implements OnInit, OnDestroy {
     return !(hasManager && hasTeacher && hasCircle);
   }
 
+
+  private restoreScrollPosition(scrollY: number): void {
+    const targetScrollY = Math.max(0, Number(scrollY) || 0);
+    if (!targetScrollY) {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      return;
+    }
+
+    const maxAttempts = 6;
+    const attemptRestore = (attempt: number) => {
+      const maxScrollableY = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight) - window.innerHeight;
+      const nextY = Math.min(targetScrollY, Math.max(maxScrollableY, 0));
+      window.scrollTo({ top: nextY, behavior: 'auto' });
+
+      if (attempt >= maxAttempts || maxScrollableY >= targetScrollY) {
+        return;
+      }
+
+      setTimeout(() => attemptRestore(attempt + 1), 120);
+    };
+
+    setTimeout(() => attemptRestore(1), 0);
+  }
+
   private consumeRefreshFlag(): boolean {
     const currentNavigation = this.router.getCurrentNavigation();
     const navigationState = currentNavigation?.extras.state as Record<string, unknown> | undefined;
@@ -435,9 +457,7 @@ export class StudentListComponent implements OnInit, OnDestroy {
         finalize(() => {
           this.isLoading = false;
           this.isLoadingMore = false;
-          setTimeout(() => {
-            window.scrollTo({ top: scrollY, behavior: 'auto' });
-          }, 0);
+          this.restoreScrollPosition(scrollY);
         })
       )
       .subscribe(({ items, totalCount }) => {
