@@ -108,7 +108,7 @@ export class UserEditComponent implements OnInit, OnDestroy {
   }
 
   get canEditBranch(): boolean {
-    return !(this.isStudent && this.auth.getRole() === UserTypesEnum.Manager);
+    return !((this.isStudent || this.isTeacher) && this.auth.getRole() === UserTypesEnum.Manager);
   }
 
   get isSubmitDisabled(): boolean {
