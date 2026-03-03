@@ -5,7 +5,8 @@ import { Router, RouterModule } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { finalize } from 'rxjs/operators';
+import { forkJoin, of } from 'rxjs';
+import { catchError, finalize, map } from 'rxjs/operators';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
@@ -392,25 +393,45 @@ export class StudentListComponent implements OnInit, OnDestroy {
   }
 
   private reloadRestoredView(scrollY: number): void {
-    const targetLoadedCount = Math.max((this.pageIndex + 1) * this.pageSize, this.allLoadedStudents.length, this.pageSize);
+    const pagesToLoad = Math.max(this.pageIndex + 1, 1);
+    const requests = Array.from({ length: pagesToLoad }, (_, index) => {
+      const pagedFilter: FilteredResultRequestDto = {
+        ...this.filter,
+        skipCount: index * this.pageSize,
+        maxResultCount: this.pageSize,
+        residentGroup: this.selectedResidencyGroup
+      };
 
-    this.filter.skipCount = 0;
-    this.filter.maxResultCount = targetLoadedCount;
+      return this.lookupService
+        .getUsersForSelects(
+          pagedFilter,
+          Number(UserTypesEnum.Student),
+          0,
+          0,
+          0,
+          this.selectedResidentId ?? undefined,
+          true
+        )
+        .pipe(catchError(() => of(null)));
+    });
 
     this.isLoading = true;
     this.isLoadingMore = false;
 
-    this.lookupService
-      .getUsersForSelects(
-        this.filter,
-        Number(UserTypesEnum.Student),
-        0,
-        0,
-        0,
-        this.selectedResidentId ?? undefined,
-        true
-      )
+    forkJoin(requests)
       .pipe(
+        map((responses) => {
+          const validResponses = responses.filter((res) => !!res && res.isSuccess && !!res.data?.items);
+
+          if (!validResponses.length) {
+            return { items: [] as LookUpUserDto[], totalCount: 0 };
+          }
+
+          const mergedItems = validResponses.flatMap((res) => res!.data!.items);
+          const totalCount = validResponses[0]!.data!.totalCount ?? mergedItems.length;
+
+          return { items: mergedItems, totalCount };
+        }),
         finalize(() => {
           this.isLoading = false;
           this.isLoadingMore = false;
@@ -419,24 +440,12 @@ export class StudentListComponent implements OnInit, OnDestroy {
           }, 0);
         })
       )
-      .subscribe({
-        next: (res) => {
-          if (res.isSuccess && res.data?.items) {
-            this.allLoadedStudents = res.data.items;
-            this.totalCount = res.data.totalCount;
-            this.applyDisplayData();
-            return;
-          }
-
-          this.allLoadedStudents = [];
-          this.totalCount = 0;
-          this.applyDisplayData();
-        },
-        error: () => {
-          this.allLoadedStudents = [];
-          this.totalCount = 0;
-          this.applyDisplayData();
-        }
+      .subscribe(({ items, totalCount }) => {
+        this.allLoadedStudents = items;
+        this.totalCount = totalCount;
+        this.filter.skipCount = this.pageIndex * this.pageSize;
+        this.filter.maxResultCount = this.pageSize;
+        this.applyDisplayData();
       });
   }
 
