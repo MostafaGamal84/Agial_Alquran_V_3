@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
@@ -55,11 +55,13 @@ export class StudentListComponent implements OnInit, OnDestroy {
   private translate = inject(TranslateService);
   private auth = inject(AuthenticationService);
   private viewState = inject(ViewStateService);
+  private router = inject(Router);
   dialog = inject(MatDialog);
 
   private readonly stateKey = 'online-course-student-list';
   private restoredSortActive = '';
   private restoredSortDirection: 'asc' | 'desc' | '' = '';
+  private readonly refreshFlagKey = 'refreshStudentList';
 
   displayedColumns: string[] = ['serial', 'fullName', 'email', 'mobile', 'action'];
 
@@ -137,6 +139,7 @@ export class StudentListComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     const restored = this.restoreState();
+    const shouldRefreshFromServer = this.consumeRefreshFlag();
     this.loadNationalities();
 
     if (!restored) {
@@ -145,6 +148,11 @@ export class StudentListComponent implements OnInit, OnDestroy {
     }
 
     this.applyDisplayData();
+
+    if (shouldRefreshFromServer) {
+      this.reloadRestoredView(restored.scrollY ?? 0);
+      return;
+    }
 
     setTimeout(() => {
       window.scrollTo({ top: restored.scrollY ?? 0, behavior: 'auto' });
@@ -373,6 +381,63 @@ export class StudentListComponent implements OnInit, OnDestroy {
     const hasTeacher = typeof student.teacherId === 'number' || !!String(student.teacherName ?? '').trim();
     const hasCircle = typeof student.circleId === 'number' || !!String(student.circleName ?? '').trim();
     return !(hasManager && hasTeacher && hasCircle);
+  }
+
+  private consumeRefreshFlag(): boolean {
+    const currentNavigation = this.router.getCurrentNavigation();
+    const navigationState = currentNavigation?.extras.state as Record<string, unknown> | undefined;
+    const historyState = history.state as Record<string, unknown> | undefined;
+
+    return !!(navigationState?.[this.refreshFlagKey] || historyState?.[this.refreshFlagKey]);
+  }
+
+  private reloadRestoredView(scrollY: number): void {
+    const targetLoadedCount = Math.max((this.pageIndex + 1) * this.pageSize, this.allLoadedStudents.length, this.pageSize);
+
+    this.filter.skipCount = 0;
+    this.filter.maxResultCount = targetLoadedCount;
+
+    this.isLoading = true;
+    this.isLoadingMore = false;
+
+    this.lookupService
+      .getUsersForSelects(
+        this.filter,
+        Number(UserTypesEnum.Student),
+        0,
+        0,
+        0,
+        this.selectedResidentId ?? undefined,
+        true
+      )
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.isLoadingMore = false;
+          setTimeout(() => {
+            window.scrollTo({ top: scrollY, behavior: 'auto' });
+          }, 0);
+        })
+      )
+      .subscribe({
+        next: (res) => {
+          if (res.isSuccess && res.data?.items) {
+            this.allLoadedStudents = res.data.items;
+            this.totalCount = res.data.totalCount;
+            this.applyDisplayData();
+            return;
+          }
+
+          this.allLoadedStudents = [];
+          this.totalCount = 0;
+          this.applyDisplayData();
+        },
+        error: () => {
+          this.allLoadedStudents = [];
+          this.totalCount = 0;
+          this.applyDisplayData();
+        }
+      });
   }
 
   private restoreState(): StudentListViewState | null {
