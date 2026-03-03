@@ -203,7 +203,7 @@ export class ReportDetailsComponent implements OnInit {
       this.isDeleting = true;
       this.service.delete(this.report.id).subscribe({
         next: () => {
-          this.toast.success('تم حذف التثقير بنجاح');
+          this.toast.success('تم حذف التقرير بنجاح');
           this.router.navigate(['/online-course/report/view']);
         },
         error: () => {
