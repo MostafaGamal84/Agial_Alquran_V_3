@@ -771,7 +771,8 @@ export class UserEditComponent implements OnInit, OnDestroy {
         next: (res) => {
           if (res?.isSuccess) {
             this.toast.success(res.message || (this.isManager ? 'تم تحديث البيانات والعلاقات بنجاح' : 'تم تحديث البيانات بنجاح'));
-            this.router.navigate([this.getListRoute()]);
+            const navigationState = this.isStudent ? { refreshStudentList: true } : undefined;
+            this.router.navigate([this.getListRoute()], navigationState ? { state: navigationState } : undefined);
           } else if (res?.errors?.length) {
             res.errors.forEach((e) => this.toast.error(e.message));
           } else {

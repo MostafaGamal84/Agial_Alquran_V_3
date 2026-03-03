@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
@@ -24,6 +24,22 @@ import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overl
 import { TranslateService } from '@ngx-translate/core';
 import { getUserManagers } from 'src/app/demo/shared/utils/user-managers';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
+import { ViewStateService } from 'src/app/@theme/services/view-state.service';
+
+type StudentListViewState = {
+  searchTerm: string;
+  selectedResidentId: number | null;
+  selectedResidencyGroup: ResidencyGroupFilter;
+  showMissingAssignmentsOnly: boolean;
+  pageIndex: number;
+  pageSize: number;
+  filter: FilteredResultRequestDto;
+  allLoadedStudents: LookUpUserDto[];
+  totalCount: number;
+  scrollY: number;
+  sortActive: string;
+  sortDirection: 'asc' | 'desc' | '';
+};
 
 @Component({
   selector: 'app-student-list',
@@ -38,7 +54,14 @@ export class StudentListComponent implements OnInit, OnDestroy {
   private toast = inject(ToastService);
   private translate = inject(TranslateService);
   private auth = inject(AuthenticationService);
+  private viewState = inject(ViewStateService);
+  private router = inject(Router);
   dialog = inject(MatDialog);
+
+  private readonly stateKey = 'online-course-student-list';
+  private restoredSortActive = '';
+  private restoredSortDirection: 'asc' | 'desc' | '' = '';
+  private readonly refreshFlagKey = 'refreshStudentList';
 
   displayedColumns: string[] = ['serial', 'fullName', 'email', 'mobile', 'action'];
 
@@ -53,6 +76,7 @@ export class StudentListComponent implements OnInit, OnDestroy {
 
   showInactive = false;
   readonly isTeacher = this.auth.getRole() === UserTypesEnum.Teacher;
+  searchTerm = '';
 
   nationalities: NationalityDto[] = [];
   selectedResidentId: number | null = null;
@@ -98,6 +122,12 @@ export class StudentListComponent implements OnInit, OnDestroy {
       });
     };
 
+    if (this.restoredSortActive) {
+      sort.active = this.restoredSortActive;
+      sort.direction = this.restoredSortDirection;
+      sort.sortChange.emit({ active: sort.active, direction: sort.direction });
+    }
+
     this.applyDisplayData();
   }
 
@@ -108,17 +138,36 @@ export class StudentListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    const restored = this.restoreState();
+    const shouldRefreshFromServer = this.consumeRefreshFlag();
     this.loadNationalities();
-    this.loadStudents();
+
+    if (!restored) {
+      this.loadStudents();
+      return;
+    }
+
+    this.applyDisplayData();
+
+    if (shouldRefreshFromServer) {
+      this.reloadRestoredView(restored.scrollY ?? 0);
+      return;
+    }
+
+    setTimeout(() => {
+      window.scrollTo({ top: restored.scrollY ?? 0, behavior: 'auto' });
+    }, 0);
   }
 
   ngOnDestroy(): void {
+    this.persistState();
     this.intersectionObserver?.disconnect();
   }
 
   // ✅ Search (server-side like your original)
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
+    this.searchTerm = filterValue;
     this.filter.searchTerm = filterValue.trim().toLowerCase();
     this.pageIndex = 0;
     this.filter.skipCount = 0;
@@ -332,5 +381,106 @@ export class StudentListComponent implements OnInit, OnDestroy {
     const hasTeacher = typeof student.teacherId === 'number' || !!String(student.teacherName ?? '').trim();
     const hasCircle = typeof student.circleId === 'number' || !!String(student.circleName ?? '').trim();
     return !(hasManager && hasTeacher && hasCircle);
+  }
+
+  private consumeRefreshFlag(): boolean {
+    const currentNavigation = this.router.getCurrentNavigation();
+    const navigationState = currentNavigation?.extras.state as Record<string, unknown> | undefined;
+    const historyState = history.state as Record<string, unknown> | undefined;
+
+    return !!(navigationState?.[this.refreshFlagKey] || historyState?.[this.refreshFlagKey]);
+  }
+
+  private reloadRestoredView(scrollY: number): void {
+    const targetLoadedCount = Math.max((this.pageIndex + 1) * this.pageSize, this.allLoadedStudents.length, this.pageSize);
+
+    this.filter.skipCount = 0;
+    this.filter.maxResultCount = targetLoadedCount;
+
+    this.isLoading = true;
+    this.isLoadingMore = false;
+
+    this.lookupService
+      .getUsersForSelects(
+        this.filter,
+        Number(UserTypesEnum.Student),
+        0,
+        0,
+        0,
+        this.selectedResidentId ?? undefined,
+        true
+      )
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          this.isLoadingMore = false;
+          setTimeout(() => {
+            window.scrollTo({ top: scrollY, behavior: 'auto' });
+          }, 0);
+        })
+      )
+      .subscribe({
+        next: (res) => {
+          if (res.isSuccess && res.data?.items) {
+            this.allLoadedStudents = res.data.items;
+            this.totalCount = res.data.totalCount;
+            this.applyDisplayData();
+            return;
+          }
+
+          this.allLoadedStudents = [];
+          this.totalCount = 0;
+          this.applyDisplayData();
+        },
+        error: () => {
+          this.allLoadedStudents = [];
+          this.totalCount = 0;
+          this.applyDisplayData();
+        }
+      });
+  }
+
+  private restoreState(): StudentListViewState | null {
+    const state = this.viewState.getState<StudentListViewState>(this.stateKey);
+
+    if (!state) return null;
+
+    this.searchTerm = state.searchTerm ?? '';
+    this.selectedResidentId = state.selectedResidentId ?? null;
+    this.selectedResidencyGroup = state.selectedResidencyGroup ?? 'all';
+    this.showMissingAssignmentsOnly = !!state.showMissingAssignmentsOnly;
+    this.pageIndex = Number.isInteger(state.pageIndex) ? state.pageIndex : 0;
+    this.pageSize = Number.isInteger(state.pageSize) ? state.pageSize : 20;
+
+    this.filter = {
+      ...state.filter,
+      skipCount: this.pageIndex * this.pageSize,
+      maxResultCount: this.pageSize,
+      searchTerm: state.filter?.searchTerm ?? this.searchTerm.trim().toLowerCase()
+    };
+
+    this.allLoadedStudents = Array.isArray(state.allLoadedStudents) ? state.allLoadedStudents : [];
+    this.totalCount = Number.isFinite(state.totalCount) ? state.totalCount : this.allLoadedStudents.length;
+    this.restoredSortActive = state.sortActive ?? '';
+    this.restoredSortDirection = state.sortDirection ?? '';
+
+    return state;
+  }
+
+  private persistState(): void {
+    this.viewState.saveState<StudentListViewState>(this.stateKey, {
+      searchTerm: this.searchTerm,
+      selectedResidentId: this.selectedResidentId,
+      selectedResidencyGroup: this.selectedResidencyGroup,
+      showMissingAssignmentsOnly: this.showMissingAssignmentsOnly,
+      pageIndex: this.pageIndex,
+      pageSize: this.pageSize,
+      filter: this.filter,
+      allLoadedStudents: this.allLoadedStudents,
+      totalCount: this.totalCount,
+      scrollY: window.scrollY,
+      sortActive: this.dataSource.sort?.active ?? '',
+      sortDirection: this.dataSource.sort?.direction ?? ''
+    });
   }
 }
