@@ -23,6 +23,7 @@ import { RESIDENCY_GROUP_OPTIONS, ResidencyGroupFilter } from 'src/app/@theme/ty
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 import { TranslateService } from '@ngx-translate/core';
 import { getUserManagers } from 'src/app/demo/shared/utils/user-managers';
+import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 
 @Component({
   selector: 'app-student-list',
@@ -36,6 +37,7 @@ export class StudentListComponent implements OnInit, OnDestroy {
   private userService = inject(UserService);
   private toast = inject(ToastService);
   private translate = inject(TranslateService);
+  private auth = inject(AuthenticationService);
   dialog = inject(MatDialog);
 
   displayedColumns: string[] = ['serial', 'fullName', 'email', 'mobile', 'action'];
@@ -50,6 +52,7 @@ export class StudentListComponent implements OnInit, OnDestroy {
   pageSize = 20;
 
   showInactive = false;
+  readonly isTeacher = this.auth.getRole() === UserTypesEnum.Teacher;
 
   nationalities: NationalityDto[] = [];
   selectedResidentId: number | null = null;

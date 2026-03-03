@@ -59,3 +59,32 @@
 .page-size-select {
   width: 140px;
 }
+:host ::ng-deep .mat-mdc-tab-header {
+  overflow-x: auto !important;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch; // سحب ناعم على الموبايل
+  scrollbar-width: thin; // Firefox
+}
+
+/* خلي التابات متترص جنب بعض وماتكسرش سطر */
+:host ::ng-deep .mat-mdc-tab-label-container {
+  overflow: visible !important;
+}
+
+:host ::ng-deep .mat-mdc-tab-labels {
+  width: max-content;   // مهم عشان يبقى فيه مساحة للسكرول
+  flex-wrap: nowrap;
+}
+
+/* اخفاء أسهم الـ pagination */
+:host ::ng-deep .mat-mdc-tab-header-pagination {
+  display: none !important;
+}
+
+/* (اختياري) تحسين شكل السكرول في كروم */
+:host ::ng-deep .mat-mdc-tab-header::-webkit-scrollbar {
+  height: 6px;
+}
+:host ::ng-deep .mat-mdc-tab-header::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+}

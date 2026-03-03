@@ -135,6 +135,7 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   role = this.auth.getRole();
   canManageReports = this.role !== UserTypesEnum.Student;
+  readonly isTeacher = this.role === UserTypesEnum.Teacher;
 
   constructor() {
     const currentUser = this.auth.currentUserValue;
