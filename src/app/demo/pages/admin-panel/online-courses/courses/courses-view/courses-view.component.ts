@@ -117,6 +117,7 @@ export class CoursesViewComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   isTeacherOrStudent = [UserTypesEnum.Teacher, UserTypesEnum.Student].includes(this.auth.getRole()!);
+  readonly isTeacher = this.auth.getRole() === UserTypesEnum.Teacher;
   ngOnInit() {
     this.setupFilterPredicate();
     this.applyTableFilters();
