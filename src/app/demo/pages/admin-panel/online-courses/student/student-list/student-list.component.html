@@ -19,7 +19,7 @@
               <div class="row g-3">
                 <div class="col-12 col-md-4">
                   <mat-form-field appearance="outline" class="w-100">
-                    <input matInput (keyup)="applyFilter($event)" [placeholder]="'Search...' | translate" #input />
+                    <input matInput (keyup)="applyFilter($event)" [value]="searchTerm" [placeholder]="'Search...' | translate" #input />
                   </mat-form-field>
                 </div>
 
