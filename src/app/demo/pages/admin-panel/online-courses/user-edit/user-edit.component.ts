@@ -103,7 +103,7 @@ export class UserEditComponent implements OnInit, OnDestroy {
     return Number.isFinite(id) && id > 0 ? id : null;
   }
 
-  private get shouldLockManagerAssignment(): boolean {
+  get shouldLockManagerAssignment(): boolean {
     return (this.isTeacher || this.isStudent) && this.auth.getRole() === UserTypesEnum.Manager;
   }
 
