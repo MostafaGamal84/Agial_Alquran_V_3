@@ -296,6 +296,8 @@
                       [closeOnSelect]="false"
                       [searchable]="true"
                       placeholder="اختر المشرفين"
+                      [disabled]="shouldLockManagerAssignment"
+                      [clearable]="!shouldLockManagerAssignment"
                       (change)="onTeacherManagersChange($event?.value ?? $event)"
                     ></ng-select>
                   </div>
@@ -344,6 +346,8 @@
                       [closeOnSelect]="false"
                       [searchable]="true"
                       placeholder="اختر المشرفين"
+                      [disabled]="shouldLockManagerAssignment"
+                      [clearable]="!shouldLockManagerAssignment"
                       (change)="onStudentManagersChange($event?.value ?? $event)"
                     ></ng-select>
                   </div>
