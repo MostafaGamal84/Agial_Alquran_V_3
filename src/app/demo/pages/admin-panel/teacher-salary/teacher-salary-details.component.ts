@@ -135,6 +135,10 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
     return new Intl.DateTimeFormat('ar-EG', { month: 'long', year: 'numeric' }).format(parsed);
   }
 
+  getTeacherName(): string {
+    return this.readString(this.invoice, ['teacherName']) ?? this.readString(this.detailSummary, ['teacherName']) ?? '—';
+  }
+
   formatSalary(): string {
     const amount =
       this.readNumber(this.invoice, ['salary']) ??
@@ -328,9 +332,28 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
   }
 
   private buildPdfFileName(type: 'summary' | 'detailed'): string {
-    const teacherId = this.readNumber(this.invoice, ['teacherId']) ?? this.readNumber(this.detailSummary, ['teacherId']) ?? 'teacher';
-    const month = this.readString(this.invoice, ['month']) ?? this.readString(this.detailSummary, ['month']) ?? 'month';
-    return `${type}-report-${teacherId}-${month}.pdf`;
+    const teacherName = this.getTeacherName();
+    const monthLabel = this.getFileMonthLabel();
+    const reportType = type === 'summary' ? 'اجمالي' : 'تفصيلي';
+    return this.sanitizeFileName(`${teacherName}-${monthLabel}-${reportType}.pdf`);
+  }
+
+  private getFileMonthLabel(): string {
+    const rawMonth = this.readString(this.invoice, ['month']) ?? this.readString(this.detailSummary, ['month']);
+    if (!rawMonth) {
+      return 'بدون-شهر';
+    }
+
+    const parsed = new Date(rawMonth);
+    if (Number.isNaN(parsed.getTime())) {
+      return rawMonth;
+    }
+
+    return new Intl.DateTimeFormat('ar-EG', { month: 'long', year: 'numeric' }).format(parsed);
+  }
+
+  private sanitizeFileName(fileName: string): string {
+    return fileName.replace(/[\\/:*?"<>|]/g, '-').replace(/\s+/g, ' ').trim();
   }
 
   formatRecordSalary(value: number | null | undefined): string {
