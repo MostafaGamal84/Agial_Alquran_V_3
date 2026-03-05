@@ -1,0 +1,73 @@
+<app-loading-overlay [isLoading]="detailsLoading">
+  <div class="details-page">
+    <div class="details-header">
+      <button mat-stroked-button type="button" (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+        الرجوع للقائمة
+      </button>
+      <h2>تفاصيل الفاتورة</h2>
+    </div>
+
+    <mat-card class="invoice-card">
+      <h3>بيانات الفاتورة</h3>
+      <div class="info-grid">
+        <div><span>رقم الفاتورة</span><strong>{{ invoice?.id ?? '—' }}</strong></div>
+        <div><span>المعلم</span><strong>{{ invoice?.teacherName ?? detailSummary?.teacherName ?? '—' }}</strong></div>
+        <div><span>الشهر</span><strong>{{ formatMonth() }}</strong></div>
+        <div><span>الحالة</span><strong>{{ getStatusLabel() }}</strong></div>
+        <div><span>تاريخ الدفع</span><strong>{{ formatPaidAt() }}</strong></div>
+        <div><span>الراتب</span><strong>{{ formatSalary() }}</strong></div>
+      </div>
+    </mat-card>
+
+    <mat-card class="reports-card">
+      <h3>التقارير المستخدمة في احتساب الراتب</h3>
+      @if (reportItems.length > 0) {
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>التقرير</th>
+                <th>التاريخ</th>
+                <th>الحالة</th>
+                <th>الدقائق</th>
+                <th>المبلغ</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (report of reportItems; track report.title + $index) {
+                <tr>
+                  <td>{{ $index + 1 }}</td>
+                  <td>{{ report.title }}</td>
+                  <td>{{ report.date }}</td>
+                  <td>{{ report.status }}</td>
+                  <td>{{ report.minutes }}</td>
+                  <td>{{ report.amount }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="empty-state">لا توجد قائمة تقارير تفصيلية متاحة من الـ API لهذه الفاتورة حالياً.</p>
+      }
+    </mat-card>
+
+    <mat-card class="totals-card">
+      <h3>الإجماليات</h3>
+      @if (detailSummaryMetrics.length > 0) {
+        <div class="summary-grid">
+          @for (metric of detailSummaryMetrics; track metric.label) {
+            <div class="summary-item">
+              <span>{{ metric.label }}</span>
+              <strong>{{ formatMetricValue(metric) }}</strong>
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="empty-state">لا توجد بيانات إجمالية متاحة.</p>
+      }
+    </mat-card>
+  </div>
+</app-loading-overlay>
