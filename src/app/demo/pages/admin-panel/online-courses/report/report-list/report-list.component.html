@@ -72,6 +72,27 @@
                   </mat-form-field>
                 </div>
 
+
+                <!-- From Date -->
+                <div class="col-12 col-md-6 col-xl-3">
+                  <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>{{ 'من تاريخ' | translate }}</mat-label>
+                    <input matInput [matDatepicker]="fromDatePicker" formControlName="fromDate" [max]="filterForm.get('toDate')?.value" />
+                    <mat-datepicker-toggle matSuffix [for]="fromDatePicker"></mat-datepicker-toggle>
+                    <mat-datepicker #fromDatePicker></mat-datepicker>
+                  </mat-form-field>
+                </div>
+
+                <!-- To Date -->
+                <div class="col-12 col-md-6 col-xl-3">
+                  <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>{{ 'إلى تاريخ' | translate }}</mat-label>
+                    <input matInput [matDatepicker]="toDatePicker" formControlName="toDate" [min]="filterForm.get('fromDate')?.value" />
+                    <mat-datepicker-toggle matSuffix [for]="toDatePicker"></mat-datepicker-toggle>
+                    <mat-datepicker #toDatePicker></mat-datepicker>
+                  </mat-form-field>
+                </div>
+
               </div>
             </form>
 

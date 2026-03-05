@@ -16,6 +16,8 @@ import {
 } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
@@ -68,6 +70,8 @@ interface StudentOption {
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
     ReactiveFormsModule
   ],
   templateUrl: './report-list.component.html',
@@ -90,7 +94,9 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     circleId: [null],
     studentId: [null],
     residentId: [null],
-    residentGroup: ['all']
+    residentGroup: ['all'],
+    fromDate: [null],
+    toDate: [null]
   });
 
   displayedColumns: string[] = ['index', 'student', 'circle', 'status' , 'creationTime', 'minutes', 'actions'];
@@ -103,7 +109,9 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   filter: FilteredResultRequestDto = {
     skipCount: 0,
-    maxResultCount: 10
+    maxResultCount: 10,
+    sortBy: 'CreationTime',
+    sortingDirection: 'desc'
   };
 
   circles: CircleDto[] = [];
@@ -175,6 +183,16 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
       .get('residentGroup')
       ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe((group: ResidencyGroupFilter | null) => this.onResidencyGroupChange(group));
+
+    this.filterForm
+      .get('fromDate')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.onDateRangeChange());
+
+    this.filterForm
+      .get('toDate')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.onDateRangeChange());
   }
 
 
@@ -339,6 +357,31 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loadReports();
   }
 
+  private onDateRangeChange(): void {
+    const fromDate = this.toDateOnlyString(this.filterForm.get('fromDate')?.value);
+    const toDate = this.toDateOnlyString(this.filterForm.get('toDate')?.value);
+
+    if (fromDate && toDate && fromDate > toDate) {
+      this.toast.error(this.translate.instant('تاريخ البداية يجب أن يكون قبل تاريخ النهاية'));
+      return;
+    }
+
+    this.applyFilters();
+  }
+
+  private toDateOnlyString(value: unknown): string | undefined {
+    if (!value) {
+      return undefined;
+    }
+
+    const date = new Date(value as string);
+    if (Number.isNaN(date.getTime())) {
+      return undefined;
+    }
+
+    return date.toISOString().slice(0, 10);
+  }
+
   private onResidencyChange(residentId: number | null): void {
     this.selectedResidentId = residentId && residentId > 0 ? residentId : null;
     this.filterForm.patchValue({ studentId: null }, { emitEvent: false });
@@ -414,14 +457,22 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
         studentId: this.selectedStudentId,
         teacherId: this.teacherId,
         residentId: this.selectedResidentId ?? undefined,
-        residentGroup: this.selectedResidencyGroup
+        residentGroup: this.selectedResidencyGroup,
+        fromDate: this.toDateOnlyString(this.filterForm.get('fromDate')?.value),
+        toDate: this.toDateOnlyString(this.filterForm.get('toDate')?.value)
       })
       .subscribe({
         next: (res) => {
           if (res.isSuccess && res.data?.items) {
-            this.dataSource.data = append
+            const mergedItems = append
               ? [...this.dataSource.data, ...res.data.items]
               : res.data.items;
+
+            this.dataSource.data = mergedItems.sort((a, b) => {
+              const first = a.creationTime ? new Date(a.creationTime).getTime() : 0;
+              const second = b.creationTime ? new Date(b.creationTime).getTime() : 0;
+              return second - first;
+            });
             this.totalCount = Number(res.data.totalCount) || 0;
           } else {
             if (!append) {
