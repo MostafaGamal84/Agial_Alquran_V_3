@@ -61,3 +61,17 @@ h3 {
 .empty-state.secondary {
   margin-top: 0.4rem;
 }
+
+.records-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.reports-table-container {
+  overflow-x: auto;
+}
+
+.reports-table {
+  width: 100%;
+}
