@@ -40,7 +40,10 @@
 
     <mat-card class="reports-card" #reportsExportSection>
       <div class="card-head">
-        <h3>التقارير المستخدمة في احتساب الراتب</h3>
+        <div>
+          <h3>التقارير المستخدمة في احتساب الراتب</h3>
+          <p class="report-meta">المعلم: {{ getTeacherName() }} | الشهر: {{ formatMonth() }}</p>
+        </div>
         <button mat-flat-button color="primary" type="button" (click)="exportDetailedReportPdf()" [disabled]="monthlyReportRecords.length === 0">
           <mat-icon>picture_as_pdf</mat-icon>
           تصدير PDF التفصيلي
@@ -98,7 +101,10 @@
 
     <mat-card class="totals-card" #summaryExportSection>
       <div class="card-head">
-        <h3>الإجماليات</h3>
+        <div>
+          <h3>الإجماليات</h3>
+          <p class="report-meta">المعلم: {{ getTeacherName() }} | الشهر: {{ formatMonth() }}</p>
+        </div>
         <button mat-flat-button color="accent" type="button" (click)="exportSummaryPdf()" [disabled]="detailSummaryMetrics.length === 0">
           <mat-icon>picture_as_pdf</mat-icon>
           تصدير PDF الإجمالي
