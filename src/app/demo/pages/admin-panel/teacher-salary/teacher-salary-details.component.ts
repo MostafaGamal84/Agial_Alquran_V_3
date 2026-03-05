@@ -1,21 +1,30 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTableModule } from '@angular/material/table';
 import { Subscription, finalize } from 'rxjs';
+import jsPDF from 'jspdf';
 
 import {
   TeacherMonthlySummary,
   TeacherSalaryInvoice,
   TeacherSalaryInvoiceDetails,
-  TeacherSalaryService
+  TeacherSalaryService,
+  TeacherMonthlyReportRecordDto
 } from 'src/app/@theme/services/teacher-salary.service';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 
+
+
+interface ReportRecordTableItem extends TeacherMonthlyReportRecordDto {
+  displayIndex: number;
+}
 interface SummaryMetric {
   label: string;
   value: number | string;
@@ -26,7 +35,7 @@ interface SummaryMetric {
 @Component({
   selector: 'app-teacher-salary-details',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule, LoadingOverlayComponent],
+  imports: [CommonModule, MatButtonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule, MatTableModule, LoadingOverlayComponent],
   templateUrl: './teacher-salary-details.component.html',
   styleUrls: ['./teacher-salary-details.component.scss']
 })
@@ -42,6 +51,10 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
   invoice: TeacherSalaryInvoice | null = null;
   detailSummary: TeacherMonthlySummary | null = null;
   detailSummaryMetrics: SummaryMetric[] = [];
+  monthlyReportRecords: ReportRecordTableItem[] = [];
+  reportRecordsLoading = false;
+  reportRecordsError: string | null = null;
+  readonly reportColumns = ['index', 'studentName', 'minutes', 'salary', 'attendStatusId', 'recordCreatedAt'];
 
   private readonly numberFormatter = new Intl.NumberFormat('ar-EG', {
     maximumFractionDigits: 0
@@ -160,6 +173,7 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
             return;
           }
           this.applyDetails(response.data ?? null);
+          this.loadMonthlyReportRecords();
         },
         error: () => {
           this.toastService.error('فشل تحميل تفاصيل الفاتورة.');
@@ -171,6 +185,152 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
     this.invoice = details?.invoice ?? null;
     this.detailSummary = details?.monthlySummary ?? null;
     this.detailSummaryMetrics = this.buildSummaryMetrics(this.detailSummary);
+    this.monthlyReportRecords = [];
+    this.reportRecordsError = null;
+  }
+
+  private loadMonthlyReportRecords(): void {
+    const teacherId = this.readNumber(this.invoice, ['teacherId']) ?? this.readNumber(this.detailSummary, ['teacherId']);
+    const month = this.readString(this.invoice, ['month']) ?? this.readString(this.detailSummary, ['month']);
+
+    if (!teacherId || !month) {
+      this.reportRecordsError = 'تعذر تحميل السجلات التفصيلية لعدم اكتمال بيانات المعلم أو الشهر.';
+      return;
+    }
+
+    this.reportRecordsLoading = true;
+    this.teacherSalaryService
+      .getMonthlyReportRecords(month, teacherId)
+      .pipe(finalize(() => (this.reportRecordsLoading = false)))
+      .subscribe({
+        next: (response) => {
+          if (!response.isSuccess) {
+            this.reportRecordsError = 'فشل تحميل السجلات التفصيلية للتقارير.';
+            return;
+          }
+
+          const records = [...(response.data ?? [])].sort((a, b) => {
+            const aTime = this.parseDateToTime(a.recordCreatedAt);
+            const bTime = this.parseDateToTime(b.recordCreatedAt);
+            return bTime - aTime;
+          });
+
+          this.monthlyReportRecords = records.map((record, index) => ({
+            ...record,
+            displayIndex: index + 1
+          }));
+          this.reportRecordsError = null;
+        },
+        error: (error: HttpErrorResponse) => {
+          const status = error?.status;
+          this.reportRecordsError =
+            status === 401 || status === 403
+              ? 'ليس لديك صلاحية الوصول إلى التقارير التفصيلية لهذا المعلم.'
+              : 'فشل تحميل السجلات التفصيلية للتقارير.';
+        }
+      });
+  }
+
+
+  exportSummaryPdf(): void {
+    if (this.detailSummaryMetrics.length === 0) {
+      this.toastService.error('لا توجد بيانات إجمالية لتصديرها.');
+      return;
+    }
+
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let y = 15;
+
+    doc.setFontSize(14);
+    doc.text('Teacher Salary Monthly Summary', pageWidth / 2, y, { align: 'center' });
+    y += 8;
+
+    doc.setFontSize(10);
+    doc.text(`Teacher: ${this.invoice?.teacherName ?? this.detailSummary?.teacherName ?? '-'}`, 10, y);
+    y += 6;
+    doc.text(`Month: ${this.formatMonth()}`, 10, y);
+    y += 10;
+
+    for (const metric of this.detailSummaryMetrics) {
+      doc.text(`${metric.label}: ${this.formatMetricValue(metric)}`, 10, y);
+      y += 7;
+      if (y > 280) {
+        doc.addPage();
+        y = 15;
+      }
+    }
+
+    doc.save(this.buildPdfFileName('summary'));
+  }
+
+  exportDetailedReportPdf(): void {
+    if (this.monthlyReportRecords.length === 0) {
+      this.toastService.error('لا توجد بيانات تفصيلية لتصديرها.');
+      return;
+    }
+
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let y = 15;
+
+    doc.setFontSize(14);
+    doc.text('Teacher Salary Detailed Records', pageWidth / 2, y, { align: 'center' });
+    y += 8;
+
+    doc.setFontSize(10);
+    doc.text(`Teacher: ${this.invoice?.teacherName ?? this.detailSummary?.teacherName ?? '-'}`, 10, y);
+    y += 6;
+    doc.text(`Month: ${this.formatMonth()}`, 10, y);
+    y += 8;
+
+    for (const record of this.monthlyReportRecords) {
+      const line = `#${record.displayIndex} | Student: ${record.studentName ?? '-'} | Minutes: ${record.minutes ?? 0} | Salary: ${this.formatRecordSalary(record.salary)} | Status: ${record.attendStatusId ?? '-'} | Date: ${this.formatRecordDate(record.recordCreatedAt)}`;
+      const wrapped = doc.splitTextToSize(line, pageWidth - 20);
+      doc.text(wrapped, 10, y);
+      y += wrapped.length * 5 + 2;
+
+      if (y > 280) {
+        doc.addPage();
+        y = 15;
+      }
+    }
+
+    doc.save(this.buildPdfFileName('detailed'));
+  }
+
+  private buildPdfFileName(type: 'summary' | 'detailed'): string {
+    const teacher = (this.invoice?.teacherName ?? this.detailSummary?.teacherName ?? 'teacher')
+      .trim()
+      .replace(/\s+/g, '-');
+    const month = this.readString(this.invoice, ['month']) ?? this.readString(this.detailSummary, ['month']) ?? 'month';
+    return `${type}-report-${teacher}-${month}.pdf`;
+  }
+
+  formatRecordSalary(value: number | null | undefined): string {
+    if (typeof value !== 'number' || Number.isNaN(value)) {
+      return '—';
+    }
+    return this.currencyFormatter.format(value);
+  }
+
+  formatRecordDate(value: string | null | undefined): string {
+    if (!value) {
+      return '—';
+    }
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      return value;
+    }
+    return new Intl.DateTimeFormat('ar-EG', { dateStyle: 'medium', timeStyle: 'short' }).format(parsed);
+  }
+
+  private parseDateToTime(value: string | null | undefined): number {
+    if (!value) {
+      return 0;
+    }
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? 0 : parsed.getTime();
   }
 
   private buildSummaryMetrics(summary: TeacherMonthlySummary | null): SummaryMetric[] {
