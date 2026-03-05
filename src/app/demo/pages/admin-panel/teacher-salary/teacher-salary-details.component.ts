@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
 import { Subscription, finalize } from 'rxjs';
+import jsPDF from 'jspdf';
 
 import {
   TeacherMonthlySummary,
@@ -228,6 +229,82 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
               : 'فشل تحميل السجلات التفصيلية للتقارير.';
         }
       });
+  }
+
+
+  exportSummaryPdf(): void {
+    if (this.detailSummaryMetrics.length === 0) {
+      this.toastService.error('لا توجد بيانات إجمالية لتصديرها.');
+      return;
+    }
+
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let y = 15;
+
+    doc.setFontSize(14);
+    doc.text('Teacher Salary Monthly Summary', pageWidth / 2, y, { align: 'center' });
+    y += 8;
+
+    doc.setFontSize(10);
+    doc.text(`Teacher: ${this.invoice?.teacherName ?? this.detailSummary?.teacherName ?? '-'}`, 10, y);
+    y += 6;
+    doc.text(`Month: ${this.formatMonth()}`, 10, y);
+    y += 10;
+
+    for (const metric of this.detailSummaryMetrics) {
+      doc.text(`${metric.label}: ${this.formatMetricValue(metric)}`, 10, y);
+      y += 7;
+      if (y > 280) {
+        doc.addPage();
+        y = 15;
+      }
+    }
+
+    doc.save(this.buildPdfFileName('summary'));
+  }
+
+  exportDetailedReportPdf(): void {
+    if (this.monthlyReportRecords.length === 0) {
+      this.toastService.error('لا توجد بيانات تفصيلية لتصديرها.');
+      return;
+    }
+
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let y = 15;
+
+    doc.setFontSize(14);
+    doc.text('Teacher Salary Detailed Records', pageWidth / 2, y, { align: 'center' });
+    y += 8;
+
+    doc.setFontSize(10);
+    doc.text(`Teacher: ${this.invoice?.teacherName ?? this.detailSummary?.teacherName ?? '-'}`, 10, y);
+    y += 6;
+    doc.text(`Month: ${this.formatMonth()}`, 10, y);
+    y += 8;
+
+    for (const record of this.monthlyReportRecords) {
+      const line = `#${record.displayIndex} | Student: ${record.studentName ?? '-'} | Minutes: ${record.minutes ?? 0} | Salary: ${this.formatRecordSalary(record.salary)} | Status: ${record.attendStatusId ?? '-'} | Date: ${this.formatRecordDate(record.recordCreatedAt)}`;
+      const wrapped = doc.splitTextToSize(line, pageWidth - 20);
+      doc.text(wrapped, 10, y);
+      y += wrapped.length * 5 + 2;
+
+      if (y > 280) {
+        doc.addPage();
+        y = 15;
+      }
+    }
+
+    doc.save(this.buildPdfFileName('detailed'));
+  }
+
+  private buildPdfFileName(type: 'summary' | 'detailed'): string {
+    const teacher = (this.invoice?.teacherName ?? this.detailSummary?.teacherName ?? 'teacher')
+      .trim()
+      .replace(/\s+/g, '-');
+    const month = this.readString(this.invoice, ['month']) ?? this.readString(this.detailSummary, ['month']) ?? 'month';
+    return `${type}-report-${teacher}-${month}.pdf`;
   }
 
   formatRecordSalary(value: number | null | undefined): string {

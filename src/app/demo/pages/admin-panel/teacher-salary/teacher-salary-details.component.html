@@ -39,7 +39,13 @@
     </mat-card>
 
     <mat-card class="reports-card">
-      <h3>التقارير المستخدمة في احتساب الراتب</h3>
+      <div class="card-head">
+        <h3>التقارير المستخدمة في احتساب الراتب</h3>
+        <button mat-flat-button color="primary" type="button" (click)="exportDetailedReportPdf()" [disabled]="monthlyReportRecords.length === 0">
+          <mat-icon>picture_as_pdf</mat-icon>
+          تصدير PDF التفصيلي
+        </button>
+      </div>
 
       @if (reportRecordsLoading) {
         <div class="records-loading">
@@ -91,7 +97,13 @@
     </mat-card>
 
     <mat-card class="totals-card">
-      <h3>الإجماليات</h3>
+      <div class="card-head">
+        <h3>الإجماليات</h3>
+        <button mat-flat-button color="accent" type="button" (click)="exportSummaryPdf()" [disabled]="detailSummaryMetrics.length === 0">
+          <mat-icon>picture_as_pdf</mat-icon>
+          تصدير PDF الإجمالي
+        </button>
+      </div>
       @if (detailSummaryMetrics.length > 0) {
         <div class="summary-grid">
           @for (metric of detailSummaryMetrics; track metric.label) {
