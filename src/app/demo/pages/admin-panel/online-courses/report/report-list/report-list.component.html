@@ -73,23 +73,16 @@
                 </div>
 
 
-                <!-- From Date -->
-                <div class="col-12 col-md-6 col-xl-3">
+                <!-- Date Range -->
+                <div class="col-12 col-md-6 col-xl-6">
                   <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>{{ 'من تاريخ' | translate }}</mat-label>
-                    <input matInput [matDatepicker]="fromDatePicker" formControlName="fromDate" [max]="filterForm.get('toDate')?.value" />
-                    <mat-datepicker-toggle matSuffix [for]="fromDatePicker"></mat-datepicker-toggle>
-                    <mat-datepicker #fromDatePicker></mat-datepicker>
-                  </mat-form-field>
-                </div>
-
-                <!-- To Date -->
-                <div class="col-12 col-md-6 col-xl-3">
-                  <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>{{ 'إلى تاريخ' | translate }}</mat-label>
-                    <input matInput [matDatepicker]="toDatePicker" formControlName="toDate" [min]="filterForm.get('fromDate')?.value" />
-                    <mat-datepicker-toggle matSuffix [for]="toDatePicker"></mat-datepicker-toggle>
-                    <mat-datepicker #toDatePicker></mat-datepicker>
+                    <mat-label>{{ 'من / إلى تاريخ' | translate }}</mat-label>
+                    <mat-date-range-input [formGroup]="filterForm" [rangePicker]="reportRangePicker">
+                      <input matStartDate formControlName="fromDate" [placeholder]="'من تاريخ' | translate" />
+                      <input matEndDate formControlName="toDate" [placeholder]="'إلى تاريخ' | translate" />
+                    </mat-date-range-input>
+                    <mat-datepicker-toggle matSuffix [for]="reportRangePicker"></mat-datepicker-toggle>
+                    <mat-date-range-picker #reportRangePicker></mat-date-range-picker>
                   </mat-form-field>
                 </div>
 
