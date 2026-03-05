@@ -185,8 +185,22 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
   }
 
   private applyDetails(details: TeacherSalaryInvoiceDetails | null): void {
-    this.invoice = details?.invoice ?? null;
-    this.detailSummary = details?.monthlySummary ?? null;
+    const payload = details as Record<string, unknown> | null;
+    const monthlySummary =
+      details?.monthlySummary ??
+      (payload?.['MonthlySummary'] as TeacherMonthlySummary | null | undefined) ??
+      null;
+
+    const invoiceFromPayload =
+      details?.invoice ??
+      (payload?.['invoice'] as TeacherSalaryInvoice | null | undefined) ??
+      (payload?.['Invoice'] as TeacherSalaryInvoice | null | undefined) ??
+      ((monthlySummary as Record<string, unknown> | null)?.['invoice'] as TeacherSalaryInvoice | null | undefined) ??
+      ((monthlySummary as Record<string, unknown> | null)?.['Invoice'] as TeacherSalaryInvoice | null | undefined) ??
+      null;
+
+    this.invoice = invoiceFromPayload;
+    this.detailSummary = monthlySummary;
     this.detailSummaryMetrics = this.buildSummaryMetrics(this.detailSummary);
     this.monthlyReportRecords = [];
     this.reportRecordsError = null;
@@ -395,13 +409,32 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
     if (!source || typeof source !== 'object') {
       return null;
     }
+
     const record = source as Record<string, unknown>;
+
+    const normalizedEntries = Object.entries(record).map(([key, value]) => ({
+      key,
+      normalized: this.normalizeKey(key),
+      value
+    }));
+
     for (const key of keys) {
       if (record[key] !== undefined && record[key] !== null) {
         return record[key];
       }
+
+      const normalizedKey = this.normalizeKey(key);
+      const matched = normalizedEntries.find((entry) => entry.normalized === normalizedKey);
+      if (matched && matched.value !== undefined && matched.value !== null) {
+        return matched.value;
+      }
     }
+
     return null;
+  }
+
+  private normalizeKey(key: string): string {
+    return key.replace(/[_\-\s]/g, '').toLowerCase();
   }
 
   private readString(source: unknown, keys: string[]): string | null {
