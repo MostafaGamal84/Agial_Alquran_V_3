@@ -79,6 +79,21 @@ export interface TeacherSalaryInvoiceDetails {
   [key: string]: unknown;
 }
 
+export interface TeacherMonthlyReportRecordDto {
+  id: number;
+  teacherId: number;
+  teacherName?: string | null;
+  circleReportId?: number | null;
+  circleId?: number | null;
+  studentId?: number | null;
+  studentName?: string | null;
+  minutes: number;
+  salary: number;
+  attendStatusId?: number | null;
+  recordCreatedAt?: string | null;
+  circleReportCreatedAt?: string | null;
+}
+
 export interface UpdateTeacherPaymentDto {
   id: number;
   amount?: number | null;
@@ -190,6 +205,24 @@ export class TeacherSalaryService {
       `${this.baseUrl}/monthly-summary`,
       { params }
     );
+  }
+
+  getMonthlyReportRecords(
+    month: string,
+    teacherId: number,
+    useAdminEndpoint = true
+  ): Observable<ApiResponse<TeacherMonthlyReportRecordDto[]>> {
+    const params = new HttpParams()
+      .set('month', month)
+      .set('teacherId', teacherId.toString());
+
+    const endpoint = useAdminEndpoint
+      ? `${this.baseUrl}/monthly-report-records`
+      : `${environment.apiUrl}/api/TeacherSallary/MonthlyReportRecords`;
+
+    return this.http
+      .get<ApiResponse<TeacherMonthlyReportRecordDto[]>>(endpoint, { params })
+      .pipe(catchError((error: HttpErrorResponse) => throwError(() => error)));
   }
 
   generateMonthly(
