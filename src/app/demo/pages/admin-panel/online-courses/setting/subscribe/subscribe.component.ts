@@ -168,11 +168,11 @@ export class SubscribeComponent implements OnInit, OnDestroy {
 @Component({
   selector: 'app-delete-confirm-dialog',
   template: `
-    <div class="m-b-0 p-10 f-16 f-w-600">{{ 'Delete subscribe' | translate }}</div>
-    <div class="p-10">{{ 'Are you sure you want to delete this subscribe?' | translate }}</div>
+    <div class="m-b-0 p-10 f-16 f-w-600">{{ ' حذف الاشتراك'  }}</div>
+    <div class="p-10">{{ 'هل أنت متأكد من رغبتك في حذف هذا الاشتراك؟' }}</div>
     <div mat-dialog-actions>
-      <button mat-button mat-dialog-close>{{ 'No' | translate }}</button>
-      <button mat-button color="warn" [mat-dialog-close]="true">{{ 'Yes' | translate }}</button>
+      <button mat-button mat-dialog-close>{{ 'لا' }}</button>
+      <button mat-button color="warn" [mat-dialog-close]="true">{{ 'نعم' }}</button>
     </div>
   `,
   styles: [

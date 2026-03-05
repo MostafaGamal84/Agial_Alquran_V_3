@@ -71,9 +71,9 @@ export class StudentListComponent implements OnInit, OnDestroy {
   showMissingAssignmentsOnly = false;
 
   totalCount = 0;
-  filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 20 };
+  filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 40 };
   pageIndex = 0;
-  pageSize = 20;
+  pageSize = 40;
 
   showInactive = false;
   readonly isTeacher = this.auth.getRole() === UserTypesEnum.Teacher;
@@ -89,6 +89,8 @@ export class StudentListComponent implements OnInit, OnDestroy {
 
   isLoading = false;
   isLoadingMore = false;
+  private readonly pagePrefetchCount = 3;
+  private prefetchPagesRemaining = 0;
 
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;
@@ -163,7 +165,7 @@ export class StudentListComponent implements OnInit, OnDestroy {
     this.intersectionObserver?.disconnect();
   }
 
-  // ✅ Search (server-side like your original)
+  // Search (server-side like your original)
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     this.searchTerm = filterValue;
@@ -194,6 +196,9 @@ export class StudentListComponent implements OnInit, OnDestroy {
 
   private loadStudents(append = false) {
     this.filter.residentGroup = this.selectedResidencyGroup;
+    if (!append) {
+      this.prefetchPagesRemaining = 0;
+    }
     this.isLoading = !append;
     this.isLoadingMore = append;
 
@@ -211,6 +216,7 @@ export class StudentListComponent implements OnInit, OnDestroy {
         finalize(() => {
           this.isLoading = false;
           this.isLoadingMore = false;
+          this.tryPrefetchNextPage();
         })
       )
       .subscribe({
@@ -222,6 +228,10 @@ export class StudentListComponent implements OnInit, OnDestroy {
 
             this.totalCount = res.data.totalCount;
             this.applyDisplayData();
+
+            if (!append) {
+              this.startAutoPrefetch();
+            }
           } else {
             if (!append) {
               this.allLoadedStudents = [];
@@ -329,7 +339,7 @@ export class StudentListComponent implements OnInit, OnDestroy {
     this.intersectionObserver = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {
-          this.loadNextPage();
+          this.startAutoPrefetch();
         }
       },
       { root: null, rootMargin: '0px 0px 20% 0px' }
@@ -346,6 +356,25 @@ export class StudentListComponent implements OnInit, OnDestroy {
     this.filter.skipCount = this.pageIndex * this.pageSize;
     this.filter.maxResultCount = this.pageSize;
     this.loadStudents(true);
+  }
+
+  private startAutoPrefetch(): void {
+    if (this.isLoading || this.isLoadingMore) return;
+    if (!this.hasMoreResults()) return;
+    this.prefetchPagesRemaining = this.pagePrefetchCount;
+    this.tryPrefetchNextPage();
+  }
+
+  private tryPrefetchNextPage(): void {
+    if (this.prefetchPagesRemaining <= 0) return;
+    if (this.isLoading || this.isLoadingMore) return;
+    if (!this.hasMoreResults()) {
+      this.prefetchPagesRemaining = 0;
+      return;
+    }
+
+    this.prefetchPagesRemaining -= 1;
+    this.loadNextPage();
   }
 
   buildWhatsAppLink(phone: string | null | undefined): string | undefined {
@@ -479,7 +508,7 @@ export class StudentListComponent implements OnInit, OnDestroy {
     this.selectedResidencyGroup = state.selectedResidencyGroup ?? 'all';
     this.showMissingAssignmentsOnly = !!state.showMissingAssignmentsOnly;
     this.pageIndex = Number.isInteger(state.pageIndex) ? state.pageIndex : 0;
-    this.pageSize = Number.isInteger(state.pageSize) ? state.pageSize : 20;
+    this.pageSize = Number.isInteger(state.pageSize) ? state.pageSize : 40;
 
     this.filter = {
       ...state.filter,
