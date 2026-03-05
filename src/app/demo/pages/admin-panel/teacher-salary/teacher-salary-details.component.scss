@@ -61,3 +61,40 @@ h3 {
 .empty-state.secondary {
   margin-top: 0.4rem;
 }
+
+.records-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.reports-table-container {
+  overflow-x: auto;
+}
+
+.reports-table {
+  width: 100%;
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.reports-table th,
+.reports-table td {
+  white-space: nowrap;
+}
+
+.reports-table th {
+  font-weight: 700;
+}
+
+@media print {
+  .card-head button {
+    display: none !important;
+  }
+}
