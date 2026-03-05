@@ -84,6 +84,8 @@ export class CircleReportService {
       teacherId?: number | null;
       residentId?: number | null;
       residentGroup?: ResidencyGroupFilter | null;
+      fromDate?: string | null;
+      toDate?: string | null;
     }
   ): Observable<ApiResponse<PagedResultDto<CircleReportListDto>>> {
     let params = new HttpParams();
@@ -129,6 +131,12 @@ export class CircleReportService {
     }
     if (options?.residentGroup && options.residentGroup !== 'all') {
       params = params.set('residentGroup', options.residentGroup);
+    }
+    if (options?.fromDate) {
+      params = params.set('fromDate', options.fromDate);
+    }
+    if (options?.toDate) {
+      params = params.set('toDate', options.toDate);
     }
 
     return this.http

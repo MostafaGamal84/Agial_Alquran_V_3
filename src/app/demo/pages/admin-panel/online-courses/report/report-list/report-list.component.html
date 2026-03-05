@@ -72,6 +72,20 @@
                   </mat-form-field>
                 </div>
 
+
+                <!-- Date Range -->
+                <div class="col-12 col-md-6 col-xl-6">
+                  <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>{{ 'من / إلى تاريخ' | translate }}</mat-label>
+                    <mat-date-range-input [formGroup]="filterForm" [rangePicker]="reportRangePicker">
+                      <input matStartDate formControlName="fromDate" [placeholder]="'من تاريخ' | translate" />
+                      <input matEndDate formControlName="toDate" [placeholder]="'إلى تاريخ' | translate" />
+                    </mat-date-range-input>
+                    <mat-datepicker-toggle matSuffix [for]="reportRangePicker"></mat-datepicker-toggle>
+                    <mat-date-range-picker #reportRangePicker></mat-date-range-picker>
+                  </mat-form-field>
+                </div>
+
               </div>
             </form>
 
