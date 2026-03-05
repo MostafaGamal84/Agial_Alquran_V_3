@@ -21,6 +21,7 @@ import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { ManagerDetailsComponent } from '../manager-details/manager-details.component';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 import { ToastService } from 'src/app/@theme/services/toast.service';
+import { UserEditComponent } from '../../user-edit/user-edit.component';
 @Component({
   selector: 'app-manager-list',
   imports: [CommonModule, SharedModule, RouterModule, MatDialogModule, LoadingOverlayComponent],
@@ -130,6 +131,26 @@ export class ManagerListComponent implements OnInit, OnDestroy {
           this.totalCount = 0;
         }
       });
+  }
+
+
+  openEditDialog(manager: LookUpUserDto): void {
+    const dialogRef = this.dialog.open(UserEditComponent, {
+      width: '1100px',
+      maxWidth: '95vw',
+      maxHeight: '95vh',
+      data: { userId: manager.id, userType: 'manager' }
+    });
+
+    dialogRef.afterClosed().subscribe((updatedUser: LookUpUserDto | undefined) => {
+      if (!updatedUser?.id) {
+        return;
+      }
+
+      this.dataSource.data = this.dataSource.data.map((item) =>
+        item.id === updatedUser.id ? { ...item, ...updatedUser } : item
+      );
+    });
   }
 
   managerDetails(manager: LookUpUserDto): void {

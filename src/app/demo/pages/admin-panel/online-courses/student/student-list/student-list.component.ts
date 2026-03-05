@@ -19,6 +19,7 @@ import { UserService } from 'src/app/@theme/services/user.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { StudentDetailsComponent } from '../student-details/student-details.component';
 import { ToastService } from 'src/app/@theme/services/toast.service';
+import { UserEditComponent } from '../../user-edit/user-edit.component';
 import { DisableUserConfirmDialogComponent } from './student-list.disable-user-confirm-dialog.component';
 import { RESIDENCY_GROUP_OPTIONS, ResidencyGroupFilter } from 'src/app/@theme/types/residency-group';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
@@ -262,6 +263,27 @@ export class StudentListComponent implements OnInit, OnDestroy {
     this.pageIndex = 0;
     this.filter.skipCount = 0;
     this.loadStudents();
+  }
+
+
+  openEditDialog(student: LookUpUserDto): void {
+    const dialogRef = this.dialog.open(UserEditComponent, {
+      width: '1100px',
+      maxWidth: '95vw',
+      maxHeight: '95vh',
+      data: { userId: student.id, userType: 'student' }
+    });
+
+    dialogRef.afterClosed().subscribe((updatedUser: LookUpUserDto | undefined) => {
+      if (!updatedUser?.id) {
+        return;
+      }
+
+      this.allLoadedStudents = this.allLoadedStudents.map((item) =>
+        item.id === updatedUser.id ? { ...item, ...updatedUser } : item
+      );
+      this.applyDisplayData();
+    });
   }
 
   studentDetails(student: LookUpUserDto): void {
