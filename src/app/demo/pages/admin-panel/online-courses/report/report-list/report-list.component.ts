@@ -90,10 +90,12 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     circleId: [null],
     studentId: [null],
     residentId: [null],
-    residentGroup: ['all']
+    residentGroup: ['all'],
+    fromDate: [null],
+    toDate: [null]
   });
 
-  displayedColumns: string[] = ['index', 'student', 'circle', 'status', 'generalRate', 'isVisual', 'nextCircleOrder', 'creationTime', 'minutes', 'actions'];
+  displayedColumns: string[] = ['index', 'student', 'circle', 'status' , 'creationTime', 'minutes', 'actions'];
   dataSource = new MatTableDataSource<CircleReportListDto>();
 
   // 🔢 خصائص الباجينيتور – سيرفر سايد
@@ -175,6 +177,16 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
       .get('residentGroup')
       ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe((group: ResidencyGroupFilter | null) => this.onResidencyGroupChange(group));
+
+    this.filterForm
+      .get('fromDate')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.onDateRangeChange());
+
+    this.filterForm
+      .get('toDate')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.onDateRangeChange());
   }
 
 
@@ -339,6 +351,31 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loadReports();
   }
 
+  private onDateRangeChange(): void {
+    const fromDate = this.toDateOnlyString(this.filterForm.get('fromDate')?.value);
+    const toDate = this.toDateOnlyString(this.filterForm.get('toDate')?.value);
+
+    if (fromDate && toDate && fromDate > toDate) {
+      this.toast.error(this.translate.instant('تاريخ البداية يجب أن يكون قبل تاريخ النهاية'));
+      return;
+    }
+
+    this.applyFilters();
+  }
+
+  private toDateOnlyString(value: unknown): string | undefined {
+    if (!value) {
+      return undefined;
+    }
+
+    const date = new Date(value as string);
+    if (Number.isNaN(date.getTime())) {
+      return undefined;
+    }
+
+    return date.toISOString().slice(0, 10);
+  }
+
   private onResidencyChange(residentId: number | null): void {
     this.selectedResidentId = residentId && residentId > 0 ? residentId : null;
     this.filterForm.patchValue({ studentId: null }, { emitEvent: false });
@@ -414,7 +451,9 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
         studentId: this.selectedStudentId,
         teacherId: this.teacherId,
         residentId: this.selectedResidentId ?? undefined,
-        residentGroup: this.selectedResidencyGroup
+        residentGroup: this.selectedResidencyGroup,
+        fromDate: this.toDateOnlyString(this.filterForm.get('fromDate')?.value),
+        toDate: this.toDateOnlyString(this.filterForm.get('toDate')?.value)
       })
       .subscribe({
         next: (res) => {

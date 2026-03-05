@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { FieldErrorComponent } from 'src/app/shared/validation/field-error/field-error.component';
 import { ValidationService } from 'src/app/shared/validation/validation.service';
@@ -40,6 +40,7 @@ export class ReportAddComponent implements OnInit, OnDestroy {
   readonly validationService = inject(ValidationService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private location = inject(Location);
   private dialog = inject(MatDialog);
 
   private destroy$ = new Subject<void>();
@@ -730,6 +731,7 @@ export class ReportAddComponent implements OnInit, OnDestroy {
           this.toast.success(successMessage);
 
           if (this.mode === 'update') {
+            this.location.back();
             return;
           }
 
