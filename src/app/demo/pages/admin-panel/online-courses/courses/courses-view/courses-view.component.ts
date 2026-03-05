@@ -67,6 +67,7 @@ type BranchGenderFilter = 'all' | 'رجال' | 'نساء';
 interface CourseTableFilters {
   gender: BranchGenderFilter;
   teacherName: string;
+  showMissingAssignmentsOnly: boolean;
 }
 
 @Component({
@@ -100,6 +101,7 @@ export class CoursesViewComponent implements OnInit, AfterViewInit, OnDestroy {
   ];
   selectedGenderFilter: BranchGenderFilter = 'all';
   teacherNameFilter = '';
+  showMissingAssignmentsOnly = false;
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
   pageIndex = 0;
@@ -209,6 +211,11 @@ export class CoursesViewComponent implements OnInit, AfterViewInit, OnDestroy {
     this.applyTableFilters();
   }
 
+  onMissingAssignmentsOnlyChange(checked: boolean): void {
+    this.showMissingAssignmentsOnly = checked;
+    this.applyTableFilters();
+  }
+
   private setupFilterPredicate(): void {
     this.dataSource.filterPredicate = (course: CircleViewModel, rawFilter: string): boolean => {
       const parsedFilter = this.parseFilterValue(rawFilter);
@@ -227,6 +234,10 @@ export class CoursesViewComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       }
 
+      if (parsedFilter.showMissingAssignmentsOnly && !this.hasMissingAssignments(course)) {
+        return false;
+      }
+
       return true;
     };
   }
@@ -234,7 +245,8 @@ export class CoursesViewComponent implements OnInit, AfterViewInit, OnDestroy {
   private applyTableFilters(): void {
     const filterValue: CourseTableFilters = {
       gender: this.selectedGenderFilter,
-      teacherName: this.teacherNameFilter.trim()
+      teacherName: this.teacherNameFilter.trim(),
+      showMissingAssignmentsOnly: this.showMissingAssignmentsOnly
     };
     this.dataSource.filter = JSON.stringify(filterValue);
   }
@@ -244,12 +256,14 @@ export class CoursesViewComponent implements OnInit, AfterViewInit, OnDestroy {
       const parsed = JSON.parse(rawFilter) as Partial<CourseTableFilters>;
       return {
         gender: parsed.gender === 'رجال' || parsed.gender === 'نساء' ? parsed.gender : 'all',
-        teacherName: typeof parsed.teacherName === 'string' ? parsed.teacherName.trim() : ''
+        teacherName: typeof parsed.teacherName === 'string' ? parsed.teacherName.trim() : '',
+        showMissingAssignmentsOnly: !!parsed.showMissingAssignmentsOnly
       };
     } catch {
       return {
         gender: 'all',
-        teacherName: ''
+        teacherName: '',
+        showMissingAssignmentsOnly: false
       };
     }
   }

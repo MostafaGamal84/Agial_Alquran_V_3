@@ -42,6 +42,8 @@ export class TeacherListComponent implements OnInit, OnDestroy {
   // public props
   displayedColumns: string[] = ['serial', 'fullName', 'email', 'mobile', 'action'];
   dataSource = new MatTableDataSource<LookUpUserDto>();
+  allLoadedTeachers: LookUpUserDto[] = [];
+  showMissingAssignmentsOnly = false;
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
   pageIndex = 0;
@@ -93,6 +95,11 @@ export class TeacherListComponent implements OnInit, OnDestroy {
     return index + 1;
   }
 
+  onMissingAssignmentsOnlyChange(checked: boolean): void {
+    this.showMissingAssignmentsOnly = checked;
+    this.applyDisplayData();
+  }
+
 
   ngOnDestroy(): void {
     this.intersectionObserver?.disconnect();
@@ -120,20 +127,23 @@ export class TeacherListComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res) => {
           if (res.isSuccess && res.data?.items) {
-            this.dataSource.data = append
-              ? [...this.dataSource.data, ...res.data.items]
+            this.allLoadedTeachers = append
+              ? [...this.allLoadedTeachers, ...res.data.items]
               : res.data.items;
+            this.applyDisplayData();
             this.totalCount = res.data.totalCount;
           } else {
             if (!append) {
-              this.dataSource.data = [];
+              this.allLoadedTeachers = [];
+              this.applyDisplayData();
             }
             this.totalCount = 0;
           }
         },
         error: () => {
           if (!append) {
-            this.dataSource.data = [];
+            this.allLoadedTeachers = [];
+            this.applyDisplayData();
           }
           this.totalCount = 0;
         }
@@ -154,9 +164,10 @@ export class TeacherListComponent implements OnInit, OnDestroy {
         return;
       }
 
-      this.dataSource.data = this.dataSource.data.map((item) =>
+      this.allLoadedTeachers = this.allLoadedTeachers.map((item) =>
         item.id === updatedUser.id ? { ...item, ...updatedUser } : item
       );
+      this.applyDisplayData();
     });
   }
 
@@ -210,7 +221,8 @@ export class TeacherListComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res) => {
           if (res.isSuccess) {
-            this.dataSource.data = this.dataSource.data.filter((item) => item.id !== teacher.id);
+            this.allLoadedTeachers = this.allLoadedTeachers.filter((item) => item.id !== teacher.id);
+            this.applyDisplayData();
             this.totalCount = Math.max(this.totalCount - 1, 0);
             this.toast.success(this.translate.instant('Teacher disabled successfully'));
             return;
@@ -269,7 +281,15 @@ export class TeacherListComponent implements OnInit, OnDestroy {
   }
 
   hasMoreResults(): boolean {
-    return this.dataSource.data.length < this.totalCount;
+    return this.allLoadedTeachers.length < this.totalCount;
+  }
+
+  private applyDisplayData(): void {
+    const filtered = this.showMissingAssignmentsOnly
+      ? this.allLoadedTeachers.filter((teacher) => this.hasMissingAssignments(teacher))
+      : this.allLoadedTeachers;
+
+    this.dataSource.data = [...filtered];
   }
 
   hasMissingAssignments(teacher: LookUpUserDto): boolean {
