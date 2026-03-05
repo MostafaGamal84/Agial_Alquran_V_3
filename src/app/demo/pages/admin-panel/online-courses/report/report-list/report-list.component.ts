@@ -16,6 +16,8 @@ import {
 } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
@@ -68,6 +70,8 @@ interface StudentOption {
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
     ReactiveFormsModule
   ],
   templateUrl: './report-list.component.html',
@@ -105,7 +109,9 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   filter: FilteredResultRequestDto = {
     skipCount: 0,
-    maxResultCount: 10
+    maxResultCount: 10,
+    sortBy: 'CreationTime',
+    sortingDirection: 'desc'
   };
 
   circles: CircleDto[] = [];
@@ -458,9 +464,15 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
       .subscribe({
         next: (res) => {
           if (res.isSuccess && res.data?.items) {
-            this.dataSource.data = append
+            const mergedItems = append
               ? [...this.dataSource.data, ...res.data.items]
               : res.data.items;
+
+            this.dataSource.data = mergedItems.sort((a, b) => {
+              const first = a.creationTime ? new Date(a.creationTime).getTime() : 0;
+              const second = b.creationTime ? new Date(b.creationTime).getTime() : 0;
+              return second - first;
+            });
             this.totalCount = Number(res.data.totalCount) || 0;
           } else {
             if (!append) {
