@@ -33,7 +33,7 @@
         </div>
         <div>
           <span>الراتب</span>
-          <strong>{{ invoice?.salary  }} ج م</strong>
+          <strong>{{ invoice?.salary}}</strong>
         </div>
       </div>
     </mat-card>
@@ -42,7 +42,8 @@
       <div class="card-head">
         <div>
           <h3>التقارير المستخدمة في احتساب الراتب</h3>
-          <p class="report-meta">المعلم: {{ getTeacherName() }} | الشهر: {{ formatMonth() }}</p>
+           <p class="report-meta"> {{ invoice?.teacherName}}</p>
+          <p class="report-meta"> {{ invoice?.month|date:'MMMM' }}</p>
         </div>
         <button mat-flat-button color="primary" type="button" (click)="exportDetailedReportPdf()" [disabled]="monthlyReportRecords.length === 0">
           <mat-icon>picture_as_pdf</mat-icon>
@@ -103,7 +104,8 @@
       <div class="card-head">
         <div>
           <h3>الإجماليات</h3>
-          <p class="report-meta">المعلم: {{ getTeacherName() }} | الشهر: {{ formatMonth() }}</p>
+          <p class="report-meta"> {{ invoice?.teacherName}}</p>
+          <p class="report-meta"> {{ invoice?.month|date:'MMMM' }}</p>
         </div>
         <button mat-flat-button color="accent" type="button" (click)="exportSummaryPdf()" [disabled]="detailSummaryMetrics.length === 0">
           <mat-icon>picture_as_pdf</mat-icon>
