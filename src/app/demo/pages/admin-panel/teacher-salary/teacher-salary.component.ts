@@ -11,7 +11,6 @@ import {
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatSort, MatSortModule } from '@angular/material/sort';
-import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
 import { MatDatepicker, MatDatepickerModule } from '@angular/material/datepicker';
 import {
   DateAdapter,
@@ -23,7 +22,6 @@ import {
   MomentDateAdapter,
   MAT_MOMENT_DATE_ADAPTER_OPTIONS
 } from '@angular/material-moment-adapter';
-import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -69,6 +67,7 @@ import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { environment } from 'src/environments/environment';
 import { TranslateModule } from '@ngx-translate/core';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
+import { Router } from '@angular/router';
 const PRINT_ACCENT_COLOR = '#134273';
 const PRINT_ACCENT_LIGHT = '#f3f6fd';
 const PRINT_BORDER_COLOR = '#dfe6f2';
@@ -124,9 +123,7 @@ class InvoicePrintContextError extends Error {
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    MatSidenavModule,
     MatIconModule,
-    MatDividerModule,
     MatButtonModule,
     MatProgressSpinnerModule,
     MatCardModule,
@@ -162,6 +159,7 @@ export class TeacherSalaryComponent
   private toastService = inject(ToastService);
   private lookupService = inject(LookupService);
   private authenticationService = inject(AuthenticationService);
+  private router = inject(Router);
 
   private readonly apiBaseUrl = environment.apiUrl.replace(/\/+$/, '');
   private subscriptions = new Subscription();
@@ -272,8 +270,6 @@ export class TeacherSalaryComponent
   readonly canGenerateInvoices = this.role === UserTypesEnum.Admin || this.role === UserTypesEnum.Manager;
   readonly isTeacher = this.role === UserTypesEnum.Teacher;
 
-  @ViewChild('detailDrawer') detailDrawer?: MatDrawer;
-
   ngOnInit(): void {
     this.updateDisplayedColumns();
     if (this.canManagePayments) {
@@ -339,22 +335,14 @@ export class TeacherSalaryComponent
   }
 
   openInvoice(invoice: TeacherSalaryInvoice): void {
-    if (!invoice) {
+    if (!invoice || !invoice.id) {
       return;
     }
     this.selectedInvoice = invoice;
-    this.loadInvoiceDetails(invoice.id);
+    this.router.navigate(['teacher-salary', 'details', invoice.id]);
   }
 
   closeDetails(): void {
-    this.selectedInvoice = null;
-    this.invoiceDetails = null;
-    this.detailSummary = null;
-    this.detailSummaryMetrics = [];
-    this.detailDrawer?.close();
-  }
-
-  onDrawerClosed(): void {
     this.selectedInvoice = null;
     this.invoiceDetails = null;
     this.detailSummary = null;
@@ -910,7 +898,7 @@ export class TeacherSalaryComponent
       });
   }
 
-  private loadInvoiceDetails(invoiceId: number, openDrawer = true): void {
+  private loadInvoiceDetails(invoiceId: number): void {
     this.detailsLoading = true;
     this.teacherSalaryService
       .getInvoiceDetails(invoiceId)
@@ -924,9 +912,6 @@ export class TeacherSalaryComponent
               this.detailSummary?.invoice ?? response.data?.invoice ?? this.selectedInvoice;
             this.selectedInvoice = this.findInvoiceById(invoiceId) ?? invoiceCandidate ?? null;
             this.detailSummaryMetrics = this.buildSummaryMetrics(this.detailSummary);
-            if (openDrawer) {
-              setTimeout(() => this.detailDrawer?.open(), 0);
-            }
           } else {
             this.handleErrors(response.errors, 'فشل تحميل تفاصيل الفاتورة.');
           }
@@ -1350,7 +1335,7 @@ export class TeacherSalaryComponent
     this.applyInvoices(updatedData);
 
     if (this.selectedInvoice?.id === updatedInvoice.id) {
-      this.loadInvoiceDetails(updatedInvoice.id, false);
+      this.loadInvoiceDetails(updatedInvoice.id);
     }
   }
 

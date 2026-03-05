@@ -1,103 +1,4 @@
 <app-loading-overlay [isLoading]="pageLoading">
-  <mat-drawer-container class="teacher-salary-container">
-  <mat-drawer
-    #detailDrawer
-    class="teacher-salary-drawer"
-    mode="over"
-    position="end"
-    (closedStart)="onDrawerClosed()"
-  >
-    <div class="drawer-content">
-      <div class="drawer-header">
-        <div>
-          <h3 class="drawer-title">{{ 'Invoice Details' | translate }}</h3>
-          @if (selectedInvoice?.teacherName || detailSummary?.teacherName) {
-            <p class="drawer-subtitle">
-              {{ selectedInvoice?.teacherName ?? detailSummary?.teacherName }}
-            </p>
-          }
-        </div>
-        <button mat-icon-button type="button" (click)="closeDetails()">
-          <mat-icon>close</mat-icon>
-        </button>
-      </div>
-      <mat-divider></mat-divider>
-
-      @if (detailsLoading) {
-        <div class="drawer-loading">
-          <mat-progress-spinner diameter="40" mode="indeterminate"></mat-progress-spinner>
-        </div>
-      } @else if (invoiceDetails || selectedInvoice) {
-        <div class="drawer-section">
-          <h4>{{ 'Invoice' | translate }}</h4>
-          <div class="detail-grid">
-            <div class="detail-item">
-              <span class="label">{{ 'Month' | translate }}</span>
-              <span class="value">{{ formatMonth(selectedInvoice) }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="label">{{ 'Salary' | translate }}</span>
-              <span class="value">{{ formatSalary(selectedInvoice) }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="label">{{ 'Status' | translate }}</span>
-              <span class="value">{{ getStatusLabel(selectedInvoice) }}</span>
-            </div>
-            <div class="detail-item">
-              <span class="label">{{ 'Paid At' | translate }}</span>
-              <span class="value">
-                @if (selectedInvoice?.payedAt) {
-                  {{ selectedInvoice?.payedAt | date: 'medium' }}
-                } @else {
-                  —
-                }
-              </span>
-            </div>
-            <div class="detail-item">
-              <span class="label">{{ 'Receipt' | translate }}</span>
-              <span class="value">
-                @if (selectedInvoice && getReceiptUrl(selectedInvoice)) {
-                  <a
-                    [href]="getReceiptUrl(selectedInvoice)"
-                    target="_blank"
-                    rel="noopener"
-                  >
-                    {{ 'View Receipt' | translate }}
-                  </a>
-                } @else {
-                  —
-                }
-              </span>
-            </div>
-          </div>
-        </div>
-        <mat-divider></mat-divider>
-        <div class="drawer-section">
-            <div class="section-header">
-              <h4>{{ 'Monthly Summary' | translate }}</h4>
-          </div>
-          @if (detailSummaryMetrics.length > 0) {
-            <div class="summary-metrics">
-              @for (metric of detailSummaryMetrics; track metric.label) {
-                <div class="metric-card">
-                  <span class="metric-label">{{ metric.label }}</span>
-                  <span class="metric-value">{{ formatMetricValue(metric) }}</span>
-                </div>
-              }
-            </div>
-          } @else {
-            <p class="empty-state">{{ 'No Summary Data For Invoice' | translate }}</p>
-          }
-        </div>
-      } @else {
-        <div class="drawer-empty">
-          <p>{{ 'Select Invoice Prompt' | translate }}</p>
-        </div>
-      }
-    </div>
-  </mat-drawer>
-
-  <mat-drawer-content>
     <div class="page-header">
       <div>
         <!-- <h2 class="page-title">Teacher Salary</h2> -->
@@ -334,6 +235,18 @@
               >
                 <mat-icon>account_balance_wallet</mat-icon>
               </button>
+              <button
+                mat-icon-button
+                type="button"
+                color="primary"
+                class="action-button"
+                matTooltip="عرض التفاصيل"
+                aria-label="عرض التفاصيل"
+                (click)="openInvoice(row); $event.stopPropagation()"
+                (mousedown)="$event.preventDefault()"
+              >
+                <mat-icon>visibility</mat-icon>
+              </button>
             </td>
           </ng-container>
 
@@ -408,6 +321,4 @@
         <div class="empty-state">{{ 'No Summary Data For Month' | translate }}</div>
       }
     </mat-card>
-  </mat-drawer-content>
-  </mat-drawer-container>
 </app-loading-overlay>
