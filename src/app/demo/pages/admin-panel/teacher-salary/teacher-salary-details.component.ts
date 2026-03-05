@@ -41,8 +41,8 @@ interface SummaryMetric {
   styleUrls: ['./teacher-salary-details.component.scss']
 })
 export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
-  @ViewChild('reportsExportSection') reportsExportSection?: ElementRef<HTMLElement>;
-  @ViewChild('summaryExportSection') summaryExportSection?: ElementRef<HTMLElement>;
+  @ViewChild('reportsExportSection', { read: ElementRef }) reportsExportSection?: ElementRef<HTMLElement>;
+  @ViewChild('summaryExportSection', { read: ElementRef }) summaryExportSection?: ElementRef<HTMLElement>;
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly teacherSalaryService = inject(TeacherSalaryService);
@@ -200,8 +200,6 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
       null;
 
     this.invoice = invoiceFromPayload;
-    console.log(this.invoice);
-    
     this.detailSummary = monthlySummary;
     this.detailSummaryMetrics = this.buildSummaryMetrics(this.detailSummary);
     this.monthlyReportRecords = [];
