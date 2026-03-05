@@ -23,25 +23,10 @@ interface SummaryMetric {
   suffix?: string;
 }
 
-interface InvoiceReportItem {
-  title: string;
-  date: string;
-  status: string;
-  minutes: string;
-  amount: string;
-}
-
 @Component({
   selector: 'app-teacher-salary-details',
   standalone: true,
-  imports: [
-    CommonModule,
-    MatButtonModule,
-    MatCardModule,
-    MatIconModule,
-    MatProgressSpinnerModule,
-    LoadingOverlayComponent
-  ],
+  imports: [CommonModule, MatButtonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule, LoadingOverlayComponent],
   templateUrl: './teacher-salary-details.component.html',
   styleUrls: ['./teacher-salary-details.component.scss']
 })
@@ -57,7 +42,6 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
   invoice: TeacherSalaryInvoice | null = null;
   detailSummary: TeacherMonthlySummary | null = null;
   detailSummaryMetrics: SummaryMetric[] = [];
-  reportItems: InvoiceReportItem[] = [];
 
   private readonly numberFormatter = new Intl.NumberFormat('ar-EG', {
     maximumFractionDigits: 0
@@ -137,8 +121,9 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
 
   formatSalary(): string {
     const amount =
-      this.readNumber(this.invoice, ['salaryAmount', 'totalSalary', 'salary']) ??
-      this.readNumber(this.detailSummary, ['netSalary', 'takeHomePay', 'salaryTotal', 'totalSalary']);
+      this.readNumber(this.invoice, ['salary']) ??
+      this.readNumber(this.invoice, ['salaryAmount', 'totalSalary']) ??
+      this.readNumber(this.detailSummary, ['totalSalary', 'salaryTotal', 'netSalary', 'takeHomePay']);
     return amount === null ? '—' : this.currencyFormatter.format(amount);
   }
 
@@ -186,44 +171,6 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
     this.invoice = details?.invoice ?? null;
     this.detailSummary = details?.monthlySummary ?? null;
     this.detailSummaryMetrics = this.buildSummaryMetrics(this.detailSummary);
-    this.reportItems = this.extractReportItems(details);
-  }
-
-  private extractReportItems(details: TeacherSalaryInvoiceDetails | null): InvoiceReportItem[] {
-    if (!details) {
-      return [];
-    }
-
-    const candidateArrays: unknown[] = [
-      this.readUnknown(details, ['reports', 'teacherReports', 'reportItems', 'attendanceReports', 'sessions', 'items']),
-      this.readUnknown(details.monthlySummary, ['reports', 'teacherReports', 'reportItems', 'attendanceReports', 'sessions', 'items'])
-    ];
-
-    const reportsArray = candidateArrays.find((candidate) => Array.isArray(candidate));
-    if (!Array.isArray(reportsArray)) {
-      return [];
-    }
-
-    return reportsArray
-      .map((item, index) => {
-        const source = item as Record<string, unknown>;
-        const title = this.readString(source, ['title', 'name', 'reportName', 'sessionTitle']) ?? `تقرير ${index + 1}`;
-        const date = this.formatDate(this.readUnknown(source, ['date', 'reportDate', 'createdAt', 'attendanceDate']));
-        const status =
-          this.readString(source, ['status', 'attendanceStatus', 'state']) ??
-          (this.readBoolean(source, ['isPresent', 'present']) ? 'حضور' : '—');
-        const minutesValue = this.readNumber(source, ['minutes', 'teachingMinutes', 'durationMinutes']);
-        const amountValue = this.readNumber(source, ['amount', 'salaryAmount', 'reportAmount']);
-
-        return {
-          title,
-          date,
-          status,
-          minutes: minutesValue === null ? '—' : `${this.numberFormatter.format(minutesValue)} دقيقة`,
-          amount: amountValue === null ? '—' : this.currencyFormatter.format(amountValue)
-        };
-      })
-      .filter((item) => item.title || item.date !== '—' || item.amount !== '—');
   }
 
   private buildSummaryMetrics(summary: TeacherMonthlySummary | null): SummaryMetric[] {
@@ -231,12 +178,7 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
       return [];
     }
     const metrics: SummaryMetric[] = [];
-    const addMetric = (
-      label: string,
-      keys: string[],
-      type: SummaryMetric['type'],
-      suffix?: string
-    ) => {
+    const addMetric = (label: string, keys: string[], type: SummaryMetric['type'], suffix?: string) => {
       for (const key of keys) {
         const raw = (summary as Record<string, unknown>)[key];
         if (raw === null || raw === undefined || raw === '') {
@@ -256,34 +198,14 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
       }
     };
 
-    addMetric('التقارير', ['totalReports', 'reportCount'], 'number');
-    addMetric('الحضور', ['presentCount', 'attendanceCount', 'totalAttendance', 'attendedSessions'], 'number');
+    addMetric('التقارير', ['totalReports'], 'number');
+    addMetric('الحضور', ['presentCount'], 'number');
     addMetric('الغياب المبرر', ['absentWithExcuseCount'], 'number');
     addMetric('الغياب غير المبرر', ['absentWithoutExcuseCount'], 'number');
-    addMetric('إجمالي الغياب', ['absenceCount', 'totalAbsence', 'missedSessions'], 'number');
-    addMetric('عدد الحصص', ['sessionCount', 'lessonsCount'], 'number');
-    addMetric('دقائق التدريس', ['teachingMinutes', 'totalMinutes'], 'number', 'دقيقة');
-    addMetric('الدقائق الإضافية', ['overtimeMinutes'], 'number', 'دقيقة');
-    addMetric('الراتب الأساسي', ['baseSalary'], 'currency');
-    addMetric('إجمالي الراتب', ['salaryTotal', 'totalSalary'], 'currency');
-    addMetric('المكافآت', ['bonusTotal', 'bonuses', 'totalBonus'], 'currency');
-    addMetric('الخصومات', ['deductionTotal', 'deductions', 'totalDeduction'], 'currency');
-    addMetric('صافي الراتب', ['netSalary', 'takeHomePay'], 'currency');
-    addMetric('الأجر بالساعة', ['hourlyRate'], 'currency');
-    addMetric('نسبة الحضور', ['attendanceRate'], 'percentage');
+    addMetric('دقائق التدريس', ['totalMinutes', 'teachingMinutes'], 'number', 'دقيقة');
+    addMetric('إجمالي الراتب', ['totalSalary', 'salaryTotal'], 'currency');
 
     return metrics;
-  }
-
-  private formatDate(value: unknown): string {
-    if (typeof value !== 'string' || !value.trim()) {
-      return '—';
-    }
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) {
-      return value;
-    }
-    return new Intl.DateTimeFormat('ar-EG', { dateStyle: 'medium', timeStyle: 'short' }).format(parsed);
   }
 
   private coerceNumber(value: unknown): number | null {

@@ -11,47 +11,42 @@
     <mat-card class="invoice-card">
       <h3>بيانات الفاتورة</h3>
       <div class="info-grid">
-        <div><span>رقم الفاتورة</span><strong>{{ invoice?.id ?? '—' }}</strong></div>
-        <div><span>المعلم</span><strong>{{ invoice?.teacherName ?? detailSummary?.teacherName ?? '—' }}</strong></div>
-        <div><span>الشهر</span><strong>{{ formatMonth() }}</strong></div>
-        <div><span>الحالة</span><strong>{{ getStatusLabel() }}</strong></div>
-        <div><span>تاريخ الدفع</span><strong>{{ formatPaidAt() }}</strong></div>
-        <div><span>الراتب</span><strong>{{ formatSalary() }}</strong></div>
+        <div>
+          <span>رقم الفاتورة</span>
+          <strong>{{ invoice?.id ?? '—' }}</strong>
+        </div>
+        <div>
+          <span>المعلم</span>
+          <strong>{{ invoice?.teacherName ?? detailSummary?.teacherName ?? '—' }}</strong>
+        </div>
+        <div>
+          <span>الشهر</span>
+          <strong>{{ formatMonth() }}</strong>
+        </div>
+        <div>
+          <span>الحالة</span>
+          <strong>{{ getStatusLabel() }}</strong>
+        </div>
+        <div>
+          <span>تاريخ الدفع</span>
+          <strong>{{ formatPaidAt() }}</strong>
+        </div>
+        <div>
+          <span>الراتب</span>
+          <strong>{{ formatSalary() }}</strong>
+        </div>
       </div>
     </mat-card>
 
     <mat-card class="reports-card">
       <h3>التقارير المستخدمة في احتساب الراتب</h3>
-      @if (reportItems.length > 0) {
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>التقرير</th>
-                <th>التاريخ</th>
-                <th>الحالة</th>
-                <th>الدقائق</th>
-                <th>المبلغ</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (report of reportItems; track report.title + $index) {
-                <tr>
-                  <td>{{ $index + 1 }}</td>
-                  <td>{{ report.title }}</td>
-                  <td>{{ report.date }}</td>
-                  <td>{{ report.status }}</td>
-                  <td>{{ report.minutes }}</td>
-                  <td>{{ report.amount }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      } @else {
-        <p class="empty-state">لا توجد قائمة تقارير تفصيلية متاحة من الـ API لهذه الفاتورة حالياً.</p>
-      }
+      <p class="empty-state">
+        الاندبوينت الحالي يعيد ملخصًا مجمّعًا فقط من TeacherReportRecord للشهر المحدد، ولا يعيد قائمة تقارير تفصيلية سجلًا بسجل.
+      </p>
+      <p class="empty-state secondary">
+        إذا كان مطلوبًا عرض جدول تفصيلي للتقارير داخل الصفحة، فيلزم توفير Endpoint إضافي مخصص يعيد تفاصيل TeacherReportRecord لنفس المعلم
+        والشهر.
+      </p>
     </mat-card>
 
     <mat-card class="totals-card">

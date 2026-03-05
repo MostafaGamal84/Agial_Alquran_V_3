@@ -39,22 +39,6 @@ h3 {
   opacity: 0.8;
 }
 
-.table-wrap {
-  overflow-x: auto;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th,
-td {
-  border-bottom: 1px solid rgba(128, 128, 128, 0.3);
-  padding: 0.6rem;
-  text-align: right;
-}
-
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
@@ -72,4 +56,8 @@ td {
 
 .empty-state {
   opacity: 0.75;
+}
+
+.empty-state.secondary {
+  margin-top: 0.4rem;
 }
