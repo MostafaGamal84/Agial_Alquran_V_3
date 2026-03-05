@@ -149,10 +149,14 @@ export class TeacherListComponent implements OnInit, OnDestroy {
       data: { userId: teacher.id, userType: 'teacher' }
     });
 
-    dialogRef.afterClosed().subscribe((updated) => {
-      if (updated) {
-        this.loadTeachers();
+    dialogRef.afterClosed().subscribe((updatedUser: LookUpUserDto | undefined) => {
+      if (!updatedUser?.id) {
+        return;
       }
+
+      this.dataSource.data = this.dataSource.data.map((item) =>
+        item.id === updatedUser.id ? { ...item, ...updatedUser } : item
+      );
     });
   }
 

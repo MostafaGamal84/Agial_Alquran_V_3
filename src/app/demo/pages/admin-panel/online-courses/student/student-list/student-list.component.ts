@@ -274,10 +274,15 @@ export class StudentListComponent implements OnInit, OnDestroy {
       data: { userId: student.id, userType: 'student' }
     });
 
-    dialogRef.afterClosed().subscribe((updated) => {
-      if (updated) {
-        this.loadStudents();
+    dialogRef.afterClosed().subscribe((updatedUser: LookUpUserDto | undefined) => {
+      if (!updatedUser?.id) {
+        return;
       }
+
+      this.allLoadedStudents = this.allLoadedStudents.map((item) =>
+        item.id === updatedUser.id ? { ...item, ...updatedUser } : item
+      );
+      this.applyDisplayData();
     });
   }
 

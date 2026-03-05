@@ -779,7 +779,33 @@ export class UserEditComponent implements OnInit, OnDestroy {
           if (res?.isSuccess) {
             this.toast.success(res.message || (this.isManager ? 'تم تحديث البيانات والعلاقات بنجاح' : 'تم تحديث البيانات بنجاح'));
             if (this.dialogRef) {
-              this.dialogRef.close(true);
+              this.lookupService.getUserDetails(this.userId).subscribe({
+                next: (detailsRes) => {
+                  if (detailsRes.isSuccess && detailsRes.data) {
+                    this.dialogRef?.close(detailsRes.data);
+                    return;
+                  }
+                  this.dialogRef?.close({
+                    id: this.userId,
+                    fullName: formValue.fullName,
+                    email: formValue.email,
+                    mobile: `${formValue.mobileCountryDialCode}${clean(formValue.mobile)}`,
+                    secondMobile: formValue.secondMobile
+                      ? `${formValue.secondMobileCountryDialCode}${clean(formValue.secondMobile)}`
+                      : null
+                  });
+                },
+                error: () =>
+                  this.dialogRef?.close({
+                    id: this.userId,
+                    fullName: formValue.fullName,
+                    email: formValue.email,
+                    mobile: `${formValue.mobileCountryDialCode}${clean(formValue.mobile)}`,
+                    secondMobile: formValue.secondMobile
+                      ? `${formValue.secondMobileCountryDialCode}${clean(formValue.secondMobile)}`
+                      : null
+                  })
+              });
               return;
             }
             const navigationState = this.isStudent ? { refreshStudentList: true } : undefined;

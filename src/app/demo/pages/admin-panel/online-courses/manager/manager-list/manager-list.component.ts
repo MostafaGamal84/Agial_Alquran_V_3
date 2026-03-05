@@ -142,10 +142,14 @@ export class ManagerListComponent implements OnInit, OnDestroy {
       data: { userId: manager.id, userType: 'manager' }
     });
 
-    dialogRef.afterClosed().subscribe((updated) => {
-      if (updated) {
-        this.loadManagers();
+    dialogRef.afterClosed().subscribe((updatedUser: LookUpUserDto | undefined) => {
+      if (!updatedUser?.id) {
+        return;
       }
+
+      this.dataSource.data = this.dataSource.data.map((item) =>
+        item.id === updatedUser.id ? { ...item, ...updatedUser } : item
+      );
     });
   }
 

@@ -139,10 +139,14 @@ export class BranchManagerListComponent implements OnInit, OnDestroy {
       data: { userId: branchManager.id, userType: 'branch-manager' }
     });
 
-    dialogRef.afterClosed().subscribe((updated) => {
-      if (updated) {
-        this.loadBranchManagers();
+    dialogRef.afterClosed().subscribe((updatedUser: LookUpUserDto | undefined) => {
+      if (!updatedUser?.id) {
+        return;
       }
+
+      this.dataSource.data = this.dataSource.data.map((item) =>
+        item.id === updatedUser.id ? { ...item, ...updatedUser } : item
+      );
     });
   }
 
