@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { ActivatedRoute, Router } from '@angular/router';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FieldErrorComponent } from 'src/app/shared/validation/field-error/field-error.component';
 import { ValidationService } from 'src/app/shared/validation/validation.service';
 import { LiveErrorStateMatcher } from 'src/app/shared/validation/live-error-state-matcher';
@@ -44,6 +45,10 @@ export class UserEditComponent implements OnInit, OnDestroy {
   private auth = inject(AuthenticationService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private dialogRef = inject(MatDialogRef<UserEditComponent>, { optional: true });
+  private dialogData = inject<{ userId: number; userType?: 'manager' | 'teacher' | 'student' | 'branch-manager' } | null>(MAT_DIALOG_DATA, {
+    optional: true
+  });
   readonly validationService = inject(ValidationService);
 
   basicInfoForm!: FormGroup;
@@ -132,9 +137,10 @@ export class UserEditComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.isManager = this.router.url.includes('/manager/');
-    this.isTeacher = this.router.url.includes('/teacher/');
-    this.isStudent = this.router.url.includes('/student/');
+    const dialogUserType = this.dialogData?.userType;
+    this.isManager = dialogUserType ? dialogUserType === 'manager' || dialogUserType === 'branch-manager' : this.router.url.includes('/manager/');
+    this.isTeacher = dialogUserType ? dialogUserType === 'teacher' : this.router.url.includes('/teacher/');
+    this.isStudent = dialogUserType ? dialogUserType === 'student' : this.router.url.includes('/student/');
     this.isBranchLeaderUser = this.auth.getRole() === UserTypesEnum.BranchLeader;
     this.basicInfoForm = this.fb.group({
       fullName: ['', Validators.required],
@@ -187,8 +193,9 @@ export class UserEditComponent implements OnInit, OnDestroy {
       }
     });
 
-    const idParam = this.route.snapshot.paramMap.get('id');
-    const parsedId = idParam ? Number(idParam) : NaN;
+    const routeId = this.route.snapshot.paramMap.get('id');
+    const idParam = this.dialogData?.userId ?? (routeId ? Number(routeId) : NaN);
+    const parsedId = Number(idParam);
     if (!isNaN(parsedId)) {
       this.userId = parsedId;
       this.loadUserDetails(parsedId);
@@ -771,6 +778,10 @@ export class UserEditComponent implements OnInit, OnDestroy {
         next: (res) => {
           if (res?.isSuccess) {
             this.toast.success(res.message || (this.isManager ? 'تم تحديث البيانات والعلاقات بنجاح' : 'تم تحديث البيانات بنجاح'));
+            if (this.dialogRef) {
+              this.dialogRef.close(true);
+              return;
+            }
             const navigationState = this.isStudent ? { refreshStudentList: true } : undefined;
             this.router.navigate([this.getListRoute()], navigationState ? { state: navigationState } : undefined);
           } else if (res?.errors?.length) {
