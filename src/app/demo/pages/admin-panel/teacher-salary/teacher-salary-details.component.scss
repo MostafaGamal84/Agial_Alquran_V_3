@@ -83,3 +83,18 @@ h3 {
   gap: 0.75rem;
   margin-bottom: 0.75rem;
 }
+
+.reports-table th,
+.reports-table td {
+  white-space: nowrap;
+}
+
+.reports-table th {
+  font-weight: 700;
+}
+
+@media print {
+  .card-head button {
+    display: none !important;
+  }
+}

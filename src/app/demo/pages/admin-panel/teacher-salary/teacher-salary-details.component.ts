@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,6 +9,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
 import { Subscription, finalize } from 'rxjs';
 import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 import {
   TeacherMonthlySummary,
@@ -40,6 +41,8 @@ interface SummaryMetric {
   styleUrls: ['./teacher-salary-details.component.scss']
 })
 export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
+  @ViewChild('reportsExportSection') reportsExportSection?: ElementRef<HTMLElement>;
+  @ViewChild('summaryExportSection') summaryExportSection?: ElementRef<HTMLElement>;
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly teacherSalaryService = inject(TeacherSalaryService);
@@ -238,30 +241,13 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-    const pageWidth = doc.internal.pageSize.getWidth();
-    let y = 15;
-
-    doc.setFontSize(14);
-    doc.text('Teacher Salary Monthly Summary', pageWidth / 2, y, { align: 'center' });
-    y += 8;
-
-    doc.setFontSize(10);
-    doc.text(`Teacher: ${this.invoice?.teacherName ?? this.detailSummary?.teacherName ?? '-'}`, 10, y);
-    y += 6;
-    doc.text(`Month: ${this.formatMonth()}`, 10, y);
-    y += 10;
-
-    for (const metric of this.detailSummaryMetrics) {
-      doc.text(`${metric.label}: ${this.formatMetricValue(metric)}`, 10, y);
-      y += 7;
-      if (y > 280) {
-        doc.addPage();
-        y = 15;
-      }
+    const element = this.summaryExportSection?.nativeElement;
+    if (!element) {
+      this.toastService.error('تعذر تجهيز تقرير الإجماليات للتصدير.');
+      return;
     }
 
-    doc.save(this.buildPdfFileName('summary'));
+    void this.exportSectionAsPdf(element, this.buildPdfFileName('summary'));
   }
 
   exportDetailedReportPdf(): void {
@@ -270,41 +256,67 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-    const pageWidth = doc.internal.pageSize.getWidth();
-    let y = 15;
-
-    doc.setFontSize(14);
-    doc.text('Teacher Salary Detailed Records', pageWidth / 2, y, { align: 'center' });
-    y += 8;
-
-    doc.setFontSize(10);
-    doc.text(`Teacher: ${this.invoice?.teacherName ?? this.detailSummary?.teacherName ?? '-'}`, 10, y);
-    y += 6;
-    doc.text(`Month: ${this.formatMonth()}`, 10, y);
-    y += 8;
-
-    for (const record of this.monthlyReportRecords) {
-      const line = `#${record.displayIndex} | Student: ${record.studentName ?? '-'} | Minutes: ${record.minutes ?? 0} | Salary: ${this.formatRecordSalary(record.salary)} | Status: ${record.attendStatusId ?? '-'} | Date: ${this.formatRecordDate(record.recordCreatedAt)}`;
-      const wrapped = doc.splitTextToSize(line, pageWidth - 20);
-      doc.text(wrapped, 10, y);
-      y += wrapped.length * 5 + 2;
-
-      if (y > 280) {
-        doc.addPage();
-        y = 15;
-      }
+    const element = this.reportsExportSection?.nativeElement;
+    if (!element) {
+      this.toastService.error('تعذر تجهيز التقرير التفصيلي للتصدير.');
+      return;
     }
 
-    doc.save(this.buildPdfFileName('detailed'));
+    void this.exportSectionAsPdf(element, this.buildPdfFileName('detailed'));
+  }
+
+  getAttendStatusLabel(statusId: number | null | undefined): string {
+    switch (statusId) {
+      case 1:
+        return 'حضر';
+      case 2:
+        return 'تغيب بعذر';
+      case 3:
+        return 'تغيب بدون عذر';
+      default:
+        return 'غير محدد';
+    }
+  }
+
+  private async exportSectionAsPdf(element: HTMLElement, fileName: string): Promise<void> {
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 8;
+      const printableWidth = pageWidth - margin * 2;
+      const imgHeight = (canvas.height * printableWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = margin;
+
+      doc.addImage(imgData, 'PNG', margin, position, printableWidth, imgHeight);
+      heightLeft -= pageHeight - margin * 2;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight + margin;
+        doc.addPage();
+        doc.addImage(imgData, 'PNG', margin, position, printableWidth, imgHeight);
+        heightLeft -= pageHeight - margin * 2;
+      }
+
+      doc.save(fileName);
+    } catch {
+      this.toastService.error('حدث خطأ أثناء تصدير ملف PDF.');
+    }
   }
 
   private buildPdfFileName(type: 'summary' | 'detailed'): string {
-    const teacher = (this.invoice?.teacherName ?? this.detailSummary?.teacherName ?? 'teacher')
-      .trim()
-      .replace(/\s+/g, '-');
+    const teacherId = this.readNumber(this.invoice, ['teacherId']) ?? this.readNumber(this.detailSummary, ['teacherId']) ?? 'teacher';
     const month = this.readString(this.invoice, ['month']) ?? this.readString(this.detailSummary, ['month']) ?? 'month';
-    return `${type}-report-${teacher}-${month}.pdf`;
+    return `${type}-report-${teacherId}-${month}.pdf`;
   }
 
   formatRecordSalary(value: number | null | undefined): string {
