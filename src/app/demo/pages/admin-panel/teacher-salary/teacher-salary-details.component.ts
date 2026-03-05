@@ -1,21 +1,31 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTableModule } from '@angular/material/table';
 import { Subscription, finalize } from 'rxjs';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 import {
   TeacherMonthlySummary,
   TeacherSalaryInvoice,
   TeacherSalaryInvoiceDetails,
-  TeacherSalaryService
+  TeacherSalaryService,
+  TeacherMonthlyReportRecordDto
 } from 'src/app/@theme/services/teacher-salary.service';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 
+
+
+interface ReportRecordTableItem extends TeacherMonthlyReportRecordDto {
+  displayIndex: number;
+}
 interface SummaryMetric {
   label: string;
   value: number | string;
@@ -26,11 +36,13 @@ interface SummaryMetric {
 @Component({
   selector: 'app-teacher-salary-details',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule, LoadingOverlayComponent],
+  imports: [CommonModule, MatButtonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule, MatTableModule, LoadingOverlayComponent],
   templateUrl: './teacher-salary-details.component.html',
   styleUrls: ['./teacher-salary-details.component.scss']
 })
 export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
+  @ViewChild('reportsExportSection', { read: ElementRef }) reportsExportSection?: ElementRef<HTMLElement>;
+  @ViewChild('summaryExportSection', { read: ElementRef }) summaryExportSection?: ElementRef<HTMLElement>;
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly teacherSalaryService = inject(TeacherSalaryService);
@@ -42,6 +54,10 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
   invoice: TeacherSalaryInvoice | null = null;
   detailSummary: TeacherMonthlySummary | null = null;
   detailSummaryMetrics: SummaryMetric[] = [];
+  monthlyReportRecords: ReportRecordTableItem[] = [];
+  reportRecordsLoading = false;
+  reportRecordsError: string | null = null;
+  readonly reportColumns = ['index', 'studentName', 'minutes', 'salary', 'attendStatusId', 'recordCreatedAt'];
 
   private readonly numberFormatter = new Intl.NumberFormat('ar-EG', {
     maximumFractionDigits: 0
@@ -160,6 +176,7 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
             return;
           }
           this.applyDetails(response.data ?? null);
+          this.loadMonthlyReportRecords();
         },
         error: () => {
           this.toastService.error('فشل تحميل تفاصيل الفاتورة.');
@@ -168,9 +185,178 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
   }
 
   private applyDetails(details: TeacherSalaryInvoiceDetails | null): void {
-    this.invoice = details?.invoice ?? null;
-    this.detailSummary = details?.monthlySummary ?? null;
+    const payload = details as Record<string, unknown> | null;
+    const monthlySummary =
+      details?.monthlySummary ??
+      (payload?.['MonthlySummary'] as TeacherMonthlySummary | null | undefined) ??
+      null;
+
+    const invoiceFromPayload =
+      details?.invoice ??
+      (payload?.['invoice'] as TeacherSalaryInvoice | null | undefined) ??
+      (payload?.['Invoice'] as TeacherSalaryInvoice | null | undefined) ??
+      ((monthlySummary as Record<string, unknown> | null)?.['invoice'] as TeacherSalaryInvoice | null | undefined) ??
+      ((monthlySummary as Record<string, unknown> | null)?.['Invoice'] as TeacherSalaryInvoice | null | undefined) ??
+      null;
+
+    this.invoice = invoiceFromPayload;
+    this.detailSummary = monthlySummary;
     this.detailSummaryMetrics = this.buildSummaryMetrics(this.detailSummary);
+    this.monthlyReportRecords = [];
+    this.reportRecordsError = null;
+  }
+
+  private loadMonthlyReportRecords(): void {
+    const teacherId = this.readNumber(this.invoice, ['teacherId']) ?? this.readNumber(this.detailSummary, ['teacherId']);
+    const month = this.readString(this.invoice, ['month']) ?? this.readString(this.detailSummary, ['month']);
+
+    if (!teacherId || !month) {
+      this.reportRecordsError = 'تعذر تحميل السجلات التفصيلية لعدم اكتمال بيانات المعلم أو الشهر.';
+      return;
+    }
+
+    this.reportRecordsLoading = true;
+    this.teacherSalaryService
+      .getMonthlyReportRecords(month, teacherId)
+      .pipe(finalize(() => (this.reportRecordsLoading = false)))
+      .subscribe({
+        next: (response) => {
+          if (!response.isSuccess) {
+            this.reportRecordsError = 'فشل تحميل السجلات التفصيلية للتقارير.';
+            return;
+          }
+
+          const records = [...(response.data ?? [])].sort((a, b) => {
+            const aTime = this.parseDateToTime(a.recordCreatedAt);
+            const bTime = this.parseDateToTime(b.recordCreatedAt);
+            return bTime - aTime;
+          });
+
+          this.monthlyReportRecords = records.map((record, index) => ({
+            ...record,
+            displayIndex: index + 1
+          }));
+          this.reportRecordsError = null;
+        },
+        error: (error: HttpErrorResponse) => {
+          const status = error?.status;
+          this.reportRecordsError =
+            status === 401 || status === 403
+              ? 'ليس لديك صلاحية الوصول إلى التقارير التفصيلية لهذا المعلم.'
+              : 'فشل تحميل السجلات التفصيلية للتقارير.';
+        }
+      });
+  }
+
+
+  exportSummaryPdf(): void {
+    if (this.detailSummaryMetrics.length === 0) {
+      this.toastService.error('لا توجد بيانات إجمالية لتصديرها.');
+      return;
+    }
+
+    const element = this.summaryExportSection?.nativeElement;
+    if (!element) {
+      this.toastService.error('تعذر تجهيز تقرير الإجماليات للتصدير.');
+      return;
+    }
+
+    void this.exportSectionAsPdf(element, this.buildPdfFileName('summary'));
+  }
+
+  exportDetailedReportPdf(): void {
+    if (this.monthlyReportRecords.length === 0) {
+      this.toastService.error('لا توجد بيانات تفصيلية لتصديرها.');
+      return;
+    }
+
+    const element = this.reportsExportSection?.nativeElement;
+    if (!element) {
+      this.toastService.error('تعذر تجهيز التقرير التفصيلي للتصدير.');
+      return;
+    }
+
+    void this.exportSectionAsPdf(element, this.buildPdfFileName('detailed'));
+  }
+
+  getAttendStatusLabel(statusId: number | null | undefined): string {
+    switch (statusId) {
+      case 1:
+        return 'حضر';
+      case 2:
+        return 'تغيب بعذر';
+      case 3:
+        return 'تغيب بدون عذر';
+      default:
+        return 'غير محدد';
+    }
+  }
+
+  private async exportSectionAsPdf(element: HTMLElement, fileName: string): Promise<void> {
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const margin = 8;
+      const printableWidth = pageWidth - margin * 2;
+      const imgHeight = (canvas.height * printableWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = margin;
+
+      doc.addImage(imgData, 'PNG', margin, position, printableWidth, imgHeight);
+      heightLeft -= pageHeight - margin * 2;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight + margin;
+        doc.addPage();
+        doc.addImage(imgData, 'PNG', margin, position, printableWidth, imgHeight);
+        heightLeft -= pageHeight - margin * 2;
+      }
+
+      doc.save(fileName);
+    } catch {
+      this.toastService.error('حدث خطأ أثناء تصدير ملف PDF.');
+    }
+  }
+
+  private buildPdfFileName(type: 'summary' | 'detailed'): string {
+    const teacherId = this.readNumber(this.invoice, ['teacherId']) ?? this.readNumber(this.detailSummary, ['teacherId']) ?? 'teacher';
+    const month = this.readString(this.invoice, ['month']) ?? this.readString(this.detailSummary, ['month']) ?? 'month';
+    return `${type}-report-${teacherId}-${month}.pdf`;
+  }
+
+  formatRecordSalary(value: number | null | undefined): string {
+    if (typeof value !== 'number' || Number.isNaN(value)) {
+      return '—';
+    }
+    return this.currencyFormatter.format(value);
+  }
+
+  formatRecordDate(value: string | null | undefined): string {
+    if (!value) {
+      return '—';
+    }
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) {
+      return value;
+    }
+    return new Intl.DateTimeFormat('ar-EG', { dateStyle: 'medium', timeStyle: 'short' }).format(parsed);
+  }
+
+  private parseDateToTime(value: string | null | undefined): number {
+    if (!value) {
+      return 0;
+    }
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? 0 : parsed.getTime();
   }
 
   private buildSummaryMetrics(summary: TeacherMonthlySummary | null): SummaryMetric[] {
@@ -223,13 +409,32 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
     if (!source || typeof source !== 'object') {
       return null;
     }
+
     const record = source as Record<string, unknown>;
+
+    const normalizedEntries = Object.entries(record).map(([key, value]) => ({
+      key,
+      normalized: this.normalizeKey(key),
+      value
+    }));
+
     for (const key of keys) {
       if (record[key] !== undefined && record[key] !== null) {
         return record[key];
       }
+
+      const normalizedKey = this.normalizeKey(key);
+      const matched = normalizedEntries.find((entry) => entry.normalized === normalizedKey);
+      if (matched && matched.value !== undefined && matched.value !== null) {
+        return matched.value;
+      }
     }
+
     return null;
+  }
+
+  private normalizeKey(key: string): string {
+    return key.replace(/[_\-\s]/g, '').toLowerCase();
   }
 
   private readString(source: unknown, keys: string[]): string | null {
