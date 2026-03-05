@@ -72,6 +72,23 @@
                   </mat-form-field>
                 </div>
 
+
+                <!-- From Date -->
+                <div class="col-12 col-md-6 col-xl-3">
+                  <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>{{ 'من تاريخ' | translate }}</mat-label>
+                    <input matInput type="date" formControlName="fromDate" />
+                  </mat-form-field>
+                </div>
+
+                <!-- To Date -->
+                <div class="col-12 col-md-6 col-xl-3">
+                  <mat-form-field appearance="outline" class="w-100">
+                    <mat-label>{{ 'إلى تاريخ' | translate }}</mat-label>
+                    <input matInput type="date" formControlName="toDate" />
+                  </mat-form-field>
+                </div>
+
               </div>
             </form>
 
