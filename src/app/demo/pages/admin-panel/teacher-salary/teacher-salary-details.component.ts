@@ -124,7 +124,7 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
   }
 
   formatMonth(): string {
-    const month = this.readString(this.invoice, ['month']) ?? this.readString(this.detailSummary, ['month']);
+    const month = this.readString(this.invoice, ['month']);
     if (!month) {
       return '—';
     }
@@ -200,6 +200,8 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
       null;
 
     this.invoice = invoiceFromPayload;
+    console.log(this.invoice);
+    
     this.detailSummary = monthlySummary;
     this.detailSummaryMetrics = this.buildSummaryMetrics(this.detailSummary);
     this.monthlyReportRecords = [];
