@@ -83,8 +83,8 @@
                       </li>
                       <li class="list-inline-item m-r-10" [matTooltip]="'تعديل' | translate">
                         <a
-                          [routerLink]="['/online-course/manager/edit', element.id]"
-                          [state]="{ user: element }"
+                          href="javascript:"
+                          (click)="openEditDialog(element)"
                           class="avatar avatar-xs text-muted"
                         >
                           <i class="ti ti-edit f-18"></i>

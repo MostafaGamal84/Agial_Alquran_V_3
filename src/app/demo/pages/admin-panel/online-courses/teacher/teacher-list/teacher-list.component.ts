@@ -20,6 +20,7 @@ import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { TeacherDetailsComponent } from '../teacher-details/teacher-details.component';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 import { ToastService } from 'src/app/@theme/services/toast.service';
+import { UserEditComponent } from '../../user-edit/user-edit.component';
 import { UserService } from 'src/app/@theme/services/user.service';
 import { DisableUserConfirmDialogComponent } from '../../student/student-list/student-list.disable-user-confirm-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
@@ -137,6 +138,22 @@ export class TeacherListComponent implements OnInit, OnDestroy {
           this.totalCount = 0;
         }
       });
+  }
+
+
+  openEditDialog(teacher: LookUpUserDto): void {
+    const dialogRef = this.dialog.open(UserEditComponent, {
+      width: '1100px',
+      maxWidth: '95vw',
+      maxHeight: '95vh',
+      data: { userId: teacher.id, userType: 'teacher' }
+    });
+
+    dialogRef.afterClosed().subscribe((updated) => {
+      if (updated) {
+        this.loadTeachers();
+      }
+    });
   }
 
   teacherDetails(teacher: LookUpUserDto): void {

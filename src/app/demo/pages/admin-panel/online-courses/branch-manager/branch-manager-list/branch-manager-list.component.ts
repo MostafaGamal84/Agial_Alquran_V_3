@@ -15,6 +15,7 @@ import { LookupService, LookUpUserDto, FilteredResultRequestDto } from 'src/app/
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { UserService } from 'src/app/@theme/services/user.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
+import { UserEditComponent } from '../../user-edit/user-edit.component';
 import { DisableUserConfirmDialogComponent } from '../../student/student-list/student-list.disable-user-confirm-dialog.component';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 import { BranchManagerDetailsComponent } from '../branch-manager-details/branch-manager-details.component';
@@ -130,7 +131,23 @@ export class BranchManagerListComponent implements OnInit, OnDestroy {
       });
   }
 
+  openEditDialog(branchManager: LookUpUserDto): void {
+    const dialogRef = this.dialog.open(UserEditComponent, {
+      width: '1100px',
+      maxWidth: '95vw',
+      maxHeight: '95vh',
+      data: { userId: branchManager.id, userType: 'branch-manager' }
+    });
+
+    dialogRef.afterClosed().subscribe((updated) => {
+      if (updated) {
+        this.loadBranchManagers();
+      }
+    });
+  }
+
   confirmDisable(branchManager: LookUpUserDto): void {
+
     if (this.isProcessing(branchManager.id)) {
       return;
     }
