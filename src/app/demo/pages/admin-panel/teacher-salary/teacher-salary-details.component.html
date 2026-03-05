@@ -17,11 +17,11 @@
         </div>
         <div>
           <span>المعلم</span>
-          <strong>{{ invoice?.teacherName ?? detailSummary?.teacherName ?? '—' }}</strong>
+          <strong>{{ invoice?.teacherName}}</strong>
         </div>
         <div>
           <span>الشهر</span>
-          <strong>{{ formatMonth() }}</strong>
+          <strong>{{ invoice?.month|date:'MMMM yyyy' }}</strong>
         </div>
         <div>
           <span>الحالة</span>
@@ -29,11 +29,11 @@
         </div>
         <div>
           <span>تاريخ الدفع</span>
-          <strong>{{ formatPaidAt() }}</strong>
+          <strong>{{ invoice?.payedAt|date:'medium' }}</strong>
         </div>
         <div>
           <span>الراتب</span>
-          <strong>{{ formatSalary() }}</strong>
+          <strong>{{ invoice?.salary  }}  ج.م</strong>
         </div>
       </div>
     </mat-card>
