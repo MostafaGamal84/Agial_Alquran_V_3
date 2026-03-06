@@ -186,6 +186,7 @@
             <tr>
               <th>{{ 'الطالب' | translate }}</th>
               <th>{{ 'المبلغ' | translate }}</th>
+              <th>{{ 'الدقائق' | translate }}</th>
               <th>{{ 'التاريخ' | translate }}</th>
               <th>{{ 'الحالة' | translate }}</th>
             </tr>
@@ -210,6 +211,45 @@
   <div class="col-12" *ngIf="isAdmin && overviewLoaded && !transactionsView.length">
     <app-card [showHeader]="false" [padding]="20">
       <div class="text-muted">{{ 'لا توجد معاملات حديثة لهذه المدة.' | translate }}</div>
+    </app-card>
+  </div>
+
+  <div class="col-12" *ngIf="canViewTodayReports && todayReportsView.length">
+    <app-card [cardTitle]="'تقارير اليوم' | translate" padding="0">
+      <div class="table-responsive transactions-table">
+        <table class="table table-hover m-b-0">
+          <thead>
+            <tr>
+              <th>{{ 'الطالب' | translate }}</th>
+              <th>{{ 'الحلقة' | translate }}</th>
+              <th>{{ 'المعلم' | translate }}</th>
+              <th>{{ 'الدقائق' | translate }}</th>
+              <th>{{ 'التاريخ' | translate }}</th>
+              <th>{{ 'الحالة' | translate }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (report of todayReportsView; track report.key) {
+              <tr>
+                <td class="student-cell">{{ report.student }}</td>
+                <td>{{ report.circle }}</td>
+                <td>{{ report.teacher }}</td>
+                <td class="amount-cell">{{ report.minutes }}</td>
+                <td class="date-cell">{{ report.date }}</td>
+                <td>
+                  <span class="status-pill {{ report.statusClass }}">{{ report.status }}</span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </app-card>
+  </div>
+
+  <div class="col-12" *ngIf="canViewTodayReports && reportsLoaded && !todayReportsView.length">
+    <app-card [showHeader]="false" [padding]="20">
+      <div class="text-muted">{{ 'لا توجد تقارير مرفوعة اليوم.' | translate }}</div>
     </app-card>
   </div>
   </div>
