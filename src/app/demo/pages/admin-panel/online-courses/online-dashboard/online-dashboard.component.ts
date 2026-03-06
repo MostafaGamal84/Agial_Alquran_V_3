@@ -13,6 +13,8 @@ import { formatDayValue } from 'src/app/@theme/types/DaysEnum';
 import { formatTimeValue } from 'src/app/@theme/utils/time';
 import { TranslateService } from '@ngx-translate/core';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
+import { CircleReportListDto, CircleReportService } from 'src/app/@theme/services/circle-report.service';
+import { AttendStatusEnum } from 'src/app/@theme/types/AttendStatusEnum';
 import {
   DashboardOverviewDto,
   DashboardOverviewMetricsDto,
@@ -41,6 +43,16 @@ interface DashboardTransactionView {
   statusClass: string;
 }
 
+interface DashboardTodayReportView {
+  key: string;
+  student: string;
+  circle: string;
+  teacher: string;
+  date: string;
+  status: string;
+  statusClass: string;
+}
+
 @Component({
   selector: 'app-online-dashboard',
   imports: [
@@ -61,6 +73,7 @@ export class OnlineDashboardComponent implements OnInit {
   private toast = inject(ToastService);
   private translate = inject(TranslateService);
   private dashboardOverview = inject(DashboardOverviewService);
+  private circleReportService = inject(CircleReportService);
   private readonly roleTranslations: Record<string, string> = {
     admin: 'مسؤول',
     manager: 'مدير',
@@ -77,11 +90,15 @@ export class OnlineDashboardComponent implements OnInit {
   overviewRangeDescription: string | null = null;
   isTeacher = false;
   isAdmin = false;
+  canViewTodayReports = false;
 
   summaryCards: DashboardSummaryCard[] = [];
   roleMetricCards: DashboardSummaryCard[] = [];
   financialMetricCards: DashboardSummaryCard[] = [];
   transactionsView: DashboardTransactionView[] = [];
+  todayReportsView: DashboardTodayReportView[] = [];
+  reportsLoading = false;
+  reportsLoaded = false;
 
   monthlyRevenueSeries?: ApexAxisChartSeries;
   monthlyRevenueCategories?: string[];
@@ -95,7 +112,7 @@ export class OnlineDashboardComponent implements OnInit {
   upcomingLoading = false;
 
   get pageLoading(): boolean {
-    return this.overviewLoading || this.upcomingLoading;
+    return this.overviewLoading || this.upcomingLoading || this.reportsLoading;
   }
   ngOnInit(): void {
     this.loadDashboardOverview();
@@ -151,6 +168,10 @@ export class OnlineDashboardComponent implements OnInit {
     this.overviewRangeDescription = null;
     this.isTeacher = false;
     this.isAdmin = false;
+    this.canViewTodayReports = false;
+    this.todayReportsView = [];
+    this.reportsLoaded = false;
+    this.reportsLoading = false;
   }
 
   private applyOverviewData(data?: DashboardOverviewDto | null): void {
@@ -161,6 +182,7 @@ export class OnlineDashboardComponent implements OnInit {
 
     this.isTeacher = this.isTeacherRole(data.role);
     this.isAdmin = this.isAdminRole(data.role);
+    this.canViewTodayReports = this.canAccessTodayReports(data.role);
     this.overviewRoleLabel = this.formatRole(data.role);
     this.overviewRangeDescription = this.buildRangeDescription(data.rangeStart, data.rangeEnd, data.rangeLabel);
 
@@ -170,8 +192,149 @@ export class OnlineDashboardComponent implements OnInit {
 
     const charts = data.charts;
     this.transactionsView = this.buildTransactionsView(charts?.transactions);
+    this.loadTodayReports();
     this.buildMonthlyRevenueChart(charts?.monthlyRevenue);
     this.buildFinancialChart(data.metrics);
+  }
+
+  private loadTodayReports(): void {
+    if (!this.canViewTodayReports) {
+      this.todayReportsView = [];
+      this.reportsLoaded = true;
+      return;
+    }
+
+    this.reportsLoading = true;
+    this.reportsLoaded = false;
+
+    const today = this.getTodayDateString();
+    this.circleReportService
+      .getAll(
+        {
+          skipCount: 0,
+          maxResultCount: 10,
+          sortBy: 'creationTime',
+          sortingDirection: 'DESC'
+        },
+        {
+          fromDate: today,
+          toDate: today
+        }
+      )
+      .subscribe({
+        next: (response) => {
+          this.reportsLoading = false;
+          this.reportsLoaded = true;
+          if (!response?.isSuccess) {
+            this.todayReportsView = [];
+            return;
+          }
+
+          this.todayReportsView = this.buildTodayReportsView(response.data?.items);
+        },
+        error: () => {
+          this.reportsLoading = false;
+          this.reportsLoaded = true;
+          this.todayReportsView = [];
+        }
+      });
+  }
+
+  private getTodayDateString(): string {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  private buildTodayReportsView(reports?: CircleReportListDto[] | null): DashboardTodayReportView[] {
+    if (!Array.isArray(reports)) {
+      return [];
+    }
+
+    return reports.map((report, index) => {
+      const keySource = report?.id ?? index;
+      const key = typeof keySource === 'string' ? keySource : String(keySource ?? index);
+      const statusConfig = this.getAttendanceStatusConfig(report?.attendStatueId);
+
+      return {
+        key,
+        student: this.getReportStudentDisplay(report, index),
+        circle: this.getReportCircleDisplay(report),
+        teacher: this.getReportTeacherDisplay(report),
+        date: this.formatTransactionDate(report?.creationTime ? String(report.creationTime) : undefined),
+        status: statusConfig.label,
+        statusClass: statusConfig.class
+      } satisfies DashboardTodayReportView;
+    });
+  }
+
+  private getAttendanceStatusConfig(status?: number | null): { label: string; class: string } {
+    switch (status) {
+      case AttendStatusEnum.Attended:
+        return { label: 'حضر', class: 'status-pill--success' };
+      case AttendStatusEnum.ExcusedAbsence:
+        return { label: 'غائب بعذر', class: 'status-pill--warning' };
+      case AttendStatusEnum.UnexcusedAbsence:
+        return { label: 'غائب بدون عذر', class: 'status-pill--danger' };
+      default:
+        return { label: 'غير محدد', class: 'status-pill--muted' };
+    }
+  }
+
+  private getReportStudentDisplay(report: CircleReportListDto | null | undefined, index: number): string {
+    const raw = report as Record<string, unknown> | undefined;
+    const display =
+      (typeof report?.studentName === 'string' ? report.studentName : '') ||
+      (typeof raw?.['student'] === 'string' ? (raw['student'] as string) : '') ||
+      (typeof raw?.['studentFullName'] === 'string' ? (raw['studentFullName'] as string) : '');
+
+    if (display.trim()) {
+      return display.trim();
+    }
+
+    if (typeof report?.studentId === 'number') {
+      return this.translate.instant('طالب رقم {{id}}', { id: report.studentId });
+    }
+
+    return this.translate.instant('طالب رقم {{id}}', { id: index + 1 });
+  }
+
+  private getReportCircleDisplay(report: CircleReportListDto | null | undefined): string {
+    const raw = report as Record<string, unknown> | undefined;
+    const display =
+      (typeof report?.circleName === 'string' ? report.circleName : '') ||
+      (typeof raw?.['circle'] === 'string' ? (raw['circle'] as string) : '') ||
+      (typeof raw?.['circleTitle'] === 'string' ? (raw['circleTitle'] as string) : '');
+
+    if (display.trim()) {
+      return display.trim();
+    }
+
+    if (typeof report?.circleId === 'number') {
+      return this.translate.instant('حلقة رقم {{id}}', { id: report.circleId });
+    }
+
+    return '—';
+  }
+
+  private getReportTeacherDisplay(report: CircleReportListDto | null | undefined): string {
+    const raw = report as Record<string, unknown> | undefined;
+    const display =
+      (typeof report?.teacherName === 'string' ? report.teacherName : '') ||
+      (typeof raw?.['teacher'] === 'string' ? (raw['teacher'] as string) : '') ||
+      (typeof raw?.['teacherFullName'] === 'string' ? (raw['teacherFullName'] as string) : '');
+
+    if (display.trim()) {
+      return display.trim();
+    }
+
+    if (typeof report?.teacherId === 'number') {
+      return this.translate.instant('معلم رقم {{id}}', { id: report.teacherId });
+    }
+
+    return '—';
   }
 
   get visibleRoleMetricCards(): DashboardSummaryCard[] {
@@ -825,6 +988,15 @@ private toArabicMonthLabel(input: string): string {
 
     const normalized = role.trim().replace(/\s+|_/g, '').toLowerCase();
     return normalized === 'admin';
+  }
+
+  private canAccessTodayReports(role?: string | null): boolean {
+    if (typeof role !== 'string') {
+      return false;
+    }
+
+    const normalized = role.trim().replace(/\s+|_/g, '').toLowerCase();
+    return ['admin', 'manager', 'supervisor', 'branchleader', 'teacher'].includes(normalized);
   }
 
   loadUpcomingCircles(take = 4): void {
