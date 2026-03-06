@@ -291,7 +291,7 @@ export class OnlineDashboardComponent implements OnInit {
       return '—';
     }
 
-    return this.translate.instant('{{value}} دقيقة', { value: this.formatNumber(minutes) });
+    return `${this.formatNumber(minutes)} دقيقة`;
   }
 
   private getReportStudentDisplay(report: CircleReportListDto | null | undefined, index: number): string {
