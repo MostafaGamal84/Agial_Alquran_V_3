@@ -42,7 +42,8 @@ export class MembershipListComponent implements OnInit, AfterViewInit, OnDestroy
   displayedColumns: string[] = ['name', 'mobile', 'date', 'status', 'plan', 'action'];
   dataSource = new MatTableDataSource<ViewStudentSubscribeReDto>();
   allLoadedSubscriptions: ViewStudentSubscribeReDto[] = [];
-  showZeroOrNegativeMinutesOnly = false;
+  showWithoutPackageOnly = false;
+  showExpiredPackageOnly = false;
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
   pageIndex = 0;
@@ -141,8 +142,13 @@ export class MembershipListComponent implements OnInit, AfterViewInit, OnDestroy
       });
   }
 
-  onZeroOrNegativeMinutesOnlyChange(checked: boolean): void {
-    this.showZeroOrNegativeMinutesOnly = checked;
+  onWithoutPackageOnlyChange(checked: boolean): void {
+    this.showWithoutPackageOnly = checked;
+    this.applyDisplayData();
+  }
+
+  onExpiredPackageOnlyChange(checked: boolean): void {
+    this.showExpiredPackageOnly = checked;
     this.applyDisplayData();
   }
 
@@ -206,11 +212,27 @@ export class MembershipListComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   private applyDisplayData(): void {
-    const filtered = this.showZeroOrNegativeMinutesOnly
-      ? this.allLoadedSubscriptions.filter((student) => this.hasZeroOrNegativeRemainingMinutes(student))
+    const hasActiveFilters = this.showWithoutPackageOnly || this.showExpiredPackageOnly;
+    const filtered = hasActiveFilters
+      ? this.allLoadedSubscriptions.filter((student) => {
+          const isWithoutPackage = this.isWithoutPackage(student);
+          const isExpiredPackage = this.isExpiredPackage(student);
+          return (
+            (this.showWithoutPackageOnly && isWithoutPackage) ||
+            (this.showExpiredPackageOnly && isExpiredPackage)
+          );
+        })
       : this.allLoadedSubscriptions;
 
     this.dataSource.data = [...filtered];
+  }
+
+  isWithoutPackage(student: ViewStudentSubscribeReDto): boolean {
+    return !student.plan || student.plan.trim().length === 0;
+  }
+
+  isExpiredPackage(student: ViewStudentSubscribeReDto): boolean {
+    return !this.isWithoutPackage(student) && this.hasZeroOrNegativeRemainingMinutes(student);
   }
 
   hasZeroOrNegativeRemainingMinutes(student: ViewStudentSubscribeReDto): boolean {

@@ -4,6 +4,16 @@
   cursor: default;
 }
 
-.zero-minutes-name {
+.membership-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.without-package-name {
   color: var(--warn-500, #dc2626);
+}
+
+.expired-package-name {
+  color: #7e22ce;
 }
