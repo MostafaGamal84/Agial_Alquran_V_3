@@ -41,12 +41,19 @@
               </div>
             </div>
 
-            <div class="p-x-15 p-b-10">
+            <div class="p-x-15 p-b-10 membership-filters">
               <mat-checkbox
-                [checked]="showZeroOrNegativeMinutesOnly"
-                (change)="onZeroOrNegativeMinutesOnlyChange($event.checked)"
+                [checked]="showWithoutPackageOnly"
+                (change)="onWithoutPackageOnlyChange($event.checked)"
               >
-                {{ 'عرض الطلاب بدقائق متبقية صفر أو أقل فقط' | translate }}
+                {{ 'عرض الطلاب بدون باقة فقط' | translate }}
+              </mat-checkbox>
+
+              <mat-checkbox
+                [checked]="showExpiredPackageOnly"
+                (change)="onExpiredPackageOnlyChange($event.checked)"
+              >
+                {{ 'عرض الطلاب بباقة منتهية (الدقائق ≤ 0) فقط' | translate }}
               </mat-checkbox>
             </div>
           </div>
@@ -61,7 +68,13 @@
                       <img src="assets/images/user/avatar-1.png" alt="user-image" class="wid-40 border-50" />
                     </div>
                     <div class="flex-grow-1 m-l-15">
-                      <div class="f-w-600" [class.zero-minutes-name]="hasZeroOrNegativeRemainingMinutes(element)">{{ element.studentName || ('لا يوجد' | translate) }}</div>
+                      <div
+                        class="f-w-600"
+                        [class.without-package-name]="isWithoutPackage(element)"
+                        [class.expired-package-name]="isExpiredPackage(element)"
+                      >
+                        {{ element.studentName || ('لا يوجد' | translate) }}
+                      </div>
                       <!-- <div class="mat-caption text-muted">
                         {{ 'Residency' | translate }}:
                         {{ element.resident || ('لا يوجد' | translate) }}
