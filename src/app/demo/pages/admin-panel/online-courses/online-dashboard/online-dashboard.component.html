@@ -186,6 +186,7 @@
             <tr>
               <th>{{ 'الطالب' | translate }}</th>
               <th>{{ 'المبلغ' | translate }}</th>
+              <th>{{ 'الدقائق' | translate }}</th>
               <th>{{ 'التاريخ' | translate }}</th>
               <th>{{ 'الحالة' | translate }}</th>
             </tr>
@@ -222,6 +223,7 @@
               <th>{{ 'الطالب' | translate }}</th>
               <th>{{ 'الحلقة' | translate }}</th>
               <th>{{ 'المعلم' | translate }}</th>
+              <th>{{ 'الدقائق' | translate }}</th>
               <th>{{ 'التاريخ' | translate }}</th>
               <th>{{ 'الحالة' | translate }}</th>
             </tr>
@@ -232,6 +234,7 @@
                 <td class="student-cell">{{ report.student }}</td>
                 <td>{{ report.circle }}</td>
                 <td>{{ report.teacher }}</td>
+                <td class="amount-cell">{{ report.minutes }}</td>
                 <td class="date-cell">{{ report.date }}</td>
                 <td>
                   <span class="status-pill {{ report.statusClass }}">{{ report.status }}</span>

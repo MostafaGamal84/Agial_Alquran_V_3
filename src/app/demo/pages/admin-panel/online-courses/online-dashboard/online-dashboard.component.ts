@@ -48,6 +48,7 @@ interface DashboardTodayReportView {
   student: string;
   circle: string;
   teacher: string;
+  minutes: string;
   date: string;
   status: string;
   statusClass: string;
@@ -263,6 +264,7 @@ export class OnlineDashboardComponent implements OnInit {
         student: this.getReportStudentDisplay(report, index),
         circle: this.getReportCircleDisplay(report),
         teacher: this.getReportTeacherDisplay(report),
+        minutes: this.formatReportMinutes(report?.minutes),
         date: this.formatTransactionDate(report?.creationTime ? String(report.creationTime) : undefined),
         status: statusConfig.label,
         statusClass: statusConfig.class
@@ -281,6 +283,15 @@ export class OnlineDashboardComponent implements OnInit {
       default:
         return { label: 'غير محدد', class: 'status-pill--muted' };
     }
+  }
+
+  private formatReportMinutes(value: unknown): string {
+    const minutes = this.coerceNumber(value);
+    if (minutes === null) {
+      return '—';
+    }
+
+    return this.translate.instant('{{value}} دقيقة', { value: this.formatNumber(minutes) });
   }
 
   private getReportStudentDisplay(report: CircleReportListDto | null | undefined, index: number): string {
