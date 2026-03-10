@@ -50,6 +50,10 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
   private dialog = inject(MatDialog);
   private toast = inject(ToastService);
   private translate = inject(TranslateService);
+  private readonly deletedAtColumn: DeletedColumn = {
+    key: 'deletedAt',
+    label: '\u062a\u0627\u0631\u064a\u062e \u0627\u0644\u062d\u0630\u0641'
+  };
 
   activeTabIndex = 0;
 
@@ -57,6 +61,7 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
     { key: 'fullName', label: 'الاسم الكامل' },
     { key: 'mobile', label: 'رقم الجوال' },
     { key: 'email', label: 'البريد الإلكتروني' }
+    , this.deletedAtColumn
   ];
 
   private readonly allTabs: DeletedTabConfig[] = [
@@ -103,10 +108,11 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
     }
   ];
 
-  readonly tabs: DeletedTabConfig[] =
+  readonly tabs: DeletedTabConfig[] = (
     this.authenticationService.getRole() === UserTypesEnum.BranchLeader
       ? this.allTabs.filter((tab) => tab.key === 'students')
-      : this.allTabs;
+      : this.allTabs
+  ).map((tab) => this.withDeletedAtColumn(tab));
 
   stateByTab: Record<DeletedTabKey, DeletedTabState> = {
     students: this.createDefaultState(),
@@ -274,6 +280,51 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
     }
 
     return String(value);
+  }
+
+  getDeletedAtValue(row: Record<string, unknown>): unknown {
+    return row['modefiedAt'] ?? row['modifiedAt'] ?? row['deletedAt'] ?? row['deletionTime'] ?? null;
+  }
+
+  formatDeletedAt(value: unknown): string {
+    if (value === null || value === undefined || String(value).trim() === '') {
+      return '-';
+    }
+
+    const parsedDate = value instanceof Date ? value : new Date(String(value));
+    if (Number.isNaN(parsedDate.getTime())) {
+      return String(value);
+    }
+
+    const datePart = new Intl.DateTimeFormat('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    }).format(parsedDate);
+
+    const timePart = new Intl.DateTimeFormat('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    }).format(parsedDate);
+
+    return `${datePart} - ${timePart}`;
+  }
+
+  private withDeletedAtColumn(tab: DeletedTabConfig): DeletedTabConfig {
+    const columns = tab.columns.some((column) => column.key === this.deletedAtColumn.key)
+      ? tab.columns
+      : [...tab.columns, this.deletedAtColumn];
+
+    const columnKeys = tab.columnKeys.includes(this.deletedAtColumn.key)
+      ? tab.columnKeys
+      : [...tab.columnKeys.filter((key) => key !== 'actions'), this.deletedAtColumn.key, 'actions'];
+
+    return {
+      ...tab,
+      columns,
+      columnKeys
+    };
   }
 
 

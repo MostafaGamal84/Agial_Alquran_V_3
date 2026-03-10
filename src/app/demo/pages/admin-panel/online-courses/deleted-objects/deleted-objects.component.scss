@@ -34,6 +34,14 @@
   text-align: center;
 }
 
+.deleted-date {
+  display: inline-block;
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: left;
+  white-space: nowrap;
+}
+
 .error {
   display: flex;
   align-items: center;

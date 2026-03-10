@@ -160,9 +160,15 @@ export class TeacherSalaryComponent
   private lookupService = inject(LookupService);
   private authenticationService = inject(AuthenticationService);
   private router = inject(Router);
+  private dateAdapter = inject<DateAdapter<Moment>>(DateAdapter);
 
   private readonly apiBaseUrl = environment.apiUrl.replace(/\/+$/, '');
   private subscriptions = new Subscription();
+  readonly monthPickerStartAt = moment().startOf('month').utc(true);
+  private readonly defaultGenerationMonth = moment()
+    .startOf('month')
+    .subtract(1, 'month')
+    .utc(true);
   private readonly numberFormatter = new Intl.NumberFormat('ar-EG', {
     maximumFractionDigits: 0
   });
@@ -181,9 +187,7 @@ export class TeacherSalaryComponent
     timeStyle: 'short'
   });
 
-  readonly selectedMonth = new FormControl<Moment>(
-    moment().startOf('month').subtract(1, 'month').utc(true)
-  );
+  readonly selectedMonth = new FormControl<Moment | null>(null);
   readonly selectedTeacher = new FormControl<number | null>(null);
   readonly teacherSearchControl = new FormControl<string>('');
 
@@ -271,6 +275,8 @@ export class TeacherSalaryComponent
   readonly isTeacher = this.role === UserTypesEnum.Teacher;
 
   ngOnInit(): void {
+    this.dateAdapter.setLocale('ar');
+    moment.locale('ar');
     this.updateDisplayedColumns();
     if (this.canManagePayments) {
       this.loadTeachers();
@@ -316,6 +322,14 @@ export class TeacherSalaryComponent
     this.loadMonthlySummary();
   }
 
+  clearMonth(event?: MouseEvent): void {
+    event?.stopPropagation();
+    this.selectedMonth.setValue(null);
+    this.resetPaginator();
+    this.loadInvoices();
+    this.loadMonthlySummary();
+  }
+
   reloadAll(): void {
     this.loadInvoices();
     this.loadMonthlySummary();
@@ -329,6 +343,24 @@ export class TeacherSalaryComponent
 
   clearTeacherSearch(): void {
     if (this.canManagePayments) {
+      this.teacherSearchControl.setValue('', { emitEvent: false });
+      this.loadTeachers('');
+    }
+  }
+
+  onTeacherSelectOpened(opened: boolean): void {
+    if (!this.canManagePayments) {
+      return;
+    }
+
+    if (opened) {
+      if (!this.teachers.length || (this.teacherSearchControl.value ?? '').trim().length > 0) {
+        this.loadTeachers(this.teacherSearchControl.value ?? '');
+      }
+      return;
+    }
+
+    if ((this.teacherSearchControl.value ?? '').trim().length > 0) {
       this.teacherSearchControl.setValue('', { emitEvent: false });
       this.loadTeachers('');
     }
@@ -544,7 +576,9 @@ export class TeacherSalaryComponent
     if (this.manualGenerationLoading) {
       return;
     }
-    const monthParam = this.toMonthParam(this.selectedMonth.value);
+    const monthParam = this.toMonthParam(
+      this.selectedMonth.value ?? this.defaultGenerationMonth
+    );
     this.manualGenerationLoading = true;
     this.teacherSalaryService
       .generateMonthly(monthParam)
@@ -588,6 +622,12 @@ export class TeacherSalaryComponent
     }
     const selected = this.selectedMonth.value;
     return selected ? this.formatMonthString(selected.toISOString()) : '—';
+  }
+
+  getSummaryEmptyStateKey(): string {
+    return this.selectedMonth.value
+      ? 'لا توجد بيانات ملخص لهذا الشهر'
+      : 'لا يوجد شهر محدد لعرض الملخص';
   }
 
   formatSalary(invoice: TeacherSalaryInvoice | null): string {
@@ -869,8 +909,14 @@ export class TeacherSalaryComponent
   }
 
   loadMonthlySummary(): void {
-
     const monthParam = this.toMonthParam(this.selectedMonth.value);
+    if (!monthParam) {
+      this.summaryLoading = false;
+      this.summary = null;
+      this.summaryMetrics = [];
+      return;
+    }
+
     const teacherId = this.canManagePayments ? this.selectedTeacher.value : null;
     this.summaryLoading = true;
     this.teacherSalaryService
@@ -923,7 +969,7 @@ export class TeacherSalaryComponent
   }
 
   private updateDisplayedColumns(): void {
-    const baseColumns = ['teacher', 'month', 'salary', 'status', 'paidAt', 'receipt'];
+    const baseColumns = ['teacher', 'month', 'salary', 'status', 'paidAt'];
     if (this.canGenerateInvoices || this.canManagePayments) {
       baseColumns.push('actions');
     }
@@ -940,7 +986,16 @@ export class TeacherSalaryComponent
     if (!month) {
       return null;
     }
-    return month.clone().startOf('month').utc(true).format('YYYY-MM-DD');
+    const normalized = month.clone().startOf('month').utc(true);
+    const year = normalized.year();
+    const monthNumber = normalized.month() + 1;
+    const day = normalized.date();
+
+    return `${year}-${this.padMonthParam(monthNumber)}-${this.padMonthParam(day)}`;
+  }
+
+  private padMonthParam(value: number): string {
+    return String(value).padStart(2, '0');
   }
 
   private applyInvoices(invoices: TeacherSalaryInvoice[]): void {

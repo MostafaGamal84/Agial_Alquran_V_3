@@ -383,7 +383,7 @@ export const menus: Navigation[] = [
             children: [
               {
                 id: 'subscribe',
-                title: 'Subscribe',
+                title: ' الباقات (اشتراكات)',
                 type: 'item',
                 url: '/online-course/setting/subscribe',
                  role: [
@@ -396,7 +396,7 @@ export const menus: Navigation[] = [
               },
               {
                 id: 'subscribe-type',
-                title: 'Subscribe Type',
+                title: 'الباقات (رواتب)',
                 type: 'item',
                 url: '/online-course/setting/subscribe-type',
                  role: [

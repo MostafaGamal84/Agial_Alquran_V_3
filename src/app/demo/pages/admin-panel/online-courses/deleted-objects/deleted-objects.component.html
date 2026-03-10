@@ -59,6 +59,10 @@
                             <ng-template #noMobile>—</ng-template>
                           </ng-container>
 
+                          <ng-container *ngSwitchCase="'deletedAt'">
+                            <span class="deleted-date" dir="ltr">{{ formatDeletedAt(getDeletedAtValue(row)) }}</span>
+                          </ng-container>
+
                           <ng-container *ngSwitchDefault>
                             {{ getRowValue(row, col.key) }}
                           </ng-container>

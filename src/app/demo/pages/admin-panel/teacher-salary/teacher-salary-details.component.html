@@ -1,39 +1,77 @@
-<app-loading-overlay [isLoading]="detailsLoading">
+<app-loading-overlay [isLoading]="pageLoading">
   <div class="details-page">
     <div class="details-header">
       <button mat-stroked-button type="button" (click)="goBack()">
         <mat-icon>arrow_back</mat-icon>
-        الرجوع للقائمة
+        &#1575;&#1604;&#1585;&#1580;&#1608;&#1593; &#1604;&#1604;&#1602;&#1575;&#1574;&#1605;&#1577;
       </button>
-      <h2>تفاصيل الفاتورة</h2>
+      <h2>&#1578;&#1601;&#1575;&#1589;&#1610;&#1604; &#1575;&#1604;&#1601;&#1575;&#1578;&#1608;&#1585;&#1577;</h2>
+    </div>
+
+    <div class="details-actions">
+      <button
+        mat-flat-button
+        color="primary"
+        type="button"
+        (click)="exportDetailedReportPdf()"
+        [disabled]="monthlyReportRecords.length === 0 || pdfExportLoading"
+      >
+        @if (detailedPdfLoading) {
+          <mat-progress-spinner diameter="18" mode="indeterminate"></mat-progress-spinner>
+        } @else {
+          <mat-icon>picture_as_pdf</mat-icon>
+        }
+        <span>
+          &#1578;&#1589;&#1583;&#1610;&#1585; <span class="pdf-token" dir="ltr">PDF</span>
+          &#1575;&#1604;&#1578;&#1601;&#1589;&#1610;&#1604;&#1610;
+        </span>
+      </button>
+
+      <button
+        mat-flat-button
+        color="accent"
+        type="button"
+        (click)="exportSummaryPdf()"
+        [disabled]="detailSummaryMetrics.length === 0 || pdfExportLoading"
+      >
+        @if (summaryPdfLoading) {
+          <mat-progress-spinner diameter="18" mode="indeterminate"></mat-progress-spinner>
+        } @else {
+          <mat-icon>picture_as_pdf</mat-icon>
+        }
+        <span>
+          &#1578;&#1589;&#1583;&#1610;&#1585; <span class="pdf-token" dir="ltr">PDF</span>
+          &#1575;&#1604;&#1573;&#1580;&#1605;&#1575;&#1604;&#1610;
+        </span>
+      </button>
     </div>
 
     <mat-card class="invoice-card">
-      <h3>بيانات الفاتورة</h3>
+      <h3>&#1576;&#1610;&#1575;&#1606;&#1575;&#1578; &#1575;&#1604;&#1601;&#1575;&#1578;&#1608;&#1585;&#1577;</h3>
       <div class="info-grid">
         <div>
-          <span>رقم الفاتورة</span>
+          <span>&#1585;&#1602;&#1605; &#1575;&#1604;&#1601;&#1575;&#1578;&#1608;&#1585;&#1577;</span>
           <strong>{{ invoice?.id ?? '—' }}</strong>
         </div>
         <div>
-          <span>المعلم</span>
-          <strong>{{ invoice?.teacherName}}</strong>
+          <span>&#1575;&#1604;&#1605;&#1593;&#1604;&#1605;</span>
+          <strong>{{ getTeacherName() }}</strong>
         </div>
         <div>
-          <span>الشهر</span>
-          <strong>{{ invoice?.month|date:'MMMM yyyy' }}</strong>
+          <span>&#1575;&#1604;&#1588;&#1607;&#1585;</span>
+          <strong>{{ formatMonth() }}</strong>
         </div>
         <div>
-          <span>الحالة</span>
+          <span>&#1575;&#1604;&#1581;&#1575;&#1604;&#1577;</span>
           <strong>{{ getStatusLabel() }}</strong>
         </div>
         <div>
-          <span>تاريخ الدفع</span>
-          <strong>{{ invoice?.payedAt|date:'medium' }}</strong>
+          <span>&#1578;&#1575;&#1585;&#1610;&#1582; &#1575;&#1604;&#1583;&#1601;&#1593;</span>
+          <strong class="date-display" dir="ltr">{{ formatPaidAt() }}</strong>
         </div>
         <div>
-          <span>الراتب</span>
-          <strong>{{ invoice?.salary}}</strong>
+          <span>&#1575;&#1604;&#1585;&#1575;&#1578;&#1576;</span>
+          <strong>{{ formatSalary() }}</strong>
         </div>
       </div>
     </mat-card>
@@ -41,25 +79,30 @@
     <mat-card class="reports-card" #reportsExportSection>
       <div class="card-head">
         <div>
-          <h3>التقارير المستخدمة في احتساب الراتب</h3>
-           <p class="report-meta"> {{ invoice?.teacherName}}</p>
-          <p class="report-meta"> {{ invoice?.month|date:'MMMM' }}</p>
+          <h3>
+            &#1575;&#1604;&#1578;&#1602;&#1575;&#1585;&#1610;&#1585; &#1575;&#1604;&#1605;&#1587;&#1578;&#1582;&#1583;&#1605;&#1577;
+            &#1601;&#1610; &#1575;&#1581;&#1578;&#1587;&#1575;&#1576; &#1575;&#1604;&#1585;&#1575;&#1578;&#1576;
+          </h3>
+          <p class="report-meta">{{ getTeacherName() }}</p>
+          <p class="report-meta">{{ formatMonth() }}</p>
         </div>
-        <button mat-flat-button color="primary" type="button" (click)="exportDetailedReportPdf()" [disabled]="monthlyReportRecords.length === 0">
-          <mat-icon>picture_as_pdf</mat-icon>
-          تصدير PDF التفصيلي
-        </button>
       </div>
 
       @if (reportRecordsLoading) {
         <div class="records-loading">
           <mat-progress-spinner diameter="30" mode="indeterminate"></mat-progress-spinner>
-          <span>جاري تحميل السجلات التفصيلية...</span>
+          <span>
+            &#1580;&#1575;&#1585;&#1610; &#1578;&#1581;&#1605;&#1610;&#1604; &#1575;&#1604;&#1587;&#1580;&#1604;&#1575;&#1578;
+            &#1575;&#1604;&#1578;&#1601;&#1589;&#1610;&#1604;&#1610;&#1577;...
+          </span>
         </div>
       } @else if (reportRecordsError) {
         <p class="empty-state">{{ reportRecordsError }}</p>
       } @else if (monthlyReportRecords.length === 0) {
-        <p class="empty-state">لا توجد تقارير لهذا الشهر.</p>
+        <p class="empty-state">
+          &#1604;&#1575; &#1578;&#1608;&#1580;&#1583; &#1578;&#1602;&#1575;&#1585;&#1610;&#1585; &#1604;&#1607;&#1584;&#1575;
+          &#1575;&#1604;&#1588;&#1607;&#1585;.
+        </p>
       } @else {
         <div class="reports-table-container">
           <table mat-table [dataSource]="monthlyReportRecords" class="reports-table">
@@ -69,28 +112,34 @@
             </ng-container>
 
             <ng-container matColumnDef="studentName">
-              <th mat-header-cell *matHeaderCellDef>الطالب</th>
+              <th mat-header-cell *matHeaderCellDef>&#1575;&#1604;&#1591;&#1575;&#1604;&#1576;</th>
               <td mat-cell *matCellDef="let row">{{ row.studentName ?? '—' }}</td>
             </ng-container>
 
             <ng-container matColumnDef="minutes">
-              <th mat-header-cell *matHeaderCellDef>الدقائق</th>
+              <th mat-header-cell *matHeaderCellDef>&#1575;&#1604;&#1583;&#1602;&#1575;&#1574;&#1602;</th>
               <td mat-cell *matCellDef="let row">{{ row.minutes ?? 0 }}</td>
             </ng-container>
 
             <ng-container matColumnDef="salary">
-              <th mat-header-cell *matHeaderCellDef>الراتب</th>
+              <th mat-header-cell *matHeaderCellDef>&#1575;&#1604;&#1585;&#1575;&#1578;&#1576;</th>
               <td mat-cell *matCellDef="let row">{{ formatRecordSalary(row.salary) }}</td>
             </ng-container>
 
             <ng-container matColumnDef="attendStatusId">
-              <th mat-header-cell *matHeaderCellDef>حالة الحضور</th>
+              <th mat-header-cell *matHeaderCellDef>
+                &#1581;&#1575;&#1604;&#1577; &#1575;&#1604;&#1581;&#1590;&#1608;&#1585;
+              </th>
               <td mat-cell *matCellDef="let row">{{ getAttendStatusLabel(row.attendStatusId) }}</td>
             </ng-container>
 
             <ng-container matColumnDef="recordCreatedAt">
-              <th mat-header-cell *matHeaderCellDef>تاريخ السجل</th>
-              <td mat-cell *matCellDef="let row">{{ formatRecordDate(row.recordCreatedAt) }}</td>
+              <th mat-header-cell *matHeaderCellDef>
+                &#1578;&#1575;&#1585;&#1610;&#1582; &#1575;&#1604;&#1587;&#1580;&#1604;
+              </th>
+              <td mat-cell *matCellDef="let row">
+                <span class="date-display" dir="ltr">{{ formatRecordDate(row.recordCreatedAt) }}</span>
+              </td>
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="reportColumns"></tr>
@@ -103,15 +152,12 @@
     <mat-card class="totals-card" #summaryExportSection>
       <div class="card-head">
         <div>
-          <h3>الإجماليات</h3>
-          <p class="report-meta"> {{ invoice?.teacherName}}</p>
-          <p class="report-meta"> {{ invoice?.month|date:'MMMM' }}</p>
+          <h3>&#1575;&#1604;&#1573;&#1580;&#1605;&#1575;&#1604;&#1610;&#1575;&#1578;</h3>
+          <p class="report-meta">{{ getTeacherName() }}</p>
+          <p class="report-meta">{{ formatMonth() }}</p>
         </div>
-        <button mat-flat-button color="accent" type="button" (click)="exportSummaryPdf()" [disabled]="detailSummaryMetrics.length === 0">
-          <mat-icon>picture_as_pdf</mat-icon>
-          تصدير PDF الإجمالي
-        </button>
       </div>
+
       @if (detailSummaryMetrics.length > 0) {
         <div class="summary-grid">
           @for (metric of detailSummaryMetrics; track metric.label) {
@@ -122,7 +168,10 @@
           }
         </div>
       } @else {
-        <p class="empty-state">لا توجد بيانات إجمالية متاحة.</p>
+        <p class="empty-state">
+          &#1604;&#1575; &#1578;&#1608;&#1580;&#1583; &#1576;&#1610;&#1575;&#1606;&#1575;&#1578; &#1573;&#1580;&#1605;&#1575;&#1604;&#1610;&#1577;
+          &#1605;&#1578;&#1575;&#1581;&#1577;.
+        </p>
       }
     </mat-card>
   </div>

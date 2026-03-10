@@ -173,9 +173,46 @@
   gap: 1rem;
 }
 
-.teacher-select,
-.teacher-search {
+.teacher-select {
   min-width: 220px;
+}
+
+.teacher-search-panel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem 0;
+}
+
+.teacher-search-panel mat-icon {
+  color: var(--teacher-salary-text-secondary);
+}
+
+.teacher-search-panel input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.teacher-search-panel input::placeholder {
+  color: var(--teacher-salary-text-tertiary);
+}
+
+:host ::ng-deep .teacher-select-panel .teacher-search-option {
+  height: auto;
+  min-height: auto;
+}
+
+:host ::ng-deep .teacher-select-panel .teacher-search-option.mdc-list-item--disabled {
+  opacity: 1;
+  pointer-events: all;
+}
+
+:host ::ng-deep .teacher-select-panel .teacher-search-option .mdc-list-item__primary-text {
+  width: 100%;
 }
 
 .teacher-context {
@@ -266,6 +303,16 @@
   height: var(--button-size);
 }
 
+.view-action-button,
+.actions-cell > button:last-child {
+  min-width: auto;
+  width: auto;
+  height: 36px;
+  padding-inline: 0.75rem;
+  white-space: nowrap;
+  border-radius: 999px;
+}
+
 .action-button .spin {
   animation: invoice-spin 0.9s linear infinite;
 }
@@ -280,16 +327,7 @@
 }
 
 .teacher-salary-table tr.mat-row {
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.teacher-salary-table tr.mat-row:hover {
-  background-color: var(--teacher-salary-background-soft);
-}
-
-.teacher-salary-table tr.mat-row.is-selected {
-  background-color: var(--teacher-salary-background-strong);
+  cursor: default;
 }
 
 .empty-state {
