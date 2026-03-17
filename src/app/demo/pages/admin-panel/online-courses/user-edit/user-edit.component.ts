@@ -4,11 +4,11 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { FieldErrorComponent } from 'src/app/shared/validation/field-error/field-error.component';
 import { ValidationService } from 'src/app/shared/validation/validation.service';
 import { LiveErrorStateMatcher } from 'src/app/shared/validation/live-error-state-matcher';
-import { Subject, catchError, debounceTime, finalize, forkJoin, merge, of, startWith, switchMap, takeUntil, tap } from 'rxjs';
+import { Subject, catchError, debounceTime, finalize, firstValueFrom, forkJoin, merge, of, startWith, switchMap, takeUntil, tap } from 'rxjs';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -24,9 +24,17 @@ import {
 import { CircleService, CircleDto } from 'src/app/@theme/services/circle.service';
 import { CountryService, Country } from 'src/app/@theme/services/country.service';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
+import {
+  StudentSubscribeService,
+  ViewStudentSubscribeReDto
+} from 'src/app/@theme/services/student-subscribe.service';
+import { SubscribeTypeCategory } from 'src/app/@theme/services/subscribe.service';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
+import { ResidencyGroupFilter } from 'src/app/@theme/types/residency-group';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
-import { isEgyptianNationality } from 'src/app/@theme/utils/nationality.utils';
+import { isArabNationality, isEgyptianNationality } from 'src/app/@theme/utils/nationality.utils';
+import { StudentSubscribeDialogComponent } from '../../membership/membership-list/student-subscribe-dialog/student-subscribe-dialog.component';
+import { ResidencySubscribeWarningDialogComponent } from './residency-subscribe-warning-dialog.component';
 
 @Component({
   selector: 'app-user-edit',
@@ -43,8 +51,10 @@ export class UserEditComponent implements OnInit, OnDestroy {
   private circleService = inject(CircleService);
   private countryService = inject(CountryService);
   private auth = inject(AuthenticationService);
+  private dialog = inject(MatDialog);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private studentSubscribeService = inject(StudentSubscribeService);
   private dialogRef = inject(MatDialogRef<UserEditComponent>, { optional: true });
   private dialogData = inject<{ userId: number; userType?: 'manager' | 'teacher' | 'student' | 'branch-manager' } | null>(MAT_DIALOG_DATA, {
     optional: true
@@ -84,6 +94,14 @@ export class UserEditComponent implements OnInit, OnDestroy {
   liveErrorStateMatcher = new LiveErrorStateMatcher();
   isSaving = false;
   missingRequiredFields: string[] = [];
+  currentStudentSubscription: ViewStudentSubscribeReDto | null = null;
+  private pendingStudentSubscribeSelection:
+    | {
+        residentId: number;
+        subscribeId: number;
+        subscribeName?: string | null;
+      }
+    | null = null;
   Branch = [
     { id: BranchesEnum.Mens, label: 'الرجال' },
     { id: BranchesEnum.Women, label: 'النساء' }
@@ -176,7 +194,10 @@ export class UserEditComponent implements OnInit, OnDestroy {
 
     this.basicInfoForm
       .get('residentId')
-      ?.valueChanges.subscribe((residentId) => this.applyGovernorateRequirement(residentId));
+      ?.valueChanges.subscribe((residentId) => {
+        this.applyGovernorateRequirement(residentId);
+        this.resetPendingStudentSubscribeSelection(residentId);
+      });
 
     this.setupMissingRequiredFieldsTracking();
 
@@ -215,6 +236,9 @@ export class UserEditComponent implements OnInit, OnDestroy {
         if (res.isSuccess && res.data) {
           this.currentUser = res.data as typeof this.currentUser;
           this.populateUserForm();
+          if (this.isStudent) {
+            void this.getCurrentStudentSubscription(true);
+          }
         } else {
           this.toast.error('Failed to load user details');
         }
@@ -714,6 +738,204 @@ export class UserEditComponent implements OnInit, OnDestroy {
     this.refreshMissingRequiredFields();
   }
 
+  private resetPendingStudentSubscribeSelection(residentId: number | null): void {
+    if (!this.pendingStudentSubscribeSelection) {
+      return;
+    }
+
+    const normalizedResidentId = Number(residentId);
+    if (!Number.isFinite(normalizedResidentId) || normalizedResidentId <= 0) {
+      this.pendingStudentSubscribeSelection = null;
+      return;
+    }
+
+    if (this.pendingStudentSubscribeSelection.residentId !== normalizedResidentId) {
+      this.pendingStudentSubscribeSelection = null;
+    }
+  }
+
+  private async getCurrentStudentSubscription(forceRefresh = false): Promise<ViewStudentSubscribeReDto | null> {
+    if (!this.isStudent || !this.userId) {
+      return null;
+    }
+
+    if (!forceRefresh && this.currentStudentSubscription) {
+      return this.currentStudentSubscription;
+    }
+
+    try {
+      const response = await firstValueFrom(
+        this.studentSubscribeService.getStudentSubscribesWithPayment(
+          {
+            skipCount: 0,
+            maxResultCount: 1
+          },
+          this.userId
+        )
+      );
+
+      this.currentStudentSubscription = response?.data?.items?.[0] ?? null;
+    } catch {
+      // Keep the form functional even if the current subscription cannot be loaded.
+    }
+
+    return this.currentStudentSubscription;
+  }
+
+  private resolveResidencyGroup(residentId: number | null | undefined): ResidencyGroupFilter | null {
+    if (!residentId || residentId <= 0) {
+      return null;
+    }
+
+    const nationality = this.nationalities.find((item) => item.id === residentId) ?? null;
+    if (!nationality) {
+      return null;
+    }
+
+    if (isEgyptianNationality(nationality)) {
+      return 'egyptian';
+    }
+
+    if (isArabNationality(nationality)) {
+      return 'arab';
+    }
+
+    return 'foreign';
+  }
+
+  private mapResidencyGroupToCategory(group: ResidencyGroupFilter | null): SubscribeTypeCategory | null {
+    switch (group) {
+      case 'egyptian':
+        return SubscribeTypeCategory.Egyptian;
+      case 'arab':
+        return SubscribeTypeCategory.Arab;
+      case 'foreign':
+        return SubscribeTypeCategory.Foreign;
+      default:
+        return null;
+    }
+  }
+
+  private getSubscribeCategoryLabel(category: SubscribeTypeCategory | null | undefined): string {
+    switch (category ?? SubscribeTypeCategory.Unknown) {
+      case SubscribeTypeCategory.Egyptian:
+        return 'المصريين';
+      case SubscribeTypeCategory.Arab:
+        return 'العرب';
+      case SubscribeTypeCategory.Foreign:
+        return 'الأجانب';
+      default:
+        return 'غير محددة';
+    }
+  }
+
+  private getResidentNameById(residentId: number | null | undefined): string {
+    if (!residentId || residentId <= 0) {
+      return 'المكان المحدد';
+    }
+
+    return this.nationalities.find((item) => item.id === residentId)?.name ?? 'المكان المحدد';
+  }
+
+  private async promptForCompatibleSubscription(
+    targetResidentId: number,
+    targetResidencyGroup: ResidencyGroupFilter,
+    currentSubscription: ViewStudentSubscribeReDto | null
+  ): Promise<number | null> {
+    const targetCategory = this.mapResidencyGroupToCategory(targetResidencyGroup);
+    const warningAccepted = await firstValueFrom(
+      this.dialog
+        .open(ResidencySubscribeWarningDialogComponent, {
+          width: '560px',
+          data: {
+            targetResidentName: this.getResidentNameById(targetResidentId),
+            currentPlanName: currentSubscription?.plan ?? null,
+            currentGroupLabel: this.getSubscribeCategoryLabel(currentSubscription?.subscribeTypeGroup),
+            targetGroupLabel: this.getSubscribeCategoryLabel(targetCategory)
+          }
+        })
+        .afterClosed()
+    );
+
+    if (!warningAccepted) {
+      return null;
+    }
+
+    const selectedPlan = await firstValueFrom(
+      this.dialog
+        .open(StudentSubscribeDialogComponent, {
+          width: '520px',
+          data: {
+            studentId: this.userId,
+            residentId: targetResidentId,
+            residentGroup: targetResidencyGroup,
+            selectionMode: 'select',
+            title: 'اختيار الباقة المناسبة',
+            submitLabel: 'اعتماد الباقة',
+            description: 'اختر باقة متوافقة مع مكان الإقامة الجديد قبل حفظ بيانات الطالب.'
+          }
+        })
+        .afterClosed()
+    );
+
+    if (!selectedPlan?.subscribeId) {
+      return null;
+    }
+
+    this.pendingStudentSubscribeSelection = {
+      residentId: targetResidentId,
+      subscribeId: selectedPlan.subscribeId,
+      subscribeName: selectedPlan.subscribeName ?? null
+    };
+
+    return selectedPlan.subscribeId;
+  }
+
+  private async resolveStudentSubscribeSelectionForResidentChange(
+    targetResidentId: number | null | undefined
+  ): Promise<number | null | undefined> {
+    if (!this.isStudent || !this.currentUser) {
+      return undefined;
+    }
+
+    const normalizedTargetResidentId = Number(targetResidentId);
+    const originalResidentId = Number(this.currentUser.residentId ?? 0);
+
+    if (!Number.isFinite(normalizedTargetResidentId) || normalizedTargetResidentId <= 0) {
+      return undefined;
+    }
+
+    if (normalizedTargetResidentId === originalResidentId) {
+      return undefined;
+    }
+
+    if (this.pendingStudentSubscribeSelection?.residentId === normalizedTargetResidentId) {
+      return this.pendingStudentSubscribeSelection.subscribeId;
+    }
+
+    const targetResidencyGroup = this.resolveResidencyGroup(normalizedTargetResidentId);
+    const targetCategory = this.mapResidencyGroupToCategory(targetResidencyGroup);
+    if (!targetResidencyGroup || targetCategory === null) {
+      return undefined;
+    }
+
+    const currentSubscription = await this.getCurrentStudentSubscription(true);
+    const hasCurrentSubscription = !!currentSubscription?.plan;
+    if (!hasCurrentSubscription) {
+      return undefined;
+    }
+
+    if (currentSubscription?.subscribeTypeGroup === targetCategory) {
+      return undefined;
+    }
+
+    return this.promptForCompatibleSubscription(
+      normalizedTargetResidentId,
+      targetResidencyGroup,
+      currentSubscription
+    );
+  }
+
   private getListRoute(): string {
     if (this.isStudent) {
       return '/online-course/student/list';
@@ -727,7 +949,7 @@ export class UserEditComponent implements OnInit, OnDestroy {
     return '/online-course/student/list';
   }
 
-  onSubmit() {
+  async onSubmit() {
     if (this.isSaving) {
       return;
     }
@@ -770,6 +992,19 @@ export class UserEditComponent implements OnInit, OnDestroy {
         circleIds: this.isManager ? formValue.circleIds : undefined,
         circleId: this.isTeacher || this.isStudent ? formValue.circleId : undefined
       };
+
+      const pendingStudentSubscribeId = await this.resolveStudentSubscribeSelectionForResidentChange(
+        formValue.residentId
+      );
+
+      if (pendingStudentSubscribeId === null) {
+        return;
+      }
+
+      if (pendingStudentSubscribeId) {
+        model.studentSubscribeId = pendingStudentSubscribeId;
+      }
+
       this.isSaving = true;
       this.userService
         .updateUser(model)
@@ -777,6 +1012,8 @@ export class UserEditComponent implements OnInit, OnDestroy {
         .subscribe({
         next: (res) => {
           if (res?.isSuccess) {
+            this.pendingStudentSubscribeSelection = null;
+            this.currentStudentSubscription = null;
             this.toast.success(res.message || (this.isManager ? 'تم تحديث البيانات والعلاقات بنجاح' : 'تم تحديث البيانات بنجاح'));
             if (this.dialogRef) {
               this.lookupService.getUserDetails(this.userId).subscribe({

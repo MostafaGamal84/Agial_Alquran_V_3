@@ -1,4 +1,4 @@
-// type
+﻿// type
 import { Navigation } from 'src/app/@theme/types/navigation';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 
@@ -349,7 +349,7 @@ export const menus: Navigation[] = [
               },
               {
                 id: 'report-add',
-                title: 'Add Report',
+                title: 'إضافة تقرير',
                 type: 'item',
                 url: '/online-course/student/report/add',
                 role: [
@@ -368,6 +368,13 @@ export const menus: Navigation[] = [
             type: 'item',
             url: '/online-course/deleted-objects',
             role: [UserTypesEnum.Admin.toString(), UserTypesEnum.BranchLeader.toString()]
+          },
+          {
+            id: 'operations-log',
+            title: 'سجل العمليات',
+            type: 'item',
+            url: '/online-course/operations-log',
+            role: [UserTypesEnum.Admin.toString()]
           },
           {
             id: 'subscribes',

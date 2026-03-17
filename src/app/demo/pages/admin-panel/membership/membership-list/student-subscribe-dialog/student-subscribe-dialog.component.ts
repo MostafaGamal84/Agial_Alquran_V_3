@@ -26,6 +26,16 @@ import { ToastService } from 'src/app/@theme/services/toast.service';
 import { isArabNationality, isEgyptianNationality } from 'src/app/@theme/utils/nationality.utils';
 import { ResidencyGroupFilter } from 'src/app/@theme/types/residency-group';
 
+interface StudentSubscribeDialogData {
+  studentId: number;
+  residentId?: number | null;
+  residentGroup?: ResidencyGroupFilter | null;
+  selectionMode?: 'save' | 'select';
+  title?: string;
+  submitLabel?: string;
+  description?: string | null;
+}
+
 @Component({
   selector: 'app-student-subscribe-dialog',
   standalone: true,
@@ -47,11 +57,7 @@ export class StudentSubscribeDialogComponent implements OnInit {
   private lookupService = inject(LookupService);
   private toast = inject(ToastService);
   private dialogRef = inject(MatDialogRef<StudentSubscribeDialogComponent>);
-  private data = inject<{
-    studentId: number;
-    residentId?: number | null;
-    residentGroup?: ResidencyGroupFilter | null;
-  }>(MAT_DIALOG_DATA);
+  private data = inject<StudentSubscribeDialogData>(MAT_DIALOG_DATA);
 
   form = this.fb.group({
     subscribeTypeId: [null as number | null],
@@ -61,6 +67,22 @@ export class StudentSubscribeDialogComponent implements OnInit {
   types: SubscribeTypeDto[] = [];
   subscribes: SubscribeLookupDto[] = [];
   private typeCategoryFilter: SubscribeTypeCategory | null = null;
+
+  get dialogTitle(): string {
+    return this.data?.title?.trim() || 'تحديث الباقة للطالب';
+  }
+
+  get dialogDescription(): string | null {
+    return this.data?.description?.trim() || null;
+  }
+
+  get submitLabel(): string {
+    return this.data?.submitLabel?.trim() || 'حفظ';
+  }
+
+  private get isSelectionMode(): boolean {
+    return this.data?.selectionMode === 'select';
+  }
 
   ngOnInit(): void {
     this.prepareResidencyFilter();
@@ -103,7 +125,8 @@ export class StudentSubscribeDialogComponent implements OnInit {
     const filter: FilteredResultRequestDto = {
       skipCount: 0,
       maxResultCount: 100,
-      studentId: this.data?.studentId ?? undefined
+      studentId: this.data?.studentId ?? undefined,
+      residentId: this.data?.residentId ?? undefined
     };
 
     this.subscribeService.getAllTypes(filter).subscribe({
@@ -124,6 +147,16 @@ export class StudentSubscribeDialogComponent implements OnInit {
   submit(): void {
     const subscribeId = this.form.value.subscribeId;
     if (!subscribeId) {
+      return;
+    }
+
+    const selectedSubscribe = this.subscribes.find((item) => item.id === subscribeId) ?? null;
+
+    if (this.isSelectionMode) {
+      this.dialogRef.close({
+        subscribeId,
+        subscribeName: selectedSubscribe?.name ?? null
+      });
       return;
     }
 

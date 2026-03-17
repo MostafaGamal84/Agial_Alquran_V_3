@@ -11,7 +11,7 @@
     </mat-form-field>
   </div>
 
-  <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
+  <table mat-table [dataSource]="dataSource" matSort multiTemplateDataRows class="mat-elevation-z8">
     <!-- id Column -->
     <ng-container matColumnDef="index">
       <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-center">{{ 'Index' | translate }}</th>
@@ -22,25 +22,44 @@
     <ng-container matColumnDef="name">
       <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'Student' | translate }}</th>
       <td mat-cell *matCellDef="let element" class="text-nowrap">
-        {{ element.name }}
+        <div class="invoice-name-cell">
+          @if (isExpandableRow(element)) {
+            <button
+              type="button"
+              mat-icon-button
+              class="invoice-expand-button"
+              [attr.aria-label]="(isExpanded(element) ? 'Collapse invoices' : 'Expand invoices') | translate"
+              (click)="toggleExpandedRow(element)"
+            >
+              <mat-icon>{{ isExpanded(element) ? 'keyboard_arrow_up' : 'keyboard_arrow_down' }}</mat-icon>
+            </button>
+          }
+
+          <div>
+            <div>{{ element.name }}</div>
+            @if (element.invoiceCount > 1) {
+              <small class="invoice-meta-text">{{ element.invoiceCount }} {{ 'فاتورة' | translate }}</small>
+            }
+          </div>
+        </div>
       </td>
     </ng-container>
 
     <!-- create_date Column -->
     <ng-container matColumnDef="create_date">
       <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'Create Date' | translate }}</th>
-      <td mat-cell *matCellDef="let element" class="text-nowrap">{{ element.create_date  | date:'dd/MM/yyyy' }}</td>
+      <td mat-cell *matCellDef="let element" class="text-nowrap">{{ element.create_date | date: 'dd/MM/yyyy' }}</td>
     </ng-container>
 
     <!-- due_date Column -->
     <ng-container matColumnDef="due_date">
       <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'Due Date' | translate }}</th>
-      <td mat-cell *matCellDef="let element" class="text-nowrap">{{ element.due_date  | date:'dd/MM/yyyy' }}</td>
+      <td mat-cell *matCellDef="let element" class="text-nowrap">{{ element.due_date | date: 'dd/MM/yyyy' }}</td>
     </ng-container>
 
     <!-- qty Column -->
     <ng-container matColumnDef="qty">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'المبلغ' | translate }}</th>
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'Amount' | translate }}</th>
       <td mat-cell *matCellDef="let element" class="text-nowrap">{{ element.qty }}</td>
     </ng-container>
 
@@ -48,7 +67,21 @@
     <ng-container matColumnDef="status">
       <th mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'Status' | translate }}</th>
       <td mat-cell *matCellDef="let element" class="text-nowrap">
-        @if (element.status === 'paid') {
+        @if (element.invoiceCount > 1) {
+          <div class="invoice-status-summary">
+            @for (statusEntry of getStatusSummaryEntries(element); track statusEntry.key) {
+              @if (statusEntry.key === 'paid') {
+                <span class="user-status bg-success-500 text-white">{{ 'Paid' | translate }} {{ statusEntry.count }}</span>
+              } @else if (statusEntry.key === 'unpaid') {
+                <span class="user-status bg-cyan-500 text-white">{{ 'Unpaid' | translate }} {{ statusEntry.count }}</span>
+              } @else if (statusEntry.key === 'overdue') {
+                <span class="user-status bg-warn-500 text-white">{{ 'Overdue' | translate }} {{ statusEntry.count }}</span>
+              } @else if (statusEntry.key === 'cancelled') {
+                <span class="user-status bg-warn-500 text-white">{{ 'Cancelled' | translate }} {{ statusEntry.count }}</span>
+              }
+            }
+          </div>
+        } @else if (element.status === 'paid') {
           <span class="user-status bg-success-500 text-white">{{ 'Paid' | translate }}</span>
         } @else if (element.status === 'unpaid') {
           <span class="user-status bg-cyan-500 text-white">{{ 'Unpaid' | translate }}</span>
@@ -69,7 +102,7 @@
             <a
               href="javascript:"
               class="avatar avatar-xs bg-accent-100 hover m-r-10"
-              [matTooltip]="'عرض' | translate"
+              [matTooltip]="'View' | translate"
               (click)="openPaymentDetails(element.id)"
             >
               <i class="f-20 ti ti-eye text-accent-500"></i>
@@ -79,30 +112,100 @@
             <a
               href="javascript:"
               class="avatar avatar-xs bg-primary-50 hover m-r-10"
-              [matTooltip]="'تعديل' | translate"
+              [matTooltip]="'Edit' | translate"
               (click)="openPaymentEdit(element.id)"
             >
               <i class="f-20 ti ti-edit text-primary-500"></i>
             </a>
           </li>
-          <!-- <li class="list-inline-item">
-            <a href="javascript:" matTooltip="Delete" class="avatar avatar-xs bg-warn-50 hover">
-              <i class="f-20 ti ti-trash text-warn-500"></i>
-            </a>
-          </li> -->
         </ul>
       </td>
     </ng-container>
 
+    <!-- expanded detail row -->
+    <ng-container matColumnDef="expandedDetail">
+      <td mat-cell *matCellDef="let element" [attr.colspan]="displayedColumns.length">
+        <div class="invoice-detail-content" [class.invoice-detail-content--expanded]="isExpanded(element) && isExpandableRow(element)">
+          @if (isExpanded(element) && isExpandableRow(element)) {
+            <table class="invoice-child-table">
+              <thead>
+                <tr>
+                  <th class="text-center">{{ 'Index' | translate }}</th>
+                  <th>{{ 'Student' | translate }}</th>
+                  <th>{{ 'Create Date' | translate }}</th>
+                  <th>{{ 'Due Date' | translate }}</th>
+                  <th>{{ 'Amount' | translate }}</th>
+                  <th>{{ 'Status' | translate }}</th>
+                  <th>{{ 'Actions' | translate }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (childInvoice of getChildInvoices(element); track childInvoice.id; let childIndex = $index) {
+                  <tr>
+                    <td class="text-center">{{ getChildRowIndex(childIndex) }}</td>
+                    <td>{{ childInvoice.name }}</td>
+                    <td>{{ childInvoice.create_date | date: 'dd/MM/yyyy' }}</td>
+                    <td>{{ childInvoice.due_date | date: 'dd/MM/yyyy' }}</td>
+                    <td>{{ childInvoice.qty }}</td>
+                    <td>
+                      @if (childInvoice.status === 'paid') {
+                        <span class="user-status bg-success-500 text-white">{{ 'Paid' | translate }}</span>
+                      } @else if (childInvoice.status === 'unpaid') {
+                        <span class="user-status bg-cyan-500 text-white">{{ 'Unpaid' | translate }}</span>
+                      } @else if (childInvoice.status === 'overdue') {
+                        <span class="user-status bg-warn-500 text-white">{{ 'Overdue' | translate }}</span>
+                      } @else if (childInvoice.status === 'cancelled') {
+                        <span class="user-status bg-warn-500 text-white">{{ 'Cancelled' | translate }}</span>
+                      }
+                    </td>
+                    <td>
+                      <ul class="list-inline m-b-0">
+                        <li class="list-inline-item">
+                          <a
+                            href="javascript:"
+                            class="avatar avatar-xs bg-accent-100 hover m-r-10"
+                            [matTooltip]="'View' | translate"
+                            (click)="openPaymentDetails(childInvoice.id)"
+                          >
+                            <i class="f-20 ti ti-eye text-accent-500"></i>
+                          </a>
+                        </li>
+                        <li class="list-inline-item">
+                          <a
+                            href="javascript:"
+                            class="avatar avatar-xs bg-primary-50 hover m-r-10"
+                            [matTooltip]="'Edit' | translate"
+                            (click)="openPaymentEdit(childInvoice.id)"
+                          >
+                            <i class="f-20 ti ti-edit text-primary-500"></i>
+                          </a>
+                        </li>
+                      </ul>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        </div>
+      </td>
+    </ng-container>
+
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    <tr
+      mat-row
+      *matRowDef="let row; columns: displayedColumns"
+      class="invoice-main-row"
+      [class.invoice-main-row--expanded]="isExpanded(row)"
+    ></tr>
+    <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="invoice-detail-row"></tr>
   </table>
   <div class="app-paginator" #loadMoreTrigger>
     <span class="text-muted" *ngIf="isLoadingMore">
       {{ 'Loading more...' | translate }}
     </span>
     <span class="text-muted" *ngIf="!isLoadingMore && !hasMoreResults()">
-      {{ 'تم تحميل كل البيانات' | translate }}
+      {{ 'All data loaded' | translate }}
     </span>
     <span class="text-muted invisible" *ngIf="!isLoadingMore && hasMoreResults()">&nbsp;</span>
   </div>

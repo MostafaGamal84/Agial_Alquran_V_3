@@ -1,0 +1,266 @@
+<app-loading-overlay [isLoading]="isLoading || isLoadingFilters">
+  <div class="row p-t-25 operations-log-page" dir="rtl">
+    <div class="col-12">
+      <app-card cardTitle="سجل العمليات" padding="0" cardClass="sm-block">
+        <ng-template #headerOptionsTemplate>
+          <div class="header-actions">
+            <button mat-stroked-button type="button" class="secondary-action" (click)="clearFilters()">
+              مسح التصفية
+            </button>
+            <button mat-flat-button color="primary" type="button" class="primary-action" (click)="refresh()">
+              تحديث السجل
+            </button>
+          </div>
+        </ng-template>
+
+        <section class="hero-banner">
+          <div class="hero-banner__content">
+            <span class="hero-badge">المتابعة والمراجعة</span>
+            <h2>سجل العمليات</h2>
+            <p>
+              يعرض هذا السجل كل عمليات الإضافة والتعديل والحذف والاستعادة، مع اسم المنفذ والأطراف المرتبطة
+              بكل عملية.
+            </p>
+          </div>
+
+          <div class="hero-banner__stats">
+            <div class="hero-stat">
+              <span>إجمالي النتائج</span>
+              <strong>{{ totalCount }}</strong>
+            </div>
+            <div class="hero-stat hero-stat--soft">
+              <span>المعروض الآن</span>
+              <strong>{{ logs.length }}</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="filters-shell">
+          <div class="filters-head">
+            <div>
+              <h3>تصفية السجل</h3>
+              <p>ابحث باسم المنفذ أو العنصر، أو حدّد الطالب أو المشرف أو المعلم أو الباقة أو الفترة الزمنية.</p>
+            </div>
+          </div>
+
+          <form [formGroup]="filterForm" class="filter-form">
+            <div class="row g-3">
+              <div class="col-12 col-md-6 col-xl-3">
+                <mat-form-field appearance="outline" class="w-100 filter-field">
+                  <mat-label>بحث عام</mat-label>
+                  <input
+                    matInput
+                    formControlName="searchTerm"
+                    placeholder="ابحث في الوصف أو اسم المنفذ أو اسم العنصر"
+                  />
+                </mat-form-field>
+              </div>
+
+              <div class="col-12 col-md-6 col-xl-3">
+                <mat-form-field appearance="outline" class="w-100 filter-field">
+                  <mat-label>نوع العملية</mat-label>
+                  <mat-select formControlName="actionType" panelClass="operations-log-panel">
+                    <mat-option [value]="null">كل العمليات</mat-option>
+                    <mat-option *ngFor="let action of actionOptions" [value]="action.value">
+                      {{ getActionLabel(action.value) }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+
+              <div class="col-12 col-md-6 col-xl-3">
+                <mat-form-field appearance="outline" class="w-100 filter-field">
+                  <mat-label>نوع العنصر</mat-label>
+                  <mat-select formControlName="entityType" panelClass="operations-log-panel">
+                    <mat-option [value]="null">كل العناصر</mat-option>
+                    <mat-option *ngFor="let entity of entityOptions" [value]="entity.value">
+                      {{ getEntityLabel(entity.value) }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+
+              <div class="col-12 col-md-6 col-xl-3">
+                <mat-form-field appearance="outline" class="w-100 filter-field">
+                  <mat-label>الطالب</mat-label>
+                  <mat-select formControlName="studentId" panelClass="operations-log-panel">
+                    <mat-option [value]="null">كل الطلاب</mat-option>
+                    <mat-option *ngFor="let student of students" [value]="student.id">
+                      {{ student.name }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+
+              <div class="col-12 col-md-6 col-xl-3">
+                <mat-form-field appearance="outline" class="w-100 filter-field">
+                  <mat-label>المشرف</mat-label>
+                  <mat-select formControlName="managerId" panelClass="operations-log-panel">
+                    <mat-option [value]="null">كل المشرفين</mat-option>
+                    <mat-option *ngFor="let manager of managers" [value]="manager.id">
+                      {{ manager.name }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+
+              <div class="col-12 col-md-6 col-xl-3">
+                <mat-form-field appearance="outline" class="w-100 filter-field">
+                  <mat-label>المعلم</mat-label>
+                  <mat-select formControlName="teacherId" panelClass="operations-log-panel">
+                    <mat-option [value]="null">كل المعلمين</mat-option>
+                    <mat-option *ngFor="let teacher of teachers" [value]="teacher.id">
+                      {{ teacher.name }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+
+              <div class="col-12 col-md-6 col-xl-3">
+                <mat-form-field appearance="outline" class="w-100 filter-field">
+                  <mat-label>الباقة</mat-label>
+                  <mat-select formControlName="subscribeId" panelClass="operations-log-panel">
+                    <mat-option [value]="null">كل الباقات</mat-option>
+                    <mat-option *ngFor="let subscribe of subscribes" [value]="subscribe.id">
+                      {{ subscribe.name }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+
+              <div class="col-12 col-md-6 col-xl-3">
+                <mat-form-field appearance="outline" class="w-100 filter-field">
+                  <mat-label>نوع الباقة</mat-label>
+                  <mat-select formControlName="subscribeTypeId" panelClass="operations-log-panel">
+                    <mat-option [value]="null">كل الأنواع</mat-option>
+                    <mat-option *ngFor="let subscribeType of subscribeTypes" [value]="subscribeType.id">
+                      {{ subscribeType.name }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+
+              <div class="col-12 col-xl-6">
+                <mat-form-field appearance="outline" class="w-100 filter-field">
+                  <mat-label>الفترة الزمنية</mat-label>
+                  <mat-date-range-input [formGroup]="filterForm" [rangePicker]="operationsRangePicker">
+                    <input matStartDate formControlName="fromDate" placeholder="من تاريخ" />
+                    <input matEndDate formControlName="toDate" placeholder="إلى تاريخ" />
+                  </mat-date-range-input>
+                  <mat-datepicker-toggle matSuffix [for]="operationsRangePicker"></mat-datepicker-toggle>
+                  <mat-date-range-picker #operationsRangePicker panelClass="operations-log-date-panel"></mat-date-range-picker>
+                </mat-form-field>
+              </div>
+            </div>
+          </form>
+        </section>
+
+        <div class="results-summary">
+          <span class="summary-pill">يعرض السجل العمليات المسموح لك برؤيتها حسب صلاحيات الحساب الحالي.</span>
+          <span class="summary-note">يمكنك التمرير لأسفل لتحميل المزيد من السجلات تلقائيًا.</span>
+        </div>
+
+        <div class="table-wrapper">
+          <div class="table-responsive">
+            <table mat-table [dataSource]="logs" class="mat-elevation-z8 operations-table">
+              <ng-container matColumnDef="createdAt">
+                <th mat-header-cell *matHeaderCellDef>التاريخ</th>
+                <td mat-cell *matCellDef="let log" class="text-nowrap">
+                  {{ formatCreatedAt(log.createdAt) }}
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="actionType">
+                <th mat-header-cell *matHeaderCellDef>العملية</th>
+                <td mat-cell *matCellDef="let log" class="text-nowrap">
+                  <span class="action-pill" [ngClass]="getActionClass(log.actionType)">
+                    {{ getActionLabel(log.actionType) }}
+                  </span>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="entityType">
+                <th mat-header-cell *matHeaderCellDef>العنصر</th>
+                <td mat-cell *matCellDef="let log">
+                  <div class="entity-cell">
+                    <span class="entity-title">{{ getEntityLabel(log.entityType) }}</span>
+                    <span class="entity-name" *ngIf="log.entityDisplayName || log.entityLabel">
+                      {{ log.entityDisplayName || log.entityLabel }}
+                    </span>
+                    <span class="entity-meta" *ngIf="!log.entityDisplayName && !log.entityLabel && log.entityId">
+                      رقم العنصر: {{ log.entityId }}
+                    </span>
+                  </div>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="actor">
+                <th mat-header-cell *matHeaderCellDef>المنفذ</th>
+                <td mat-cell *matCellDef="let log">
+                  <div class="actor-cell">
+                    <span class="actor-name">{{ getActorDisplay(log) }}</span>
+                    <span class="actor-role" *ngIf="getActorRoleLabel(log.actorRoleId)">
+                      {{ getActorRoleLabel(log.actorRoleId) }}
+                    </span>
+                  </div>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="details">
+                <th mat-header-cell *matHeaderCellDef>التفاصيل</th>
+                <td mat-cell *matCellDef="let log">
+                  <div class="details-cell">
+                    <div class="summary-text">
+                      {{ getSummaryText(log) }}
+                    </div>
+
+                    <div class="changes-list" *ngIf="getVisibleChanges(log).length > 0">
+                      <div class="change-item" *ngFor="let change of getVisibleChanges(log)">
+                        <span class="change-label">{{ getChangeLabel(change) }}</span>
+                        <span class="change-value">
+                          من {{ formatAuditValue(change.oldValue) }} إلى {{ formatAuditValue(change.newValue) }}
+                        </span>
+                      </div>
+                      <div class="change-more" *ngIf="(log.changes?.length || 0) > 3">
+                        +{{ (log.changes?.length || 0) - 3 }} تغييرات إضافية
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="participants">
+                <th mat-header-cell *matHeaderCellDef>الأطراف</th>
+                <td mat-cell *matCellDef="let log">
+                  <div class="participants-cell" *ngIf="getVisibleParticipants(log).length > 0; else noParticipants">
+                    <span class="participant-chip" *ngFor="let participant of getVisibleParticipants(log)">
+                      {{ getParticipantDisplay(participant) }}
+                    </span>
+                    <span class="participant-chip more" *ngIf="(log.participants?.length || 0) > 4">
+                      +{{ (log.participants?.length || 0) - 4 }}
+                    </span>
+                  </div>
+                  <ng-template #noParticipants>
+                    <span class="empty-text">لا يوجد</span>
+                  </ng-template>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+              <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell no-data-cell" colspan="6">لا توجد عمليات مطابقة للتصفية الحالية.</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="app-paginator" #loadMoreTrigger *ngIf="logs.length > 0">
+            <span class="empty-text" *ngIf="isLoadingMore">جارٍ تحميل المزيد...</span>
+            <span class="empty-text" *ngIf="!isLoadingMore && !hasMoreResults()">تم تحميل كل السجلات</span>
+            <span class="empty-text invisible" *ngIf="!isLoadingMore && hasMoreResults()">&nbsp;</span>
+          </div>
+        </div>
+      </app-card>
+    </div>
+  </div>
+</app-loading-overlay>

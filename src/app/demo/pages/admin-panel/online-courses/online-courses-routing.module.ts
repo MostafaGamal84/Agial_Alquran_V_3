@@ -81,6 +81,14 @@ const routes: Routes = [
         }
       },
       {
+        path: 'operations-log',
+        loadComponent: () =>
+          import('./operations-log/operations-log.component').then((c) => c.OperationsLogComponent),
+        data: {
+          roles: [UserTypesEnum.Admin, UserTypesEnum.BranchLeader]
+        }
+      },
+      {
         path: 'report',
         loadChildren: () => import('./report/report-routing.module').then((m) => m.ReportRoutingModule),
         data: {

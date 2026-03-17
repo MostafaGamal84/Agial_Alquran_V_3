@@ -3,3 +3,94 @@
 .bg-cyan-500 {
   background: map-get($cyan-theme, 500);
 }
+
+.invoice-name-cell {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.invoice-expand-button {
+  color: var(--bs-primary, #4c7cf3);
+  flex-shrink: 0;
+  height: 28px;
+  width: 28px;
+}
+
+.invoice-meta-text {
+  color: var(--bs-gray-600, #7c8aa5);
+  display: inline-block;
+  margin-top: 4px;
+}
+
+.invoice-status-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.invoice-status-summary .user-status {
+  white-space: nowrap;
+}
+
+.invoice-main-row--expanded {
+  background: rgba(76, 124, 243, 0.06);
+}
+
+.invoice-detail-row {
+  height: 0;
+}
+
+.invoice-detail-row td,
+.invoice-detail-row .mat-mdc-cell,
+.invoice-detail-row .mat-cell {
+  border-bottom: 0;
+  padding: 0 !important;
+}
+
+.invoice-detail-content {
+  display: none;
+  overflow: hidden;
+}
+
+.invoice-detail-content--expanded {
+  display: block;
+  padding: 0 20px 20px;
+}
+
+.invoice-child-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.invoice-child-table thead th {
+  background: rgba(255, 255, 255, 0.05);
+  color: #f5f7fa;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 12px 14px;
+  text-align: start;
+}
+
+.invoice-child-table tbody td {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: #d8e0ea;
+  padding: 14px;
+  vertical-align: middle;
+}
+
+.invoice-child-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.invoice-child-table .list-inline {
+  margin: 0;
+}
+
+@media (max-width: 991.98px) {
+  .invoice-child-table {
+    min-width: 760px;
+  }
+}

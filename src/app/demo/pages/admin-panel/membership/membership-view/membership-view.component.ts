@@ -5,14 +5,17 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { SharedModule } from 'src/app/demo/shared/shared.module';
-import { StudentSubscribeService, ViewStudentSubscribeReDto } from 'src/app/@theme/services/student-subscribe.service';
+import {
+  StudentSubscribeHistoryReDto,
+  StudentSubscribeService,
+  ViewStudentSubscribeReDto
+} from 'src/app/@theme/services/student-subscribe.service';
 import { FilteredResultRequestDto } from 'src/app/@theme/services/lookup.service';
 import {
   StudentPaymentService,
   StudentPaymentDto,
   getCurrencyLabel
 } from 'src/app/@theme/services/student-payment.service';
-
 
 @Component({
   selector: 'app-membership-view',
@@ -30,11 +33,19 @@ export class MembershipViewComponent implements OnInit, OnDestroy {
   dataSource = new MatTableDataSource<ViewStudentSubscribeReDto>();
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
+  historyFilter: FilteredResultRequestDto = {
+    skipCount: 0,
+    maxResultCount: 50,
+    sortBy: 'CreatedAt',
+    sortingDirection: 'DESC'
+  };
   pageIndex = 0;
   pageSize = 10;
   studentId = 0;
   isLoading = false;
   isLoadingMore = false;
+  isHistoryLoading = false;
+  historyItems: StudentSubscribeHistoryReDto[] = [];
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;
 
@@ -76,6 +87,7 @@ export class MembershipViewComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.studentId = Number(this.route.snapshot.paramMap.get('id'));
     this.load();
+    this.loadHistory();
   }
 
   ngOnDestroy(): void {
@@ -112,6 +124,20 @@ export class MembershipViewComponent implements OnInit, OnDestroy {
           this.isLoadingMore = false;
         }
       });
+  }
+
+  private loadHistory() {
+    this.isHistoryLoading = true;
+    this.service.getStudentSubscribeHistory(this.historyFilter, this.studentId).subscribe({
+      next: (res) => {
+        this.historyItems = res.isSuccess && res.data?.items ? res.data.items : [];
+        this.isHistoryLoading = false;
+      },
+      error: () => {
+        this.historyItems = [];
+        this.isHistoryLoading = false;
+      }
+    });
   }
 
   private setupIntersectionObserver(): void {
@@ -182,5 +208,37 @@ export class MembershipViewComponent implements OnInit, OnDestroy {
 
   getCurrencyLabel(currencyId?: number | null): string {
     return getCurrencyLabel(currencyId);
+  }
+
+  getHistoryActionLabel(actionType?: string | null): string {
+    switch (actionType) {
+      case 'Created':
+        return 'إنشاء اشتراك';
+      case 'ResidenceChanged':
+        return 'تعديل باقة بسبب تغيير الإقامة';
+      default:
+        return 'تعديل باقة';
+    }
+  }
+
+  getPaymentStatusLabel(status?: boolean | null): string {
+    if (status === true) {
+      return 'مدفوع';
+    }
+
+    if (status === false) {
+      return 'غير مدفوع';
+    }
+
+    return 'غير محدد';
+  }
+
+  formatHistoryAmount(amount?: number | null, currencyId?: number | null): string {
+    if (amount === null || amount === undefined) {
+      return 'غير محدد';
+    }
+
+    const currencyLabel = this.getCurrencyLabel(currencyId);
+    return currencyLabel ? `${amount} ${currencyLabel}` : `${amount}`;
   }
 }

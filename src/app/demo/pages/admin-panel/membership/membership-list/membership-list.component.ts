@@ -255,9 +255,6 @@ export class MembershipListComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   openSubscribeDialog(student: ViewStudentSubscribeReDto) {
-    if (!this.canEditSubscription(student)) {
-      return;
-    }
     const residentId = student.residentId ?? null;
     const residentGroup = this.resolveResidencyGroup(residentId);
     const dialogRef = this.dialog.open(StudentSubscribeDialogComponent, {
@@ -272,16 +269,6 @@ export class MembershipListComponent implements OnInit, AfterViewInit, OnDestroy
         this.load();
       }
     });
-  }
-
-  canEditSubscription(student: ViewStudentSubscribeReDto): boolean {
-    if (student.isCancelled === true) {
-      return false;
-    }
-    if (student.payStatus !== true) {
-      return true;
-    }
-    return student.remainingMinutes === 0;
   }
 
   private resolveResidencyGroup(residentId: number | null): ResidencyGroupFilter | null {

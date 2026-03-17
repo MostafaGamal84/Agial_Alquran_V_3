@@ -182,6 +182,122 @@
                 {{ isLoadingMore ? 'جاري تحميل المزيد...' : 'اسحب لأسفل لتحميل المزيد' }}
               </span>
             </div>
+            <div class="subscription-history-section">
+              <div class="subscription-history-section__header">
+                <div>
+                  <h3 class="subscription-history-section__title">سجل تغييرات الباقات</h3>
+                  <p class="subscription-history-section__subtitle">
+                    يوضح من قام بالتعديل وما الذي تغيّر من وإلى.
+                  </p>
+                </div>
+                @if (historyItems.length > 0) {
+                  <span class="subscription-history-section__count">
+                    {{ historyItems.length }} سجل
+                  </span>
+                }
+              </div>
+
+              @if (isHistoryLoading) {
+                <div class="subscription-history-empty">جاري تحميل سجل الباقات...</div>
+              } @else if (historyItems.length === 0) {
+                <div class="subscription-history-empty">
+                  لا يوجد سجل تغييرات على باقات هذا الطالب حتى الآن.
+                </div>
+              } @else {
+                <div class="subscription-history-list">
+                  @for (historyItem of historyItems; track historyItem.id) {
+                    <div class="subscription-history-card">
+                      <div class="subscription-history-card__top">
+                        <div>
+                          <div class="subscription-history-card__title">
+                            {{ getHistoryActionLabel(historyItem.actionType) }}
+                          </div>
+                          <div class="subscription-history-card__meta">
+                            <span>
+                              {{ historyItem.changedAt ? (historyItem.changedAt | date: 'short') : 'غير محدد' }}
+                            </span>
+                            <span>•</span>
+                            <span>{{ historyItem.changedByName || 'System' }}</span>
+                          </div>
+                        </div>
+                        <span
+                          class="subscription-history-card__badge"
+                          [class.subscription-history-card__badge--created]="historyItem.actionType === 'Created'"
+                        >
+                          {{ getHistoryActionLabel(historyItem.actionType) }}
+                        </span>
+                      </div>
+
+                      <div class="subscription-history-card__plans">
+                        <div class="subscription-history-plan">
+                          <span class="subscription-history-plan__label">من</span>
+                          <strong class="subscription-history-plan__value">
+                            {{ historyItem.oldPlanName || 'لا يوجد' }}
+                          </strong>
+                        </div>
+
+                        <div class="subscription-history-plan__transition">إلى</div>
+
+                        <div class="subscription-history-plan subscription-history-plan--accent">
+                          <span class="subscription-history-plan__label">إلى</span>
+                          <strong class="subscription-history-plan__value">
+                            {{ historyItem.newPlanName || 'لا يوجد' }}
+                          </strong>
+                        </div>
+                      </div>
+
+                      <div class="subscription-history-card__metrics">
+                        <div class="subscription-history-metric">
+                          <span class="subscription-history-metric__label">الدقائق</span>
+                          <strong class="subscription-history-metric__value">
+                            {{ historyItem.oldRemainingMinutes ?? 0 }} الى {{ historyItem.newRemainingMinutes ?? 0 }}
+                          </strong>
+                        </div>
+
+                        <div class="subscription-history-metric">
+                          <span class="subscription-history-metric__label">المبلغ</span>
+                          <strong class="subscription-history-metric__value">
+                            {{ formatHistoryAmount(historyItem.oldAmount, historyItem.oldCurrencyId) }}
+                            الى
+                            {{ formatHistoryAmount(historyItem.newAmount, historyItem.newCurrencyId) }}
+                          </strong>
+                        </div>
+
+                        <div class="subscription-history-metric">
+                          <span class="subscription-history-metric__label">المستخدم من الدقائق</span>
+                          <strong class="subscription-history-metric__value">
+                            {{ historyItem.usedMinutes ?? 0 }}
+                          </strong>
+                        </div>
+
+                        <div class="subscription-history-metric">
+                          <span class="subscription-history-metric__label">المدفوع سابقًا</span>
+                          <strong class="subscription-history-metric__value">
+                            {{ formatHistoryAmount(historyItem.amountPaidBeforeChange, historyItem.oldCurrencyId ?? historyItem.newCurrencyId) }}
+                          </strong>
+                        </div>
+
+                        <div class="subscription-history-metric">
+                          <span class="subscription-history-metric__label">المتبقي بعد التعديل</span>
+                          <strong class="subscription-history-metric__value">
+                            {{ formatHistoryAmount(historyItem.remainingAmountAfterChange, historyItem.newCurrencyId) }}
+                          </strong>
+                        </div>
+
+                        <div class="subscription-history-metric">
+                          <span class="subscription-history-metric__label">حالة الدفع</span>
+                          <strong class="subscription-history-metric__value">
+                            {{ getPaymentStatusLabel(historyItem.oldPayStatus) }}
+                            الى
+                            {{ getPaymentStatusLabel(historyItem.newPayStatus) }}
+                          </strong>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
           </div>
         </mat-card-content>
       </mat-card>

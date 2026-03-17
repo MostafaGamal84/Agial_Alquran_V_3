@@ -9,6 +9,7 @@ import {
   PagedResultDto,
   normalizePagedResult
 } from './lookup.service';
+import { SubscribeTypeCategory } from './subscribe.service';
 
 export interface ViewStudentSubscribeReDto {
   id: number;
@@ -23,11 +24,35 @@ export interface ViewStudentSubscribeReDto {
   remainingMinutes?: number | null;
   startDate?: string | null;
   studentPaymentId?: number | null;
+  subscribeTypeGroup?: SubscribeTypeCategory | null;
+}
+
+export interface StudentSubscribeHistoryReDto {
+  id: number;
+  studentId?: number | null;
+  studentSubscribeRecordId?: number | null;
+  actionType?: string | null;
+  changedByName?: string | null;
+  changedAt?: string | null;
+  oldPlanName?: string | null;
+  newPlanName?: string | null;
+  oldRemainingMinutes?: number | null;
+  newRemainingMinutes?: number | null;
+  usedMinutes?: number | null;
+  oldAmount?: number | null;
+  newAmount?: number | null;
+  amountPaidBeforeChange?: number | null;
+  remainingAmountAfterChange?: number | null;
+  oldCurrencyId?: number | null;
+  newCurrencyId?: number | null;
+  oldPayStatus?: boolean | null;
+  newPayStatus?: boolean | null;
 }
 
 export interface AddStudentSubscribeDto {
   studentId?: number;
   studentSubscribeId?: number;
+  actionType?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -125,6 +150,47 @@ export class StudentSubscribeService {
     return this.http
       .get<ApiResponse<PagedResultDto<ViewStudentSubscribeReDto>>>(
         `${environment.apiUrl}/api/StudentSubscrib/GetStudentSubscribesWithPayment`,
+        { params }
+      )
+      .pipe(map((response) => normalizePagedResult(response, { skipCount: filter.skipCount })));
+  }
+
+  getStudentSubscribeHistory(
+    filter: FilteredResultRequestDto,
+    studentId: number
+  ): Observable<ApiResponse<PagedResultDto<StudentSubscribeHistoryReDto>>> {
+    let params = new HttpParams();
+    if (filter.skipCount !== undefined) {
+      params = params.set('SkipCount', filter.skipCount.toString());
+    }
+    if (filter.maxResultCount !== undefined) {
+      params = params.set('MaxResultCount', filter.maxResultCount.toString());
+    }
+    const searchWord = filter.searchWord ?? filter.searchTerm;
+
+    if (filter.searchTerm) {
+      params = params.set('SearchTerm', filter.searchTerm);
+    }
+    if (searchWord) {
+      params = params.set('SearchWord', searchWord);
+    }
+    if (filter.filter) {
+      params = params.set('Filter', filter.filter);
+    }
+    if (filter.lang) {
+      params = params.set('Lang', filter.lang);
+    }
+    if (filter.sortingDirection) {
+      params = params.set('SortingDirection', filter.sortingDirection);
+    }
+    if (filter.sortBy) {
+      params = params.set('SortBy', filter.sortBy);
+    }
+    params = params.set('studentId', studentId.toString());
+
+    return this.http
+      .get<ApiResponse<PagedResultDto<StudentSubscribeHistoryReDto>>>(
+        `${environment.apiUrl}/api/StudentSubscrib/GetStudentSubscribeHistory`,
         { params }
       )
       .pipe(map((response) => normalizePagedResult(response, { skipCount: filter.skipCount })));

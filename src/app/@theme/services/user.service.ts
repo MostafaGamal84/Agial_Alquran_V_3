@@ -34,6 +34,7 @@ export interface UpdateUserDto {
   studentIds?: number[];
   circleIds?: number[];
   circleId?: number;
+  studentSubscribeId?: number;
 }
 
 // Generic API response interfaces

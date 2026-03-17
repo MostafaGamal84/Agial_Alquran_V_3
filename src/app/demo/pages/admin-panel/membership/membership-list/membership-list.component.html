@@ -159,14 +159,10 @@
                       <li
                           class="list-inline-item m-r-10"
                           [matTooltip]="'تعديل الباقة' | translate"
-                          [matTooltipDisabled]="canEditSubscription(element)"
                         >
                           <a
                             href="javascript:"
                             class="avatar avatar-xs text-muted"
-                            [ngClass]="{
-                              disabled: !canEditSubscription(element)
-                            }"
                             (click)="openSubscribeDialog(element)"
                           >
                             <i class="ti ti-edit f-20"></i>

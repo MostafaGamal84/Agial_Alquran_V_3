@@ -1,5 +1,7 @@
-<h2 mat-dialog-title>تحديث الباقة للطالب</h2>
+<h2 mat-dialog-title>{{ dialogTitle }}</h2>
 <mat-dialog-content [formGroup]="form">
+  <p class="mb-3 text-muted" *ngIf="dialogDescription">{{ dialogDescription }}</p>
+
   <mat-form-field appearance="outline" class="w-100">
     <mat-label>نوع الباقة</mat-label>
     <mat-select formControlName="subscribeTypeId">
@@ -25,7 +27,7 @@
     color="primary"
     (click)="submit()"
     [disabled]="form.invalid"
-  > 
-    حفظ
+  >
+    {{ submitLabel }}
   </button>
 </mat-dialog-actions>

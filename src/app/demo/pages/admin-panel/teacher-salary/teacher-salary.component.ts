@@ -63,6 +63,7 @@ import {
   FilteredResultRequestDto
 } from 'src/app/@theme/services/lookup.service';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
+import { UserService } from 'src/app/@theme/services/user.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { environment } from 'src/environments/environment';
 import { TranslateModule } from '@ngx-translate/core';
@@ -159,6 +160,7 @@ export class TeacherSalaryComponent
   private toastService = inject(ToastService);
   private lookupService = inject(LookupService);
   private authenticationService = inject(AuthenticationService);
+  private userService = inject(UserService);
   private router = inject(Router);
   private dateAdapter = inject<DateAdapter<Moment>>(DateAdapter);
 
@@ -269,6 +271,16 @@ export class TeacherSalaryComponent
   private readonly updatingStatusIds = new Set<number>();
   private readonly uploadingReceiptIds = new Set<number>();
   private readonly role = this.authenticationService.getRole();
+  private readonly currentUserId = this.resolveCurrentUserId();
+  private currentBranchId: number | null = null;
+  private teacherScopeResolved = this.role !== UserTypesEnum.BranchLeader;
+  private teacherScopeLoading = false;
+  readonly isBranchLeader = this.role === UserTypesEnum.BranchLeader;
+  readonly isManager = this.role === UserTypesEnum.Manager;
+  readonly canFilterTeachers =
+    this.role === UserTypesEnum.Admin ||
+    this.role === UserTypesEnum.BranchLeader ||
+    this.role === UserTypesEnum.Manager;
   readonly canManagePayments =
     this.role === UserTypesEnum.Admin || this.role === UserTypesEnum.Manager;
   readonly canGenerateInvoices = this.role === UserTypesEnum.Admin || this.role === UserTypesEnum.Manager;
@@ -278,8 +290,8 @@ export class TeacherSalaryComponent
     this.dateAdapter.setLocale('ar');
     moment.locale('ar');
     this.updateDisplayedColumns();
-    if (this.canManagePayments) {
-      this.loadTeachers();
+    if (this.canFilterTeachers) {
+      this.initializeTeacherFilter();
       this.subscriptions.add(
         this.teacherSearchControl.valueChanges
           .pipe(debounceTime(300), distinctUntilChanged())
@@ -336,20 +348,20 @@ export class TeacherSalaryComponent
   }
 
   refreshTeachers(): void {
-    if (this.canManagePayments) {
+    if (this.canFilterTeachers) {
       this.loadTeachers(this.teacherSearchControl.value ?? '');
     }
   }
 
   clearTeacherSearch(): void {
-    if (this.canManagePayments) {
+    if (this.canFilterTeachers) {
       this.teacherSearchControl.setValue('', { emitEvent: false });
       this.loadTeachers('');
     }
   }
 
   onTeacherSelectOpened(opened: boolean): void {
-    if (!this.canManagePayments) {
+    if (!this.canFilterTeachers) {
       return;
     }
 
@@ -845,10 +857,82 @@ export class TeacherSalaryComponent
     return invoice.id ?? index;
   }
 
-  private loadTeachers(searchTerm?: string): void {
-    if (!this.canManagePayments) {
+  private initializeTeacherFilter(): void {
+    if (this.isBranchLeader) {
+      this.resolveTeacherScope();
       return;
     }
+
+    this.loadTeachers();
+  }
+
+  private resolveTeacherScope(): void {
+    if (!this.isBranchLeader || this.teacherScopeResolved || this.teacherScopeLoading) {
+      return;
+    }
+
+    this.teacherScopeLoading = true;
+    const subscription = this.userService
+      .getProfile()
+      .pipe(finalize(() => (this.teacherScopeLoading = false)))
+      .subscribe({
+        next: (response) => {
+          this.teacherScopeResolved = true;
+
+          const branchId = Number(response.data?.branchId);
+          if (!response.isSuccess || !Number.isFinite(branchId) || branchId <= 0) {
+            this.currentBranchId = null;
+            this.teachers = [];
+            this.toastService.error('تعذر تحديد فرع مدير الفرع الحالي.');
+            return;
+          }
+
+          this.currentBranchId = branchId;
+          this.loadTeachers(this.teacherSearchControl.value ?? '');
+        },
+        error: () => {
+          this.teacherScopeResolved = true;
+          this.currentBranchId = null;
+          this.teachers = [];
+          this.toastService.error('تعذر تحديد فرع مدير الفرع الحالي.');
+        }
+      });
+
+    this.subscriptions.add(subscription);
+  }
+
+  private getTeacherLookupScope(): { managerId: number; branchId: number } | null {
+    if (this.isManager) {
+      return this.currentUserId && this.currentUserId > 0
+        ? { managerId: this.currentUserId, branchId: 0 }
+        : null;
+    }
+
+    if (this.isBranchLeader) {
+      if (!this.teacherScopeResolved) {
+        this.resolveTeacherScope();
+        return null;
+      }
+
+      return this.currentBranchId && this.currentBranchId > 0
+        ? { managerId: 0, branchId: this.currentBranchId }
+        : null;
+    }
+
+    return { managerId: 0, branchId: 0 };
+  }
+
+  private loadTeachers(searchTerm?: string): void {
+    if (!this.canFilterTeachers) {
+      return;
+    }
+
+    const scope = this.getTeacherLookupScope();
+    if (!scope) {
+      this.teachers = [];
+      return;
+    }
+
     const filter: FilteredResultRequestDto = {
       searchTerm: searchTerm?.trim() ?? undefined,
       lookupOnly: true
@@ -858,9 +942,9 @@ export class TeacherSalaryComponent
       .getUsersForSelects(
         filter,
         Number(UserTypesEnum.Teacher),
+        scope.managerId,
         0,
-        0,
-        0
+        scope.branchId
       )
       .pipe(finalize(() => (this.teacherLoading = false)))
       .subscribe({
@@ -881,7 +965,7 @@ export class TeacherSalaryComponent
 
   private loadInvoices(): void {
     const monthParam = this.toMonthParam(this.selectedMonth.value);
-    const teacherId = this.canManagePayments ? this.selectedTeacher.value : null;
+    const teacherId = this.canFilterTeachers ? this.selectedTeacher.value : null;
     this.invoicesLoading = true;
     this.teacherSalaryService
       .getInvoices(monthParam, teacherId ?? null)
@@ -917,7 +1001,7 @@ export class TeacherSalaryComponent
       return;
     }
 
-    const teacherId = this.canManagePayments ? this.selectedTeacher.value : null;
+    const teacherId = this.canFilterTeachers ? this.selectedTeacher.value : null;
     this.summaryLoading = true;
     this.teacherSalaryService
       .getMonthlySummary(monthParam, teacherId ?? null)
@@ -996,6 +1080,12 @@ export class TeacherSalaryComponent
 
   private padMonthParam(value: number): string {
     return String(value).padStart(2, '0');
+  }
+
+  private resolveCurrentUserId(): number | null {
+    const rawUserId = this.authenticationService.currentUserValue?.user?.id;
+    const parsedUserId = Number(rawUserId);
+    return Number.isFinite(parsedUserId) && parsedUserId > 0 ? parsedUserId : null;
   }
 
   private applyInvoices(invoices: TeacherSalaryInvoice[]): void {
