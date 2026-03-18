@@ -1,25 +1,37 @@
 <app-loading-overlay [isLoading]="loading" [showHadith]="true">
   <section class="auth-main" [attr.dir]="dir" aria-labelledby="login-title" data-main-heading="true">
     <div class="auth-wrapper version-1">
-      <section class="auth-form ramadan-theme">
+      <section class="auth-form eid-theme">
         <app-card [showHeader]="false" class="auth-form-card" padding="40">
-          <div class="ramadan-decoration" aria-hidden="true">
-            <span class="moon"></span>
-            <span class="star star-1"></span>
-            <span class="star star-2"></span>
-            <span class="star star-3"></span>
-            <span class="star star-4"></span>
-            <span class="star star-5"></span>
-            <span class="glow-orb glow-orb-1"></span>
-            <span class="glow-orb glow-orb-2"></span>
-            <span class="lantern lantern-left"></span>
-            <span class="lantern lantern-middle"></span>
-            <span class="lantern lantern-right"></span>
-            <span class="mosque-silhouette">
-              <span class="minaret minaret-left"></span>
-              <span class="dome"></span>
-              <span class="minaret minaret-right"></span>
+          <div class="eid-decoration" aria-hidden="true">
+            <span class="festive-halo"></span>
+            <span class="sparkle sparkle-1"></span>
+            <span class="sparkle sparkle-2"></span>
+            <span class="sparkle sparkle-3"></span>
+            <span class="sparkle sparkle-4"></span>
+            <span class="sparkle sparkle-5"></span>
+            <span class="confetti confetti-1"></span>
+            <span class="confetti confetti-2"></span>
+            <span class="confetti confetti-3"></span>
+            <span class="confetti confetti-4"></span>
+            <span class="confetti confetti-5"></span>
+            <span class="confetti confetti-6"></span>
+            <span class="confetti confetti-7"></span>
+            <span class="confetti confetti-8"></span>
+            <span class="ribbon ribbon-left"></span>
+            <span class="ribbon ribbon-right"></span>
+            <span class="balloon balloon-left"></span>
+            <span class="balloon balloon-center"></span>
+            <span class="balloon balloon-right"></span>
+            <span class="balloon balloon-top-left"></span>
+            <span class="balloon balloon-top-right"></span>
+            <span class="balloon balloon-far-right"></span>
+            <span class="gift-stack">
+              <span class="gift gift-1"></span>
+              <span class="gift gift-2"></span>
+              <span class="gift gift-3"></span>
             </span>
+            <span class="celebration-wave"></span>
           </div>
 
           <header class="text-center">
@@ -27,7 +39,12 @@
               <img src="assets/images/logo-dark.svg" class="app-logo" alt="Agial Alquran application logo" />
             </a>
             <h1 id="login-title" class="sr-only">Login / تسجيل الدخول</h1>
-            <p class="ramadan-greeting">رمضان كريم ✨ 🌙</p>
+            <p class="eid-greeting">عيد فطر مبارك ✨</p>
+            <p class="eid-subtitle">تقبل الله طاعتكم، وكل عام وأنتم بخير.</p>
+            <div class="celebration-badges" aria-hidden="true">
+              <span>عيد سعيد</span>
+              <span>أيامكم فرح</span>
+            </div>
           </header>
 
           <!-- <div class="sr-mode-toggle-row">
@@ -54,7 +71,7 @@
             role="form"
             novalidate
           >
-            <mat-form-field appearance="outline" class="w-100 m-t-5 ramadan-field">
+            <mat-form-field appearance="outline" class="w-100 m-t-5 eid-field">
               <mat-label>{{ 'AUTH.LOGIN.UsernameLabel' | translate }}</mat-label>
 
               <input
@@ -75,7 +92,7 @@
               }
             </mat-form-field>
 
-            <mat-form-field appearance="outline" class="w-100 m-t-5 ramadan-field">
+            <mat-form-field appearance="outline" class="w-100 m-t-5 eid-field">
               <mat-label>{{ 'AUTH.LOGIN.PasswordLabel' | translate }}</mat-label>
 
               <input
@@ -91,7 +108,7 @@
 
               <button
                 mat-icon-button
-                matSuffix
+                matPrefix
                 type="button"
                 class="eye-btn"
                 (click)="hide = !hide"

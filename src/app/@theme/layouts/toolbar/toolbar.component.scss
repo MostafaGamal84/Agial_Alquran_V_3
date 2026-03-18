@@ -4,12 +4,125 @@
   position: fixed;
   z-index: 1025;
   backdrop-filter: blur(7px);
+  overflow: hidden;
+
+  .eid-toolbar-scene {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    opacity: 0.92;
+  }
+
+  .eid-bunting {
+    position: absolute;
+    top: 10px;
+    width: 180px;
+    height: 22px;
+    border-top: 2px dashed rgba(214, 232, 226, 0.22);
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 7px;
+      left: 0;
+      right: 0;
+      height: 12px;
+      border-radius: 999px;
+      background:
+        linear-gradient(
+          90deg,
+          rgba(82, 201, 187, 0.95) 0%,
+          rgba(82, 201, 187, 0.95) 22%,
+          rgba(255, 216, 116, 0.95) 22%,
+          rgba(255, 216, 116, 0.95) 46%,
+          rgba(245, 131, 109, 0.95) 46%,
+          rgba(245, 131, 109, 0.95) 70%,
+          rgba(113, 214, 201, 0.95) 70%,
+          rgba(113, 214, 201, 0.95) 100%
+        );
+      clip-path: polygon(0 0, 100% 0, 96% 100%, 86% 0, 76% 100%, 66% 0, 56% 100%, 46% 0, 36% 100%, 26% 0, 16% 100%, 6% 0);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.14);
+    }
+  }
+
+  .eid-bunting-left {
+    left: 26px;
+    transform: rotate(-2deg);
+  }
+
+  .eid-bunting-right {
+    right: 280px;
+    transform: rotate(2deg);
+  }
+
+  .eid-crescent {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    width: 26px;
+    height: 26px;
+    margin-left: -13px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #fff0ad 0%, #ffd05f 78%);
+    box-shadow: -7px 0 0 0 rgba(21, 29, 38, 0.95), 0 0 20px rgba(255, 210, 95, 0.22);
+  }
+
+  .eid-star {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: linear-gradient(135deg, #ffe18a 0%, #f7be4a 100%);
+    transform: rotate(45deg);
+    border-radius: 2px;
+    box-shadow: 0 0 10px rgba(255, 225, 138, 0.3);
+  }
+
+  .eid-star-1 {
+    top: 18px;
+    left: calc(50% - 38px);
+  }
+
+  .eid-star-2 {
+    top: 28px;
+    left: calc(50% + 30px);
+  }
+
+  .eid-star-3 {
+    top: 40px;
+    left: calc(50% - 8px);
+    width: 6px;
+    height: 6px;
+  }
+
+  .eid-glow {
+    position: absolute;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    filter: blur(28px);
+    opacity: 0.18;
+  }
+
+  .eid-glow-left {
+    top: -70px;
+    left: -22px;
+    background: rgba(93, 206, 191, 0.65);
+  }
+
+  .eid-glow-right {
+    top: -76px;
+    right: 210px;
+    background: rgba(255, 214, 112, 0.62);
+  }
 
   .header-wrapper {
     display: flex;
     justify-content: space-between;
     padding: 10px 25px;
     flex-grow: 1;
+    position: relative;
+    z-index: 1;
   }
 
   .header-button {
@@ -73,6 +186,24 @@
 
 @media (max-width: 567px) {
   ::ng-deep.pc-header {
+    .eid-bunting-right,
+    .eid-glow-right {
+      display: none;
+    }
+
+    .eid-bunting-left {
+      width: 124px;
+      left: 12px;
+    }
+
+    .eid-crescent {
+      top: 12px;
+      width: 20px;
+      height: 20px;
+      margin-left: -10px;
+      box-shadow: -6px 0 0 0 rgba(21, 29, 38, 0.95), 0 0 16px rgba(255, 210, 95, 0.2);
+    }
+
     .header-wrapper {
       padding: 0px;
     }
