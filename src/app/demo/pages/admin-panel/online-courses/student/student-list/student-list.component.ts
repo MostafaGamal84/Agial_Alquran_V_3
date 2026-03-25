@@ -153,7 +153,7 @@ export class StudentListComponent implements OnInit, OnDestroy {
 
     this.applyDisplayData();
 
-    if (shouldRefreshFromServer) {
+    if (shouldRefreshFromServer || this.shouldReloadRestoredState(restored)) {
       this.reloadRestoredView(restored.scrollY ?? 0);
       return;
     }
@@ -518,6 +518,17 @@ export class StudentListComponent implements OnInit, OnDestroy {
         this.filter.maxResultCount = this.pageSize;
         this.applyDisplayData();
       });
+  }
+
+  private shouldReloadRestoredState(state: StudentListViewState): boolean {
+    const restoredItemsCount = Array.isArray(state.allLoadedStudents) ? state.allLoadedStudents.length : 0;
+    const restoredTotalCount = Number.isFinite(state.totalCount) ? state.totalCount : restoredItemsCount;
+
+    if (!restoredItemsCount) {
+      return true;
+    }
+
+    return restoredTotalCount > 0 && restoredItemsCount > restoredTotalCount;
   }
 
   private restoreState(): StudentListViewState | null {

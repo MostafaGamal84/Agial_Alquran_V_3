@@ -129,6 +129,38 @@ const VALUE_LABELS: Record<string, string> = {
   student: 'طالب'
 };
 
+const SOURCE_ROUTE_LABELS: Array<{ route: string; label: string }> = [
+  { route: '/online-course/student', label: 'شاشة الطلاب' },
+  { route: '/online-course/teacher', label: 'شاشة المعلمين' },
+  { route: '/online-course/manager', label: 'شاشة المشرفين' },
+  { route: '/online-course/branch-manager', label: 'شاشة قادة الفروع' },
+  { route: '/online-course/courses', label: 'شاشة الحلقات' },
+  { route: '/online-course/report', label: 'شاشة التقارير' },
+  { route: '/online-course/pricing', label: 'شاشة الأسعار' },
+  { route: '/online-course/site', label: 'شاشة الموقع' },
+  { route: '/online-course/setting', label: 'شاشة الإعدادات' },
+  { route: '/online-course/deleted-objects', label: 'شاشة العناصر المحذوفة' },
+  { route: '/online-course/operations-log', label: 'شاشة سجل العمليات' },
+  { route: '/online-course/dashboard', label: 'شاشة لوحة التحكم' },
+  { route: '/auth/login', label: 'شاشة تسجيل الدخول' }
+];
+
+const SOURCE_SCREEN_KEY_LABELS: Record<string, string> = {
+  students: 'شاشة الطلاب',
+  teachers: 'شاشة المعلمين',
+  managers: 'شاشة المشرفين',
+  'branch-managers': 'شاشة قادة الفروع',
+  circles: 'شاشة الحلقات',
+  reports: 'شاشة التقارير',
+  pricing: 'شاشة الأسعار',
+  site: 'شاشة الموقع',
+  settings: 'شاشة الإعدادات',
+  'deleted-objects': 'شاشة العناصر المحذوفة',
+  'operations-log': 'شاشة سجل العمليات',
+  dashboard: 'شاشة لوحة التحكم',
+  login: 'شاشة تسجيل الدخول'
+};
+
 const DEFAULT_ACTION_OPTIONS: AuditLogFilterOptionDto[] = [
   { value: 'Create', label: ACTION_LABELS['Create'] },
   { value: 'Update', label: ACTION_LABELS['Update'] },
@@ -175,6 +207,11 @@ export class OperationsLogComponent implements OnInit, OnDestroy {
 
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;
+  private readonly expandedChangesLogIds = new Set<number>();
+  private readonly expandedParticipantsLogIds = new Set<number>();
+  private readonly defaultChangesPreviewCount = 3;
+  private readonly updateChangesPreviewCount = 4;
+  private readonly participantsPreviewCount = 4;
 
   readonly displayedColumns = ['createdAt', 'actionType', 'entityType', 'actor', 'details', 'participants'];
   readonly filterForm = this.fb.group({
@@ -324,11 +361,44 @@ export class OperationsLogComponent implements OnInit, OnDestroy {
 
   getSummaryText(log: AuditLogListItemDto): string {
     const rawSummary = this.normalizeText(log.summary);
+    const generatedSummary = this.buildArabicSummary(log);
+
+    if (log.actionType === 'Update' && (log.changes?.length ?? 0) > 0) {
+      return generatedSummary || rawSummary || 'لا يوجد وصف متاح لهذه العملية';
+    }
+
     if (rawSummary && this.containsArabic(rawSummary)) {
       return rawSummary;
     }
 
-    return this.buildArabicSummary(log) || rawSummary || 'لا يوجد وصف متاح لهذه العملية';
+    return generatedSummary || rawSummary || 'لا يوجد وصف متاح لهذه العملية';
+  }
+
+  hasSourceInfo(log: AuditLogListItemDto): boolean {
+    return !!(this.getSourceScreenDisplay(log) || this.getSourceRequestDisplay(log));
+  }
+
+  getSourceDisplay(log: AuditLogListItemDto): string {
+    return this.getSourceScreenDisplay(log) || 'غير محدد';
+  }
+
+  getSourceScreenDisplay(log: AuditLogListItemDto): string | null {
+    return (
+      this.resolveSourceLabel(this.normalizeText(log.sourceScreen)) ||
+      this.normalizeText(log.sourceScreen) ||
+      this.resolveSourceLabelFromRoute(log.sourceRoute) ||
+      this.resolveSourceLabelFromRoute(log.requestPath)
+    );
+  }
+
+  getSourceRequestDisplay(log: AuditLogListItemDto): string | null {
+    const requestPath = this.normalizeRoute(log.requestPath);
+    const httpMethod = this.normalizeText(log.httpMethod)?.toUpperCase();
+    if (!requestPath && !httpMethod) {
+      return null;
+    }
+
+    return [httpMethod, requestPath].filter((value): value is string => !!value).join(' ');
   }
 
   getEntityDisplayName(log: AuditLogListItemDto): string | null {
@@ -353,12 +423,69 @@ export class OperationsLogComponent implements OnInit, OnDestroy {
     return mappedLabel || 'الحقل';
   }
 
+  isParticipantsExpanded(log: AuditLogListItemDto): boolean {
+    return this.expandedParticipantsLogIds.has(log.id);
+  }
+
+  toggleParticipants(log: AuditLogListItemDto): void {
+    if (this.isParticipantsExpanded(log)) {
+      this.expandedParticipantsLogIds.delete(log.id);
+      return;
+    }
+
+    this.expandedParticipantsLogIds.add(log.id);
+  }
+
+  getParticipantsToggleLabel(log: AuditLogListItemDto): string {
+    return this.isParticipantsExpanded(log)
+      ? 'إخفاء الأطراف'
+      : `عرض كل الأطراف (+${this.getHiddenParticipantsCount(log)})`;
+  }
+
   getVisibleParticipants(log: AuditLogListItemDto): AuditLogParticipantDto[] {
-    return (log.participants ?? []).slice(0, 4);
+    const participants = log.participants ?? [];
+    return this.isParticipantsExpanded(log)
+      ? participants
+      : participants.slice(0, this.participantsPreviewCount);
+  }
+
+  getHiddenParticipantsCount(log: AuditLogListItemDto): number {
+    return Math.max(0, (log.participants?.length ?? 0) - this.getVisibleParticipants(log).length);
+  }
+
+  isChangesExpanded(log: AuditLogListItemDto): boolean {
+    return this.expandedChangesLogIds.has(log.id);
+  }
+
+  toggleChanges(log: AuditLogListItemDto): void {
+    if (this.isChangesExpanded(log)) {
+      this.expandedChangesLogIds.delete(log.id);
+      return;
+    }
+
+    this.expandedChangesLogIds.add(log.id);
+  }
+
+  getChangesToggleLabel(log: AuditLogListItemDto): string {
+    return this.isChangesExpanded(log)
+      ? 'إخفاء التغييرات'
+      : `عرض كل التغييرات (+${this.getHiddenChangesCount(log)})`;
   }
 
   getVisibleChanges(log: AuditLogListItemDto): AuditLogChangeDto[] {
-    return (log.changes ?? []).slice(0, 3);
+    const changes = log.changes ?? [];
+    if (this.isChangesExpanded(log)) {
+      return changes;
+    }
+
+    const previewCount =
+      log.actionType === 'Update' ? this.updateChangesPreviewCount : this.defaultChangesPreviewCount;
+
+    return changes.slice(0, previewCount);
+  }
+
+  getHiddenChangesCount(log: AuditLogListItemDto): number {
+    return Math.max(0, (log.changes?.length ?? 0) - this.getVisibleChanges(log).length);
   }
 
   formatAuditValue(value: string | null | undefined): string {
@@ -427,6 +554,11 @@ export class OperationsLogComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (response) => {
+          if (!append) {
+            this.expandedChangesLogIds.clear();
+            this.expandedParticipantsLogIds.clear();
+          }
+
           if (!response.isSuccess || !response.data) {
             if (!append) {
               this.logs = [];
@@ -617,7 +749,7 @@ export class OperationsLogComponent implements OnInit, OnDestroy {
       case 'Create':
         return `${actor} أضاف ${entityDescriptor}`;
       case 'Update':
-        return `${actor} عدّل ${entityDescriptor}`;
+        return this.buildUpdateSummary(actor, entityDescriptor, log.changes ?? []);
       case 'Delete':
         return `${actor} حذف ${entityDescriptor}`;
       case 'Restore':
@@ -625,6 +757,29 @@ export class OperationsLogComponent implements OnInit, OnDestroy {
       default:
         return `${actor} نفّذ إجراءً على ${entityDescriptor}`;
     }
+  }
+
+  private buildUpdateSummary(
+    actor: string,
+    entityDescriptor: string,
+    changes: AuditLogChangeDto[]
+  ): string {
+    if (!changes.length) {
+      return `${actor} عدّل ${entityDescriptor}`;
+    }
+
+    const visibleChanges = changes.slice(0, 3).map((change) => this.buildChangeSnippet(change));
+    const hiddenChangesCount = changes.length - visibleChanges.length;
+    const changesSummary =
+      hiddenChangesCount > 0
+        ? `${visibleChanges.join('، ')}، و${hiddenChangesCount} تغييرات أخرى`
+        : visibleChanges.join('، ');
+
+    return `${actor} عدّل ${entityDescriptor}: ${changesSummary}`;
+  }
+
+  private buildChangeSnippet(change: AuditLogChangeDto): string {
+    return `${this.getChangeLabel(change)} من ${this.formatChangeValue(change, change.oldValue)} إلى ${this.formatChangeValue(change, change.newValue)}`;
   }
 
   private resolveFieldLabel(value: string | null | undefined): string | null {
@@ -646,6 +801,29 @@ export class OperationsLogComponent implements OnInit, OnDestroy {
     }
 
     return null;
+  }
+
+  private resolveSourceLabelFromRoute(route: string | null | undefined): string | null {
+    const normalizedRoute = this.normalizeRoute(route)?.toLowerCase();
+    if (!normalizedRoute) {
+      return null;
+    }
+
+    return SOURCE_ROUTE_LABELS.find((item) => normalizedRoute.includes(item.route))?.label ?? null;
+  }
+
+  private resolveSourceLabel(value: string | null | undefined): string | null {
+    const normalizedValue = this.normalizeText(value)?.toLowerCase();
+    if (!normalizedValue) {
+      return null;
+    }
+
+    return SOURCE_SCREEN_KEY_LABELS[normalizedValue] || null;
+  }
+
+  private normalizeRoute(value: string | null | undefined): string | null {
+    const normalizedValue = this.normalizeText(value);
+    return normalizedValue ? normalizedValue.split('?')[0] : null;
   }
 
   private looksLikeDate(value: string): boolean {
@@ -681,6 +859,21 @@ export class OperationsLogComponent implements OnInit, OnDestroy {
       case 'SubscribeTypeId':
       case 'StudentSubscribeTypeId':
         return this.findOptionName(this.subscribeTypes, referenceId);
+      case 'BranchId':
+        return this.getBranchLabel(referenceId);
+      case 'UserTypeId':
+        return this.getActorRoleLabel(referenceId);
+      default:
+        return null;
+    }
+  }
+
+  private getBranchLabel(branchId: number): string | null {
+    switch (branchId) {
+      case 1:
+        return 'الرجال';
+      case 2:
+        return 'النساء';
       default:
         return null;
     }

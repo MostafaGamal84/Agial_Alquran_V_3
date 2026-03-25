@@ -237,8 +237,7 @@
 
 .entity-name,
 .entity-meta,
-.change-value,
-.change-more {
+.change-value {
   color: var(--operations-muted);
   line-height: 1.65;
 }
@@ -266,6 +265,10 @@
   line-height: 1.8;
 }
 
+.source-panel { display: flex; flex-direction: column; gap: 0.25rem; padding: 0.8rem 0.9rem; border: 1px solid rgba(15, 76, 92, 0.1); border-radius: 0.95rem; background: var(--operations-surface); }
+.source-panel__label { color: var(--operations-muted); font-weight: 700; }
+.source-panel__value { color: var(--operations-primary-dark); font-size: 0.95rem; font-weight: 800; }
+
 .changes-list {
   display: flex;
   flex-direction: column;
@@ -286,6 +289,8 @@
   color: var(--operations-primary);
 }
 
+.details-toggle { align-self: flex-start; padding: 0; border: 0; background: none; color: var(--operations-primary); font-size: 0.84rem; font-weight: 800; text-decoration: underline; cursor: pointer; }
+
 .participant-chip {
   display: inline-flex;
   align-items: center;
@@ -296,12 +301,6 @@
   color: var(--operations-primary-dark);
   font-size: 0.84rem;
   line-height: 1.5;
-}
-
-.participant-chip.more {
-  border-color: rgba(199, 154, 75, 0.22);
-  background: var(--operations-surface-soft);
-  color: #9a6415;
 }
 
 .action-pill {
@@ -443,16 +442,11 @@
     color: #e6f3f7;
   }
 
-  .participant-chip.more {
-    border-color: rgba(215, 179, 106, 0.2);
-    background: #2a2114;
-    color: #f0d294;
-  }
-
   .actor-role {
     background: rgba(116, 200, 214, 0.12);
     color: #9edfe9;
   }
+  .details-toggle { color: #8fdbe7; }
 
   .action-pill.create {
     background: rgba(22, 101, 52, 0.22);

@@ -30,6 +30,10 @@ export interface AuditLogListItemDto {
   actorUserId?: number | null;
   actorName?: string | null;
   actorRoleId?: number | null;
+  sourceScreen?: string | null;
+  sourceRoute?: string | null;
+  requestPath?: string | null;
+  httpMethod?: string | null;
   createdAt?: string | null;
   changes: AuditLogChangeDto[];
   participants: AuditLogParticipantDto[];
