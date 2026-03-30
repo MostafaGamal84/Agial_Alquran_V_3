@@ -216,6 +216,14 @@
 
   <div class="col-12" *ngIf="canViewTodayReports && todayReportsView.length">
     <app-card [cardTitle]="'تقارير اليوم' | translate" padding="0">
+      <div class="today-reports-summary">
+        <div class="today-reports-summary__title">ملخص تقارير اليوم</div>
+        <div class="today-reports-summary__meta">
+          <span><strong>{{ todayReportsView.length }}</strong> تقرير</span>
+          <span>بتوقيت القاهرة</span>
+        </div>
+        <div class="today-reports-summary__subtitle">آخر التقارير المرفوعة اليوم مرتبة من الأحدث إلى الأقدم.</div>
+      </div>
       <div class="table-responsive transactions-table">
         <table class="table table-hover m-b-0">
           <thead>

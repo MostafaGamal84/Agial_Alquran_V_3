@@ -148,8 +148,8 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
   }
 
   // table search filter
-  applyFilter(event: Event) {
-    this.searchTerm = (event.target as HTMLInputElement).value;
+  applyFilter(value: string) {
+    this.searchTerm = value;
     this.dataSource.filter = this.searchTerm.trim().toLowerCase();
     this.countChange.emit(this.dataSource.filteredData.length);
   }

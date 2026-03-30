@@ -14,10 +14,6 @@ import {
   MatDialogRef,
   MAT_DIALOG_DATA
 } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
@@ -46,10 +42,11 @@ import {
   ResidencyGroupFilter
 } from 'src/app/@theme/types/residency-group';
 import { matchesResidencyGroup } from 'src/app/@theme/utils/nationality.utils';
+import { formatDateTimeInCairo } from 'src/app/@theme/utils/cairo-date-time';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
+import { takeUntil } from 'rxjs/operators';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 
 interface StudentOption {
@@ -59,21 +56,8 @@ interface StudentOption {
 
 @Component({
   selector: 'app-report-list',
-  // لو انت Standalone فعلاً فعل السطر ده:
-  // standalone: true,
-  imports: [
-    CommonModule,
-    SharedModule,
-    RouterModule,
-    LoadingOverlayComponent,
-    MatDialogModule,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    ReactiveFormsModule
-  ],
+  standalone: true,
+  imports: [CommonModule, SharedModule, RouterModule, LoadingOverlayComponent, MatDialogModule, MatButtonModule, ReactiveFormsModule],
   templateUrl: './report-list.component.html',
   styleUrl: './report-list.component.scss'
 })
@@ -99,13 +83,12 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     toDate: [null]
   });
 
-  displayedColumns: string[] = ['index', 'student', 'circle', 'status' , 'creationTime', 'minutes', 'actions'];
+  displayedColumns: string[] = ['index', 'student', 'circle', 'status', 'creationTime', 'minutes', 'actions'];
   dataSource = new MatTableDataSource<CircleReportListDto>();
 
-  // 🔢 خصائص الباجينيتور – سيرفر سايد
-  totalCount = 0; // إجمالي عدد الريكوردز من الـ API (207 مثلاً)
-  pageSize = 10; // عدد العناصر في الصفحة
-  pageIndex = 0; // 0-based
+  totalCount = 0;
+  pageSize = 10;
+  pageIndex = 0;
 
   filter: FilteredResultRequestDto = {
     skipCount: 0,
@@ -123,6 +106,7 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
   isLoading = false;
   isLoadingStudents = false;
   isLoadingMore = false;
+  isFilterPopupOpen = false;
   readonly sort = viewChild(MatSort);
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;
@@ -139,6 +123,8 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
   private selectedStudentId?: number;
   private selectedResidentId?: number | null;
   private selectedResidencyGroup: ResidencyGroupFilter = 'all';
+  private appliedFromDate?: string;
+  private appliedToDate?: string;
   private readonly teacherId?: number;
 
   role = this.auth.getRole();
@@ -154,25 +140,16 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.syncFilterPopupStateFromApplied();
     this.loadCircles();
     this.loadNationalities();
     this.loadAllStudents();
     this.loadReports();
 
     this.filterForm
-      .get('searchTerm')
-      ?.valueChanges.pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
-      .subscribe(() => this.onSearch());
-
-    this.filterForm
       .get('circleId')
       ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe((circleId) => this.onCircleChange(circleId));
-
-    this.filterForm
-      .get('studentId')
-      ?.valueChanges.pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.applyFilters());
 
     this.filterForm
       .get('residentId')
@@ -183,32 +160,21 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
       .get('residentGroup')
       ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe((group: ResidencyGroupFilter | null) => this.onResidencyGroupChange(group));
-
-    this.filterForm
-      .get('fromDate')
-      ?.valueChanges.pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.onDateRangeChange());
-
-    this.filterForm
-      .get('toDate')
-      ?.valueChanges.pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.onDateRangeChange());
   }
-
 
   ngAfterViewInit(): void {
     this.dataSource.sort = this.sort()!;
     this.dataSource.sortingDataAccessor = (item, property) => {
       switch (property) {
-        case "student":
+        case 'student':
           return this.getStudentDisplay(item).toLowerCase();
-        case "circle":
+        case 'circle':
           return this.getCircleDisplay(item).toLowerCase();
-        case "status":
+        case 'status':
           return Number(item.attendStatueId ?? 0);
-        case "creationTime":
+        case 'creationTime':
           return item.creationTime ? new Date(item.creationTime).getTime() : 0;
-        case "minutes":
+        case 'minutes':
           return Number(item.minutes ?? 0);
         default:
           return (item as unknown as Record<string, unknown>)[property] as string | number;
@@ -222,7 +188,37 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  // ───────── Circles / Nationalities / Students ─────────
+  openFilterPopup(): void {
+    this.syncFilterPopupStateFromApplied();
+    this.refreshStudentOptionsForDraftState();
+    this.isFilterPopupOpen = true;
+  }
+
+  closeFilterPopup(restoreDraft = true): void {
+    if (restoreDraft) {
+      this.syncFilterPopupStateFromApplied();
+    }
+
+    this.isFilterPopupOpen = false;
+  }
+
+  resetFilterPopup(): void {
+    this.filterForm.patchValue(
+      {
+        searchTerm: '',
+        circleId: null,
+        studentId: null,
+        residentId: null,
+        residentGroup: 'all',
+        fromDate: null,
+        toDate: null
+      },
+      { emitEvent: false }
+    );
+
+    this.students = [];
+    this.loadAllStudents();
+  }
 
   private loadCircles(): void {
     this.circleService
@@ -239,6 +235,10 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private loadAllStudents(searchTerm?: string): void {
+    const selectedCircleId = this.getDraftSelectedCircleId();
+    const selectedResidentId = this.getDraftSelectedResidentId();
+    const selectedResidencyGroup = this.getDraftSelectedResidencyGroup();
+
     this.isLoadingStudents = true;
     this.lookupService
       .getUsersForSelects(
@@ -246,31 +246,31 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
           skipCount: 0,
           maxResultCount: 100,
           searchTerm: searchTerm?.trim() || undefined,
-          residentGroup: this.selectedResidencyGroup
+          residentGroup: selectedResidencyGroup
         },
         Number(UserTypesEnum.Student),
         0,
         0,
         0,
-        this.selectedResidentId ?? undefined
+        selectedResidentId ?? undefined
       )
       .subscribe({
         next: (res) => {
           if (res.isSuccess && res.data?.items) {
             const mapped = res.data.items
               .filter(
-                (s) =>
-                  this.matchesSelectedResidentId(s.residentId) &&
-                  this.matchesSelectedResidency(s.residentId)
+                (student) =>
+                  this.matchesSelectedResidentId(student.residentId) &&
+                  this.matchesSelectedResidency(student.residentId)
               )
-              .map((s) => this.mapLookupToStudentOption(s));
+              .map((student) => this.mapLookupToStudentOption(student));
             this.allStudents = mapped;
-            if (!this.selectedCircleId) {
+            if (!selectedCircleId) {
               this.students = [...mapped];
             }
           } else {
             this.allStudents = [];
-            if (!this.selectedCircleId) {
+            if (!selectedCircleId) {
               this.students = [];
             }
           }
@@ -278,57 +278,44 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
         },
         error: () => {
           this.allStudents = [];
-          if (!this.selectedCircleId) {
+          if (!selectedCircleId) {
             this.students = [];
           }
           this.isLoadingStudents = false;
         }
       });
+  }
+
+  private loadStudentsForCircle(circleId: number): void {
+    this.isLoadingStudents = true;
+    this.circleService.get(circleId).subscribe({
+      next: (res) => {
+        if (res.isSuccess && res.data?.students) {
+          const mapped = res.data.students
+            .filter(
+              (student) =>
+                this.matchesSelectedResidentId((student.student as LookUpUserDto | undefined)?.residentId) &&
+                this.matchesSelectedResidency((student.student as LookUpUserDto | undefined)?.residentId ?? null)
+            )
+            .map((student) => this.mapCircleStudentToOption(student))
+            .filter((student): student is StudentOption => !!student);
+          const unique = new Map(mapped.map((student) => [student.id, student]));
+          this.students = Array.from(unique.values());
+        } else {
+          this.students = [];
+        }
+        this.isLoadingStudents = false;
+      },
+      error: () => {
+        this.students = [];
+        this.isLoadingStudents = false;
+      }
+    });
   }
 
   private mapLookupToStudentOption(user: LookUpUserDto): StudentOption {
     const name = user.fullName || user.email || `Student #${user.id}`;
     return { id: user.id, name };
-  }
-
-  private onCircleChange(circleId: number | null): void {
-    this.selectedCircleId = circleId ?? undefined;
-    this.filterForm.patchValue({ studentId: null }, { emitEvent: false });
-
-    if (circleId) {
-      this.isLoadingStudents = true;
-      this.circleService.get(circleId).subscribe({
-        next: (res) => {
-          if (res.isSuccess && res.data?.students) {
-            const mapped = res.data.students
-              .filter((student) =>
-                this.matchesSelectedResidentId(
-                  (student.student as LookUpUserDto | undefined)?.residentId
-                ) &&
-                this.matchesSelectedResidency(
-                  (student.student as LookUpUserDto | undefined)?.residentId ?? null
-                )
-              )
-              .map((s) => this.mapCircleStudentToOption(s))
-              .filter((s): s is StudentOption => !!s);
-            const unique = new Map(mapped.map((s) => [s.id, s]));
-            this.students = Array.from(unique.values());
-          } else {
-            this.students = [];
-          }
-          this.isLoadingStudents = false;
-          this.applyFilters();
-        },
-        error: () => {
-          this.students = [];
-          this.isLoadingStudents = false;
-          this.applyFilters();
-        }
-      });
-    } else {
-      this.students = [...this.allStudents];
-      this.applyFilters();
-    }
   }
 
   private mapCircleStudentToOption(student: CircleStudentDto): StudentOption | undefined {
@@ -347,26 +334,114 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     };
   }
 
-  private applyFilters(): void {
-    const { circleId, studentId } = this.filterForm.value;
-    this.selectedCircleId = circleId ?? undefined;
-    this.selectedStudentId = studentId ?? undefined;
-    this.filter.residentGroup = this.selectedResidencyGroup;
-    this.filter.skipCount = 0;
-    this.pageIndex = 0;
-    this.loadReports();
+  private onCircleChange(circleId: number | null): void {
+    this.filterForm.patchValue({ studentId: null }, { emitEvent: false });
+
+    const normalizedCircleId = circleId ? Number(circleId) : null;
+    if (normalizedCircleId) {
+      this.loadStudentsForCircle(normalizedCircleId);
+      return;
+    }
+
+    this.students = [...this.allStudents];
   }
 
-  private onDateRangeChange(): void {
+  private onResidencyChange(residentId: number | null): void {
+    const normalizedResidentId = residentId && residentId > 0 ? residentId : null;
+    this.filterForm.patchValue({ residentId: normalizedResidentId, studentId: null }, { emitEvent: false });
+    this.students = [];
+    this.refreshStudentOptionsForDraftState();
+  }
+
+  private onResidencyGroupChange(group: ResidencyGroupFilter | null): void {
+    this.filterForm.patchValue({ residentGroup: group ?? 'all', studentId: null }, { emitEvent: false });
+    this.students = [];
+    this.refreshStudentOptionsForDraftState();
+  }
+
+  private refreshStudentOptionsForDraftState(): void {
+    const selectedCircleId = this.getDraftSelectedCircleId();
+    if (selectedCircleId) {
+      this.loadStudentsForCircle(selectedCircleId);
+      return;
+    }
+
+    this.loadAllStudents();
+  }
+
+  private matchesSelectedResidentId(residentId?: number | null): boolean {
+    const selectedResidentId = this.getDraftSelectedResidentId();
+    if (!selectedResidentId || selectedResidentId <= 0) return true;
+    return residentId === selectedResidentId;
+  }
+
+  private matchesSelectedResidency(residentId?: number | null): boolean {
+    const selectedResidencyGroup = this.getDraftSelectedResidencyGroup();
+    if (!selectedResidencyGroup || selectedResidencyGroup === 'all') return true;
+    const nationality = this.getNationalityById(residentId);
+    return matchesResidencyGroup(nationality ?? null, selectedResidencyGroup);
+  }
+
+  private getNationalityById(id?: number | null): NationalityDto | undefined {
+    if (id === null || id === undefined) return undefined;
+    return this.nationalities.find((nationality) => nationality.id === Number(id));
+  }
+
+  private getDraftSelectedCircleId(): number | undefined {
+    return this.normalizeOptionalNumber(this.filterForm.get('circleId')?.value);
+  }
+
+  private getDraftSelectedResidentId(): number | null {
+    return this.normalizeOptionalNumber(this.filterForm.get('residentId')?.value) ?? null;
+  }
+
+  private getDraftSelectedResidencyGroup(): ResidencyGroupFilter {
+    return (this.filterForm.get('residentGroup')?.value as ResidencyGroupFilter | null) ?? 'all';
+  }
+
+  private normalizeOptionalNumber(value: unknown): number | undefined {
+    if (value === null || value === undefined || value === '') {
+      return undefined;
+    }
+
+    const numericValue = Number(value);
+    return Number.isFinite(numericValue) && numericValue > 0 ? numericValue : undefined;
+  }
+
+  private syncFilterPopupStateFromApplied(): void {
+    this.filterForm.patchValue(
+      {
+        searchTerm: this.filter.searchTerm ?? '',
+        circleId: this.selectedCircleId ?? null,
+        studentId: this.selectedStudentId ?? null,
+        residentId: this.selectedResidentId ?? null,
+        residentGroup: this.selectedResidencyGroup,
+        fromDate: this.createDateFromDateOnly(this.appliedFromDate),
+        toDate: this.createDateFromDateOnly(this.appliedToDate)
+      },
+      { emitEvent: false }
+    );
+  }
+
+  private createDateFromDateOnly(value?: string): Date | null {
+    if (!value) {
+      return null;
+    }
+
+    const parsed = new Date(`${value}T00:00:00`);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  private validateDateRange(): { fromDate?: string; toDate?: string } | null {
     const fromDate = this.toDateOnlyString(this.filterForm.get('fromDate')?.value);
     const toDate = this.toDateOnlyString(this.filterForm.get('toDate')?.value);
 
     if (fromDate && toDate && fromDate > toDate) {
       this.toast.error(this.translate.instant('تاريخ البداية يجب أن يكون قبل تاريخ النهاية'));
-      return;
+      return null;
     }
 
-    this.applyFilters();
+    return { fromDate, toDate };
   }
 
   private toDateOnlyString(value: unknown): string | undefined {
@@ -393,12 +468,12 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
       return this.formatDateAsLocal(value);
     }
 
-    const date = new Date(value as string);
-    if (Number.isNaN(date.getTime())) {
+    const parsed = new Date(value as string);
+    if (Number.isNaN(parsed.getTime())) {
       return undefined;
     }
 
-    return this.formatDateAsLocal(date);
+    return this.formatDateAsLocal(parsed);
   }
 
   private formatDateAsLocal(date: Date): string {
@@ -408,66 +483,31 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     return `${year}-${month}-${day}`;
   }
 
-  private onResidencyChange(residentId: number | null): void {
-    this.selectedResidentId = residentId && residentId > 0 ? residentId : null;
-    this.filterForm.patchValue({ studentId: null }, { emitEvent: false });
-    this.students = [];
-    this.loadAllStudents();
-    const circleId = this.selectedCircleId ?? null;
-    if (circleId !== null) {
-      this.onCircleChange(circleId);
-    } else {
-      this.applyFilters();
-    }
-  }
-
-  private onResidencyGroupChange(group: ResidencyGroupFilter | null): void {
-    this.selectedResidencyGroup = group ?? 'all';
-    this.filterForm.patchValue({ studentId: null }, { emitEvent: false });
-    this.students = [];
-    this.loadAllStudents();
-    const circleId = this.selectedCircleId ?? null;
-    if (circleId !== null) {
-      this.onCircleChange(circleId);
-    } else {
-      this.applyFilters();
-    }
-  }
-
-  private matchesSelectedResidentId(residentId?: number | null): boolean {
-    if (!this.selectedResidentId || this.selectedResidentId <= 0) return true;
-    return residentId === this.selectedResidentId;
-  }
-
-  private matchesSelectedResidency(residentId?: number | null): boolean {
-    if (!this.selectedResidencyGroup || this.selectedResidencyGroup === 'all') return true;
-    const nationality = this.getNationalityById(residentId);
-    return matchesResidencyGroup(nationality ?? null, this.selectedResidencyGroup);
-  }
-
-  private getNationalityById(id?: number | null): NationalityDto | undefined {
-    if (id === null || id === undefined) return undefined;
-    return this.nationalities.find((n) => n.id === Number(id));
-  }
-
-  // ───────── Search / Filters ─────────
-
   onSearch(): void {
+    const dateRange = this.validateDateRange();
+    if (!dateRange) {
+      return;
+    }
+
     const term = (this.filterForm.value.searchTerm || '').toString().trim();
     this.filter.searchTerm = term.length ? term : undefined;
-
+    this.selectedCircleId = this.getDraftSelectedCircleId();
+    this.selectedStudentId = this.normalizeOptionalNumber(this.filterForm.get('studentId')?.value);
+    this.selectedResidentId = this.getDraftSelectedResidentId();
+    this.selectedResidencyGroup = this.getDraftSelectedResidencyGroup();
+    this.appliedFromDate = dateRange.fromDate;
+    this.appliedToDate = dateRange.toDate;
+    this.filter.residentGroup = this.selectedResidencyGroup;
+    this.filter.skipCount = 0;
     this.pageIndex = 0;
+
+    this.closeFilterPopup(false);
     this.loadReports();
   }
 
   clearSearch(): void {
     this.filterForm.patchValue({ searchTerm: '' }, { emitEvent: false });
-    this.onSearch();
   }
-
-
- 
-  // ───────── Server-side Pagination: Reports ─────────
 
   private loadReports(append = false): void {
     this.isLoading = !append;
@@ -484,8 +524,8 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
         teacherId: this.teacherId,
         residentId: this.selectedResidentId ?? undefined,
         residentGroup: this.selectedResidencyGroup,
-        fromDate: this.toDateOnlyString(this.filterForm.get('fromDate')?.value),
-        toDate: this.toDateOnlyString(this.filterForm.get('toDate')?.value)
+        fromDate: this.appliedFromDate,
+        toDate: this.appliedToDate
       })
       .subscribe({
         next: (res) => {
@@ -494,10 +534,10 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
               ? [...this.dataSource.data, ...res.data.items]
               : res.data.items;
 
-            this.dataSource.data = mergedItems.sort((a, b) => {
-              const first = a.creationTime ? new Date(a.creationTime).getTime() : 0;
-              const second = b.creationTime ? new Date(b.creationTime).getTime() : 0;
-              return second - first;
+            this.dataSource.data = mergedItems.sort((firstReport, secondReport) => {
+              const firstCreationTime = firstReport.creationTime ? new Date(firstReport.creationTime).getTime() : 0;
+              const secondCreationTime = secondReport.creationTime ? new Date(secondReport.creationTime).getTime() : 0;
+              return secondCreationTime - firstCreationTime;
             });
             this.totalCount = Number(res.data.totalCount) || 0;
           } else {
@@ -517,7 +557,7 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
           this.totalCount = 0;
           this.isLoading = false;
           this.isLoadingMore = false;
-          this.toast.error('Error loading reports');
+          this.toast.error(this.translate.instant('Error loading reports'));
           this.cdr.detectChanges();
         }
       });
@@ -557,8 +597,6 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.dataSource.data.length < this.totalCount;
   }
 
-  // ───────── Display Helpers ─────────
-
   getStudentDisplay(report: CircleReportListDto): string {
     return (
       (report.studentName as string | undefined) ||
@@ -578,7 +616,7 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   getStatusConfig(status?: number | null): { label: string; class: string } {
-    const def = {
+    const defaultConfig = {
       label: this.translate.instant('Attendance.Unknown'),
       class: 'status-pill--muted'
     };
@@ -600,15 +638,21 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
           class: 'status-pill--danger'
         };
       default:
-        return def;
+        return defaultConfig;
     }
   }
 
   formatDate(value?: string | Date | null): string {
     if (!value) return '—';
-    const date = value instanceof Date ? value : new Date(value);
-    if (Number.isNaN(date.getTime())) return '—';
-    return date.toLocaleString();
+    return (
+      formatDateTimeInCairo(value, 'ar-EG', {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      }) ?? '—'
+    );
   }
 
   getVisualLabel(value: unknown): string {
@@ -625,8 +669,6 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
       (typeof report.teacherId === 'number' ? `Teacher #${report.teacherId}` : '')
     );
   }
-
-  // ───────── WhatsApp Logic ─────────
 
   onSendWhatsApp(report: CircleReportListDto): void {
     if (!report) return;
@@ -662,8 +704,8 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     if (model.recentPast) lines.push(`الماضي القريب: ${model.recentPast}`);
     if (model.distantPast) lines.push(`الماضي البعيد: ${model.distantPast}`);
     if (model.farthestPast) lines.push(`الأبعد: ${model.farthestPast}`);
-    if (model.isVisual === true) lines.push(`الحصة المرئية: نعم`);
-    if (model.isVisual === false) lines.push(`الحصة المرئية: لا`);
+    if (model.isVisual === true) lines.push('الحصة المرئية: نعم');
+    if (model.isVisual === false) lines.push('الحصة المرئية: لا');
     if (model.nextCircleOrder) lines.push(`مقرر الحصة القادمة: ${model.nextCircleOrder}`);
     if (model.theWordsQuranStranger) lines.push(`غريب القرآن: ${model.theWordsQuranStranger}`);
     if (model.intonation) lines.push(`التجويد: ${model.intonation}`);
@@ -673,7 +715,7 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
   private getSurahName(value?: number | null): string | null {
     if (!value) return null;
     const key = (Object.keys(QuranSurahEnum) as Array<keyof typeof QuranSurahEnum>).find(
-      (k) => QuranSurahEnum[k] === Number(value)
+      (surahKey) => QuranSurahEnum[surahKey] === Number(value)
     );
     return key ? String(key) : null;
   }
@@ -691,14 +733,14 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private launchWhatsApp(message: string): void {
-    const url = message ? `https://wa.me/?text=${encodeURIComponent(message)}` : `https://wa.me/`;
+    const url = message ? `https://wa.me/?text=${encodeURIComponent(message)}` : 'https://wa.me/';
     window.open(url, '_blank');
   }
 
   onEdit(report: CircleReportListDto): void {
     const reportId = Number(report?.id);
     if (!Number.isFinite(reportId) || reportId <= 0) {
-      this.toast.error('Invalid report identifier');
+      this.toast.error(this.translate.instant('Invalid report identifier'));
       return;
     }
 
@@ -719,6 +761,7 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
       if (!result) {
         return;
       }
+
       this.reportService.delete(reportId).subscribe({
         next: () => {
           this.toast.success(this.translate.instant('Report deleted successfully'));
@@ -751,9 +794,7 @@ interface WhatsAppDialogPayload {
     </mat-dialog-content>
     <mat-dialog-actions align="end">
       <button mat-button type="button" (click)="onCancel()">إلغاء</button>
-      <button mat-flat-button color="primary" type="button" (click)="onSend()">
-        إرسال واتساب
-      </button>
+      <button mat-flat-button color="primary" type="button" (click)="onSend()">إرسال واتساب</button>
     </mat-dialog-actions>
   `
 })
@@ -772,6 +813,7 @@ export class ReportWhatsAppDialogComponent {
 
 @Component({
   selector: 'app-delete-report-confirm-dialog',
+  standalone: true,
   template: `
     <div class="m-b-0 p-10 f-16 f-w-600">{{ 'Delete report' | translate }}</div>
     <div class="p-10">{{ 'Are you sure you want to delete this report?' | translate }}</div>
@@ -794,4 +836,3 @@ export class ReportWhatsAppDialogComponent {
   imports: [MatDialogActions, MatDialogClose, MatButtonModule, TranslateModule]
 })
 export class DeleteReportConfirmDialogComponent {}
- 

@@ -1,59 +1,187 @@
+:host {
+  --filter-popup-bg: #ffffff;
+  --filter-popup-surface: #f8fafc;
+  --filter-popup-surface-strong: #eef4ff;
+  --filter-popup-text: #0f172a;
+  --filter-popup-muted: #64748b;
+  --filter-popup-border: rgba(148, 163, 184, 0.28);
+  --filter-popup-input-bg: #f8fafc;
+  --filter-popup-input-border: rgba(148, 163, 184, 0.55);
+  --filter-popup-shadow: 0 24px 70px rgba(15, 23, 42, 0.18);
+}
+
+:host-context(.dark) {
+  --filter-popup-bg: #182231;
+  --filter-popup-surface: #111927;
+  --filter-popup-surface-strong: #1d2a3c;
+  --filter-popup-text: rgba(255, 255, 255, 0.92);
+  --filter-popup-muted: rgba(226, 232, 240, 0.72);
+  --filter-popup-border: rgba(148, 163, 184, 0.22);
+  --filter-popup-input-bg: #0f1724;
+  --filter-popup-input-border: rgba(148, 163, 184, 0.36);
+  --filter-popup-shadow: 0 28px 80px rgba(2, 6, 23, 0.58);
+}
+
 .table-options {
   display: flex;
   align-items: center;
+  gap: 10px;
 
   @media (max-width: 575px) {
-    display: block;
+    display: grid;
+    gap: 8px;
+
     .mdc-button {
-      margin-top: 10px;
+      width: 100%;
     }
   }
+}
+
+.filter-trigger-btn {
+  min-width: 112px;
 }
 
 ::ng-deep .missing-assignments .mat-column-fullName {
   color: var(--warning-600, #d97706);
   font-weight: 600;
 }
-.table-options {
-  display: flex;
-  align-items: center;
 
-  @media (max-width: 575px) {
-    display: block;
-    .mdc-button {
-      margin-top: 10px;
-    }
-  }
-}
-
-/* لون اسم الطالب الناقص */
-::ng-deep .missing-assignments .mat-column-fullName {
-  color: var(--warning-600, #d97706);
-  font-weight: 600;
-}
-
-/* ✅ إصلاح ظهور أسهم الـ Sort (Angular Material MDC + Non-MDC) */
 :host ::ng-deep .mat-sort-header-arrow,
 :host ::ng-deep .mat-mdc-sort-header-arrow {
   opacity: 1 !important;
   visibility: visible !important;
   display: inline-flex !important;
-}
-
-/* لو الهيدر غامق والسهم مش باين */
-:host ::ng-deep .mat-sort-header-arrow,
-:host ::ng-deep .mat-mdc-sort-header-arrow {
   color: #fff !important;
 }
 
-/* أحيانًا الـ svg نفسه بيكون باهت */
 :host ::ng-deep .mat-sort-header-arrow svg,
 :host ::ng-deep .mat-mdc-sort-header-arrow svg {
   fill: #fff !important;
 }
 
-/* تحسين محاذاة عنوان العمود + السهم */
 :host ::ng-deep .mat-sort-header-container,
 :host ::ng-deep .mat-mdc-sort-header-container {
   align-items: center;
+}
+
+.filter-popup-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+}
+
+.filter-popup-card {
+  width: min(100%, 460px);
+  border-radius: 20px;
+  border: 1px solid var(--filter-popup-border);
+  background: linear-gradient(180deg, var(--filter-popup-surface-strong) 0%, var(--filter-popup-bg) 18%, var(--filter-popup-bg) 100%);
+  color: var(--filter-popup-text);
+  box-shadow: var(--filter-popup-shadow);
+  overflow: hidden;
+}
+
+.filter-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--filter-popup-border);
+  background: color-mix(in srgb, var(--filter-popup-surface-strong) 72%, transparent);
+}
+
+.filter-popup-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--filter-popup-text);
+}
+
+.filter-popup-body {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  color: var(--filter-popup-text);
+}
+
+.filter-popup-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 0 18px 18px;
+}
+
+:host ::ng-deep .filter-popup-card .mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
+
+:host ::ng-deep .filter-popup-card .mat-mdc-text-field-wrapper {
+  border-radius: 12px;
+  background: var(--filter-popup-input-bg) !important;
+}
+
+:host ::ng-deep .filter-popup-card .mat-mdc-form-field-infix {
+  min-height: 42px;
+  padding-top: 10px;
+  padding-bottom: 8px;
+}
+
+:host ::ng-deep .filter-popup-card .mdc-notched-outline__leading,
+:host ::ng-deep .filter-popup-card .mdc-notched-outline__notch,
+:host ::ng-deep .filter-popup-card .mdc-notched-outline__trailing {
+  border-color: var(--filter-popup-input-border) !important;
+}
+
+:host ::ng-deep .filter-popup-card .mat-mdc-form-field.mat-focused .mdc-notched-outline__leading,
+:host ::ng-deep .filter-popup-card .mat-mdc-form-field.mat-focused .mdc-notched-outline__notch,
+:host ::ng-deep .filter-popup-card .mat-mdc-form-field.mat-focused .mdc-notched-outline__trailing {
+  border-color: #3b82f6 !important;
+}
+
+:host ::ng-deep .filter-popup-card .mat-mdc-input-element,
+:host ::ng-deep .filter-popup-card .mat-mdc-select-value,
+:host ::ng-deep .filter-popup-card .mat-mdc-select-arrow,
+:host ::ng-deep .filter-popup-card .mat-mdc-icon-button,
+:host ::ng-deep .filter-popup-card .mat-date-range-input-separator {
+  color: var(--filter-popup-text) !important;
+}
+
+:host ::ng-deep .filter-popup-card .mdc-floating-label,
+:host ::ng-deep .filter-popup-card .mat-mdc-form-field-required-marker,
+:host ::ng-deep .filter-popup-card .mat-mdc-checkbox label {
+  color: var(--filter-popup-muted) !important;
+}
+
+:host ::ng-deep .filter-popup-card .mat-mdc-select-placeholder {
+  color: var(--filter-popup-muted) !important;
+}
+
+:host ::ng-deep .filter-popup-card .mat-mdc-checkbox .mdc-form-field {
+  color: var(--filter-popup-text) !important;
+}
+
+@media (max-width: 575px) {
+  .filter-popup-backdrop {
+    padding: 12px;
+    align-items: flex-end;
+  }
+
+  .filter-popup-card {
+    width: 100%;
+    border-radius: 18px 18px 0 0;
+  }
+
+  .filter-popup-actions {
+    justify-content: stretch;
+    flex-direction: column-reverse;
+
+    .mdc-button {
+      width: 100%;
+    }
+  }
 }

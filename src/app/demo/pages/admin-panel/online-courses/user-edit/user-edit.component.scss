@@ -1,8 +1,29 @@
 /* ================== Header ================== */
 .user-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
   padding-bottom: 0.75rem;
   margin-bottom: 1.25rem;
   border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.close-dialog-btn {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  background: rgba(248, 250, 252, 0.92);
+  color: #475569;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.close-dialog-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.2);
+  color: #b91c1c;
 }
 
 .page-title {
@@ -110,6 +131,13 @@
   font-size: 0.95rem;
 }
 
+.close-action-btn {
+  border-radius: 999px !important;
+  padding-inline: 1.2rem !important;
+  padding-block: 0.55rem !important;
+  font-weight: 600;
+}
+
 .text-danger.small {
   font-size: 0.78rem;
 }
@@ -175,6 +203,19 @@
   .page-title {
     color: #e5e7eb;
   }
+
+  .close-dialog-btn {
+    background: rgba(15, 23, 42, 0.88);
+    border-color: rgba(148, 163, 184, 0.36);
+    color: #e5e7eb;
+  }
+
+  .close-dialog-btn:hover {
+    background: rgba(127, 29, 29, 0.32);
+    border-color: rgba(248, 113, 113, 0.28);
+    color: #fecaca;
+  }
+
   .page-subtitle {
     color: #9ca3af;
   }
@@ -237,6 +278,15 @@
 
 /* ================== Responsive ================== */
 @media (max-width: 768px) {
+  .user-header {
+    gap: 0.75rem;
+  }
+
+  .close-dialog-btn {
+    width: 36px;
+    height: 36px;
+  }
+
   .section-card {
     padding: 1rem;
   }

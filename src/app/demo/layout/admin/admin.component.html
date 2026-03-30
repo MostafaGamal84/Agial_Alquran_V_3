@@ -16,9 +16,12 @@
           <a href="/" class="flex align-item-center" aria-label="Home">
             <img src="assets/images/logo-dark.svg" class="app-logo app-logo--sm" alt="Agial Alquran logo" />
           </a>
-          <a href="https://phoenixcoded.gitbook.io/able-pro/versioning" target="_blank" class="version" aria-label="App version">
-            v{{ 1.0.0 }}
-          </a>
+          <div class="build-meta" [attr.title]="'Build Time: ' + currentBuildTime">
+            <span class="build-meta__version">v{{ currentApplicationVersion }}</span>
+            @if (currentBuildId && currentBuildId !== currentApplicationVersion) {
+              <span class="build-meta__id">{{ currentBuildId }}</span>
+            }
+          </div>
         </div>
         @if (currentLayout === 'vertical') {
           <app-vertical-menu [menus]="menus" />

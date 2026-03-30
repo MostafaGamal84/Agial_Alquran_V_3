@@ -4,6 +4,13 @@
       <app-card [cardTitle]="'Student List' | translate" padding="0" cardClass="sm-block">
         <ng-template #headerOptionsTemplate>
           <div class="table-options">
+            <button mat-stroked-button type="button" class="filter-trigger-btn" (click)="openFilterPopup()">
+              <div class="flex align-item-center">
+                <i class="ti ti-filter f-18 m-r-5"></i>
+                فلترة
+              </div>
+            </button>
+
             <button mat-flat-button color="primary" [routerLink]="['/online-course/student/add']" *ngIf="!isTeacher">
               <div class="flex align-item-center">
                 <i class="ti ti-plus f-18 m-r-5"></i>
@@ -15,56 +22,8 @@
 
         <div class="p-b-15">
           <div class="table-containe table-reponsive">
-            <div class="table-search p-t-15 p-x-15">
-              <div class="row g-3">
-                <div class="col-12 col-md-4">
-                  <mat-form-field appearance="outline" class="w-100">
-                    <input matInput (keyup)="applyFilter($event)" [value]="searchTerm" [placeholder]="'Search...' | translate" #input />
-                  </mat-form-field>
-                </div>
-
-
-                <div class="col-12 col-md-4" *ngIf="!isTeacher">
-                  <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>{{ 'Residency' | translate }}</mat-label>
-                    <mat-select [value]="selectedResidentId ?? null" (selectionChange)="onResidencyChange($event.value)">
-                      <mat-option [value]="null">{{ 'All Residencies' | translate }}</mat-option>
-                      <mat-option *ngFor="let nationality of nationalities" [value]="nationality.id">
-                        {{ nationality.name }}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-
-                <div class="col-12 col-md-4"  *ngIf="!isTeacher">
-                  <mat-form-field appearance="outline" class="w-100">
-                    <mat-label>{{ 'Residency Group' | translate }}</mat-label>
-                    <mat-select
-                      [value]="selectedResidencyGroup"
-                      (selectionChange)="onResidencyGroupChange($event.value)"
-                    >
-                      <mat-option *ngFor="let option of residencyGroupOptions" [value]="option.value">
-                        {{ option.translationKey | translate }}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                </div>
-              </div>
-            </div>
-
-            <!-- ✅ فلتر الطلاب غير المكتملين فقط -->
-            <div class="p-x-15 p-b-10">
-              <mat-checkbox
-                [checked]="showMissingAssignmentsOnly"
-                (change)="onMissingAssignmentsOnlyChange($event.checked)"
-              >
-                {{ 'عرض الطلاب غير المكتملين فقط' | translate }}
-              </mat-checkbox>
-            </div>
-
             <div class="table-responsive">
               <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
-
                 <ng-container matColumnDef="serial">
                   <th mat-header-cell *matHeaderCellDef>#</th>
                   <td mat-cell *matCellDef="let element; let i = index" class="text-nowrap">
@@ -72,7 +31,6 @@
                   </td>
                 </ng-container>
 
-                <!-- ✅ Name -->
                 <ng-container matColumnDef="fullName">
                   <th mat-header-cell *matHeaderCellDef class="p-l-25" mat-sort-header="fullName">
                     {{ 'Name' | translate }}
@@ -82,9 +40,8 @@
                   </td>
                 </ng-container>
 
-                <!-- ✅ Email -->
                 <ng-container matColumnDef="email">
-                  <th mat-header-cell *matHeaderCellDef >
+                  <th mat-header-cell *matHeaderCellDef>
                     {{ 'Email' | translate }}
                   </th>
                   <td mat-cell *matCellDef="let element" class="text-nowrap">
@@ -92,7 +49,7 @@
                       *ngIf="buildMailtoLink(element.email) as mailto; else noEmail"
                       [href]="mailto"
                       class="avatar avatar-xs text-muted"
-                      [matTooltip]="'البريد الإلكتروني' | translate"
+                      matTooltip="البريد الإلكتروني"
                     >
                       <i class="ti ti-mail f-18"></i>
                     </a>
@@ -100,7 +57,6 @@
                   </td>
                 </ng-container>
 
-                <!-- ✅ Mobile -->
                 <ng-container matColumnDef="mobile">
                   <th mat-header-cell *matHeaderCellDef>
                     {{ 'Mobile' | translate }}
@@ -112,7 +68,7 @@
                       target="_blank"
                       rel="noopener"
                       class="avatar avatar-xs text-muted"
-                      [matTooltip]="'واتساب' | translate"
+                      matTooltip="واتساب"
                     >
                       <i class="ti ti-brand-whatsapp f-18"></i>
                     </a>
@@ -120,7 +76,6 @@
                   </td>
                 </ng-container>
 
-                <!-- ✅ Actions -->
                 <ng-container matColumnDef="action">
                   <th mat-header-cell *matHeaderCellDef class="text-center">
                     {{ 'Actions' | translate }}
@@ -128,23 +83,19 @@
                   <td mat-cell *matCellDef="let element" class="text-nowrap">
                     <div class="text-center text-nowrap">
                       <ul class="list-inline p-l-0" *ngIf="!element.inactive; else inactiveIcons">
-                        <li class="list-inline-item m-r-10" [matTooltip]="'عرض' | translate" (click)="studentDetails(element)">
+                        <li class="list-inline-item m-r-10" matTooltip="عرض" (click)="studentDetails(element)">
                           <a href="javascript:" class="avatar avatar-xs text-muted">
                             <i class="ti ti-eye f-18"></i>
                           </a>
                         </li>
 
-                        <li class="list-inline-item m-r-10" [matTooltip]="'تعديل' | translate" *ngIf="!isTeacher">
-                          <a
-                            href="javascript:"
-                            (click)="openEditDialog(element)"
-                            class="avatar avatar-xs text-muted"
-                          >
+                        <li class="list-inline-item m-r-10" matTooltip="تعديل" *ngIf="!isTeacher">
+                          <a href="javascript:" (click)="openEditDialog(element)" class="avatar avatar-xs text-muted">
                             <i class="ti ti-edit f-18"></i>
                           </a>
                         </li>
 
-                        <li class="list-inline-item m-r-10" [matTooltip]="'حذف' | translate" *ngIf="!isTeacher">
+                        <li class="list-inline-item m-r-10" matTooltip="حذف" *ngIf="!isTeacher">
                           <a
                             type="button"
                             class="avatar avatar-xs text-muted"
@@ -195,27 +146,70 @@
 
                 <tr class="mat-row" *matNoDataRow>
                   <td class="mat-cell" colspan="6">
-                    {{ 'No data matching the filter "{{ value }}"' | translate: { value: input.value } }}
+                    {{ 'No data matching the filter "{{ value }}"' | translate: { value: searchTerm } }}
                   </td>
                 </tr>
               </table>
 
-              <!-- ✅ Infinite scroll trigger (زي ما هو) -->
               <div class="app-paginator" #loadMoreTrigger>
                 <span class="text-muted" *ngIf="isLoadingMore">
                   {{ 'Loading more...' | translate }}
                 </span>
                 <span class="text-muted" *ngIf="!isLoadingMore && !hasMoreResults()">
-                  {{ 'تم تحميل كل البيانات' | translate }}
+                  تم تحميل كل البيانات
                 </span>
                 <span class="text-muted invisible" *ngIf="!isLoadingMore && hasMoreResults()">&nbsp;</span>
               </div>
-
             </div>
           </div>
         </div>
-
       </app-card>
+    </div>
+  </div>
+
+  <div class="filter-popup-backdrop" *ngIf="isFilterPopupOpen" (click)="closeFilterPopup()">
+    <div class="filter-popup-card" (click)="$event.stopPropagation()">
+      <div class="filter-popup-header">
+        <div class="filter-popup-title">فلترة الطلاب</div>
+        <button mat-icon-button type="button" (click)="closeFilterPopup()" aria-label="إغلاق">
+          <i class="ti ti-x f-18"></i>
+        </button>
+      </div>
+
+      <div class="filter-popup-body">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>{{ 'Search...' | translate }}</mat-label>
+          <input matInput [(ngModel)]="draftSearchTerm" [ngModelOptions]="{ standalone: true }" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-100" *ngIf="!isTeacher">
+          <mat-label>{{ 'Residency' | translate }}</mat-label>
+          <mat-select [(ngModel)]="draftSelectedResidentId" [ngModelOptions]="{ standalone: true }">
+            <mat-option [value]="null">{{ 'All Residencies' | translate }}</mat-option>
+            <mat-option *ngFor="let nationality of nationalities" [value]="nationality.id">
+              {{ nationality.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-100" *ngIf="!isTeacher">
+          <mat-label>{{ 'Residency Group' | translate }}</mat-label>
+          <mat-select [(ngModel)]="draftSelectedResidencyGroup" [ngModelOptions]="{ standalone: true }">
+            <mat-option *ngFor="let option of residencyGroupOptions" [value]="option.value">
+              {{ option.translationKey | translate }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-checkbox [(ngModel)]="draftShowMissingAssignmentsOnly" [ngModelOptions]="{ standalone: true }">
+          عرض الطلاب غير المكتملين فقط
+        </mat-checkbox>
+      </div>
+
+      <div class="filter-popup-actions">
+        <button mat-stroked-button type="button" (click)="resetDraftFilters()">مسح</button>
+        <button mat-flat-button color="primary" type="button" (click)="submitFilterPopup()">بحث</button>
+      </div>
     </div>
   </div>
 </app-loading-overlay>

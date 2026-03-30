@@ -11,6 +11,7 @@ import { CircleService, CircleDayDto, UpcomingCircleDto } from 'src/app/@theme/s
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { formatDayValue } from 'src/app/@theme/types/DaysEnum';
 import { formatTimeValue } from 'src/app/@theme/utils/time';
+import { formatDateInCairo, formatDateTimeInCairo, getCairoDateString } from 'src/app/@theme/utils/cairo-date-time';
 import { TranslateService } from '@ngx-translate/core';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 import { CircleReportListDto, CircleReportService } from 'src/app/@theme/services/circle-report.service';
@@ -242,11 +243,7 @@ export class OnlineDashboardComponent implements OnInit {
   }
 
   private getTodayDateString(): string {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return getCairoDateString();
   }
 
   private buildTodayReportsView(reports?: CircleReportListDto[] | null): DashboardTodayReportView[] {
@@ -604,9 +601,9 @@ private toArabicMonthLabel(input: string): string {
   // 1) Try parse as date/iso forms
   const tryDates = [raw, `${raw}-01`, `${raw}-01-01`];
   for (const candidate of tryDates) {
-    const d = new Date(candidate);
-    if (!Number.isNaN(d.getTime())) {
-      return new Intl.DateTimeFormat('ar', { month: 'long' }).format(d);
+    const monthLabel = formatDateInCairo(candidate, 'ar-EG', { month: 'long' });
+    if (monthLabel) {
+      return monthLabel;
     }
   }
 
@@ -871,16 +868,11 @@ private toArabicMonthLabel(input: string): string {
       return null;
     }
 
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-      return null;
-    }
-
-    return new Intl.DateTimeFormat('ar', {
+    return formatDateInCairo(value, 'ar-EG', {
       year: 'numeric',
       month: 'short',
       day: '2-digit'
-    }).format(date);
+    });
   }
 
   private formatTransactionDate(value?: string | null): string {
@@ -888,18 +880,15 @@ private toArabicMonthLabel(input: string): string {
       return '—';
     }
 
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-      return '—';
-    }
-
-    return new Intl.DateTimeFormat('ar', {
-      year: 'numeric',
-      month: 'short',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    }).format(date);
+    return (
+      formatDateTimeInCairo(value, 'ar-EG', {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      }) ?? '—'
+    );
   }
 
   private formatTransactionStatus(value?: string | null): string {
@@ -1045,10 +1034,12 @@ private toArabicMonthLabel(input: string): string {
 
     let dateLabel = '';
     if (circle.nextOccurrenceDate) {
-      const date = new Date(circle.nextOccurrenceDate);
-      if (!Number.isNaN(date.getTime())) {
-        dateLabel = date.toLocaleDateString('ar');
-      }
+      dateLabel =
+        formatDateInCairo(circle.nextOccurrenceDate, 'ar-EG', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        }) ?? '';
     }
 
     const timeLabel = formatTimeValue(circle.startTime ?? primaryDay?.time);

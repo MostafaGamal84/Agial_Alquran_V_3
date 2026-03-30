@@ -38,7 +38,6 @@ import {
 } from '@angular/material/slide-toggle';
 import { Observable, Subscription, of } from 'rxjs';
 import {
-  debounceTime,
   distinctUntilChanged,
   finalize,
   map,
@@ -292,13 +291,6 @@ export class TeacherSalaryComponent
     this.updateDisplayedColumns();
     if (this.canFilterTeachers) {
       this.initializeTeacherFilter();
-      this.subscriptions.add(
-        this.teacherSearchControl.valueChanges
-          .pipe(debounceTime(300), distinctUntilChanged())
-          .subscribe((value) => {
-            this.loadTeachers(value ?? '');
-          })
-      );
     }
 
     this.subscriptions.add(
@@ -348,6 +340,12 @@ export class TeacherSalaryComponent
   }
 
   refreshTeachers(): void {
+    if (this.canFilterTeachers) {
+      this.loadTeachers(this.teacherSearchControl.value ?? '');
+    }
+  }
+
+  searchTeachers(): void {
     if (this.canFilterTeachers) {
       this.loadTeachers(this.teacherSearchControl.value ?? '');
     }

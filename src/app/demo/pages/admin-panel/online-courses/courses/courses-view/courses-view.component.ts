@@ -193,9 +193,8 @@ export class CoursesViewComponent implements OnInit, AfterViewInit, OnDestroy {
     };
   }
 
-  applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.filter.searchTerm = filterValue.trim().toLowerCase();
+  applyFilter(value: string) {
+    this.filter.searchTerm = value.trim().toLowerCase() || undefined;
     this.pageIndex = 0;
     this.filter.skipCount = 0;
     this.loadCircles();
@@ -206,8 +205,8 @@ export class CoursesViewComponent implements OnInit, AfterViewInit, OnDestroy {
     this.applyTableFilters();
   }
 
-  onTeacherNameFilterChange(event: Event): void {
-    this.teacherNameFilter = (event.target as HTMLInputElement).value;
+  onTeacherNameFilterChange(value: string): void {
+    this.teacherNameFilter = value;
     this.applyTableFilters();
   }
 

@@ -84,6 +84,12 @@ export class UserEditComponent implements OnInit, OnDestroy {
   circles: CircleDto[] = [];
   teachersLoading = false;
   selectedManagers: number[] = [];
+  private initialTeacherIds: number[] = [];
+  private initialManagerIds: number[] = [];
+  private initialStudentIds: number[] = [];
+  private initialCircleIds: number[] = [];
+  private initialTeacherId: number | null = null;
+  private initialCircleId: number | null = null;
   private readonly studentManagerSelection$ = new Subject<{ managerIds: number[]; preserveSelection: boolean }>();
   private readonly destroy$ = new Subject<void>();
   isManager = false;
@@ -134,8 +140,17 @@ export class UserEditComponent implements OnInit, OnDestroy {
     return !((this.isStudent || this.isTeacher) && this.auth.getRole() === UserTypesEnum.Manager);
   }
 
+  get canLeaveStudentWithoutTeacher(): boolean {
+    const role = this.auth.getRole();
+    return this.isStudent && (role === UserTypesEnum.Admin || role === UserTypesEnum.BranchLeader);
+  }
+
   get isSubmitDisabled(): boolean {
     return this.isSaving || this.basicInfoForm.invalid;
+  }
+
+  get isDialogMode(): boolean {
+    return !!this.dialogRef;
   }
 
   get submitValidationMessage(): string {
@@ -181,10 +196,7 @@ export class UserEditComponent implements OnInit, OnDestroy {
       circleId: [null]
     });
 
-    if (this.isStudent) {
-      this.basicInfoForm.get('teacherId')?.setValidators([Validators.required]);
-      this.basicInfoForm.get('teacherId')?.updateValueAndValidity({ emitEvent: false });
-    }
+    this.updateStudentTeacherValidation();
 
     if (!this.canEditBranch) {
       this.basicInfoForm.get('branchId')?.disable({ emitEvent: false });
@@ -403,6 +415,8 @@ export class UserEditComponent implements OnInit, OnDestroy {
         this.basicInfoForm.get('managerIds')?.disable({ emitEvent: false });
         this.basicInfoForm.get('managerId')?.disable({ emitEvent: false });
       }
+
+      this.captureInitialRelationState();
     }
 
     this.countryService.getCountries().subscribe((data) => {
@@ -515,17 +529,14 @@ export class UserEditComponent implements OnInit, OnDestroy {
     this.studentManagerSelection$
       .pipe(
         debounceTime(200),
-        tap(({ managerIds, preserveSelection }) => {
+        tap(({ managerIds }) => {
           this.selectedManagers = managerIds;
           this.circles = [];
-          if (!preserveSelection) {
-            this.basicInfoForm.patchValue({ circleId: null }, { emitEvent: false });
-          }
 
           if (managerIds.length === 0) {
             this.teachersLoading = false;
             this.teachers = [];
-            this.basicInfoForm.patchValue({ teacherId: null }, { emitEvent: false });
+            this.basicInfoForm.patchValue({ teacherId: null, circleId: null }, { emitEvent: false });
             this.basicInfoForm.get('teacherId')?.disable({ emitEvent: false });
             this.basicInfoForm.get('circleId')?.disable({ emitEvent: false });
           } else {
@@ -567,7 +578,7 @@ export class UserEditComponent implements OnInit, OnDestroy {
         const teacherStillAvailable = currentTeacherId && this.teachers.some((teacher) => teacher.id === currentTeacherId);
 
         if (!teacherStillAvailable) {
-          this.basicInfoForm.patchValue({ teacherId: null }, { emitEvent: false });
+          this.basicInfoForm.patchValue({ teacherId: null, circleId: null }, { emitEvent: false });
         }
 
         if (this.selectedManagers.length > 0) {
@@ -577,10 +588,6 @@ export class UserEditComponent implements OnInit, OnDestroy {
   }
 
   onStudentManagerSelectionChange(managerIds: number[], initial = false): void {
-    if (!initial) {
-      this.basicInfoForm.patchValue({ teacherId: null, circleId: null }, { emitEvent: false });
-    }
-
     this.studentManagerSelection$.next({
       managerIds,
       preserveSelection: initial
@@ -677,9 +684,7 @@ export class UserEditComponent implements OnInit, OnDestroy {
     this.basicInfoForm.patchValue(
       {
         managerIds,
-        managerId: primaryManagerId,
-        teacherId: null,
-        circleId: null
+        managerId: primaryManagerId
       },
       { emitEvent: false }
     );
@@ -736,6 +741,25 @@ export class UserEditComponent implements OnInit, OnDestroy {
 
     governorateControl.updateValueAndValidity({ emitEvent: false });
     this.refreshMissingRequiredFields();
+  }
+
+  private updateStudentTeacherValidation(): void {
+    if (!this.isStudent) {
+      return;
+    }
+
+    const teacherControl = this.basicInfoForm.get('teacherId');
+    if (!teacherControl) {
+      return;
+    }
+
+    if (this.canLeaveStudentWithoutTeacher) {
+      teacherControl.clearValidators();
+    } else {
+      teacherControl.setValidators([Validators.required]);
+    }
+
+    teacherControl.updateValueAndValidity({ emitEvent: false });
   }
 
   private resetPendingStudentSubscribeSelection(residentId: number | null): void {
@@ -949,6 +973,42 @@ export class UserEditComponent implements OnInit, OnDestroy {
     return '/online-course/student/list';
   }
 
+  private captureInitialRelationState(): void {
+    if (!this.currentUser) {
+      return;
+    }
+
+    const managerTeacherIds = this.isManager
+      ? this.normalizeTeacherIds([
+          ...(this.currentUser.teachers ?? []).map((teacher) => teacher.id),
+          ...(typeof this.currentUser.teacherId === 'number' ? [this.currentUser.teacherId] : [])
+        ])
+      : [];
+
+    const managerIds = this.getSelectedManagerIds(this.currentUser);
+    const studentIds = (this.currentUser.students ?? [])
+      .map((student) => Number(student.id))
+      .filter((id): id is number => Number.isFinite(id) && id > 0);
+    const circleIds = (this.currentUser.managerCircles ?? [])
+      .map((circle) => Number(circle.circleId))
+      .filter((id): id is number => Number.isFinite(id) && id > 0);
+
+    this.initialTeacherIds = managerTeacherIds;
+    this.initialManagerIds = managerIds;
+    this.initialStudentIds = this.normalizeIds(studentIds);
+    this.initialCircleIds = this.normalizeIds(circleIds);
+    this.initialTeacherId = this.currentUser.teacherId ?? this.currentUser.teachers?.[0]?.id ?? null;
+    this.initialCircleId = this.currentUser.circleId ?? circleIds[0] ?? null;
+  }
+
+  private areSameIdSets(left: number[], right: number[]): boolean {
+    if (left.length !== right.length) {
+      return false;
+    }
+
+    return left.every((id) => right.includes(id));
+  }
+
   async onSubmit() {
     if (this.isSaving) {
       return;
@@ -973,6 +1033,19 @@ export class UserEditComponent implements OnInit, OnDestroy {
             ])
           : undefined;
       const managerIdForUpdate = managerIdsForUpdate?.[0] ?? fallbackManagerId;
+      const currentStudentIds =
+        this.isManager || this.isTeacher ? this.normalizeIds(formValue.studentIds ?? []) : [];
+      const currentCircleIds = this.isManager ? this.normalizeIds(formValue.circleIds ?? []) : [];
+      const currentTeacherId = this.isStudent ? this.toNumberOrNull(formValue.teacherId) : null;
+      const currentCircleId = this.isTeacher ? this.toNumberOrNull(formValue.circleId) : null;
+      const teacherIdsChanged = this.isManager && !this.areSameIdSets(managerTeacherIds ?? [], this.initialTeacherIds);
+      const managerIdsChanged =
+        (this.isTeacher || this.isStudent) && !this.areSameIdSets(managerIdsForUpdate ?? [], this.initialManagerIds);
+      const studentIdsChanged =
+        (this.isManager || this.isTeacher) && !this.areSameIdSets(currentStudentIds, this.initialStudentIds);
+      const circleIdsChanged = this.isManager && !this.areSameIdSets(currentCircleIds, this.initialCircleIds);
+      const teacherIdChanged = this.isStudent && currentTeacherId !== this.initialTeacherId;
+      const circleIdChanged = this.isTeacher && currentCircleId !== this.initialCircleId;
       const model: UpdateUserDto = {
         id: this.userId,
         fullName: formValue.fullName,
@@ -983,14 +1056,15 @@ export class UserEditComponent implements OnInit, OnDestroy {
         residentId: formValue.residentId,
         governorateId: formValue.governorateId,
         branchId: formValue.branchId,
-        managerId: this.isTeacher || this.isStudent ? managerIdForUpdate : undefined,
-        managerIds: this.isTeacher || this.isStudent ? managerIdsForUpdate : undefined,
-        teacherIds: managerTeacherIds,
-        teacherId: this.isStudent ? formValue.teacherId : undefined,
-
-        studentIds: this.isManager || this.isTeacher ? formValue.studentIds : undefined,
-        circleIds: this.isManager ? formValue.circleIds : undefined,
-        circleId: this.isTeacher || this.isStudent ? formValue.circleId : undefined
+        managerId: managerIdsChanged ? (managerIdForUpdate ?? null) : undefined,
+        managerIds: managerIdsChanged ? managerIdsForUpdate : undefined,
+        teacherIds: teacherIdsChanged ? managerTeacherIds : undefined,
+        teacherId: teacherIdChanged ? currentTeacherId ?? null : undefined,
+        updateTeacherId: teacherIdChanged ? true : undefined,
+        studentIds: studentIdsChanged ? currentStudentIds : undefined,
+        circleIds: circleIdsChanged ? currentCircleIds : undefined,
+        circleId: circleIdChanged ? currentCircleId ?? null : undefined,
+        updateCircleId: circleIdChanged ? true : undefined
       };
 
       const pendingStudentSubscribeId = await this.resolveStudentSubscribeSelectionForResidentChange(
@@ -1058,6 +1132,20 @@ export class UserEditComponent implements OnInit, OnDestroy {
     } else {
       this.validationService.markAllAsTouched(this.basicInfoForm);
     }
+  }
+
+  closeEditor(): void {
+    if (this.isSaving) {
+      return;
+    }
+
+    if (this.dialogRef) {
+      this.dialogRef.close();
+      return;
+    }
+
+    const navigationState = this.isStudent ? { refreshStudentList: true } : undefined;
+    this.router.navigate([this.getListRoute()], navigationState ? { state: navigationState } : undefined);
   }
 
   private extractSelectIds(selection: unknown): Array<number | null | undefined> {

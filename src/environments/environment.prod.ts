@@ -1,8 +1,9 @@
-import packageInfo from '../../package.json';
+import { buildVersion } from './build-version';
 
 export const environment = {
-  appVersion: packageInfo.version,
+  appVersion: buildVersion.version,
+  buildId: buildVersion.buildId,
+  buildTime: buildVersion.buildTime,
   production: true,
-  // apiUrl: 'https://ajyalbackend.somee.com'  
-    apiUrl: 'https://localhost:7260'
+  apiUrl: 'https://corevadev.com'  
 };

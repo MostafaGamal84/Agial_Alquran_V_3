@@ -26,3 +26,54 @@
 .app-main-content {
   outline: none;
 }
+
+.app-update-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(2, 6, 23, 0.72);
+  backdrop-filter: blur(6px);
+}
+
+.app-update-card {
+  width: min(100%, 420px);
+  border-radius: 24px;
+  padding: 1.5rem;
+  text-align: center;
+  color: #f8fafc;
+  background: linear-gradient(160deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.94));
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.45);
+}
+
+.app-update-spinner {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  border: 4px solid rgba(148, 163, 184, 0.24);
+  border-top-color: #60a5fa;
+  animation: app-update-spin 0.9s linear infinite;
+}
+
+.app-update-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 0.45rem;
+}
+
+.app-update-text {
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: rgba(226, 232, 240, 0.92);
+}
+
+@keyframes app-update-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

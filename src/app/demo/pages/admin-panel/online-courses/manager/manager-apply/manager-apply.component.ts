@@ -49,9 +49,8 @@ export class ManagerApplyComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // table search filter
-  applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    const normalized = filterValue.trim().toLowerCase();
+  applyFilter(value: string) {
+    const normalized = value.trim().toLowerCase();
     this.filteredRows = this.allRows.filter((row) =>
       Object.values(row).some((value) =>
         value?.toString().toLowerCase().includes(normalized)

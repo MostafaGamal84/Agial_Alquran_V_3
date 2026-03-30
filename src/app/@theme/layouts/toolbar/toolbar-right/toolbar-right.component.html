@@ -1,18 +1,18 @@
 <div class="header-button">
-  <button mat-button [matMenuTriggerFor]="languages" aria-label="mode" class="header-item">
+  <!-- <button mat-button [matMenuTriggerFor]="languages" aria-label="mode" class="header-item">
     <a class="pc-head-link">
       <svg class="pc-icon">
         <use xlink:href="assets/fonts/custom-icon.svg#custom-global"></use>
       </svg>
     </a>
-  </button>
-  <button mat-button [matMenuTriggerFor]="setting" aria-label="mode" class="header-item">
+  </button> -->
+  <!-- <button mat-button [matMenuTriggerFor]="setting" aria-label="mode" class="header-item">
     <a class="pc-head-link">
       <svg class="pc-icon">
         <use xlink:href="assets/fonts/custom-icon.svg#custom-setting-2"></use>
       </svg>
     </a>
-  </button>
+  </button> -->
   <!-- <button mat-button (click)="headerBlur(); drawer.toggle()" aria-label="mode" class="header-item" [ngClass]="{ on: headerBlur }">
     <a class="pc-head-link">
       <svg class="pc-icon">
@@ -27,23 +27,23 @@
       </svg>
     </a>
   </button> -->
-  <button mat-button [matMenuTriggerFor]="user" aria-label="mode" class="header-item">
+  <!-- <button mat-button [matMenuTriggerFor]="user" aria-label="mode" class="header-item">
     <a class="pc-head-link">
       <img src="assets/images/user/avatar-2.png" alt="user-image" class="user-avatar" />
     </a>
-  </button>
-  <mat-menu #languages="matMenu" xPosition="before">
+  </button> -->
+  <!-- <mat-menu #languages="matMenu" xPosition="before">
     <button mat-menu-item>
       <div class="mat-body" (click)="useLanguage('ar')">العربية</div>
     </button>
-  </mat-menu>
-  <mat-menu #setting="matMenu" xPosition="before">
+  </mat-menu> -->
+  <!-- <mat-menu #setting="matMenu" xPosition="before">
     <button mat-menu-item [routerLink]="['/application/profile/account/account']">
       <div class="dropdown-item">
         <i class="ti ti-user"></i>
         <span>حسابي</span>
       </div>
-    </button>
+    </button> -->
     <!-- <button mat-menu-item [routerLink]="['/application/profile/account/settings']">
       <div class="dropdown-item">
         <i class="ti ti-settings"></i>
@@ -62,13 +62,13 @@
         <span>Lock Screen</span>
       </div>
     </button> -->
-    <button mat-menu-item (click)="logout()">
+    <!-- <button mat-menu-item (click)="logout()">
       <div class="dropdown-item">
         <i class="ti ti-power"></i>
         <span>تسجيل الخروج</span>
       </div>
     </button>
-  </mat-menu>
+  </mat-menu> -->
   <!-- <mat-drawer #drawer position="end" class="notification-status sidenav" mode="over">
     <div class="drawer-header">
       <div class="f-16 f-w-600">What’s new announcement?</div>

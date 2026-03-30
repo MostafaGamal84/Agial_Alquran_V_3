@@ -146,24 +146,6 @@ export class LoadingOverlayComponent {
       ],
     },
     {
-      name: 'عيد الفطر',
-      match: ({ day, month }) => month === 10 && day === 1,
-      hadiths: [
-        {
-          text: 'نَهَى رَسُولُ اللَّهِ ﷺ عَنْ صَوْمِ يَوْمِ الفِطْرِ وَيَوْمِ الأَضْحَى',
-          translation: '“The Messenger of Allah forbade fasting on the Day of Fitr and the Day of Adha.”',
-          reference: 'متفق عليه',
-          eyebrow: 'يوم العيد',
-        },
-        {
-          text: 'زَكَاةُ الفِطْرِ طُهْرَةٌ لِلصَّائِمِ مِنَ اللَّغْوِ وَالرَّفَثِ',
-          translation: '“Zakat al-Fitr is a purification for the fasting person from idle talk and obscenity.”',
-          reference: 'سنن أبي داود',
-          eyebrow: 'يوم العيد',
-        },
-      ],
-    },
-    {
       name: 'عاشوراء',
       match: ({ day, month }) => month === 1 && day === 10,
       hadiths: [

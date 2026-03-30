@@ -63,6 +63,8 @@ export class AdminComponent implements OnInit, AfterViewInit {
   modeValue: MatDrawerMode = 'side';
   direction: string = LTR;
   currentApplicationVersion = environment.appVersion;
+  currentBuildId = environment.buildId;
+  currentBuildTime = environment.buildTime;
   currentLayout: string = VERTICAL;
   rtlMode: boolean = false;
   windowWidth: number = window.innerWidth;

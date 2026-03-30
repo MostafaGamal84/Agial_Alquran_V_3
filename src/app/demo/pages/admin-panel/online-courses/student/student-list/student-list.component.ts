@@ -79,9 +79,14 @@ export class StudentListComponent implements OnInit, OnDestroy {
   showInactive = false;
   readonly isTeacher = this.auth.getRole() === UserTypesEnum.Teacher;
   searchTerm = '';
+  isFilterPopupOpen = false;
 
   nationalities: NationalityDto[] = [];
   selectedResidentId: number | null = null;
+  draftSearchTerm = '';
+  draftSelectedResidentId: number | null = null;
+  draftSelectedResidencyGroup: ResidencyGroupFilter = 'all';
+  draftShowMissingAssignmentsOnly = false;
 
   residencyGroupOptions = RESIDENCY_GROUP_OPTIONS;
   selectedResidencyGroup: ResidencyGroupFilter = 'all';
@@ -142,38 +147,53 @@ export class StudentListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    const restored = this.restoreState();
-    const shouldRefreshFromServer = this.consumeRefreshFlag();
+    this.viewState.clearState(this.stateKey);
+    this.syncDraftFiltersFromApplied();
     this.loadNationalities();
-
-    if (!restored) {
-      this.loadStudents();
-      return;
-    }
-
-    this.applyDisplayData();
-
-    if (shouldRefreshFromServer || this.shouldReloadRestoredState(restored)) {
-      this.reloadRestoredView(restored.scrollY ?? 0);
-      return;
-    }
-
-    this.restoreScrollPosition(restored.scrollY ?? 0);
+    this.loadStudents();
   }
 
   ngOnDestroy(): void {
-    this.persistState();
+    this.viewState.clearState(this.stateKey);
     this.intersectionObserver?.disconnect();
   }
 
-  // Search (server-side like your original)
-  applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.searchTerm = filterValue;
-    this.filter.searchTerm = filterValue.trim().toLowerCase();
+  openFilterPopup(): void {
+    this.syncDraftFiltersFromApplied();
+    this.isFilterPopupOpen = true;
+  }
+
+  closeFilterPopup(restoreDraft = true): void {
+    if (restoreDraft) {
+      this.syncDraftFiltersFromApplied();
+    }
+
+    this.isFilterPopupOpen = false;
+  }
+
+  submitFilterPopup(): void {
+    this.searchTerm = this.draftSearchTerm.trim();
+    this.selectedResidentId =
+      this.draftSelectedResidentId && this.draftSelectedResidentId > 0
+        ? this.draftSelectedResidentId
+        : null;
+    this.selectedResidencyGroup = this.draftSelectedResidencyGroup ?? 'all';
+    this.showMissingAssignmentsOnly = this.draftShowMissingAssignmentsOnly;
+
+    const normalizedSearchTerm = this.searchTerm.toLowerCase();
+    this.filter.searchTerm = normalizedSearchTerm.length ? normalizedSearchTerm : undefined;
     this.pageIndex = 0;
     this.filter.skipCount = 0;
+
+    this.closeFilterPopup(false);
     this.loadStudents();
+  }
+
+  resetDraftFilters(): void {
+    this.draftSearchTerm = '';
+    this.draftSelectedResidentId = null;
+    this.draftSelectedResidencyGroup = 'all';
+    this.draftShowMissingAssignmentsOnly = false;
   }
 
   onMissingAssignmentsOnlyChange(checked: boolean): void {
@@ -250,21 +270,6 @@ export class StudentListComponent implements OnInit, OnDestroy {
         }
       });
   }
-
-  onResidencyChange(value: number | null): void {
-    this.selectedResidentId = value && value > 0 ? value : null;
-    this.pageIndex = 0;
-    this.filter.skipCount = 0;
-    this.loadStudents();
-  }
-
-  onResidencyGroupChange(value: ResidencyGroupFilter | null): void {
-    this.selectedResidencyGroup = value ?? 'all';
-    this.pageIndex = 0;
-    this.filter.skipCount = 0;
-    this.loadStudents();
-  }
-
 
   openEditDialog(student: LookUpUserDto): void {
     const dialogRef = this.dialog.open(UserEditComponent, {
@@ -573,5 +578,12 @@ export class StudentListComponent implements OnInit, OnDestroy {
       sortActive: this.dataSource.sort?.active ?? '',
       sortDirection: this.dataSource.sort?.direction ?? ''
     });
+  }
+
+  private syncDraftFiltersFromApplied(): void {
+    this.draftSearchTerm = this.searchTerm;
+    this.draftSelectedResidentId = this.selectedResidentId;
+    this.draftSelectedResidencyGroup = this.selectedResidencyGroup;
+    this.draftShowMissingAssignmentsOnly = this.showMissingAssignmentsOnly;
   }
 }

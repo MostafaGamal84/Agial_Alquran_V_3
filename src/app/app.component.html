@@ -11,4 +11,14 @@
   @if (isSpinnerVisible) {
     <mat-progress-bar class="loader" mode="indeterminate" value="40"></mat-progress-bar>
   }
+
+  @if (appUpdateService.isReloading()) {
+    <div class="app-update-overlay" role="alert" aria-live="assertive" aria-busy="true">
+      <div class="app-update-card">
+        <div class="app-update-spinner" aria-hidden="true"></div>
+        <div class="app-update-title">جاري تحديث التطبيق</div>
+        <div class="app-update-text">{{ appUpdateService.reloadMessage() }}</div>
+      </div>
+    </div>
+  }
 </div>

@@ -1,14 +1,14 @@
 // This file can be replaced during build by using the `fileReplacements` array.
 // `ng build` replaces `environment.ts` with `environment.prod.ts`.
 // The list of file replacements can be found in `angular.json`.
-
-import packageInfo from '../../package.json';
+import { buildVersion } from './build-version';
 
 export const environment = {
-  appVersion: packageInfo.version,
+  appVersion: buildVersion.version,
+  buildId: buildVersion.buildId,
+  buildTime: buildVersion.buildTime,
   production: false,
   apiUrl: 'https://localhost:7260'
-  // apiUrl: 'https://ajyalbackend.somee.com'
 };
 /*
  * For easier debugging in development mode, you can import the following file

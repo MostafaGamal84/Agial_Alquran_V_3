@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { Subject, forkJoin } from 'rxjs';
-import { debounceTime, finalize, takeUntil } from 'rxjs/operators';
+import { finalize, takeUntil } from 'rxjs/operators';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 import { LookUpUserDto, LookupService } from 'src/app/@theme/services/lookup.service';
 import {
@@ -16,6 +16,7 @@ import {
 import { SubscribeDto, SubscribeService, SubscribeTypeDto } from 'src/app/@theme/services/subscribe.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
+import { formatDateTimeInCairo } from 'src/app/@theme/utils/cairo-date-time';
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 
 interface SelectOption {
@@ -197,14 +198,6 @@ export class OperationsLogComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
 
   private readonly destroy$ = new Subject<void>();
-  private readonly dateTimeFormatter = new Intl.DateTimeFormat('ar-SA', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit'
-  });
-
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;
   private readonly expandedChangesLogIds = new Set<number>();
@@ -260,10 +253,6 @@ export class OperationsLogComponent implements OnInit, OnDestroy {
     this.loadFilterOptions();
     this.loadLookupFilters();
     this.loadLogs();
-
-    this.filterForm.valueChanges
-      .pipe(debounceTime(300), takeUntil(this.destroy$))
-      .subscribe(() => this.applyFilters());
   }
 
   ngOnDestroy(): void {
@@ -289,7 +278,7 @@ export class OperationsLogComponent implements OnInit, OnDestroy {
       { emitEvent: false }
     );
 
-    this.applyFilters();
+    this.refresh();
   }
 
   refresh(): void {
@@ -529,14 +518,15 @@ export class OperationsLogComponent implements OnInit, OnDestroy {
       return 'غير محدد';
     }
 
-    const parsedDate = value instanceof Date ? value : new Date(value);
-    return Number.isNaN(parsedDate.getTime()) ? 'غير محدد' : this.dateTimeFormatter.format(parsedDate);
-  }
-
-  private applyFilters(): void {
-    this.pageIndex = 0;
-    this.filter.skipCount = 0;
-    this.loadLogs();
+    return (
+      formatDateTimeInCairo(value, 'ar-EG', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }) ?? 'غير محدد'
+    );
   }
 
   private loadLogs(append = false): void {

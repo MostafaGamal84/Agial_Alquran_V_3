@@ -6,6 +6,7 @@ import { filter } from 'rxjs/operators';
 // project import
 import { BuyNowLinkService } from './@theme/services/buy-now-link.service';
 import { LanguageService } from './@theme/services/language.service';
+import { AppUpdateService } from './@theme/services/app-update.service';
 import { AccessibilityService } from './core/services/accessibility.service';
 import { AnnouncerService } from './core/services/announcer.service';
 
@@ -24,6 +25,7 @@ export class AppComponent implements OnInit {
   activeRoute = inject(ActivatedRoute);
   private productIdService = inject(BuyNowLinkService);
   private languageService = inject(LanguageService);
+  readonly appUpdateService = inject(AppUpdateService);
   private accessibilityService = inject(AccessibilityService);
   readonly announcerService = inject(AnnouncerService);
 
@@ -32,6 +34,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     this.languageService.initialize();
+    this.appUpdateService.start();
     this.accessibilityService.initialize();
 
     this.router.events.subscribe(

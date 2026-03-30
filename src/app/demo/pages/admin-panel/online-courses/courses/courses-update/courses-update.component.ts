@@ -100,6 +100,8 @@ export class CoursesUpdateComponent implements OnInit, OnDestroy {
   isSaving = false;
   teachersLoading = false;
   selectedManagers: number[] = [];
+  private initialManagerIds: number[] = [];
+  private initialStudentIds: number[] = [];
 
   ngOnInit(): void {
 
@@ -386,6 +388,14 @@ private createDayGroup(initial?: Partial<CircleScheduleFormValue>): FormGroup {
   // باقي كودك كما هو (بدون تغيير)
   // ===========================
 
+  private areSameIdSets(left: number[], right: number[]): boolean {
+    if (left.length !== right.length) {
+      return false;
+    }
+
+    return left.every((id) => right.includes(id));
+  }
+
   private initializeFromCourse(course: CircleDto | null | undefined): void {
     if (!course) {
       return;
@@ -443,6 +453,9 @@ private createDayGroup(initial?: Partial<CircleScheduleFormValue>): FormGroup {
     this.setDays(schedule);
 
     const teacherId = typeof course.teacherId === 'number' ? course.teacherId : null;
+
+    this.initialManagerIds = [...effectiveManagerIds];
+    this.initialStudentIds = [...studentIds];
 
     this.onManagerSelectionChange(effectiveManagerIds, true, teacherId, studentIds, fallbackTeacher, courseStudents);
   }
@@ -946,14 +959,21 @@ console.log('Row0 startTime:', this.daysArray.at(0).get('startTime')?.value);
       return;
     }
 
+    const currentManagerIds = Array.isArray(formValue.managers)
+      ? formValue.managers.filter((id): id is number => typeof id === 'number' && Number.isFinite(id) && id > 0)
+      : [];
+    const currentStudentIds = Array.isArray(formValue.studentsIds)
+      ? formValue.studentsIds.filter((id): id is number => typeof id === 'number' && Number.isFinite(id) && id > 0)
+      : [];
+
     const model: UpdateCircleDto = {
       id: this.id,
       name: formValue.name,
       branchId: formValue.branchId,
       teacherId: formValue.teacherId,
       days: schedule,
-      managers: formValue.managers,
-      studentsIds: formValue.studentsIds
+      managers: this.areSameIdSets(currentManagerIds, this.initialManagerIds) ? undefined : currentManagerIds,
+      studentsIds: this.areSameIdSets(currentStudentIds, this.initialStudentIds) ? undefined : currentStudentIds
     };
 
     this.isSaving = true;

@@ -43,7 +43,7 @@
             </div>
           </div>
 
-          <form [formGroup]="filterForm" class="filter-form">
+          <form [formGroup]="filterForm" class="filter-form" (ngSubmit)="refresh()">
             <div class="row g-3">
               <div class="col-12 col-md-6 col-xl-3">
                 <mat-form-field appearance="outline" class="w-100 filter-field">
@@ -150,6 +150,14 @@
                   <mat-datepicker-toggle matSuffix [for]="operationsRangePicker"></mat-datepicker-toggle>
                   <mat-date-range-picker #operationsRangePicker panelClass="operations-log-date-panel"></mat-date-range-picker>
                 </mat-form-field>
+              </div>
+              <div class="col-12 d-flex flex-wrap justify-content-end gap-2">
+                <button mat-stroked-button type="button" class="secondary-action" (click)="clearFilters()">
+                  Ù…Ø³Ø­ Ø§Ù„ØªØµÙÙŠØ©
+                </button>
+                <button mat-flat-button color="primary" type="submit" class="primary-action">
+                  Ø¨Ø­Ø«
+                </button>
               </div>
             </div>
           </form>

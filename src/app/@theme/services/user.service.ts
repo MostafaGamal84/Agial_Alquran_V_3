@@ -27,13 +27,15 @@ export interface UpdateUserDto {
   residentId?: number;
   governorateId?: number;
   branchId?: number;
-  managerId?: number;
+  managerId?: number | null;
   managerIds?: number[];
-  teacherId?: number;
+  teacherId?: number | null;
+  updateTeacherId?: boolean;
   teacherIds?: number[];
   studentIds?: number[];
   circleIds?: number[];
-  circleId?: number;
+  circleId?: number | null;
+  updateCircleId?: boolean;
   studentSubscribeId?: number;
 }
 

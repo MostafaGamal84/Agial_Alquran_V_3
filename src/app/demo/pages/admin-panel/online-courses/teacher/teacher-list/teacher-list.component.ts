@@ -79,9 +79,8 @@ export class TeacherListComponent implements OnInit, OnDestroy {
 
 
   // table search filter
-  applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.filter.searchTerm = filterValue.trim().toLowerCase();
+  applyFilter(value: string) {
+    this.filter.searchTerm = value.trim().toLowerCase() || undefined;
     this.pageIndex = 0;
     this.filter.skipCount = 0;
     this.loadTeachers();

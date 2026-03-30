@@ -35,13 +35,20 @@
                   <input
                     matInput
                     [value]="teacherNameFilter"
-                    (input)="onTeacherNameFilterChange($event)"
+                    (keyup.enter)="onTeacherNameFilterChange(teacherNameInput.value)"
+                    #teacherNameInput
                   />
+                  <button mat-icon-button matSuffix type="button" (click)="onTeacherNameFilterChange(teacherNameInput.value)" aria-label="بحث">
+                    <mat-icon>search</mat-icon>
+                  </button>
                 </mat-form-field>
               </div>
               <div class="col-12 col-md-4">
                 <mat-form-field appearance="outline" class="w-100">
-                  <input matInput (keyup)="applyFilter($event)" [placeholder]="'Search...' | translate" #input />
+                  <input matInput (keyup.enter)="applyFilter(input.value)" [placeholder]="'Search...' | translate" #input />
+                  <button mat-icon-button matSuffix type="button" (click)="applyFilter(input.value)" aria-label="بحث">
+                    <mat-icon>search</mat-icon>
+                  </button>
                 </mat-form-field>
               </div>
             </div>

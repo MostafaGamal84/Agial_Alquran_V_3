@@ -1,9 +1,54 @@
-.filter-form {
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+:host {
+  --filter-popup-bg: #ffffff;
+  --filter-popup-surface: #f8fafc;
+  --filter-popup-surface-strong: #eef4ff;
+  --filter-popup-text: #0f172a;
+  --filter-popup-muted: #64748b;
+  --filter-popup-border: rgba(148, 163, 184, 0.28);
+  --filter-popup-input-bg: #f8fafc;
+  --filter-popup-input-border: rgba(148, 163, 184, 0.55);
+  --filter-popup-shadow: 0 24px 70px rgba(15, 23, 42, 0.18);
 }
 
-.filter-form .mat-form-field {
-  margin: 0;
+:host-context(.dark),
+:host-context(.blue-theme.dark),
+:host-context(.indigo-theme.dark),
+:host-context(.purple-theme.dark),
+:host-context(.pink-theme.dark),
+:host-context(.red-theme.dark),
+:host-context(.orange-theme.dark),
+:host-context(.yellow-theme.dark),
+:host-context(.green-theme.dark),
+:host-context(.teal-theme.dark),
+:host-context(.cyan-theme.dark),
+:host-context([data-theme='dark']) {
+  --filter-popup-bg: #182231;
+  --filter-popup-surface: #111927;
+  --filter-popup-surface-strong: #1d2a3c;
+  --filter-popup-text: rgba(255, 255, 255, 0.92);
+  --filter-popup-muted: rgba(226, 232, 240, 0.72);
+  --filter-popup-border: rgba(148, 163, 184, 0.22);
+  --filter-popup-input-bg: #0f1724;
+  --filter-popup-input-border: rgba(148, 163, 184, 0.36);
+  --filter-popup-shadow: 0 28px 80px rgba(2, 6, 23, 0.58);
+}
+
+.table-options {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  @media (max-width: 575px) {
+    width: 100%;
+
+    .mdc-button {
+      width: 100%;
+    }
+  }
+}
+
+.filter-trigger-btn {
+  min-width: 112px;
 }
 
 .table-responsive {
@@ -42,29 +87,6 @@
       color: var(--pc-font-dark);
     }
 
-    .student-cell,
-    .circle-cell {
-      font-weight: 700;
-      white-space: nowrap;
-    }
-
-    .circle-cell {
-      color: var(--pc-font-muted);
-    }
-
-    .date-cell {
-      color: var(--pc-font-muted);
-      white-space: nowrap;
-    }
-
-    .actions-cell {
-      min-width: 120px;
-    }
-
-    .status-cell {
-      white-space: nowrap;
-    }
-
     .status-pill {
       display: inline-flex;
       align-items: center;
@@ -95,6 +117,145 @@
     .status-pill--muted {
       background: var(--accent-100);
       color: var(--pc-font-muted);
+    }
+  }
+}
+
+.filter-popup-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+}
+
+.filter-popup-card {
+  width: min(100%, 560px);
+  border-radius: 20px;
+  border: 1px solid var(--filter-popup-border);
+  background: linear-gradient(180deg, var(--filter-popup-surface-strong) 0%, var(--filter-popup-bg) 18%, var(--filter-popup-bg) 100%) !important;
+  color: var(--filter-popup-text) !important;
+  box-shadow: var(--filter-popup-shadow);
+  overflow: hidden;
+}
+
+.filter-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--filter-popup-border);
+  background: var(--filter-popup-surface-strong) !important;
+}
+
+.filter-popup-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--filter-popup-text) !important;
+}
+
+.filter-popup-form {
+  display: block;
+}
+
+.filter-popup-body {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 18px;
+  color: var(--filter-popup-text) !important;
+}
+
+.filter-popup-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 0 18px 18px;
+  border-top: 1px solid var(--filter-popup-border);
+  background: var(--filter-popup-bg);
+}
+
+:host ::ng-deep .filter-popup-card .mat-mdc-form-field-subscript-wrapper {
+  display: none;
+}
+
+:host ::ng-deep .filter-popup-card .mat-mdc-text-field-wrapper {
+  border-radius: 12px;
+  background: var(--filter-popup-input-bg) !important;
+}
+
+:host ::ng-deep .filter-popup-card .mat-mdc-form-field-infix {
+  min-height: 42px;
+  padding-top: 10px;
+  padding-bottom: 8px;
+}
+
+:host ::ng-deep .filter-popup-card .mat-date-range-input-separator {
+  color: var(--filter-popup-text) !important;
+}
+
+:host ::ng-deep .filter-popup-card .mdc-notched-outline__leading,
+:host ::ng-deep .filter-popup-card .mdc-notched-outline__notch,
+:host ::ng-deep .filter-popup-card .mdc-notched-outline__trailing {
+  border-color: var(--filter-popup-input-border) !important;
+}
+
+:host ::ng-deep .filter-popup-card .mat-mdc-form-field.mat-focused .mdc-notched-outline__leading,
+:host ::ng-deep .filter-popup-card .mat-mdc-form-field.mat-focused .mdc-notched-outline__notch,
+:host ::ng-deep .filter-popup-card .mat-mdc-form-field.mat-focused .mdc-notched-outline__trailing {
+  border-color: #3b82f6 !important;
+}
+
+:host ::ng-deep .filter-popup-card .mat-mdc-input-element,
+:host ::ng-deep .filter-popup-card .mat-mdc-select-min-line,
+:host ::ng-deep .filter-popup-card .mat-mdc-select-value,
+:host ::ng-deep .filter-popup-card .mat-mdc-select-arrow,
+:host ::ng-deep .filter-popup-card .mat-mdc-icon-button,
+:host ::ng-deep .filter-popup-card .mat-mdc-form-field-icon-suffix,
+:host ::ng-deep .filter-popup-card .filter-popup-header button,
+:host ::ng-deep .filter-popup-card .filter-popup-header i {
+  color: var(--filter-popup-text) !important;
+}
+
+:host ::ng-deep .filter-popup-card .mdc-floating-label,
+:host ::ng-deep .filter-popup-card .mat-mdc-form-field-required-marker,
+:host ::ng-deep .filter-popup-card input::placeholder {
+  color: var(--filter-popup-muted) !important;
+}
+
+:host ::ng-deep .filter-popup-card .mat-mdc-form-field-has-icon-suffix .mat-mdc-text-field-wrapper,
+:host ::ng-deep .filter-popup-card .mat-mdc-form-field-has-icon-prefix .mat-mdc-text-field-wrapper {
+  padding-inline-end: 0;
+}
+
+@media (max-width: 767px) {
+  .filter-popup-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 575px) {
+  .filter-popup-backdrop {
+    padding: 12px;
+    align-items: flex-end;
+  }
+
+  .filter-popup-card {
+    width: 100%;
+    border-radius: 18px 18px 0 0;
+  }
+
+  .filter-popup-actions {
+    justify-content: stretch;
+    flex-direction: column-reverse;
+
+    .mdc-button {
+      width: 100%;
     }
   }
 }

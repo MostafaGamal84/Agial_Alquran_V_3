@@ -3,6 +3,16 @@
     <app-card cardTitle="تحديث المستخدم">
       <!-- العنوان الرئيسي -->
       <div class="user-header">
+        <button
+          *ngIf="isDialogMode"
+          mat-icon-button
+          type="button"
+          class="close-dialog-btn"
+          (click)="closeEditor()"
+          aria-label="إغلاق"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
         <h2 class="page-title">تحديث بيانات المستخدم</h2>
         <p class="page-subtitle">
           قم بتعديل البيانات الأساسية وبيانات التواصل ومكان الإقامة والارتباطات (مشرفين، معلمين، طلاب، حلقات) لهذا المستخدم.
@@ -353,7 +363,7 @@
                   </div>
 
                   <div class="col-md-6">
-                    <label class="form-label form-label-sm">المعلم</label>
+                    <label class="form-label form-label-sm">{{ canLeaveStudentWithoutTeacher ? 'المعلم (اختياري)' : 'المعلم' }}</label>
                     <ng-select
                       class="w-100"
                       formControlName="teacherId"
@@ -362,12 +372,16 @@
                       bindValue="id"
                       [searchable]="true"
                       [loading]="teachersLoading"
+                      [clearable]="canLeaveStudentWithoutTeacher"
                       [disabled]="teachersLoading || !(basicInfoForm.get('managerIds')?.value?.length)"
-                      [notFoundText]="selectedManagers.length ? 'لا يوجد معلمون مشتركون' : 'اختر مشرفاً واحداً على الأقل'"
+                      [notFoundText]="selectedManagers.length ? (canLeaveStudentWithoutTeacher ? 'لا يوجد معلمون مشتركون، ويمكنك الحفظ بدون معلم' : 'لا يوجد معلمون مشتركون') : 'اختر مشرفاً واحداً على الأقل'"
                       placeholder="اختر المعلم"
                       (change)="onTeacherChange($event?.value ?? $event)"
                     ></ng-select>
                     <app-field-error [control]="basicInfoForm.get('teacherId')" [label]="'المعلم'"></app-field-error>
+                    <small class="text-muted d-block" *ngIf="canLeaveStudentWithoutTeacher && selectedManagers.length">
+                      يمكن للأدمن ومدير الفرع حفظ المشرفين للطالب بدون اختيار معلم.
+                    </small>
                     <small class="text-muted" *ngIf="!teachersLoading && selectedManagers.length && teachers.length === 0">
                       لا يوجد معلمون مشتركون بين المشرفين المحددين.
                     </small>
@@ -395,6 +409,16 @@
         <!-- أزرار الإجراء -->
         <div class="col-12">
           <div class="form-actions">
+            <button
+              *ngIf="isDialogMode"
+              mat-stroked-button
+              type="button"
+              class="close-action-btn"
+              (click)="closeEditor()"
+              [disabled]="isSaving"
+            >
+              إغلاق
+            </button>
             <button mat-flat-button color="primary" type="submit" class="submit-btn" [disabled]="isSubmitDisabled">
               @if (isSaving) {
                 <mat-icon>autorenew</mat-icon>

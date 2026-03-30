@@ -17,10 +17,14 @@
                       <mat-label>بحث</mat-label>
                       <input
                         matInput
-                        [value]="state.searchTerm"
-                        (input)="onSearchChange(tab.key, $any($event.target).value)"
+                        [value]="state.pendingSearchTerm"
+                        (input)="onSearchInput(tab.key, $any($event.target).value)"
+                        (keyup.enter)="onSearch(tab.key)"
                         placeholder="ابحث في السجلات المحذوفة"
                       />
+                      <button mat-icon-button matSuffix type="button" (click)="onSearch(tab.key)" aria-label="بحث">
+                        <mat-icon>search</mat-icon>
+                      </button>
                     </mat-form-field>
                   </div>
                 </div>

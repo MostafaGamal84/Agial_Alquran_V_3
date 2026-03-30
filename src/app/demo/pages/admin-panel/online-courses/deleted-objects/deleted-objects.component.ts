@@ -11,10 +11,12 @@ import { AuthenticationService } from 'src/app/@theme/services/authentication.se
 import { FilteredResultRequestDto } from 'src/app/@theme/services/lookup.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
+import { formatDateTimeInCairo } from 'src/app/@theme/utils/cairo-date-time';
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 
 interface DeletedTabState {
   searchTerm: string;
+  pendingSearchTerm: string;
   page: number;
   pageSize: number;
   totalCount: number;
@@ -123,7 +125,6 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
     circleReports: this.createDefaultState()
   };
 
-  private searchDebounceTimers: Partial<Record<DeletedTabKey, ReturnType<typeof setTimeout>>> = {};
   private pendingRestoreIdsByTab: Partial<Record<DeletedTabKey, Set<number>>> = {};
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;
@@ -142,7 +143,6 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    Object.values(this.searchDebounceTimers).forEach((timer) => timer && clearTimeout(timer));
     this.intersectionObserver?.disconnect();
   }
 
@@ -186,17 +186,15 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
     this.navigateToTab(this.activeTabIndex - 1);
   }
 
-  onSearchChange(tab: DeletedTabKey, value: string): void {
+  onSearchInput(tab: DeletedTabKey, value: string): void {
+    this.stateByTab[tab].pendingSearchTerm = value;
+  }
+
+  onSearch(tab: DeletedTabKey): void {
     const state = this.stateByTab[tab];
-    state.searchTerm = value;
+    state.searchTerm = state.pendingSearchTerm.trim();
     state.page = 0;
-
-    const pendingTimer = this.searchDebounceTimers[tab];
-    if (pendingTimer) {
-      clearTimeout(pendingTimer);
-    }
-
-    this.searchDebounceTimers[tab] = setTimeout(() => this.loadTab(tab, true), 400);
+    this.loadTab(tab, true);
   }
 
   retry(tab: DeletedTabKey): void {
@@ -291,24 +289,16 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
       return '-';
     }
 
-    const parsedDate = value instanceof Date ? value : new Date(String(value));
-    if (Number.isNaN(parsedDate.getTime())) {
-      return String(value);
-    }
-
-    const datePart = new Intl.DateTimeFormat('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    }).format(parsedDate);
-
-    const timePart = new Intl.DateTimeFormat('en-GB', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    }).format(parsedDate);
-
-    return `${datePart} - ${timePart}`;
+    return (
+      formatDateTimeInCairo(String(value), 'en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      }) ?? String(value)
+    );
   }
 
   private withDeletedAtColumn(tab: DeletedTabConfig): DeletedTabConfig {
@@ -493,6 +483,7 @@ export class DeletedObjectsComponent implements OnInit, OnDestroy {
   private createDefaultState(): DeletedTabState {
     return {
       searchTerm: '',
+      pendingSearchTerm: '',
       page: 0,
       pageSize: 20,
       totalCount: 0,

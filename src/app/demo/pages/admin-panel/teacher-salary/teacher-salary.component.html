@@ -82,7 +82,17 @@
                   [formControl]="teacherSearchControl"
                   (click)="$event.stopPropagation()"
                   (keydown)="$event.stopPropagation()"
+                  (keyup.enter)="searchTeachers(); $event.stopPropagation()"
                 />
+                <button
+                  mat-icon-button
+                  type="button"
+                  aria-label="Search teachers"
+                  (click)="searchTeachers(); $event.stopPropagation()"
+                  (mousedown)="$event.preventDefault()"
+                >
+                  <mat-icon>search</mat-icon>
+                </button>
                 @if (teacherSearchControl.value) {
                   <button
                     mat-icon-button
