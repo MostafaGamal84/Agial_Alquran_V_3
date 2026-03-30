@@ -1,0 +1,10 @@
+{
+  "$schema": "../../node_modules/@angular-devkit/architect/src/builders-schema.json",
+  "builders": {
+    "versioned-browser": {
+      "implementation": "./versioned-browser",
+      "schema": "./schema.json",
+      "description": "Runs the build-version bump script for production builds, then delegates to the Angular browser builder."
+    }
+  }
+}

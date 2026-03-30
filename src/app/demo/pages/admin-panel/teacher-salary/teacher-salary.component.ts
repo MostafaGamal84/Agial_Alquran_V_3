@@ -381,7 +381,9 @@ export class TeacherSalaryComponent
       return;
     }
     this.selectedInvoice = invoice;
-    this.router.navigate(['teacher-salary', 'details', invoice.id]);
+    this.router.navigate(['teacher-salary', 'details', invoice.id], {
+      state: { invoice }
+    });
   }
 
   closeDetails(): void {
@@ -1038,8 +1040,13 @@ export class TeacherSalaryComponent
             this.detailSummary = response.data?.monthlySummary ?? null;
             const invoiceCandidate =
               this.detailSummary?.invoice ?? response.data?.invoice ?? this.selectedInvoice;
-            this.selectedInvoice = this.findInvoiceById(invoiceId) ?? invoiceCandidate ?? null;
-            this.detailSummaryMetrics = this.buildSummaryMetrics(this.detailSummary);
+            const resolvedInvoice =
+              this.findInvoiceById(invoiceId) ?? invoiceCandidate ?? null;
+            this.selectedInvoice = resolvedInvoice;
+            this.detailSummaryMetrics = this.buildDetailSummaryMetrics(
+              this.detailSummary,
+              resolvedInvoice
+            );
           } else {
             this.handleErrors(response.errors, 'فشل تحميل تفاصيل الفاتورة.');
           }
@@ -1374,6 +1381,35 @@ export class TeacherSalaryComponent
       addMetric('صافي الراتب', ['netSalary', 'takeHomePay'], 'currency');
       addMetric('الأجر بالساعة', ['hourlyRate'], 'currency');
       addMetric('نسبة الحضور', ['attendanceRate'], 'percentage');
+
+    return metrics;
+  }
+
+  private buildDetailSummaryMetrics(
+    summary: TeacherMonthlySummary | null,
+    invoice: TeacherSalaryInvoice | null
+  ): SummaryMetric[] {
+    const metrics = this.buildSummaryMetrics(summary);
+    const invoiceSalary = this.getSalaryAmount(invoice);
+
+    if (invoiceSalary === null) {
+      return metrics;
+    }
+
+    const salaryMetric: SummaryMetric = {
+      label: 'إجمالي الراتب',
+      value: invoiceSalary,
+      type: 'currency'
+    };
+    const salaryMetricIndex = metrics.findIndex(
+      (metric) => metric.label === salaryMetric.label
+    );
+
+    if (salaryMetricIndex >= 0) {
+      metrics[salaryMetricIndex] = salaryMetric;
+    } else {
+      metrics.push(salaryMetric);
+    }
 
     return metrics;
   }

@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Versioned Browser Builder",
+  "type": "object",
+  "properties": {
+    "delegateBuilder": {
+      "type": "string",
+      "default": "@angular-devkit/build-angular:browser"
+    },
+    "bumpVersionOnProduction": {
+      "type": "boolean",
+      "default": true
+    },
+    "versionScript": {
+      "type": "string",
+      "default": "scripts/write-build-version.js"
+    },
+    "baseHref": {
+      "type": "string"
+    },
+    "watch": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": true
+}

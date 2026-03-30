@@ -1,18 +1,21 @@
 {
   "name": "able-pro-angular-material",
-  "version": "1.0.1",
+  "version": "1.1.0",
+  "builders": "./tools/versioned-build/builders.json",
+  "exports": {
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "ng": "ng",
+    "postinstall": "node ./scripts/ensure-self-builder-link.js",
     "write-build-version": "node ./scripts/write-build-version.js",
     "bump-build-version": "node ./scripts/write-build-version.js --bump",
     "start": "ng serve",
     "prestart": "npm run write-build-version",
     "build-stage": "ng build --configuration production --base-href /angular/stage/",
-    "prebuild-stage": "npm run bump-build-version",
-    "build-prod": "ng build --configuration production --base-href /angular/default/",
-    "prebuild-prod": "npm run bump-build-version",
+    "build-prod": "ng build --configuration production --base-href /",
+    "build-prod-subpath": "ng build --configuration production --base-href /angular/default/",
     "build": "ng build",
-    "prebuild": "npm run bump-build-version",
     "watch": "ng build --watch --configuration development",
     "prewatch": "npm run write-build-version",
     "test": "ng test",

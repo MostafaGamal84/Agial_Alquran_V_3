@@ -15,8 +15,11 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "able-pro-angular-material:versioned-browser",
           "options": {
+            "delegateBuilder": "@angular-devkit/build-angular:browser",
+            "bumpVersionOnProduction": true,
+            "versionScript": "scripts/write-build-version.js",
             "allowedCommonJsDependencies": ["quill", "uploader", "moment", "apexcharts", "bezier-easing", "lodash", "quill-delta"],
             "outputPath": "dist",
             "index": "src/index.html",

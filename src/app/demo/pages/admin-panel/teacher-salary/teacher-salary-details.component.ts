@@ -169,6 +169,10 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
           return;
         }
         this.invoiceId = id;
+        const navigationInvoice = this.getNavigationInvoice();
+        if (navigationInvoice?.id === id) {
+          this.invoice = navigationInvoice;
+        }
         this.loadInvoiceDetails(id);
       })
     );
@@ -237,8 +241,7 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
 
   formatSalary(): string {
     const amount =
-      this.readNumber(this.invoice, ['salary']) ??
-      this.readNumber(this.invoice, ['salaryAmount', 'totalSalary']) ??
+      this.getInvoiceSalaryAmount() ??
       this.readNumber(this.detailSummary, ['totalSalary', 'salaryTotal', 'netSalary', 'takeHomePay']);
     return amount === null ? '—' : this.currencyFormatter.format(amount);
   }
@@ -299,9 +302,12 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
       ((monthlySummary as Record<string, unknown> | null)?.['Invoice'] as TeacherSalaryInvoice | null | undefined) ??
       null;
 
-    this.invoice = invoiceFromPayload;
+    this.invoice = this.mergeInvoiceData(this.invoice, invoiceFromPayload);
     this.detailSummary = monthlySummary;
-    this.detailSummaryMetrics = this.buildSummaryMetrics(this.detailSummary);
+    this.detailSummaryMetrics = this.buildDetailSummaryMetrics(
+      this.detailSummary,
+      this.invoice
+    );
     this.monthlyReportRecords = [];
     this.reportRecordsError = null;
   }
@@ -1147,10 +1153,35 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
 
   private formatPdfSalary(): string {
     const amount =
-      this.readNumber(this.invoice, ['salary']) ??
-      this.readNumber(this.invoice, ['salaryAmount', 'totalSalary']) ??
+      this.getInvoiceSalaryAmount() ??
       this.readNumber(this.detailSummary, ['totalSalary', 'salaryTotal', 'netSalary', 'takeHomePay']);
     return amount === null ? '-' : this.pdfCurrencyFormatter.format(amount);
+  }
+
+  private getInvoiceSalaryAmount(): number | null {
+    return this.readNumber(this.invoice, [
+      'salary',
+      'salaryAmount',
+      'totalSalary',
+      'salaryTotal',
+      'netSalary',
+      'takeHomePay',
+      'amount'
+    ]);
+  }
+
+  private getNavigationInvoice(): TeacherSalaryInvoice | null {
+    const navigationState =
+      this.router.getCurrentNavigation()?.extras.state ??
+      (typeof history !== 'undefined' ? history.state : null);
+
+    if (!navigationState || typeof navigationState !== 'object') {
+      return null;
+    }
+
+    const record = navigationState as Record<string, unknown>;
+    const candidate = record['invoice'];
+    return this.isTeacherSalaryInvoice(candidate) ? candidate : null;
   }
 
   private formatPdfPaidAt(): string {
@@ -1368,6 +1399,65 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
     return metrics;
   }
 
+  private buildDetailSummaryMetrics(
+    summary: TeacherMonthlySummary | null,
+    invoice: TeacherSalaryInvoice | null
+  ): SummaryMetric[] {
+    const metrics = this.buildSummaryMetrics(summary);
+    const invoiceSalary = this.readNumber(invoice, [
+      'salary',
+      'salaryAmount',
+      'totalSalary',
+      'salaryTotal',
+      'netSalary',
+      'takeHomePay',
+      'amount'
+    ]);
+
+    if (invoiceSalary === null) {
+      return metrics;
+    }
+
+    const salaryMetric: SummaryMetric = {
+      label: 'إجمالي الراتب',
+      value: invoiceSalary,
+      type: 'currency'
+    };
+    const salaryMetricIndex = metrics.findIndex(
+      (metric) => metric.label === salaryMetric.label
+    );
+
+    if (salaryMetricIndex >= 0) {
+      metrics[salaryMetricIndex] = salaryMetric;
+    } else {
+      metrics.push(salaryMetric);
+    }
+
+    return metrics;
+  }
+
+  private mergeInvoiceData(
+    fallback: TeacherSalaryInvoice | null,
+    updates: TeacherSalaryInvoice | null
+  ): TeacherSalaryInvoice | null {
+    if (!fallback) {
+      return updates ?? null;
+    }
+
+    if (!updates) {
+      return fallback;
+    }
+
+    const merged: Record<string, unknown> = { ...fallback };
+    for (const [key, value] of Object.entries(updates)) {
+      if (value !== null && value !== undefined && value !== '') {
+        merged[key] = value;
+      }
+    }
+
+    return merged as TeacherSalaryInvoice;
+  }
+
   private coerceNumber(value: unknown): number | null {
     if (typeof value === 'number' && !Number.isNaN(value)) {
       return value;
@@ -1431,5 +1521,14 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
       return normalized === 'true' || normalized === 'paid' || normalized === 'present';
     }
     return false;
+  }
+
+  private isTeacherSalaryInvoice(value: unknown): value is TeacherSalaryInvoice {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+      return false;
+    }
+
+    const invoice = value as TeacherSalaryInvoice;
+    return Number.isFinite(invoice.id ?? NaN);
   }
 }
