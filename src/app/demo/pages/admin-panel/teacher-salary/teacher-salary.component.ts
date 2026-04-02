@@ -302,7 +302,7 @@ export class TeacherSalaryComponent
     this.role === UserTypesEnum.Manager;
   readonly canManagePayments =
     this.role === UserTypesEnum.Admin || this.role === UserTypesEnum.Manager;
-  readonly canGenerateInvoices = this.role === UserTypesEnum.Admin || this.role === UserTypesEnum.Manager;
+  readonly canGenerateInvoices = this.role === UserTypesEnum.Admin || this.role === UserTypesEnum.Manager|| this.role === UserTypesEnum.BranchLeader;
   readonly isTeacher = this.role === UserTypesEnum.Teacher;
 
   ngOnInit(): void {
