@@ -42,7 +42,6 @@ import {
   ResidencyGroupFilter
 } from 'src/app/@theme/types/residency-group';
 import { matchesResidencyGroup } from 'src/app/@theme/utils/nationality.utils';
-import { formatDateTimeInCairo } from 'src/app/@theme/utils/cairo-date-time';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { Subject } from 'rxjs';
@@ -52,6 +51,15 @@ import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overl
 interface StudentOption {
   id: number;
   name: string;
+}
+
+interface RawDateParts {
+  year: number;
+  month: number;
+  day: number | null;
+  hour: number | null;
+  minute: number | null;
+  second: number | null;
 }
 
 @Component({
@@ -107,6 +115,27 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
   isLoadingStudents = false;
   isLoadingMore = false;
   isFilterPopupOpen = false;
+  private readonly arabicMonthNames = [
+    'يناير',
+    'فبراير',
+    'مارس',
+    'أبريل',
+    'مايو',
+    'يونيو',
+    'يوليو',
+    'أغسطس',
+    'سبتمبر',
+    'أكتوبر',
+    'نوفمبر',
+    'ديسمبر'
+  ] as const;
+  private readonly arabicIntegerFormatter = new Intl.NumberFormat('ar-EG', {
+    useGrouping: false
+  });
+  private readonly arabicTwoDigitFormatter = new Intl.NumberFormat('ar-EG', {
+    useGrouping: false,
+    minimumIntegerDigits: 2
+  });
   readonly sort = viewChild(MatSort);
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;
@@ -173,7 +202,7 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
         case 'status':
           return Number(item.attendStatueId ?? 0);
         case 'creationTime':
-          return item.creationTime ? new Date(item.creationTime).getTime() : 0;
+          return this.toSortableRawDateValue(item.creationTime);
         case 'minutes':
           return Number(item.minutes ?? 0);
         default:
@@ -535,8 +564,8 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
               : res.data.items;
 
             this.dataSource.data = mergedItems.sort((firstReport, secondReport) => {
-              const firstCreationTime = firstReport.creationTime ? new Date(firstReport.creationTime).getTime() : 0;
-              const secondCreationTime = secondReport.creationTime ? new Date(secondReport.creationTime).getTime() : 0;
+              const firstCreationTime = this.toSortableRawDateValue(firstReport.creationTime);
+              const secondCreationTime = this.toSortableRawDateValue(secondReport.creationTime);
               return secondCreationTime - firstCreationTime;
             });
             this.totalCount = Number(res.data.totalCount) || 0;
@@ -643,16 +672,15 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   formatDate(value?: string | Date | null): string {
-    if (!value) return '—';
-    return (
-      formatDateTimeInCairo(value, 'ar-EG', {
-        year: 'numeric',
-        month: 'short',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-      }) ?? '—'
-    );
+    if (!value) {
+      return '—';
+    }
+
+    if (value instanceof Date) {
+      return this.formatDateFromDate(value);
+    }
+
+    return this.formatDateFromRawString(value);
   }
 
   getVisualLabel(value: unknown): string {
@@ -735,6 +763,114 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
   private launchWhatsApp(message: string): void {
     const url = message ? `https://wa.me/?text=${encodeURIComponent(message)}` : 'https://wa.me/';
     window.open(url, '_blank');
+  }
+
+  private formatDateFromRawString(value: string): string {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return '—';
+    }
+
+    const parts = this.extractRawDateParts(trimmed);
+    if (!parts || parts.day === null) {
+      return this.sanitizeRawDateText(trimmed);
+    }
+
+    const datePart = this.formatArabicDateLabel(parts.year, parts.month, parts.day);
+    if (parts.hour === null || parts.minute === null) {
+      return datePart;
+    }
+
+    return `${datePart} - ${this.formatArabicTime12(parts.hour, parts.minute)}`;
+  }
+
+  private formatDateFromDate(value: Date): string {
+    if (Number.isNaN(value.getTime())) {
+      return '—';
+    }
+
+    const datePart = this.formatArabicDateLabel(
+      value.getFullYear(),
+      value.getMonth() + 1,
+      value.getDate()
+    );
+
+    return `${datePart} - ${this.formatArabicTime12(value.getHours(), value.getMinutes())}`;
+  }
+
+  private toSortableRawDateValue(value?: string | Date | null): number {
+    if (!value) {
+      return 0;
+    }
+
+    if (value instanceof Date) {
+      return Number.isNaN(value.getTime()) ? 0 : value.getTime();
+    }
+
+    const parts = this.extractRawDateParts(value);
+    if (!parts) {
+      return 0;
+    }
+
+    const day = parts.day ?? 1;
+    const hour = parts.hour ?? 0;
+    const minute = parts.minute ?? 0;
+    const second = parts.second ?? 0;
+
+    return (
+      (((((parts.year * 100) + parts.month) * 100 + day) * 100 + hour) * 100 + minute) * 100 +
+      second
+    );
+  }
+
+  private extractRawDateParts(value: string): RawDateParts | null {
+    const match = value.match(
+      /^(\d{4})[-/](\d{1,2})(?:[-/](\d{1,2}))?(?:[T\s](\d{1,2})(?::(\d{1,2}))?(?::(\d{1,2}))?(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2})?$/
+    );
+
+    if (!match) {
+      return null;
+    }
+
+    return {
+      year: Number(match[1]),
+      month: Number(match[2]),
+      day: match[3] ? Number(match[3]) : null,
+      hour: match[4] ? Number(match[4]) : null,
+      minute: match[5] ? Number(match[5]) : null,
+      second: match[6] ? Number(match[6]) : null
+    };
+  }
+
+  private sanitizeRawDateText(value: string): string {
+    return value
+      .trim()
+      .replace('T', ' ')
+      .replace(/\.\d+(?=(?:Z|[+-]\d{2}:\d{2})?$)/, '')
+      .replace(/(?:Z|[+-]\d{2}:\d{2})$/, '');
+  }
+
+  private formatArabicDateLabel(year: number, month: number, day: number): string {
+    const monthName = this.arabicMonthNames[month - 1] ?? this.padNumber(month);
+    return `${this.formatArabicInteger(day)} ${monthName} ${this.formatArabicInteger(year)}`;
+  }
+
+  private formatArabicTime12(hour: number, minute: number): string {
+    const meridiem = hour >= 12 ? 'م' : 'ص';
+    const normalizedHour = hour % 12 || 12;
+    return `${this.formatArabicInteger(normalizedHour)}:${this.formatArabicTwoDigits(minute)} ${meridiem}`;
+  }
+
+  private formatArabicInteger(value: number): string {
+    return this.arabicIntegerFormatter.format(value);
+  }
+
+  private formatArabicTwoDigits(value: number): string {
+    return this.arabicTwoDigitFormatter.format(value);
+  }
+
+  private padNumber(value: number): string {
+    return String(value).padStart(2, '0');
   }
 
   onEdit(report: CircleReportListDto): void {

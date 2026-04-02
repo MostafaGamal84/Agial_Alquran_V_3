@@ -192,7 +192,7 @@
             <th mat-header-cell *matHeaderCellDef mat-sort-header="paidAt">{{ 'Paid At' | translate }}</th>
             <td mat-cell *matCellDef="let row">
               @if (row.payedAt) {
-                {{ row.payedAt | date: 'medium' }}
+                {{ formatPaidAt(row.payedAt) }}
               } @else {
                 —
               }

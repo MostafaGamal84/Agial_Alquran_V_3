@@ -15,12 +15,20 @@ import { ToastService } from 'src/app/@theme/services/toast.service';
 import { AttendStatusEnum } from 'src/app/@theme/types/AttendStatusEnum';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
-import { formatDateTimeInCairo } from 'src/app/@theme/utils/cairo-date-time';
 
 type ReportDetails = Omit<CircleReportAddDto, 'creationTime'> &
   Partial<CircleReportListDto> & {
     creationTime?: Date | string | null;
   };
+
+interface RawDateParts {
+  year: number;
+  month: number;
+  day: number | null;
+  hour: number | null;
+  minute: number | null;
+  second: number | null;
+}
 
 @Component({
   selector: 'app-report-details',
@@ -40,6 +48,27 @@ export class ReportDetailsComponent implements OnInit {
   report?: ReportDetails;
   isLoading = true;
   isDeleting = false;
+  private readonly arabicMonthNames = [
+    'يناير',
+    'فبراير',
+    'مارس',
+    'أبريل',
+    'مايو',
+    'يونيو',
+    'يوليو',
+    'أغسطس',
+    'سبتمبر',
+    'أكتوبر',
+    'نوفمبر',
+    'ديسمبر'
+  ] as const;
+  private readonly arabicIntegerFormatter = new Intl.NumberFormat('ar-EG', {
+    useGrouping: false
+  });
+  private readonly arabicTwoDigitFormatter = new Intl.NumberFormat('ar-EG', {
+    useGrouping: false,
+    minimumIntegerDigits: 2
+  });
 
   readonly role = this.auth.getRole();
   readonly canEdit = this.role !== UserTypesEnum.Student;
@@ -120,15 +149,12 @@ export class ReportDetailsComponent implements OnInit {
     if (!value) {
       return '—';
     }
-    return (
-      formatDateTimeInCairo(value, 'ar-EG', {
-        year: 'numeric',
-        month: 'short',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-      }) ?? '—'
-    );
+
+    if (value instanceof Date) {
+      return this.formatDateFromDate(value);
+    }
+
+    return this.formatDateFromRawString(value);
   }
 
   displayValue(value: unknown): string {
@@ -185,6 +211,77 @@ export class ReportDetailsComponent implements OnInit {
       (report['teacher'] as string | undefined) ||
       (typeof report.teacherId === 'number' ? `Teacher #${report.teacherId}` : '—')
     );
+  }
+
+  private formatDateFromRawString(value: string): string {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return '—';
+    }
+
+    const parts = this.extractRawDateParts(trimmed);
+    if (!parts || parts.day === null) {
+      return this.sanitizeRawDateText(trimmed);
+    }
+
+    const datePart = this.formatArabicDateLabel(parts.year, parts.month, parts.day);
+    if (parts.hour === null || parts.minute === null) {
+      return datePart;
+    }
+
+    return `${datePart} - ${this.formatArabicTime12(parts.hour, parts.minute)}`;
+  }
+
+  private formatDateFromDate(value: Date): string {
+    if (Number.isNaN(value.getTime())) {
+      return '—';
+    }
+
+    const datePart = this.formatArabicDateLabel(
+      value.getFullYear(),
+      value.getMonth() + 1,
+      value.getDate()
+    );
+
+    return `${datePart} - ${this.formatArabicTime12(value.getHours(), value.getMinutes())}`;
+  }
+
+  private extractRawDateParts(value: string): RawDateParts | null {
+    const match = value.match(
+      /^(\d{4})[-/](\d{1,2})(?:[-/](\d{1,2}))?(?:[T\s](\d{1,2})(?::(\d{1,2}))?(?::(\d{1,2}))?(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2})?$/
+    );
+
+    if (!match) {
+      return null;
+    }
+
+    return {
+      year: Number(match[1]),
+      month: Number(match[2]),
+      day: match[3] ? Number(match[3]) : null,
+      hour: match[4] ? Number(match[4]) : null,
+      minute: match[5] ? Number(match[5]) : null,
+      second: match[6] ? Number(match[6]) : null
+    };
+  }
+
+  private sanitizeRawDateText(value: string): string {
+    return value
+      .trim()
+      .replace('T', ' ')
+      .replace(/\.\d+(?=(?:Z|[+-]\d{2}:\d{2})?$)/, '')
+      .replace(/(?:Z|[+-]\d{2}:\d{2})$/, '');
+  }
+
+  private formatArabicDateLabel(year: number, month: number, day: number): string {
+    const monthName = this.arabicMonthNames[month - 1] ?? String(month).padStart(2, '0');
+    return `${this.arabicIntegerFormatter.format(day)} ${monthName} ${this.arabicIntegerFormatter.format(year)}`;
+  }
+
+  private formatArabicTime12(hour: number, minute: number): string {
+    const meridiem = hour >= 12 ? 'م' : 'ص';
+    const normalizedHour = hour % 12 || 12;
+    return `${this.arabicIntegerFormatter.format(normalizedHour)}:${this.arabicTwoDigitFormatter.format(minute)} ${meridiem}`;
   }
 
   editReport(): void {

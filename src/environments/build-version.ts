@@ -1,5 +1,5 @@
 export const buildVersion = {
-  "version": "1.1.0",
-  "buildId": "1.1.0",
-  "buildTime": "2026-03-30T13:21:42.340Z"
+  "version": "1.1.6",
+  "buildId": "1.1.6",
+  "buildTime": "2026-04-02T11:24:52.236Z"
 } as const;

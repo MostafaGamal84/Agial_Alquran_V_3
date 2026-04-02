@@ -110,6 +110,15 @@ interface InvoicePrintArtifacts {
   receipt: ReceiptUpload;
 }
 
+interface RawDateParts {
+  year: number;
+  month: number;
+  day: number | null;
+  hour: number | null;
+  minute: number | null;
+  second: number | null;
+}
+
 class InvoicePrintContextError extends Error {
   constructor(message: string, readonly apiErrors?: ApiError[]) {
     super(message);
@@ -171,7 +180,8 @@ export class TeacherSalaryComponent
     .subtract(1, 'month')
     .utc(true);
   private readonly numberFormatter = new Intl.NumberFormat('ar-EG', {
-    maximumFractionDigits: 0
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
   });
   private readonly percentFormatter = new Intl.NumberFormat('ar-EG', {
     minimumFractionDigits: 0,
@@ -183,10 +193,20 @@ export class TeacherSalaryComponent
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   });
-  private readonly dateTimeFormatter = new Intl.DateTimeFormat('ar-EG', {
-    dateStyle: 'medium',
-    timeStyle: 'short'
-  });
+  private readonly arabicMonthNames = [
+    'يناير',
+    'فبراير',
+    'مارس',
+    'أبريل',
+    'مايو',
+    'يونيو',
+    'يوليو',
+    'أغسطس',
+    'سبتمبر',
+    'أكتوبر',
+    'نوفمبر',
+    'ديسمبر'
+  ] as const;
 
   readonly selectedMonth = new FormControl<Moment | null>(null);
   readonly selectedTeacher = new FormControl<number | null>(null);
@@ -220,7 +240,7 @@ export class TeacherSalaryComponent
         case 'status':
           return this.isInvoicePaid(item) ? 1 : 0;
         case 'paidAt':
-          return item.payedAt ? new Date(item.payedAt).getTime() : 0;
+          return this.toSortableRawDateValue(item.payedAt);
         default: {
           const value = item[property as keyof TeacherSalaryInvoice];
           if (value === null || value === undefined) {
@@ -633,7 +653,7 @@ export class TeacherSalaryComponent
       return this.formatMonthString(summaryMonth);
     }
     const selected = this.selectedMonth.value;
-    return selected ? this.formatMonthString(selected.toISOString()) : '—';
+    return selected ? this.formatMonthLabel(selected.year(), selected.month() + 1) : '—';
   }
 
   getSummaryEmptyStateKey(): string {
@@ -658,55 +678,40 @@ export class TeacherSalaryComponent
     }
   }
 
+  formatPaidAt(value: string | null | undefined): string {
+    return this.formatDateTime(value);
+  }
+
   private formatDateTime(value: unknown, locale?: string): string {
     if (value === null || value === undefined || value === '') {
       return '—';
     }
 
-    const date = this.parseDate(value);
-    if (!date) {
-      return typeof value === 'string' ? value : '—';
+    if (typeof value === 'string') {
+      return this.formatServerDateTime(value, locale);
     }
 
-    if (locale) {
-      try {
-        return new Intl.DateTimeFormat(locale, {
-          dateStyle: 'medium',
-          timeStyle: 'short'
-        }).format(date);
-      } catch {
-        return date.toLocaleString(locale);
-      }
+    if (value instanceof Date && !Number.isNaN(value.getTime())) {
+      return this.formatClientDateTime(value, locale);
     }
 
-    try {
-      return this.dateTimeFormatter.format(date);
-    } catch {
-      return date.toLocaleString();
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return this.formatClientDateTime(new Date(value), locale);
     }
+
+    return '—';
   }
 
-  /**
-   * Attempts to parse a value into a Date object.
-   * Returns null if parsing fails.
-   */
-  private parseDate(value: unknown): Date | null {
-    if (value instanceof Date && !Number.isNaN(value.getTime())) {
-      return value;
+  private formatClientDateTime(value: Date, locale?: string): string {
+    const targetLocale = locale ?? 'ar-EG';
+    try {
+      return new Intl.DateTimeFormat(targetLocale, {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+      }).format(value);
+    } catch {
+      return value.toLocaleString(targetLocale);
     }
-    if (typeof value === 'string' && value.trim().length > 0) {
-      const parsed = new Date(value);
-      if (!Number.isNaN(parsed.getTime())) {
-        return parsed;
-      }
-    }
-    if (typeof value === 'number' && Number.isFinite(value)) {
-      const parsed = new Date(value);
-      if (!Number.isNaN(parsed.getTime())) {
-        return parsed;
-      }
-    }
-    return null;
   }
 
   formatMetricValue(metric: SummaryMetric): string {
@@ -827,12 +832,8 @@ export class TeacherSalaryComponent
   }
 
   private toSortableMonthValue(month: string | undefined): number {
-    if (!month) {
-      return 0;
-    }
-
-    const parsed = moment(month);
-    return parsed.isValid() ? parsed.valueOf() : 0;
+    const parts = this.extractRawDateParts(month);
+    return parts ? parts.year * 100 + parts.month : 0;
   }
 
   private extractSalaryValue(invoice: TeacherSalaryInvoice): number {
@@ -1161,11 +1162,9 @@ export class TeacherSalaryComponent
 
   private resolveInvoiceTime(invoice: TeacherSalaryInvoice): number {
     const monthValue = this.extractMonthValue(invoice);
-    if (monthValue) {
-      const parsed = new Date(monthValue);
-      if (!Number.isNaN(parsed.getTime())) {
-        return parsed.getTime();
-      }
+    const monthSortValue = this.toSortableRawDateValue(monthValue);
+    if (monthSortValue !== 0) {
+      return monthSortValue;
     }
     const fallbackCandidates: unknown[] = [
       invoice.payedAt,
@@ -1176,14 +1175,14 @@ export class TeacherSalaryComponent
       (invoice as Record<string, unknown>)['modefiedAt']
     ];
     for (const candidate of fallbackCandidates) {
-      if (candidate instanceof Date) {
-        return candidate.getTime();
-      }
       if (typeof candidate === 'string') {
-        const parsed = new Date(candidate);
-        if (!Number.isNaN(parsed.getTime())) {
-          return parsed.getTime();
+        const sortValue = this.toSortableRawDateValue(candidate);
+        if (sortValue !== 0) {
+          return sortValue;
         }
+      }
+      if (candidate instanceof Date && !Number.isNaN(candidate.getTime())) {
+        return candidate.getTime();
       }
     }
     return invoice.id ?? 0;
@@ -1201,10 +1200,10 @@ export class TeacherSalaryComponent
     ];
     for (const candidate of candidates) {
       if (candidate instanceof Date) {
-        return candidate.toISOString();
+        return this.buildDateStringFromDate(candidate);
       }
       if (typeof candidate === 'string' && candidate.trim().length > 0) {
-        return candidate;
+        return candidate.trim();
       }
     }
     return undefined;
@@ -1214,14 +1213,11 @@ export class TeacherSalaryComponent
     if (!value) {
       return '—';
     }
-    const parsed = new Date(value);
-    if (!Number.isNaN(parsed.getTime())) {
-      return new Intl.DateTimeFormat('ar-EG', {
-        month: 'long',
-        year: 'numeric'
-      }).format(parsed);
+    const parts = this.extractRawDateParts(value);
+    if (!parts) {
+      return this.sanitizeRawDateText(value);
     }
-    return value;
+    return this.formatMonthLabel(parts.year, parts.month);
   }
 
   private getSalaryAmount(invoice: TeacherSalaryInvoice | null): number | null {
@@ -2232,7 +2228,10 @@ ${styles}
       return '—';
     }
     try {
-      return new Intl.NumberFormat('ar-EG', { maximumFractionDigits: 0 }).format(value);
+      return new Intl.NumberFormat('ar-EG', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2
+      }).format(value);
     } catch {
       return this.numberFormatter.format(value);
     }
@@ -2268,21 +2267,7 @@ ${styles}
   }
 
   private formatArabicMonthString(value?: string | null): string {
-    if (!value) {
-      return '—';
-    }
-    const parsed = new Date(value);
-    if (!Number.isNaN(parsed.getTime())) {
-      try {
-        return new Intl.DateTimeFormat('ar-EG', {
-          month: 'long',
-          year: 'numeric'
-        }).format(parsed);
-      } catch {
-        return this.formatMonthString(value);
-      }
-    }
-    return value;
+    return this.formatMonthString(value);
   }
 
   private resolveInvoiceMonthArabic(context: InvoicePrintContext): string {
@@ -2298,7 +2283,7 @@ ${styles}
       return this.formatArabicMonthString(summaryMonth);
     }
     const selected = this.selectedMonth.value;
-    return selected ? this.formatArabicMonthString(selected.toISOString()) : '—';
+    return selected ? this.formatMonthLabel(selected.year(), selected.month() + 1) : '—';
   }
 
   private presentInvoicePrint(html: string, fileName: string, blob?: Blob): void {
@@ -2381,6 +2366,110 @@ ${styles}
       }
     }
     return this.formatDateTime(new Date(), locale);
+  }
+
+  private formatServerDateTime(value: string, locale?: string): string {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return '—';
+    }
+
+    const parts = this.extractRawDateParts(trimmed);
+    if (!parts || parts.day === null) {
+      return this.sanitizeRawDateText(trimmed);
+    }
+
+    const datePart = this.formatDateLabel(parts.year, parts.month, parts.day);
+    if (parts.hour === null || parts.minute === null) {
+      return datePart;
+    }
+
+    const timePart =
+      locale && locale.toLowerCase().startsWith('en')
+        ? this.formatTime24(parts.hour, parts.minute)
+        : this.formatTime12(parts.hour, parts.minute);
+
+    return `${datePart} - ${timePart}`;
+  }
+
+  private toSortableRawDateValue(value: string | null | undefined): number {
+    const parts = this.extractRawDateParts(value);
+    if (!parts) {
+      return 0;
+    }
+
+    const day = parts.day ?? 1;
+    const hour = parts.hour ?? 0;
+    const minute = parts.minute ?? 0;
+    const second = parts.second ?? 0;
+
+    return (
+      (((((parts.year * 100) + parts.month) * 100 + day) * 100 + hour) * 100 + minute) * 100 +
+      second
+    );
+  }
+
+  private extractRawDateParts(value?: string | null): RawDateParts | null {
+    if (!value) {
+      return null;
+    }
+
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return null;
+    }
+
+    const match = trimmed.match(
+      /^(\d{4})[-/](\d{1,2})(?:[-/](\d{1,2}))?(?:[T\s](\d{1,2})(?::(\d{1,2}))?(?::(\d{1,2}))?(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2})?$/
+    );
+
+    if (!match) {
+      return null;
+    }
+
+    return {
+      year: Number(match[1]),
+      month: Number(match[2]),
+      day: match[3] ? Number(match[3]) : null,
+      hour: match[4] ? Number(match[4]) : null,
+      minute: match[5] ? Number(match[5]) : null,
+      second: match[6] ? Number(match[6]) : null
+    };
+  }
+
+  private sanitizeRawDateText(value: string): string {
+    return value
+      .trim()
+      .replace('T', ' ')
+      .replace(/\.\d+(?=(?:Z|[+-]\d{2}:\d{2})?$)/, '')
+      .replace(/(?:Z|[+-]\d{2}:\d{2})$/, '');
+  }
+
+  private formatMonthLabel(year: number, month: number): string {
+    const monthName = this.arabicMonthNames[month - 1];
+    return monthName ? `${monthName} ${year}` : `${this.padDatePart(month)}/${year}`;
+  }
+
+  private formatDateLabel(year: number, month: number, day: number): string {
+    return `${this.padDatePart(day)}/${this.padDatePart(month)}/${year}`;
+  }
+
+  private formatTime12(hour: number, minute: number): string {
+    const meridiem = hour >= 12 ? 'م' : 'ص';
+    const normalizedHour = hour % 12 || 12;
+    return `${normalizedHour}:${this.padDatePart(minute)} ${meridiem}`;
+  }
+
+  private formatTime24(hour: number, minute: number): string {
+    return `${this.padDatePart(hour)}:${this.padDatePart(minute)}`;
+  }
+
+  private padDatePart(value: number): string {
+    return String(value).padStart(2, '0');
+  }
+
+  private buildDateStringFromDate(value: Date): string {
+    return `${value.getFullYear()}-${this.padDatePart(value.getMonth() + 1)}-${this.padDatePart(value.getDate())}`;
   }
 
   private resolveInvoiceNumber(

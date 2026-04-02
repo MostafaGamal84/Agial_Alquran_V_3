@@ -143,7 +143,7 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
     if (changes['search'] && !changes['search'].firstChange) {
       this.searchTerm = this.search;
       this.dataSource.filter = this.searchTerm.trim().toLowerCase();
-      this.countChange.emit(this.dataSource.filteredData.length);
+      this.emitCount();
     }
   }
 
@@ -151,7 +151,7 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
   applyFilter(value: string) {
     this.searchTerm = value;
     this.dataSource.filter = this.searchTerm.trim().toLowerCase();
-    this.countChange.emit(this.dataSource.filteredData.length);
+    this.emitCount();
   }
 
   openPaymentDetails(id: number) {
@@ -295,9 +295,9 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
           this.loadedSourceCount = this.loadedItems.length;
           this.dataSource.data = this.groupInvoicesByStudent(this.loadedItems);
           this.syncExpandedRow();
-          this.totalCount = this.dataSource.data.length;
+          this.totalCount = this.sourceTotalCount;
           this.dataSource.filter = this.searchTerm.trim().toLowerCase();
-          this.countChange.emit(this.dataSource.filteredData.length);
+          this.emitCount();
           this.isLoading = false;
           this.isLoadingMore = false;
         },
@@ -309,6 +309,7 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
           this.loadedSourceCount = 0;
           this.sourceTotalCount = 0;
           this.totalCount = 0;
+          this.emitCount();
           this.isLoading = false;
           this.isLoadingMore = false;
         }
@@ -362,9 +363,9 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
           this.loadedSourceCount = this.loadedItems.length;
           this.dataSource.data = [...this.loadedItems];
           this.syncExpandedRow();
-          this.totalCount = this.dataSource.data.length;
+          this.totalCount = this.sourceTotalCount;
           this.dataSource.filter = this.searchTerm.trim().toLowerCase();
-          this.countChange.emit(this.dataSource.filteredData.length);
+          this.emitCount();
           this.isLoading = false;
           this.isLoadingMore = false;
         },
@@ -376,6 +377,7 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
           this.loadedSourceCount = 0;
           this.sourceTotalCount = 0;
           this.totalCount = 0;
+          this.emitCount();
           this.isLoading = false;
           this.isLoadingMore = false;
         }
@@ -442,6 +444,10 @@ export class InvoiceListTableComponent implements AfterViewInit, OnInit, OnChang
 
   hasMoreResults(): boolean {
     return this.loadedSourceCount < this.sourceTotalCount;
+  }
+
+  private emitCount(): void {
+    this.countChange.emit(this.totalCount);
   }
 
   getRowIndex(index: number): number {

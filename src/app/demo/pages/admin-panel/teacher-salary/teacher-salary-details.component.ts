@@ -44,6 +44,15 @@ interface PdfColumn<T> {
   getValue: (row: T) => string;
 }
 
+interface RawDateParts {
+  year: number;
+  month: number;
+  day: number | null;
+  hour: number | null;
+  minute: number | null;
+  second: number | null;
+}
+
 @Component({
   selector: 'app-teacher-salary-details',
   standalone: true,
@@ -89,7 +98,7 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
     student: '\u0627\u0644\u0637\u0627\u0644\u0628',
     minutes: '\u0627\u0644\u062f\u0642\u0627\u0626\u0642',
     attendStatus: '\u062d\u0627\u0644\u0629 \u0627\u0644\u062d\u0636\u0648\u0631',
-    recordDate: '\u062a\u0627\u0631\u064a\u062e \u0627\u0644\u0633\u062c\u0644',
+    recordDate: '\u062a\u0627\u0631\u064a\u062e \u0627\u0644\u062a\u0642\u0631\u064a\u0631',
     page: '\u0635\u0641\u062d\u0629',
     of: '\u0645\u0646',
     unavailable: '\u063a\u064a\u0631 \u0645\u062a\u0627\u062d'
@@ -112,7 +121,8 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
   readonly reportColumns = ['index', 'studentName', 'minutes', 'salary', 'attendStatusId', 'recordCreatedAt'];
 
   private readonly numberFormatter = new Intl.NumberFormat('ar-EG', {
-    maximumFractionDigits: 0
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
   });
   private readonly percentFormatter = new Intl.NumberFormat('ar-EG', {
     minimumFractionDigits: 0,
@@ -125,7 +135,8 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
     maximumFractionDigits: 2
   });
   private readonly pdfNumberFormatter = new Intl.NumberFormat('en-US', {
-    maximumFractionDigits: 0
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
   });
   private readonly pdfPercentFormatter = new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 0,
@@ -137,27 +148,20 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   });
-  private readonly pdfDateLocale = 'ar-EG-u-nu-latn';
-  private readonly pdfCompactDateFormatter = new Intl.DateTimeFormat('en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  });
-  private readonly pdfCompactTimeFormatter = new Intl.DateTimeFormat('en-GB', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  });
-  private readonly displayDateFormatter = new Intl.DateTimeFormat('en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  });
-  private readonly displayTimeFormatter = new Intl.DateTimeFormat('ar-EG-u-nu-latn', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true
-  });
+  private readonly arabicMonthNames = [
+    'يناير',
+    'فبراير',
+    'مارس',
+    'أبريل',
+    'مايو',
+    'يونيو',
+    'يوليو',
+    'أغسطس',
+    'سبتمبر',
+    'أكتوبر',
+    'نوفمبر',
+    'ديسمبر'
+  ] as const;
 
   ngOnInit(): void {
     this.subscriptions.add(
@@ -225,14 +229,7 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
     const month =
       this.readString(this.invoice, ['month']) ??
       this.readString(this.detailSummary, ['month']);
-    if (!month) {
-      return '—';
-    }
-    const parsed = new Date(month);
-    if (Number.isNaN(parsed.getTime())) {
-      return month;
-    }
-    return new Intl.DateTimeFormat(this.pdfDateLocale, { month: 'long', year: 'numeric' }).format(parsed);
+    return this.formatMonthLabel(month, '—');
   }
 
   getTeacherName(): string {
@@ -248,14 +245,7 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
 
   formatPaidAt(): string {
     const value = this.readString(this.invoice, ['payedAt']);
-    if (!value) {
-      return '—';
-    }
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) {
-      return value;
-    }
-    return this.formatDisplayDateTime(parsed);
+    return this.formatDisplayServerDateTime(value, '—');
   }
 
   getStatusLabel(): string {
@@ -332,7 +322,12 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
             return;
           }
 
-          const records = [...(response.data ?? [])].sort((a, b) => {
+          const records = [...(response.data ?? [])]
+            .map((record) => ({
+              ...record,
+              recordCreatedAt: record.recordCreatedAt ?? record.circleReportCreatedAt ?? null
+            }))
+            .sort((a, b) => {
             const aTime = this.parseDateToTime(a.recordCreatedAt);
             const bTime = this.parseDateToTime(b.recordCreatedAt);
             return bTime - aTime;
@@ -914,7 +909,7 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
         header: this.pdfLabels.minutes,
         width: 20,
         align: 'center',
-        getValue: (row) => this.formatPdfInteger(row.minutes)
+        getValue: (row) => this.formatPdfNumber(row.minutes)
       },
       {
         header: this.pdfLabels.salary,
@@ -1104,6 +1099,14 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
     return this.numberFormatter.format(value);
   }
 
+  formatNumber(value: number | null | undefined): string {
+    if (typeof value !== 'number' || Number.isNaN(value)) {
+      return '—';
+    }
+
+    return this.numberFormatter.format(value);
+  }
+
   private formatPdfMetricValue(metric: SummaryMetric): string {
     if (metric.value === null || metric.value === undefined || metric.value === '') {
       return '-';
@@ -1139,16 +1142,7 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
     const month =
       this.readString(this.invoice, ['month']) ??
       this.readString(this.detailSummary, ['month']);
-    if (!month) {
-      return '-';
-    }
-
-    const parsed = new Date(month);
-    if (Number.isNaN(parsed.getTime())) {
-      return month;
-    }
-
-    return new Intl.DateTimeFormat(this.pdfDateLocale, { month: 'long', year: 'numeric' }).format(parsed);
+    return this.formatMonthLabel(month, '-');
   }
 
   private formatPdfSalary(): string {
@@ -1186,19 +1180,18 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
 
   private formatPdfPaidAt(): string {
     const value = this.readString(this.invoice, ['payedAt']);
-    if (!value) {
-      return '-';
-    }
-
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) {
-      return value;
-    }
-
-    return this.formatPdfDateTime(parsed);
+    return this.formatPdfServerDateTime(value, '-');
   }
 
   private formatPdfInteger(value: number | null | undefined): string {
+    if (typeof value !== 'number' || Number.isNaN(value)) {
+      return '-';
+    }
+
+    return this.pdfNumberFormatter.format(value);
+  }
+
+  private formatPdfNumber(value: number | null | undefined): string {
     if (typeof value !== 'number' || Number.isNaN(value)) {
       return '-';
     }
@@ -1273,12 +1266,7 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
       return 'بدون-شهر';
     }
 
-    const parsed = new Date(rawMonth);
-    if (Number.isNaN(parsed.getTime())) {
-      return rawMonth;
-    }
-
-    return new Intl.DateTimeFormat('ar-EG', { month: 'long', year: 'numeric' }).format(parsed);
+    return this.formatMonthLabel(rawMonth, rawMonth);
   }
 
   private sanitizeFileName(fileName: string): string {
@@ -1313,20 +1301,7 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
   }
 
   formatRecordDate(value: string | null | undefined): string {
-    if (!value) {
-      return '—';
-    }
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) {
-      return value;
-    }
-    return this.formatDisplayDateTime(parsed);
-  }
-
-  private formatDisplayDateTime(value: Date): string {
-    const datePart = this.displayDateFormatter.format(value);
-    const timePart = this.displayTimeFormatter.format(value);
-    return `${datePart} - ${timePart}`;
+    return this.formatDisplayServerDateTime(value, '—');
   }
 
   private formatPdfRecordSalary(value: number | null | undefined): string {
@@ -1338,30 +1313,128 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
   }
 
   private formatPdfRecordDate(value: string | null | undefined): string {
-    if (!value) {
-      return '-';
-    }
-
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) {
-      return value;
-    }
-
-    return this.formatPdfDateTime(parsed);
-  }
-
-  private formatPdfDateTime(value: Date): string {
-    const datePart = this.pdfCompactDateFormatter.format(value);
-    const timePart = this.pdfCompactTimeFormatter.format(value);
-    return `${datePart} - ${timePart}`;
+    return this.formatPdfServerDateTime(value, '-');
   }
 
   private parseDateToTime(value: string | null | undefined): number {
-    if (!value) {
+    const parts = this.extractRawDateParts(value);
+    if (!parts) {
       return 0;
     }
-    const parsed = new Date(value);
-    return Number.isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+
+    const day = parts.day ?? 1;
+    const hour = parts.hour ?? 0;
+    const minute = parts.minute ?? 0;
+    const second = parts.second ?? 0;
+
+    return (
+      (((((parts.year * 100) + parts.month) * 100 + day) * 100 + hour) * 100 + minute) * 100 +
+      second
+    );
+  }
+
+  private formatDisplayServerDateTime(value: string | null | undefined, placeholder: string): string {
+    if (!value) {
+      return placeholder;
+    }
+
+    const parts = this.extractRawDateParts(value);
+    if (!parts || parts.day === null) {
+      return this.sanitizeRawDateText(value);
+    }
+
+    const datePart = this.formatDateLabel(parts.year, parts.month, parts.day);
+    if (parts.hour === null || parts.minute === null) {
+      return datePart;
+    }
+
+    return `${datePart} - ${this.formatTime12(parts.hour, parts.minute)}`;
+  }
+
+  private formatPdfServerDateTime(value: string | null | undefined, placeholder: string): string {
+    if (!value) {
+      return placeholder;
+    }
+
+    const parts = this.extractRawDateParts(value);
+    if (!parts || parts.day === null) {
+      return this.sanitizeRawDateText(value);
+    }
+
+    const datePart = this.formatDateLabel(parts.year, parts.month, parts.day);
+    if (parts.hour === null || parts.minute === null) {
+      return datePart;
+    }
+
+    return `${datePart} - ${this.formatTime24(parts.hour, parts.minute)}`;
+  }
+
+  private formatMonthLabel(value: string | null | undefined, placeholder: string): string {
+    if (!value) {
+      return placeholder;
+    }
+
+    const parts = this.extractRawDateParts(value);
+    if (!parts) {
+      return this.sanitizeRawDateText(value);
+    }
+
+    const monthName = this.arabicMonthNames[parts.month - 1];
+    return monthName ? `${monthName} ${parts.year}` : `${this.padDatePart(parts.month)}/${parts.year}`;
+  }
+
+  private extractRawDateParts(value?: string | null): RawDateParts | null {
+    if (!value) {
+      return null;
+    }
+
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return null;
+    }
+
+    const match = trimmed.match(
+      /^(\d{4})[-/](\d{1,2})(?:[-/](\d{1,2}))?(?:[T\s](\d{1,2})(?::(\d{1,2}))?(?::(\d{1,2}))?(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2})?$/
+    );
+
+    if (!match) {
+      return null;
+    }
+
+    return {
+      year: Number(match[1]),
+      month: Number(match[2]),
+      day: match[3] ? Number(match[3]) : null,
+      hour: match[4] ? Number(match[4]) : null,
+      minute: match[5] ? Number(match[5]) : null,
+      second: match[6] ? Number(match[6]) : null
+    };
+  }
+
+  private sanitizeRawDateText(value: string): string {
+    return value
+      .trim()
+      .replace('T', ' ')
+      .replace(/\.\d+(?=(?:Z|[+-]\d{2}:\d{2})?$)/, '')
+      .replace(/(?:Z|[+-]\d{2}:\d{2})$/, '');
+  }
+
+  private formatDateLabel(year: number, month: number, day: number): string {
+    return `${this.padDatePart(day)}/${this.padDatePart(month)}/${year}`;
+  }
+
+  private formatTime12(hour: number, minute: number): string {
+    const meridiem = hour >= 12 ? 'م' : 'ص';
+    const normalizedHour = hour % 12 || 12;
+    return `${normalizedHour}:${this.padDatePart(minute)} ${meridiem}`;
+  }
+
+  private formatTime24(hour: number, minute: number): string {
+    return `${this.padDatePart(hour)}:${this.padDatePart(minute)}`;
+  }
+
+  private padDatePart(value: number): string {
+    return String(value).padStart(2, '0');
   }
 
   private buildSummaryMetrics(summary: TeacherMonthlySummary | null): SummaryMetric[] {
