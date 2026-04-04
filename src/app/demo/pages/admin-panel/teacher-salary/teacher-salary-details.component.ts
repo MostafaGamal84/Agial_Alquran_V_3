@@ -1477,6 +1477,13 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
     invoice: TeacherSalaryInvoice | null
   ): SummaryMetric[] {
     const metrics = this.buildSummaryMetrics(summary);
+    const summarySalary = this.readNumber(summary, [
+      'totalSalary',
+      'salaryTotal',
+      'salary',
+      'netSalary',
+      'takeHomePay'
+    ]);
     const invoiceSalary = this.readNumber(invoice, [
       'salary',
       'salaryAmount',
@@ -1487,13 +1494,15 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
       'amount'
     ]);
 
-    if (invoiceSalary === null) {
+    const effectiveSalary = summarySalary ?? invoiceSalary;
+
+    if (effectiveSalary === null) {
       return metrics;
     }
 
     const salaryMetric: SummaryMetric = {
       label: 'إجمالي الراتب',
-      value: invoiceSalary,
+      value: effectiveSalary,
       type: 'currency'
     };
     const salaryMetricIndex = metrics.findIndex(

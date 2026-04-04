@@ -210,6 +210,7 @@ export class TeacherSalaryComponent
 
   readonly selectedMonth = new FormControl<Moment | null>(null);
   readonly selectedTeacher = new FormControl<number | null>(null);
+  readonly selectedPaymentStatus = new FormControl<'all' | 'paid' | 'unpaid'>('all');
   readonly teacherSearchControl = new FormControl<string>('');
 
   readonly dataSource = new MatTableDataSource<TeacherSalaryInvoice>([]);
@@ -258,6 +259,7 @@ export class TeacherSalaryComponent
     this.setupIntersectionObserver();
   }
   private allInvoices: TeacherSalaryInvoice[] = [];
+  private filteredInvoices: TeacherSalaryInvoice[] = [];
 
   teachers: LookUpUserDto[] = [];
   teacherLoading = false;
@@ -320,6 +322,15 @@ export class TeacherSalaryComponent
           this.resetPaginator();
           this.loadInvoices();
           this.loadMonthlySummary();
+        })
+    );
+
+    this.subscriptions.add(
+      this.selectedPaymentStatus.valueChanges
+        .pipe(distinctUntilChanged())
+        .subscribe(() => {
+          this.resetPaginator();
+          this.applyInvoices(this.allInvoices, true);
         })
     );
 
@@ -619,9 +630,21 @@ export class TeacherSalaryComponent
         next: (response) => {
           if (response.isSuccess) {
             this.generationResult = response.data ?? null;
-            const created = this.generationResult?.createdCount ?? 0;
-            const updated = this.generationResult?.updatedCount ?? 0;
-            const skipped = this.generationResult?.skippedCount ?? 0;
+            const created = this.readGenerationNumber([
+              'createdCount',
+              'createdInvoices',
+              'CreatedInvoices'
+            ]);
+            const updated = this.readGenerationNumber([
+              'updatedCount',
+              'updatedInvoices',
+              'UpdatedInvoices'
+            ]);
+            const skipped = this.readGenerationNumber([
+              'skippedCount',
+              'skippedZeroValueInvoices',
+              'SkippedZeroValueInvoices'
+            ]);
             this.toastService.success(
               `اكتمل التوليد. تم إنشاء ${created} وتحديث ${updated} وتخطي ${skipped}.`
             );
@@ -638,6 +661,21 @@ export class TeacherSalaryComponent
           this.toastService.error('فشل إنشاء فواتير الشهر.');
         }
       });
+  }
+
+  private readGenerationNumber(keys: string[]): number {
+    if (!this.generationResult) {
+      return 0;
+    }
+
+    for (const key of keys) {
+      const value = this.generationResult[key];
+      if (typeof value === 'number' && Number.isFinite(value)) {
+        return value;
+      }
+    }
+
+    return 0;
   }
 
   formatMonth(invoice: TeacherSalaryInvoice | null): string {
@@ -1094,19 +1132,41 @@ export class TeacherSalaryComponent
     return Number.isFinite(parsedUserId) && parsedUserId > 0 ? parsedUserId : null;
   }
 
-  private applyInvoices(invoices: TeacherSalaryInvoice[]): void {
-    const sorted = [...invoices].sort((a, b) => this.compareByMonthDesc(a, b));
-    this.allInvoices = sorted;
-    this.totalCount = sorted.length;
-    this.updatePagedInvoices();
+  private applyInvoices(invoices: TeacherSalaryInvoice[], preserveSource = false): void {
+    const source = preserveSource ? invoices : [...invoices].sort((a, b) => this.compareByMonthDesc(a, b));
+    if (!preserveSource) {
+      this.allInvoices = source;
+    }
+    const filtered = source.filter((invoice) => this.matchesPaymentStatusFilter(invoice));
+    this.totalCount = filtered.length;
+    const sorted = preserveSource ? filtered : [...filtered];
+    if (preserveSource) {
+      sorted.sort((a, b) => this.compareByMonthDesc(a, b));
+    }
     if (this.selectedInvoice) {
-      const updated = sorted.find((invoice) => invoice.id === this.selectedInvoice?.id);
+      const updated = filtered.find((invoice) => invoice.id === this.selectedInvoice?.id);
       if (updated) {
         this.selectedInvoice = updated;
       } else {
         this.closeDetails();
       }
     }
+    this.allInvoices = preserveSource ? invoices : source;
+    this.filteredInvoices = sorted;
+    this.updatePagedInvoices();
+  }
+
+  private matchesPaymentStatusFilter(invoice: TeacherSalaryInvoice): boolean {
+    const status = this.selectedPaymentStatus.value ?? 'all';
+    if (status === 'paid') {
+      return this.isInvoicePaid(invoice);
+    }
+
+    if (status === 'unpaid') {
+      return !this.isInvoicePaid(invoice);
+    }
+
+    return true;
   }
 
   private setupIntersectionObserver(): void {
@@ -1140,7 +1200,7 @@ export class TeacherSalaryComponent
   private updatePagedInvoices(append = false): void {
     const start = this.pageIndex * this.pageSize;
     const end = start + this.pageSize;
-    const nextRows = this.allInvoices.slice(start, end);
+    const nextRows = this.filteredInvoices.slice(start, end);
     this.dataSource.data = append ? [...this.dataSource.data, ...nextRows] : nextRows;
   }
 

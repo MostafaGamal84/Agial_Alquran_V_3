@@ -110,6 +110,20 @@ export interface GenerateMonthlyResponse {
   createdCount?: number;
   updatedCount?: number;
   skippedCount?: number;
+  createdInvoices?: number;
+  updatedInvoices?: number;
+  skippedZeroValueInvoices?: number;
+  skippedPaidInvoices?: number;
+  totalTeachers?: number;
+  totalMinutes?: number;
+  totalSalary?: number;
+  CreatedInvoices?: number;
+  UpdatedInvoices?: number;
+  SkippedZeroValueInvoices?: number;
+  SkippedPaidInvoices?: number;
+  TotalTeachers?: number;
+  TotalMinutes?: number;
+  TotalSalary?: number;
   [key: string]: unknown;
 }
 

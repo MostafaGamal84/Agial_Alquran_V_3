@@ -1,5 +1,5 @@
 .sidebar-scroll-content {
-  min-height: calc(100vh - 88px);
+  min-height: calc(100dvh - 88px);
   display: flex;
   flex-direction: column;
 }
@@ -81,7 +81,16 @@
 }
 
 @media (max-width: 576px) {
+  .sidebar-scroll-content {
+    min-height: auto;
+  }
+
+  .navbar-content {
+    padding-bottom: 20px;
+  }
+
   .sidebar-footer {
+    position: static;
     padding: 10px 10px 12px;
   }
 
