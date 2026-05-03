@@ -34,7 +34,7 @@ const routes: Routes = [
         path: 'edit/:id',
         loadComponent: () => import('./courses-update/courses-update.component').then((c) => c.CoursesUpdateComponent),
         data: {
-          roles: [UserTypesEnum.Admin, UserTypesEnum.Manager, UserTypesEnum.BranchLeader ]
+          roles: [UserTypesEnum.Admin, UserTypesEnum.Manager, UserTypesEnum.BranchLeader, UserTypesEnum.Teacher]
         }
       }
     ]

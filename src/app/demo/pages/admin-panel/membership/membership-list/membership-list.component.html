@@ -59,6 +59,13 @@
                 {{ 'عرض الطلاب بباقة منتهية (الدقائق ≤ 0) فقط' | translate }}
               </mat-checkbox>
             </div>
+
+            <app-status-legend
+              title="توضيح الألوان والفلاتر"
+              description="لون اسم الطالب يوضح حالة الباقة مباشرة، ويمكنك استخدام الفلاتر نفسها لعرض هذه الحالات فقط."
+              footer="يمكن تشغيل الفلترين معًا، وعندها ستظهر الحالات المطابقة لأي منهما."
+              [items]="statusLegendItems"
+            />
           </div>
           <div class="table-responsive">
             <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
@@ -165,7 +172,7 @@
                         >
                           <a
                             href="javascript:"
-                            class="avatar avatar-xs text-muted"
+                          class="avatar avatar-xs text-muted"
                             (click)="openSubscribeDialog(element)"
                           >
                             <i class="ti ti-edit f-20"></i>

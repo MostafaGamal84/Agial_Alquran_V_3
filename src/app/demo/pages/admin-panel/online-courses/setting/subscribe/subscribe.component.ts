@@ -5,13 +5,21 @@ import { MatSort } from '@angular/material/sort';
 import { MatDialog, MatDialogActions, MatDialogClose } from '@angular/material/dialog';
 import { MatButton } from '@angular/material/button';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { finalize } from 'rxjs/operators';
+import { forkJoin, of } from 'rxjs';
+import { catchError, finalize, map } from 'rxjs/operators';
 
 import { SharedModule } from 'src/app/demo/shared/shared.module';
-import { SubscribeService, SubscribeDto } from 'src/app/@theme/services/subscribe.service';
+import {
+  SubscribeService,
+  SubscribeDto,
+  SubscribeTypeCategory,
+  getSubscribeTypeCategoryTranslationKey
+} from 'src/app/@theme/services/subscribe.service';
 import { FilteredResultRequestDto } from 'src/app/@theme/services/lookup.service';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
+import { StudentSubscribeService } from 'src/app/@theme/services/student-subscribe.service';
+import { SubscribeStudentsDialogComponent } from './subscribe-students-dialog.component';
 
 @Component({
   selector: 'app-subscribe',
@@ -21,11 +29,12 @@ import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overl
 })
 export class SubscribeComponent implements OnInit, OnDestroy {
   private service = inject(SubscribeService);
+  private studentSubscribeService = inject(StudentSubscribeService);
   private dialog = inject(MatDialog);
   private toast = inject(ToastService);
   private translate = inject(TranslateService);
 
-  displayedColumns: string[] = ['name', 'minutes','price', 'type', 'action'];
+  displayedColumns: string[] = ['name', 'minutes', 'price', 'type', 'students', 'action'];
   dataSource = new MatTableDataSource<SubscribeDto>();
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
@@ -33,6 +42,8 @@ export class SubscribeComponent implements OnInit, OnDestroy {
   pageSize = 10;
   isLoading = false;
   isLoadingMore = false;
+  readonly studentCounts = new Map<number, number>();
+  private readonly loadingStudentCounts = new Set<number>();
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;
 
@@ -88,6 +99,7 @@ export class SubscribeComponent implements OnInit, OnDestroy {
               ? [...this.dataSource.data, ...res.data.items]
               : res.data.items;
             this.totalCount = res.data.totalCount;
+            this.loadStudentCounts(res.data.items);
           } else {
             if (!append) {
               this.dataSource.data = [];
@@ -148,6 +160,29 @@ export class SubscribeComponent implements OnInit, OnDestroy {
     return this.dataSource.data.length < this.totalCount;
   }
 
+  getStudentCount(subscribeId: number): number | null {
+    return this.studentCounts.get(subscribeId) ?? null;
+  }
+
+  isStudentCountLoading(subscribeId: number): boolean {
+    return this.loadingStudentCounts.has(subscribeId);
+  }
+
+  resolveCategoryLabel(group: SubscribeTypeCategory | null | undefined): string {
+    return this.translate.instant(getSubscribeTypeCategoryTranslationKey(group));
+  }
+
+  openStudentsDialog(subscribe: SubscribeDto): void {
+    this.dialog.open(SubscribeStudentsDialogComponent, {
+      width: '1100px',
+      maxWidth: '95vw',
+      data: {
+        subscribe,
+        initialCount: this.getStudentCount(subscribe.id) ?? 0
+      }
+    });
+  }
+
   delete(id: number) {
     const dialogRef = this.dialog.open(DeleteConfirmDialogComponent);
     dialogRef.afterClosed().subscribe((result) => {
@@ -160,6 +195,43 @@ export class SubscribeComponent implements OnInit, OnDestroy {
           error: () => this.toast.error(this.translate.instant('Error deleting subscribe'))
         });
       }
+    });
+  }
+
+  private loadStudentCounts(subscribes: SubscribeDto[]): void {
+    const subscribesToLoad = subscribes.filter(
+      (subscribe) =>
+        !!subscribe.id &&
+        !this.studentCounts.has(subscribe.id) &&
+        !this.loadingStudentCounts.has(subscribe.id)
+    );
+
+    if (subscribesToLoad.length === 0) {
+      return;
+    }
+
+    subscribesToLoad.forEach((subscribe) => this.loadingStudentCounts.add(subscribe.id));
+
+    forkJoin(
+      subscribesToLoad.map((subscribe) =>
+        this.studentSubscribeService.getActiveStudentsBySubscribe({ skipCount: 0, maxResultCount: 1 }, subscribe.id).pipe(
+          map((response) => ({
+            subscribeId: subscribe.id,
+            count: response.isSuccess ? response.data?.totalCount ?? 0 : 0
+          })),
+          catchError(() =>
+            of({
+              subscribeId: subscribe.id,
+              count: 0
+            })
+          )
+        )
+      )
+    ).subscribe((results) => {
+      results.forEach((result) => {
+        this.studentCounts.set(result.subscribeId, result.count);
+        this.loadingStudentCounts.delete(result.subscribeId);
+      });
     });
   }
 }

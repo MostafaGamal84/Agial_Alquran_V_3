@@ -9,17 +9,23 @@ const routes: Routes = [
       {
         path: 'list',
         loadComponent: () => import('./subscribe.component').then(c => c.SubscribeComponent),
-        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager, UserTypesEnum.BranchLeader, UserTypesEnum.Student, UserTypesEnum.Teacher] }
+        data: {
+          roles: [UserTypesEnum.Admin, UserTypesEnum.Manager, UserTypesEnum.BranchLeader, UserTypesEnum.Student, UserTypesEnum.Teacher]
+        }
       },
       {
         path: 'add',
         loadComponent: () => import('./subscribe-form/subscribe-form.component').then(c => c.SubscribeFormComponent),
-        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager, UserTypesEnum.BranchLeader, UserTypesEnum.Student, UserTypesEnum.Teacher] }
+        data: {
+          roles: [UserTypesEnum.Admin, UserTypesEnum.Manager, UserTypesEnum.BranchLeader, UserTypesEnum.Student, UserTypesEnum.Teacher]
+        }
       },
       {
         path: 'edit/:id',
         loadComponent: () => import('./subscribe-form/subscribe-form.component').then(c => c.SubscribeFormComponent),
-        data: { roles: [UserTypesEnum.Admin, UserTypesEnum.Manager, UserTypesEnum.BranchLeader, UserTypesEnum.Student, UserTypesEnum.Teacher] }
+        data: {
+          roles: [UserTypesEnum.Admin, UserTypesEnum.Manager, UserTypesEnum.BranchLeader, UserTypesEnum.Student, UserTypesEnum.Teacher]
+        }
       },
       { path: '', pathMatch: 'full', redirectTo: 'list' }
     ]

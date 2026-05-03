@@ -1,0 +1,14 @@
+.subscribe-name-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.subscribe-name {
+  font-weight: 600;
+}
+
+.subscribe-category {
+  color: var(--bs-gray-600, #6c757d);
+  font-size: 0.82rem;
+}

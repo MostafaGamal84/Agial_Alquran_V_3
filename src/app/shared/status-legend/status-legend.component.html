@@ -1,0 +1,28 @@
+@if (items.length) {
+  <section class="status-legend" aria-label="دليل الألوان">
+    <div class="status-legend__header">
+      @if (title) {
+        <div class="status-legend__title">{{ title }}</div>
+      }
+      @if (description) {
+        <p class="status-legend__description">{{ description }}</p>
+      }
+    </div>
+
+    <div class="status-legend__items">
+      @for (item of items; track item.label) {
+        <div class="status-legend__item">
+          <span class="status-legend__swatch" [style.--legend-swatch]="item.color"></span>
+          <div class="status-legend__content">
+            <div class="status-legend__label">{{ item.label }}</div>
+            <div class="status-legend__text">{{ item.description }}</div>
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (footer) {
+      <div class="status-legend__footer">{{ footer }}</div>
+    }
+  </section>
+}

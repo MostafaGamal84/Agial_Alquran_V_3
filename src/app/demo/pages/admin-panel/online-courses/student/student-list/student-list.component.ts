@@ -27,6 +27,8 @@ import { TranslateService } from '@ngx-translate/core';
 import { getUserManagers } from 'src/app/demo/shared/utils/user-managers';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { ViewStateService } from 'src/app/@theme/services/view-state.service';
+import { StatusLegendComponent, StatusLegendItem } from 'src/app/shared/status-legend/status-legend.component';
+import { UserBulkActionsComponent } from 'src/app/shared/user-bulk-actions/user-bulk-actions.component';
 
 type StudentListViewState = {
   searchTerm: string;
@@ -46,7 +48,7 @@ type StudentListViewState = {
 @Component({
   selector: 'app-student-list',
   standalone: true,
-  imports: [CommonModule, SharedModule, RouterModule, MatDialogModule, LoadingOverlayComponent],
+  imports: [CommonModule, SharedModule, RouterModule, MatDialogModule, LoadingOverlayComponent, StatusLegendComponent, UserBulkActionsComponent],
   templateUrl: './student-list.component.html',
   styleUrl: './student-list.component.scss'
 })
@@ -65,11 +67,31 @@ export class StudentListComponent implements OnInit, OnDestroy {
   private restoredSortDirection: 'asc' | 'desc' | '' = '';
   private readonly refreshFlagKey = 'refreshStudentList';
 
-  displayedColumns: string[] = ['serial', 'fullName', 'email', 'mobile', 'action'];
+  readonly isTeacher = this.auth.getRole() === UserTypesEnum.Teacher;
+  readonly canCreateStudents = true;
+  readonly canEditStudents = true;
+  readonly canDisableStudents = true;
+  readonly canRestoreStudents = true;
+  displayedColumns: string[] =
+    !this.isTeacher && this.canDisableStudents
+      ? ['select', 'serial', 'fullName', 'email', 'mobile', 'action']
+      : ['serial', 'fullName', 'email', 'mobile', 'action'];
 
   dataSource = new MatTableDataSource<LookUpUserDto>();
   allLoadedStudents: LookUpUserDto[] = [];
   showMissingAssignmentsOnly = false;
+  readonly statusLegendItems: StatusLegendItem[] = [
+    {
+      color: 'var(--warning-600, #d97706)',
+      label: 'الاسم البرتقالي',
+      description: 'الطالب غير مكتمل الربط: ينقصه مشرف أو معلم أو حلقة.'
+    },
+    {
+      color: '#94a3b8',
+      label: 'الاسم الطبيعي',
+      description: 'الطالب مرتبط بالمشرف والمعلم والحلقة بشكل مكتمل.'
+    }
+  ];
 
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 40 };
@@ -77,7 +99,6 @@ export class StudentListComponent implements OnInit, OnDestroy {
   pageSize = 40;
 
   showInactive = false;
-  readonly isTeacher = this.auth.getRole() === UserTypesEnum.Teacher;
   searchTerm = '';
   isFilterPopupOpen = false;
 
@@ -92,6 +113,8 @@ export class StudentListComponent implements OnInit, OnDestroy {
   selectedResidencyGroup: ResidencyGroupFilter = 'all';
 
   private pendingStudentIds = new Set<number>();
+  private selectedStudentIds = new Set<number>();
+  isBulkUpdating = false;
 
   isLoading = false;
   isLoadingMore = false;
@@ -205,6 +228,68 @@ export class StudentListComponent implements OnInit, OnDestroy {
     return index + 1;
   }
 
+  get selectedCount(): number {
+    return this.selectedStudentIds.size;
+  }
+
+  isSelected(studentId: number): boolean {
+    return this.selectedStudentIds.has(studentId);
+  }
+
+  clearSelection(): void {
+    this.selectedStudentIds.clear();
+  }
+
+  toggleSelection(studentId: number, checked: boolean): void {
+    if (checked) {
+      this.selectedStudentIds.add(studentId);
+      return;
+    }
+
+    this.selectedStudentIds.delete(studentId);
+  }
+
+  toggleSelectAllVisible(checked: boolean): void {
+    const visibleStudents = this.getSelectableVisibleStudents();
+    visibleStudents.forEach((student) => this.toggleSelection(student.id, checked));
+  }
+
+  isAllVisibleSelected(): boolean {
+    const visibleStudents = this.getSelectableVisibleStudents();
+    return visibleStudents.length > 0 && visibleStudents.every((student) => this.selectedStudentIds.has(student.id));
+  }
+
+  isSomeVisibleSelected(): boolean {
+    const visibleStudents = this.getSelectableVisibleStudents();
+    if (!visibleStudents.length) {
+      return false;
+    }
+
+    const selectedVisibleCount = visibleStudents.filter((student) => this.selectedStudentIds.has(student.id)).length;
+    return selectedVisibleCount > 0 && selectedVisibleCount < visibleStudents.length;
+  }
+
+  confirmBulkDisable(): void {
+    if (!this.selectedCount || this.isBulkUpdating) {
+      return;
+    }
+
+    const dialogRef = this.dialog.open(DisableUserConfirmDialogComponent, {
+      data: {
+        count: this.selectedCount,
+        entityLabel: 'طالب',
+        title: 'إيقاف جماعي للطلاب',
+        actionLabel: 'إيقاف المحددين'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (confirmed) {
+        this.disableSelectedStudents();
+      }
+    });
+  }
+
   private loadNationalities(): void {
     this.lookupService.getAllNationalities().subscribe((res) => {
       if (res.isSuccess && Array.isArray(res.data)) {
@@ -219,6 +304,7 @@ export class StudentListComponent implements OnInit, OnDestroy {
     this.filter.residentGroup = this.selectedResidencyGroup;
     if (!append) {
       this.prefetchPagesRemaining = 0;
+      this.clearSelection();
     }
     this.isLoading = !append;
     this.isLoadingMore = append;
@@ -341,6 +427,7 @@ export class StudentListComponent implements OnInit, OnDestroy {
               student.inactive = false;
               this.toast.success(this.translate.instant('User restored successfully'));
             } else {
+              this.selectedStudentIds.delete(student.id);
               this.allLoadedStudents = this.allLoadedStudents.filter((s) => s.id !== student.id);
               this.applyDisplayData();
               this.totalCount = Math.max(this.totalCount - 1, 0);
@@ -356,6 +443,57 @@ export class StudentListComponent implements OnInit, OnDestroy {
           }
         },
         error: () => this.toast.error(this.translate.instant('Failed to update user status'))
+      });
+  }
+
+  private disableSelectedStudents(): void {
+    const selectedIds = Array.from(this.selectedStudentIds);
+    if (!selectedIds.length) {
+      return;
+    }
+
+    selectedIds.forEach((id) => this.pendingStudentIds.add(id));
+    this.isBulkUpdating = true;
+
+    this.userService
+      .disableUsers(selectedIds)
+      .pipe(
+        finalize(() => {
+          selectedIds.forEach((id) => this.pendingStudentIds.delete(id));
+          this.isBulkUpdating = false;
+        })
+      )
+      .subscribe({
+        next: (res) => {
+          if (!res.isSuccess) {
+            if (res.errors?.length) {
+              res.errors.forEach((error) => this.toast.error(error.message));
+            } else {
+              this.toast.error('تعذر إيقاف الطلاب المحددين');
+            }
+            return;
+          }
+
+          const disabledIds = res.data?.disabledUserIds ?? [];
+          const skippedIds = res.data?.skippedUserIds ?? [];
+
+          if (disabledIds.length) {
+            const disabledIdSet = new Set(disabledIds);
+            this.allLoadedStudents = this.allLoadedStudents.filter((student) => !disabledIdSet.has(student.id));
+            disabledIds.forEach((id) => this.selectedStudentIds.delete(id));
+            this.applyDisplayData();
+            this.totalCount = Math.max(this.totalCount - disabledIds.length, 0);
+          }
+
+          if (disabledIds.length && skippedIds.length) {
+            this.toast.success(`تم إيقاف ${disabledIds.length} طالب، وتعذر إيقاف ${skippedIds.length}.`);
+          } else if (disabledIds.length) {
+            this.toast.success(`تم إيقاف ${disabledIds.length} طالب.`);
+          } else {
+            this.toast.error('لم يتم إيقاف أي طالب من المحددين.');
+          }
+        },
+        error: () => this.toast.error('تعذر إيقاف الطلاب المحددين')
       });
   }
 
@@ -418,11 +556,25 @@ export class StudentListComponent implements OnInit, OnDestroy {
     return this.allLoadedStudents.length < this.totalCount;
   }
 
+  private getSelectableVisibleStudents(): LookUpUserDto[] {
+    return this.dataSource.data.filter((student) => !!student?.id && !this.pendingStudentIds.has(student.id));
+  }
+
+  private syncSelectionWithLoadedStudents(): void {
+    const availableIds = new Set(this.allLoadedStudents.map((student) => student.id));
+    Array.from(this.selectedStudentIds).forEach((id) => {
+      if (!availableIds.has(id)) {
+        this.selectedStudentIds.delete(id);
+      }
+    });
+  }
+
   private applyDisplayData(): void {
     const filtered = this.showMissingAssignmentsOnly
       ? this.allLoadedStudents.filter((s) => this.hasMissingAssignments(s))
       : this.allLoadedStudents;
 
+    this.syncSelectionWithLoadedStudents();
     this.dataSource.data = [...filtered];
 
     // keep current sort applied after data changes (append/filter)

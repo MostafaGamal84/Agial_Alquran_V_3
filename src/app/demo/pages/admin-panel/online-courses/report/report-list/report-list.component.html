@@ -14,6 +14,34 @@
         </ng-template>
 
         <div class="p-b-15">
+          <div class="report-filter-summary" *ngIf="hasAppliedFilters()">
+            <div class="report-filter-summary__chips">
+              <span class="report-filter-chip" *ngIf="getAppliedSearchTerm()">
+                بحث: {{ getAppliedSearchTerm() }}
+              </span>
+
+              <span class="report-filter-chip" *ngIf="hasAppliedMonthFilter()">
+                الشهر: {{ getAppliedMonthLabel() }}
+              </span>
+
+              <span class="report-filter-chip" *ngIf="hasAppliedDateRangeFilter()">
+                التاريخ: {{ getAppliedDateRangeLabel() }}
+              </span>
+
+              <span class="report-filter-chip" *ngIf="hasAppliedCircleFilter()">
+                الحلقة: {{ getAppliedCircleLabel() }}
+              </span>
+
+              <span class="report-filter-chip" *ngIf="hasAppliedStudentFilter()">
+                الطالب: {{ getAppliedStudentLabel() }}
+              </span>
+            </div>
+
+            <button mat-button color="primary" type="button" (click)="clearAppliedFilters()">
+              مسح كل الفلاتر
+            </button>
+          </div>
+
           <div class="table-container table-responsive">
             <mat-progress-bar *ngIf="isLoading" mode="indeterminate"></mat-progress-bar>
 
@@ -150,6 +178,34 @@
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="w-100">
+            <mat-label>الشهر</mat-label>
+            <input
+              matInput
+              [matDatepicker]="monthPicker"
+              formControlName="month"
+              placeholder="اختر الشهر"
+              (click)="monthPicker.open()"
+              readonly
+            />
+            <button
+              mat-icon-button
+              matSuffix
+              type="button"
+              *ngIf="filterForm.get('month')?.value"
+              (click)="clearDraftMonth()"
+              aria-label="إزالة الشهر"
+            >
+              <mat-icon>close</mat-icon>
+            </button>
+            <mat-datepicker-toggle matSuffix [for]="monthPicker"></mat-datepicker-toggle>
+            <mat-datepicker
+              #monthPicker
+              startView="multi-year"
+              (monthSelected)="onMonthSelected($event, monthPicker)"
+            ></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="w-100">
             <mat-label>الحلقة</mat-label>
             <mat-select formControlName="circleId" [disabled]="isLoadingStudents">
               <mat-option [value]="null">كل الحلقات</mat-option>
@@ -181,12 +237,16 @@
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>من / إلى تاريخ</mat-label>
             <mat-date-range-input [formGroup]="filterForm" [rangePicker]="reportRangePicker">
-              <input matStartDate formControlName="fromDate" placeholder="من تاريخ" />
-              <input matEndDate formControlName="toDate" placeholder="إلى تاريخ" />
+              <input matStartDate formControlName="fromDate" placeholder="من تاريخ" [disabled]="hasDraftMonthFilter()" />
+              <input matEndDate formControlName="toDate" placeholder="إلى تاريخ" [disabled]="hasDraftMonthFilter()" />
             </mat-date-range-input>
-            <mat-datepicker-toggle matSuffix [for]="reportRangePicker"></mat-datepicker-toggle>
+            <mat-datepicker-toggle matSuffix [for]="reportRangePicker" [disabled]="hasDraftMonthFilter()"></mat-datepicker-toggle>
             <mat-date-range-picker #reportRangePicker></mat-date-range-picker>
           </mat-form-field>
+
+          <div class="filter-popup-note" *ngIf="hasDraftMonthFilter()">
+            عند اختيار شهر سيتم تطبيق الفلترة على الشهر كاملًا.
+          </div>
         </div>
 
         <div class="filter-popup-actions">

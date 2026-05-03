@@ -146,8 +146,8 @@ export const menus: Navigation[] = [
           {
             id: 'branch-manager',
             title: 'Branch Manager',
-            type: 'item',
-              url: '/online-course/branch-manager/list',
+             type: 'item',
+                url: '/online-course/branch-manager/list',
             role: [
               UserTypesEnum.Admin.toString(),
               // UserTypesEnum.Manager.toString(),

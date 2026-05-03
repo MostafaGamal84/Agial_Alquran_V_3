@@ -14,6 +14,7 @@ import {
   TeacherMonthlySummary,
   TeacherSalaryInvoice,
   TeacherSalaryInvoiceDetails,
+  TeacherSalarySectionBreakdown,
   TeacherSalaryService,
   TeacherMonthlyReportRecordDto
 } from 'src/app/@theme/services/teacher-salary.service';
@@ -25,6 +26,26 @@ import { ToastService } from 'src/app/@theme/services/toast.service';
 interface ReportRecordTableItem extends TeacherMonthlyReportRecordDto {
   displayIndex: number;
 }
+
+interface SectionBreakdownTableItem extends TeacherSalarySectionBreakdown {
+  sectionNameResolved: string;
+  totalMinutesResolved: number;
+  totalHoursResolved: number;
+  totalSalaryResolved: number;
+}
+
+interface SectionDetailGroup {
+  sectionName: string;
+  reportCount: number;
+  presentCount: number;
+  absentWithExcuseCount: number;
+  absentWithoutExcuseCount: number;
+  totalMinutes: number;
+  totalHours: number;
+  totalSalary: number;
+  records: ReportRecordTableItem[];
+}
+
 interface SummaryMetric {
   label: string;
   value: number | string;
@@ -67,6 +88,7 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly teacherSalaryService = inject(TeacherSalaryService);
   private readonly toastService = inject(ToastService);
+  readonly canExportTeacherSalary = true;
   private readonly subscriptions = new Subscription();
   private readonly pdfMargin = 12;
   private readonly pdfPageFill: [number, number, number] = [8, 12, 20];
@@ -93,6 +115,10 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
     paidAt: '\u062a\u0627\u0631\u064a\u062e \u0627\u0644\u062f\u0641\u0639',
     salary: '\u0627\u0644\u0631\u0627\u062a\u0628',
     summary: '\u0627\u0644\u0625\u062c\u0645\u0627\u0644\u064a\u0627\u062a',
+    sectionBreakdown: '\u062a\u0641\u0635\u064a\u0644 \u0627\u0644\u0623\u0642\u0633\u0627\u0645',
+    section: '\u0627\u0644\u0642\u0633\u0645',
+    hours: '\u0639\u062f\u062f \u0627\u0644\u0633\u0627\u0639\u0627\u062a',
+    finalTotal: '\u0627\u0644\u0625\u062c\u0645\u0627\u0644\u064a \u0627\u0644\u0646\u0647\u0627\u0626\u064a',
     detailed: '\u0627\u0644\u062a\u0642\u0627\u0631\u064a\u0631 \u0627\u0644\u0645\u0633\u062a\u062e\u062f\u0645\u0629 \u0641\u064a \u0627\u062d\u062a\u0633\u0627\u0628 \u0627\u0644\u0631\u0627\u062a\u0628',
     index: '#',
     student: '\u0627\u0644\u0637\u0627\u0644\u0628',
@@ -113,12 +139,15 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
   invoice: TeacherSalaryInvoice | null = null;
   detailSummary: TeacherMonthlySummary | null = null;
   detailSummaryMetrics: SummaryMetric[] = [];
+  sectionBreakdownRows: SectionBreakdownTableItem[] = [];
+  sectionDetailGroups: SectionDetailGroup[] = [];
   monthlyReportRecords: ReportRecordTableItem[] = [];
   reportRecordsLoading = false;
   reportRecordsError: string | null = null;
   summaryPdfLoading = false;
   detailedPdfLoading = false;
-  readonly reportColumns = ['index', 'studentName', 'minutes', 'salary', 'attendStatusId', 'recordCreatedAt'];
+  readonly reportColumns = ['index', 'studentName', 'sectionName', 'minutes', 'salary', 'attendStatusId', 'recordCreatedAt'];
+  readonly sectionColumns = ['sectionName', 'hours', 'salary'];
 
   private readonly numberFormatter = new Intl.NumberFormat('ar-EG', {
     minimumFractionDigits: 0,
@@ -131,8 +160,8 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
   private readonly currencyFormatter = new Intl.NumberFormat('ar-EG', {
     style: 'currency',
     currency: 'EGP',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
   });
   private readonly pdfNumberFormatter = new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 0,
@@ -145,8 +174,8 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
   private readonly pdfCurrencyFormatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'EGP',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
   });
   private readonly arabicMonthNames = [
     'يناير',
@@ -236,11 +265,34 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
     return this.readString(this.invoice, ['teacherName']) ?? this.readString(this.detailSummary, ['teacherName']) ?? '—';
   }
 
-  formatSalary(): string {
-    const amount =
-      this.getInvoiceSalaryAmount() ??
-      this.readNumber(this.detailSummary, ['totalSalary', 'salaryTotal', 'netSalary', 'takeHomePay']);
+  formatInvoiceSalary(): string {
+    const amount = this.getInvoiceSalaryAmount() ?? this.getSummarySalaryAmount();
     return amount === null ? '—' : this.currencyFormatter.format(amount);
+  }
+
+  formatSummarySalary(): string {
+    const amount = this.getSummarySalaryAmount() ?? this.getInvoiceSalaryAmount();
+    return amount === null ? '—' : this.currencyFormatter.format(amount);
+  }
+
+  formatSectionName(value: string | null | undefined): string {
+    return typeof value === 'string' && value.trim().length > 0 ? value.trim() : '-';
+  }
+
+  formatSectionHours(value: number | null | undefined): string {
+    if (typeof value !== 'number' || Number.isNaN(value)) {
+      return '-';
+    }
+
+    return `${this.numberFormatter.format(value)} ساعة`;
+  }
+
+  formatSectionSalary(value: number | null | undefined): string {
+    if (typeof value !== 'number' || Number.isNaN(value)) {
+      return '-';
+    }
+
+    return this.currencyFormatter.format(value);
   }
 
   formatPaidAt(): string {
@@ -294,10 +346,12 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
 
     this.invoice = this.mergeInvoiceData(this.invoice, invoiceFromPayload);
     this.detailSummary = monthlySummary;
+    this.sectionBreakdownRows = this.extractSectionBreakdown(monthlySummary);
     this.detailSummaryMetrics = this.buildDetailSummaryMetrics(
       this.detailSummary,
       this.invoice
     );
+    this.sectionDetailGroups = [];
     this.monthlyReportRecords = [];
     this.reportRecordsError = null;
   }
@@ -337,9 +391,20 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
             ...record,
             displayIndex: index + 1
           }));
+          this.sectionDetailGroups = this.buildSectionDetailGroups(this.monthlyReportRecords);
+          const derivedSectionBreakdown = this.buildSectionBreakdownFromRecords(this.monthlyReportRecords);
+          if (derivedSectionBreakdown.length > 0) {
+            this.sectionBreakdownRows = derivedSectionBreakdown;
+          }
+          this.detailSummaryMetrics = this.buildDetailSummaryMetrics(
+            this.detailSummary,
+            this.invoice,
+            this.monthlyReportRecords
+          );
           this.reportRecordsError = null;
         },
         error: (error: HttpErrorResponse) => {
+          this.sectionDetailGroups = [];
           const status = error?.status;
           this.reportRecordsError =
             status === 401 || status === 403
@@ -414,7 +479,7 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
 
       if (type === 'summary') {
         currentY = this.drawSectionHeading(doc, currentY, this.pdfLabels.summary);
-        this.drawFieldGrid(
+        currentY = this.drawFieldGrid(
           doc,
           currentY,
           this.buildSummaryPdfFields(),
@@ -422,15 +487,39 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
           this.pdfLabels.summary,
           2
         );
+
+        if (this.sectionBreakdownRows.length > 0) {
+          currentY = this.drawSectionHeading(doc, currentY, this.pdfLabels.sectionBreakdown);
+          currentY = this.drawFieldGrid(
+            doc,
+            currentY,
+            this.buildSectionBreakdownPdfFields(),
+            pageTitle,
+            this.pdfLabels.sectionBreakdown,
+            2
+          );
+        }
       } else {
+        if (this.sectionBreakdownRows.length > 0) {
+          currentY = this.drawSectionHeading(doc, currentY, this.pdfLabels.sectionBreakdown);
+          currentY = this.drawFieldGrid(
+            doc,
+            currentY,
+            this.buildSectionBreakdownPdfFields(),
+            pageTitle,
+            this.pdfLabels.sectionBreakdown,
+            2
+          );
+        }
+
         currentY = this.drawSectionHeading(doc, currentY, this.pdfLabels.detailed);
-        this.drawReportTable(doc, currentY, pageTitle, this.pdfLabels.detailed);
+        currentY = this.drawReportTable(doc, currentY, pageTitle, this.pdfLabels.detailed);
       }
 
       this.addPdfPageNumbers(doc);
       doc.save(this.buildPdfFileName(type));
     } catch {
-      this.toastService.error('Ø­Ø¯Ø« Ø®Ø·Ø£ Ø£Ø«Ù†Ø§Ø¡ ØªØµØ¯ÙŠØ± Ù…Ù„Ù PDF.');
+      this.toastService.error('حدث خطأ أثناء تصدير ملف PDF.');
     } finally {
       this.setPdfLoading(type, false);
     }
@@ -634,6 +723,26 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
       label: metric.label,
       value: this.formatPdfMetricValue(metric)
     }));
+  }
+
+  private buildSectionBreakdownPdfFields(): PdfField[] {
+    const fields = this.sectionBreakdownRows.map((row) => ({
+      label: row.sectionNameResolved,
+      value: `الساعات: ${this.pdfNumberFormatter.format(row.totalHoursResolved)} | المستحق: ${this.pdfCurrencyFormatter.format(row.totalSalaryResolved)}`
+    }));
+
+    const finalSalary =
+      this.getSummarySalaryAmount() ??
+      this.getInvoiceSalaryAmount();
+
+    if (finalSalary !== null) {
+      fields.push({
+        label: this.pdfLabels.finalTotal,
+        value: this.pdfCurrencyFormatter.format(finalSalary)
+      });
+    }
+
+    return fields;
   }
 
   private getPdfTeacherName(): string {
@@ -895,31 +1004,37 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
     return [
       {
         header: this.pdfLabels.index,
-        width: 12,
+        width: 10,
         align: 'center',
         getValue: (row) => this.formatPdfInteger(row.displayIndex)
       },
       {
         header: this.pdfLabels.student,
-        width: 50,
+        width: 40,
         align: 'right',
         getValue: (row) => this.getPdfStudentName(row)
       },
       {
+        header: this.pdfLabels.section,
+        width: 22,
+        align: 'right',
+        getValue: (row) => this.getSafePdfValue(row.sectionName ?? this.pdfLabels.unavailable)
+      },
+      {
         header: this.pdfLabels.minutes,
-        width: 20,
+        width: 18,
         align: 'center',
         getValue: (row) => this.formatPdfNumber(row.minutes)
       },
       {
         header: this.pdfLabels.salary,
-        width: 28,
+        width: 24,
         align: 'right',
         getValue: (row) => this.formatPdfRecordSalary(row.salary)
       },
       {
         header: this.pdfLabels.attendStatus,
-        width: 34,
+        width: 30,
         align: 'right',
         getValue: (row) => this.getAttendStatusLabel(row.attendStatusId)
       },
@@ -1146,9 +1261,7 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
   }
 
   private formatPdfSalary(): string {
-    const amount =
-      this.getInvoiceSalaryAmount() ??
-      this.readNumber(this.detailSummary, ['totalSalary', 'salaryTotal', 'netSalary', 'takeHomePay']);
+    const amount = this.getInvoiceSalaryAmount() ?? this.getSummarySalaryAmount();
     return amount === null ? '-' : this.pdfCurrencyFormatter.format(amount);
   }
 
@@ -1162,6 +1275,24 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
       'takeHomePay',
       'amount'
     ]);
+  }
+
+  private getSummarySalaryAmount(): number | null {
+    return this.getRecordsSalaryAmount() ??
+      this.readNumber(this.detailSummary, ['totalSalary', 'salaryTotal', 'salary', 'netSalary', 'takeHomePay']);
+  }
+
+  private getRecordsSalaryAmount(): number | null {
+    if (this.monthlyReportRecords.length === 0) {
+      return null;
+    }
+
+    return Math.round(
+      this.monthlyReportRecords.reduce(
+        (total, record) => total + (this.coerceNumber(record.salary) ?? 0),
+        0
+      ) * 100
+    ) / 100;
   }
 
   private getNavigationInvoice(): TeacherSalaryInvoice | null {
@@ -1474,9 +1605,12 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
 
   private buildDetailSummaryMetrics(
     summary: TeacherMonthlySummary | null,
-    invoice: TeacherSalaryInvoice | null
+    invoice: TeacherSalaryInvoice | null,
+    records: TeacherMonthlyReportRecordDto[] = []
   ): SummaryMetric[] {
-    const metrics = this.buildSummaryMetrics(summary);
+    const metrics = records.length > 0
+      ? this.buildSummaryMetricsFromRecords(records)
+      : this.buildSummaryMetrics(summary);
     const summarySalary = this.readNumber(summary, [
       'totalSalary',
       'salaryTotal',
@@ -1494,7 +1628,13 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
       'amount'
     ]);
 
-    const effectiveSalary = summarySalary ?? invoiceSalary;
+    const recordsSalary = records.length > 0
+      ? Math.round(
+          records.reduce((total, record) => total + (this.coerceNumber(record.salary) ?? 0), 0) * 100
+        ) / 100
+      : null;
+
+    const effectiveSalary = recordsSalary ?? summarySalary ?? invoiceSalary;
 
     if (effectiveSalary === null) {
       return metrics;
@@ -1516,6 +1656,206 @@ export class TeacherSalaryDetailsComponent implements OnInit, OnDestroy {
     }
 
     return metrics;
+  }
+
+  private buildSummaryMetricsFromRecords(records: TeacherMonthlyReportRecordDto[]): SummaryMetric[] {
+    if (records.length === 0) {
+      return [];
+    }
+
+    const presentCount = records.filter((record) => record.attendStatusId === 1).length;
+    const absentWithExcuseCount = records.filter((record) => record.attendStatusId === 2).length;
+    const absentWithoutExcuseCount = records.filter((record) => record.attendStatusId === 3).length;
+    const totalMinutes = records.reduce((total, record) => total + (this.coerceNumber(record.minutes) ?? 0), 0);
+    const totalSalary = records.reduce((total, record) => total + (this.coerceNumber(record.salary) ?? 0), 0);
+
+    return [
+      { label: 'التقارير', value: records.length, type: 'number' },
+      { label: 'الحضور', value: presentCount, type: 'number' },
+      { label: 'الغياب المبرر', value: absentWithExcuseCount, type: 'number' },
+      { label: 'الغياب غير المبرر', value: absentWithoutExcuseCount, type: 'number' },
+      { label: 'دقائق التدريس', value: totalMinutes, type: 'number', suffix: 'دقيقة' },
+      { label: 'إجمالي الراتب', value: totalSalary, type: 'currency' }
+    ];
+  }
+
+  private extractSectionBreakdown(summary: TeacherMonthlySummary | null): SectionBreakdownTableItem[] {
+    const rawItems = this.readUnknown(summary, [
+      'sectionBreakdown',
+      'sectionBreakdowns',
+      'sectionsBreakdown',
+      'sections'
+    ]);
+
+    if (!Array.isArray(rawItems)) {
+      return [];
+    }
+
+    const rows = rawItems
+      .map((item) => this.mapSectionBreakdownItem(item))
+      .filter((item): item is SectionBreakdownTableItem => item !== null);
+
+    return rows.sort((left, right) => {
+      const sectionOrder = this.getSectionSortOrder(left.sectionNameResolved) - this.getSectionSortOrder(right.sectionNameResolved);
+      if (sectionOrder !== 0) {
+        return sectionOrder;
+      }
+
+      return left.sectionNameResolved.localeCompare(right.sectionNameResolved, 'ar');
+    });
+  }
+
+  private mapSectionBreakdownItem(source: unknown): SectionBreakdownTableItem | null {
+    const sectionName = this.readString(source, ['sectionName', 'section', 'label', 'name']);
+    const totalMinutes = this.readNumber(source, ['totalMinutes', 'minutes']) ?? 0;
+    const totalHours =
+      this.readNumber(source, ['totalHours', 'hours']) ??
+      Math.round((totalMinutes / 60) * 100) / 100;
+    const totalSalary = this.readNumber(source, ['totalSalary', 'salary']) ?? 0;
+
+    if (!sectionName && totalMinutes === 0 && totalHours === 0 && totalSalary === 0) {
+      return null;
+    }
+
+    return {
+      ...(typeof source === 'object' && source !== null ? (source as TeacherSalarySectionBreakdown) : {}),
+      sectionName,
+      totalMinutes,
+      totalHours,
+      totalSalary,
+      sectionNameResolved: sectionName?.trim() || 'أخرى',
+      totalMinutesResolved: totalMinutes,
+      totalHoursResolved: totalHours,
+      totalSalaryResolved: totalSalary
+    };
+  }
+
+  private buildSectionBreakdownFromRecords(records: ReportRecordTableItem[]): SectionBreakdownTableItem[] {
+    if (records.length === 0) {
+      return [];
+    }
+
+    const grouped = this.groupRecordsBySection(records);
+    const orderedSectionNames = this.getOrderedSectionNames();
+    const rows = orderedSectionNames.map((sectionName) =>
+      this.mapSectionGroupToBreakdownRow(sectionName, grouped.get(sectionName) ?? [])
+    );
+
+    const extraRows = [...grouped.entries()]
+      .filter(([sectionName]) => !orderedSectionNames.includes(sectionName))
+      .sort(([left], [right]) => left.localeCompare(right, 'ar'))
+      .map(([sectionName, sectionRecords]) => this.mapSectionGroupToBreakdownRow(sectionName, sectionRecords));
+
+    return [...rows, ...extraRows];
+  }
+
+  private buildSectionDetailGroups(records: ReportRecordTableItem[]): SectionDetailGroup[] {
+    if (records.length === 0) {
+      return [];
+    }
+
+    return [...this.groupRecordsBySection(records).entries()]
+      .filter(([, sectionRecords]) => sectionRecords.length > 0)
+      .map(([sectionName, sectionRecords]) => {
+        const totalMinutes = sectionRecords.reduce(
+          (total, record) => total + (this.coerceNumber(record.minutes) ?? 0),
+          0
+        );
+        const totalSalary = sectionRecords.reduce(
+          (total, record) => total + (this.coerceNumber(record.salary) ?? 0),
+          0
+        );
+
+        return {
+          sectionName,
+          reportCount: sectionRecords.length,
+          presentCount: sectionRecords.filter((record) => record.attendStatusId === 1).length,
+          absentWithExcuseCount: sectionRecords.filter((record) => record.attendStatusId === 2).length,
+          absentWithoutExcuseCount: sectionRecords.filter((record) => record.attendStatusId === 3).length,
+          totalMinutes,
+          totalHours: Math.round((totalMinutes / 60) * 100) / 100,
+          totalSalary,
+          records: [...sectionRecords]
+        };
+      })
+      .sort((left, right) => {
+        const sectionOrder = this.getSectionSortOrder(left.sectionName) - this.getSectionSortOrder(right.sectionName);
+        if (sectionOrder !== 0) {
+          return sectionOrder;
+        }
+
+        return left.sectionName.localeCompare(right.sectionName, 'ar');
+      });
+  }
+
+  private mapSectionGroupToBreakdownRow(sectionName: string, records: ReportRecordTableItem[]): SectionBreakdownTableItem {
+    const totalMinutes = records.reduce((total, record) => total + (this.coerceNumber(record.minutes) ?? 0), 0);
+    const totalSalary = records.reduce((total, record) => total + (this.coerceNumber(record.salary) ?? 0), 0);
+    const totalHours = Math.round((totalMinutes / 60) * 100) / 100;
+
+    return {
+      sectionName,
+      totalMinutes,
+      totalHours,
+      totalSalary,
+      sectionNameResolved: sectionName,
+      totalMinutesResolved: totalMinutes,
+      totalHoursResolved: totalHours,
+      totalSalaryResolved: totalSalary
+    };
+  }
+
+  private groupRecordsBySection(records: ReportRecordTableItem[]): Map<string, ReportRecordTableItem[]> {
+    const grouped = new Map<string, ReportRecordTableItem[]>();
+
+    for (const record of records) {
+      const sectionName = this.resolveSectionName(record.sectionName);
+      const sectionRecords = grouped.get(sectionName) ?? [];
+      sectionRecords.push(record);
+      grouped.set(sectionName, sectionRecords);
+    }
+
+    return grouped;
+  }
+
+  private resolveSectionName(value: string | null | undefined): string {
+    const normalized = value?.trim() ?? '';
+    if (!normalized) {
+      return 'أخرى';
+    }
+
+    if (normalized.includes('تأسيس') || /foundation/i.test(normalized)) {
+      return 'تأسيس';
+    }
+
+    if (normalized.includes('ترديد') || /repeat|repetition/i.test(normalized)) {
+      return 'ترديد';
+    }
+
+    if (normalized.includes('حفظ') || /memor/i.test(normalized)) {
+      return 'حفظ';
+    }
+
+    return normalized;
+  }
+
+  private getOrderedSectionNames(): string[] {
+    return ['تأسيس', 'ترديد', 'حفظ', 'أخرى'];
+  }
+
+  private getSectionSortOrder(sectionName: string): number {
+    switch (sectionName.trim()) {
+      case 'تأسيس':
+        return 1;
+      case 'ترديد':
+        return 2;
+      case 'حفظ':
+        return 3;
+      case 'أخرى':
+        return 4;
+      default:
+        return 5;
+    }
   }
 
   private mergeInvoiceData(

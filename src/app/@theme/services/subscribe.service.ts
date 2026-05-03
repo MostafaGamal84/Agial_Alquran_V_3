@@ -9,6 +9,7 @@ import {
   PagedResultDto,
   normalizePagedResult
 } from './lookup.service';
+import { formatAttachedAudienceLabel } from './subscribe-audience';
 
 export enum SubscribeTypeCategory {
   Unknown = 0,
@@ -70,6 +71,43 @@ export interface CreateSubscribeTypeDto {
 
 export interface UpdateSubscribeTypeDto extends CreateSubscribeTypeDto {
   id: number;
+}
+
+function formatSubscribeDto(item: SubscribeDto): SubscribeDto {
+  return {
+    ...item,
+    name: formatAttachedAudienceLabel(item.name) ?? undefined,
+    subscribeType: item.subscribeType
+      ? {
+          ...item.subscribeType,
+          name: formatAttachedAudienceLabel(item.subscribeType.name) ?? undefined
+        }
+      : item.subscribeType
+  };
+}
+
+function formatSubscribeTypeDto(item: SubscribeTypeDto): SubscribeTypeDto {
+  return {
+    ...item,
+    name: formatAttachedAudienceLabel(item.name) ?? undefined
+  };
+}
+
+function formatPagedItems<T>(
+  response: ApiResponse<PagedResultDto<T>>,
+  formatter: (item: T) => T
+): ApiResponse<PagedResultDto<T>> {
+  if (!response.data?.items) {
+    return response;
+  }
+
+  return {
+    ...response,
+    data: {
+      ...response.data,
+      items: response.data.items.map(formatter)
+    }
+  };
 }
 
 @Injectable({ providedIn: 'root' })
@@ -134,7 +172,10 @@ export class SubscribeService {
         `${environment.apiUrl}/api/Subscribe/GetResultsByFilter`,
         { params }
       )
-      .pipe(map((response) => normalizePagedResult(response, { skipCount: filter.skipCount })));
+      .pipe(
+        map((response) => formatPagedItems(response, formatSubscribeDto)),
+        map((response) => normalizePagedResult(response, { skipCount: filter.skipCount }))
+      );
   }
 
   // subscribe type crud
@@ -187,6 +228,9 @@ export class SubscribeService {
         `${environment.apiUrl}/api/Subscribe/GetTypeResultsByFilter`,
         payload
       )
-      .pipe(map((response) => normalizePagedResult(response, { skipCount: filter.skipCount })));
+      .pipe(
+        map((response) => formatPagedItems(response, formatSubscribeTypeDto)),
+        map((response) => normalizePagedResult(response, { skipCount: filter.skipCount }))
+      );
   }
 }

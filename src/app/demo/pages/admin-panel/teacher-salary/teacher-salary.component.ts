@@ -119,6 +119,19 @@ interface RawDateParts {
   second: number | null;
 }
 
+type CashWalletProvider = 'vodafone' | 'etisalat' | 'orange' | 'unknown';
+
+interface CashWalletConfig {
+  provider: CashWalletProvider;
+  label: string;
+  shortLabel: string;
+  badge: string;
+  promptTitle: string;
+  buttonClass: string;
+  dialCode: string | null;
+  requiresManualEntry: boolean;
+}
+
 class InvoicePrintContextError extends Error {
   constructor(message: string, readonly apiErrors?: ApiError[]) {
     super(message);
@@ -190,8 +203,8 @@ export class TeacherSalaryComponent
   private readonly currencyFormatter = new Intl.NumberFormat('ar-EG', {
     style: 'currency',
     currency: 'EGP',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
   });
   private readonly arabicMonthNames = [
     'يناير',
@@ -587,16 +600,25 @@ export class TeacherSalaryComponent
   ): void {
     event.stopPropagation();
     event.preventDefault();
-    if (!this.canTransferVodafoneCash(invoice)) {
+    const walletConfig = this.getCashWalletConfig(invoice);
+    const ussdCode = walletConfig.dialCode;
+    const dialLink = this.getCashWalletDialLink(invoice);
+    if (!dialLink || !walletConfig.dialCode) {
       this.toastService.error('تعذر تجهيز تحويل فودافون كاش بدون رقم جوال أو مبلغ صحيح.');
       return;
     }
 
-    const amountValue = this.formatTransferAmount(this.getSalaryAmount(invoice));
-    const mobile = this.normalizePhoneNumber(this.resolveTeacherMobile(invoice) ?? '');
-    const ussd = `*9*7*${mobile}*${amountValue}#`;
-    const dialLink = `tel:${this.encodeUssd(ussd)}`;
-    window.location.href = dialLink;
+    if (!this.isLikelyMobileDevice()) {
+      this.copyVodafoneCashCode(walletConfig.dialCode);
+      this.toastService.success(`كود التحويل كاش: ${ussdCode}`, 'Close', 7000);
+      this.showVodafoneCashPrompt(invoice, walletConfig);
+      return;
+    }
+
+    this.openDialerLink(dialLink);
+    window.setTimeout(() => {
+      this.showVodafoneCashPrompt(invoice, walletConfig);
+    }, 800);
   }
 
   onInstapayTransfer(
@@ -712,7 +734,7 @@ export class TeacherSalaryComponent
     try {
       return this.currencyFormatter.format(value);
     } catch {
-      return value.toFixed(2);
+      return Math.round(value).toString();
     }
   }
 
@@ -1050,6 +1072,7 @@ export class TeacherSalaryComponent
           if (response.isSuccess) {
             this.summary = response.data ?? null;
             this.summaryMetrics = this.buildSummaryMetrics(this.summary);
+            this.syncSelectedTeacherInvoiceSalary(this.summary);
           } else {
             this.summary = null;
             this.summaryMetrics = [];
@@ -1154,6 +1177,65 @@ export class TeacherSalaryComponent
     this.allInvoices = preserveSource ? invoices : source;
     this.filteredInvoices = sorted;
     this.updatePagedInvoices();
+  }
+
+  private syncSelectedTeacherInvoiceSalary(
+    summary: TeacherMonthlySummary | null
+  ): void {
+    const teacherId = this.canFilterTeachers ? this.selectedTeacher.value : null;
+    const selectedMonth = this.selectedMonth.value;
+    const summarySalary = this.resolveSummaryNumber(summary, [
+      'salaryTotal',
+      'totalSalary',
+      'salary',
+      'netSalary',
+      'takeHomePay'
+    ]);
+
+    if (
+      !summary ||
+      !teacherId ||
+      !selectedMonth ||
+      summarySalary === null ||
+      this.allInvoices.length === 0
+    ) {
+      return;
+    }
+
+    const targetYear = selectedMonth.year();
+    const targetMonth = selectedMonth.month() + 1;
+    let hasChanges = false;
+
+    const updatedInvoices = this.allInvoices.map((invoice) => {
+      if (
+        invoice.teacherId !== teacherId ||
+        !this.matchesInvoiceMonth(invoice, targetYear, targetMonth)
+      ) {
+        return invoice;
+      }
+
+      const currentSalary = this.getSalaryAmount(invoice);
+      if (
+        currentSalary !== null &&
+        Math.abs(currentSalary - summarySalary) <= 0.01
+      ) {
+        return invoice;
+      }
+
+      hasChanges = true;
+      return {
+        ...invoice,
+        salary: summarySalary,
+        salaryAmount: summarySalary,
+        totalSalary: summarySalary
+      };
+    });
+
+    if (!hasChanges) {
+      return;
+    }
+
+    this.applyInvoices(updatedInvoices, true);
   }
 
   private matchesPaymentStatusFilter(invoice: TeacherSalaryInvoice): boolean {
@@ -1269,6 +1351,16 @@ export class TeacherSalaryComponent
     return undefined;
   }
 
+  private matchesInvoiceMonth(
+    invoice: TeacherSalaryInvoice,
+    year: number,
+    month: number
+  ): boolean {
+    const monthValue = this.extractMonthValue(invoice);
+    const parts = this.extractRawDateParts(monthValue);
+    return parts?.year === year && parts.month === month;
+  }
+
   private formatMonthString(value?: string | null): string {
     if (!value) {
       return '—';
@@ -1303,7 +1395,14 @@ export class TeacherSalaryComponent
   }
 
   private normalizePhoneNumber(phone: string): string {
-    return phone.replace(/[^\d]/g, '');
+    const digitsOnly = phone.replace(/[^\d]/g, '');
+    if (digitsOnly.startsWith('0020')) {
+      return `0${digitsOnly.slice(4)}`;
+    }
+    if (digitsOnly.startsWith('20')) {
+      return `0${digitsOnly.slice(2)}`;
+    }
+    return digitsOnly;
   }
 
   private resolveTeacherMobile(invoice: TeacherSalaryInvoice | null): string | null {
@@ -1366,19 +1465,173 @@ export class TeacherSalaryComponent
     return value.replace(/#/g, '%23');
   }
 
+  private detectCashWalletProvider(
+    invoice: TeacherSalaryInvoice | null
+  ): CashWalletProvider {
+    const mobile = this.normalizePhoneNumber(this.resolveTeacherMobile(invoice) ?? '');
+    if (mobile.startsWith('010')) {
+      return 'vodafone';
+    }
+    if (mobile.startsWith('011')) {
+      return 'etisalat';
+    }
+    if (mobile.startsWith('012')) {
+      return 'orange';
+    }
+
+    return 'unknown';
+  }
+
+  private getCashWalletConfig(
+    invoice: TeacherSalaryInvoice | null
+  ): CashWalletConfig {
+    const provider = this.detectCashWalletProvider(invoice);
+
+    switch (provider) {
+      case 'vodafone':
+        return {
+          provider,
+          label: 'فودافون كاش',
+          shortLabel: 'فودافون',
+          badge: 'VC',
+          promptTitle: 'انسخ كود فودافون كاش',
+          buttonClass: 'cash-wallet-button cash-wallet-button--vodafone',
+          dialCode: this.getVodafoneCashUssdCode(invoice),
+          requiresManualEntry: false
+        };
+      case 'etisalat':
+        return {
+          provider,
+          label: 'اتصالات كاش',
+          shortLabel: 'اتصالات',
+          badge: 'EC',
+          promptTitle: 'كود اتصالات كاش',
+          buttonClass: 'cash-wallet-button cash-wallet-button--etisalat',
+          dialCode: this.getEtisalatCashUssdCode(invoice),
+          requiresManualEntry: true
+        };
+      case 'orange':
+        return {
+          provider,
+          label: 'أورنج كاش',
+          shortLabel: 'أورنج',
+          badge: 'OC',
+          promptTitle: 'كود أورنج كاش',
+          buttonClass: 'cash-wallet-button cash-wallet-button--orange',
+          dialCode: this.getOrangeCashUssdCode(invoice),
+          requiresManualEntry: true
+        };
+      default:
+        return {
+          provider,
+          label: 'محفظة إلكترونية',
+          shortLabel: 'محفظة',
+          badge: 'CW',
+          promptTitle: 'كود المحفظة',
+          buttonClass: 'cash-wallet-button cash-wallet-button--generic',
+          dialCode: null,
+          requiresManualEntry: true
+        };
+    }
+  }
+
+  getCashWalletButtonClass(invoice: TeacherSalaryInvoice | null): string {
+    return this.getCashWalletConfig(invoice).buttonClass;
+  }
+
+  getCashWalletLabel(invoice: TeacherSalaryInvoice | null): string {
+    return this.getCashWalletConfig(invoice).label;
+  }
+
+  getCashWalletShortLabel(invoice: TeacherSalaryInvoice | null): string {
+    return this.getCashWalletConfig(invoice).shortLabel;
+  }
+
+  getCashWalletBadge(invoice: TeacherSalaryInvoice | null): string {
+    return this.getCashWalletConfig(invoice).badge;
+  }
+
+  getCashWalletTooltip(invoice: TeacherSalaryInvoice | null): string {
+    return `تحويل ${this.getCashWalletConfig(invoice).label}`;
+  }
+
+  private getVodafoneCashUssdCode(invoice: TeacherSalaryInvoice | null): string | null {
+    const amountValue = this.formatTransferAmount(this.getSalaryAmount(invoice));
+    const mobile = this.normalizePhoneNumber(this.resolveTeacherMobile(invoice) ?? '');
+    if (!mobile || !amountValue) {
+      return null;
+    }
+
+    return `*9*7*${mobile}*${amountValue}#`;
+  }
+
+  private getEtisalatCashUssdCode(invoice: TeacherSalaryInvoice | null): string | null {
+    const amountValue = this.formatTransferAmount(this.getSalaryAmount(invoice));
+    const mobile = this.normalizePhoneNumber(this.resolveTeacherMobile(invoice) ?? '');
+    if (!mobile || !amountValue) {
+      return null;
+    }
+
+    return '*777*6#';
+  }
+
+  private getOrangeCashUssdCode(invoice: TeacherSalaryInvoice | null): string | null {
+    const amountValue = this.formatTransferAmount(this.getSalaryAmount(invoice));
+    const mobile = this.normalizePhoneNumber(this.resolveTeacherMobile(invoice) ?? '');
+    if (!mobile || !amountValue) {
+      return null;
+    }
+
+    return '#7115#';
+  }
+
+  private getCashWalletDialLink(
+    invoice: TeacherSalaryInvoice | null
+  ): string | null {
+    const ussd = this.getCashWalletConfig(invoice).dialCode;
+    if (!ussd) {
+      return null;
+    }
+
+    return `tel:${this.encodeUssd(ussd)}`;
+  }
+
+  private openDialerLink(link: string): void {
+    const anchor = document.createElement('a');
+    anchor.href = link;
+    anchor.style.display = 'none';
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+  }
+
+  private isLikelyMobileDevice(): boolean {
+    const userAgent = navigator.userAgent || navigator.vendor || '';
+    return /android|iphone|ipad|ipod|mobile/i.test(userAgent);
+  }
+
+  private copyVodafoneCashCode(code: string): void {
+    if (!navigator.clipboard?.writeText) {
+      return;
+    }
+
+    navigator.clipboard.writeText(code).catch(() => undefined);
+  }
+
+  private showVodafoneCashPrompt(
+    invoice: TeacherSalaryInvoice | null,
+    walletConfig: CashWalletConfig
+  ): void {
+    const promptValue = walletConfig.dialCode ?? '';
+    window.prompt(walletConfig.promptTitle, promptValue);
+  }
+
   private buildInstapayLink(amount: string): string {
     return `instapay://transfer?amount=${encodeURIComponent(amount)}`;
   }
 
   canTransferVodafoneCash(invoice: TeacherSalaryInvoice | null): boolean {
-    const amount = this.getSalaryAmount(invoice);
-    const mobile = this.resolveTeacherMobile(invoice);
-    return Boolean(
-      amount !== null &&
-      Number.isFinite(amount) &&
-      mobile &&
-      this.normalizePhoneNumber(mobile).length > 0
-    );
+    return Boolean(this.getCashWalletDialLink(invoice));
   }
 
   canTransferInstapay(invoice: TeacherSalaryInvoice | null): boolean {
@@ -1446,15 +1699,23 @@ export class TeacherSalaryComponent
     invoice: TeacherSalaryInvoice | null
   ): SummaryMetric[] {
     const metrics = this.buildSummaryMetrics(summary);
+    const summarySalary = this.resolveSummaryNumber(summary, [
+      'salaryTotal',
+      'totalSalary',
+      'salary',
+      'netSalary',
+      'takeHomePay'
+    ]);
     const invoiceSalary = this.getSalaryAmount(invoice);
+    const effectiveSalary = summarySalary ?? invoiceSalary;
 
-    if (invoiceSalary === null) {
+    if (effectiveSalary === null) {
       return metrics;
     }
 
     const salaryMetric: SummaryMetric = {
       label: 'إجمالي الراتب',
-      value: invoiceSalary,
+      value: effectiveSalary,
       type: 'currency'
     };
     const salaryMetricIndex = metrics.findIndex(
@@ -2304,8 +2565,8 @@ ${styles}
       return new Intl.NumberFormat('ar-EG', {
         style: 'currency',
         currency: 'USD',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
       }).format(value);
     } catch {
       return this.formatCurrency(value);

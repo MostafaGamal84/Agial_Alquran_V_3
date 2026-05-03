@@ -12,14 +12,7 @@
       <mat-card class="border m-b-0">
         <mat-card-content class="p-20">
           <div class="table-responsive">
-            <table
-              mat-table
-              [dataSource]="dataSource"
-              matSort
-              class="mat-elevation-z8 w-100"
-            >
-
-              <!-- الخطة -->
+            <table mat-table [dataSource]="dataSource" matSort multiTemplateDataRows class="mat-elevation-z8 w-100">
               <ng-container matColumnDef="plan">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header="plan">
                   الخطة
@@ -29,7 +22,6 @@
                 </td>
               </ng-container>
 
-              <!-- الدقائق المتبقية -->
               <ng-container matColumnDef="remainingMinutes">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header="remainingMinutes">
                   الدقائق المتبقية
@@ -39,21 +31,15 @@
                 </td>
               </ng-container>
 
-              <!-- تاريخ البداية -->
               <ng-container matColumnDef="startDate">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header="startDate">
                   تاريخ البداية
                 </th>
                 <td mat-cell *matCellDef="let element" class="text-nowrap">
-                  {{
-                    element.startDate
-                      ? (element.startDate | date: 'short')
-                      : 'لا يوجد'
-                  }}
+                  {{ element.startDate ? (element.startDate | date: 'short') : 'لا يوجد' }}
                 </td>
               </ng-container>
 
-              <!-- حالة الدفع -->
               <ng-container matColumnDef="status">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header="status">
                   حالة الدفع
@@ -75,7 +61,6 @@
                 </td>
               </ng-container>
 
-              <!-- المزيد / تفاصيل الدفع -->
               <ng-container matColumnDef="expand">
                 <th mat-header-cell *matHeaderCellDef>
                   تفاصيل
@@ -83,21 +68,123 @@
                 <td mat-cell *matCellDef="let element">
                   <button
                     mat-icon-button
-                    *ngIf="element.studentPaymentId !== null && element.studentPaymentId !== undefined"
                     (click)="togglePaymentDetails(element)"
-                    aria-label="عرض تفاصيل الدفع"
+                    aria-label="عرض تفاصيل الاشتراك"
                   >
-                    <mat-icon>expand_more</mat-icon>
+                    <mat-icon>{{ isExpanded(element) ? 'expand_less' : 'expand_more' }}</mat-icon>
                   </button>
                 </td>
               </ng-container>
 
-              <!-- صف الهيدر -->
-              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-              <!-- صفوف البيانات -->
-              <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+              <ng-container matColumnDef="detail">
+                <td mat-cell *matCellDef="let element" [attr.colspan]="displayedColumns.length" class="subscription-detail-cell">
+                  <div class="subscription-detail-panel" [class.subscription-detail-panel--expanded]="isExpanded(element)">
+                    @if (isExpanded(element)) {
+                      <div class="subscription-consumption">
+                        <div class="subscription-consumption__header">
+                          <div>
+                            <h3 class="subscription-consumption__title">
+                              استهلاك {{ getSubscriptionMonthLabel(element.startDate) }}
+                            </h3>
+                            <p class="subscription-consumption__subtitle">
+                              يوضح ما استهلكه الطالب خلال نفس شهر هذا الاشتراك.
+                            </p>
+                          </div>
+                        </div>
 
-              <!-- لا توجد بيانات -->
+                        <div class="subscription-consumption__grid">
+                          <div class="subscription-consumption__metric">
+                            <span class="subscription-consumption__label">عدد الدقائق</span>
+                            <strong class="subscription-consumption__value">
+                              {{ element.consumedMinutes ?? 0 }}
+                            </strong>
+                          </div>
+
+                          <div class="subscription-consumption__metric">
+                            <span class="subscription-consumption__label">عدد الحصص</span>
+                            <strong class="subscription-consumption__value">
+                              {{ element.consumedSessionsCount ?? 0 }}
+                            </strong>
+                          </div>
+
+                          <div class="subscription-consumption__metric">
+                            <span class="subscription-consumption__label">عدد الساعات</span>
+                            <strong class="subscription-consumption__value">
+                              {{ (element.consumedHours ?? 0) | number: '1.0-2' }}
+                            </strong>
+                          </div>
+                        </div>
+                      </div>
+
+                      @if (isPaymentLoading) {
+                        <div class="subscription-payment-state">جاري تحميل تفاصيل الدفع...</div>
+                      } @else if (paymentDetails) {
+                        <div class="subscription-payment-details">
+                          <h3 class="subscription-payment-details__title">تفاصيل الدفع</h3>
+
+                          <p><strong>رقم الفاتورة:</strong> {{ paymentDetails.invoiceId }}</p>
+                          <p><strong>رقم الطالب:</strong> {{ paymentDetails.studentId }}</p>
+                          <p><strong>اسم الطالب:</strong> {{ paymentDetails.userName }}</p>
+                          <p><strong>البريد الإلكتروني:</strong> {{ paymentDetails.userEmail }}</p>
+
+                          <p>
+                            <strong>تاريخ الإنشاء:</strong>
+                            {{
+                              paymentDetails.createDate
+                                ? (paymentDetails.createDate | date: 'short')
+                                : 'غير متوفر'
+                            }}
+                          </p>
+
+                          <p>
+                            <strong>تاريخ الاستحقاق:</strong>
+                            {{
+                              paymentDetails.dueDate
+                                ? (paymentDetails.dueDate | date: 'short')
+                                : 'غير متوفر'
+                            }}
+                          </p>
+
+                          <p>
+                            <strong>تاريخ الدفع:</strong>
+                            {{
+                              paymentDetails.paymentDate
+                                ? (paymentDetails.paymentDate | date: 'short')
+                                : 'غير متوفر'
+                            }}
+                          </p>
+
+                          <p><strong>المبلغ:</strong> {{ paymentDetails.amount }}</p>
+
+                          <p>
+                            <strong>العملة:</strong>
+                            {{
+                              getCurrencyLabel(
+                                paymentDetails.currencyId ?? paymentDetails.currency ?? null
+                              )
+                            }}
+                          </p>
+
+                          <p><strong>الحالة:</strong> {{ paymentDetails.statusText }}</p>
+
+                          <button mat-button color="primary" (click)="goToInvoice(paymentDetails?.invoiceId)">
+                            عرض الفاتورة
+                          </button>
+                        </div>
+                      } @else {
+                        <div class="subscription-payment-state">
+                          لا توجد تفاصيل دفع متاحة لهذا الاشتراك حالياً.
+                        </div>
+                      }
+                    }
+                  </div>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns" class="subscription-data-row"></tr>
+              <tr mat-row *matRowDef="let row; columns: detailColumns" class="subscription-detail-row"></tr>
+
               <tr class="mat-row" *matNoDataRow>
                 <td class="mat-cell" [attr.colspan]="displayedColumns.length">
                   لا توجد بيانات
@@ -105,83 +192,12 @@
               </tr>
             </table>
 
-            <!-- تفاصيل الدفع -->
-            <mat-expansion-panel
-              *ngIf="paymentDetails"
-              [expanded]="panelOpen"
-              (closed)="expandedElement = null; panelOpen = false"
-              class="m-t-10"
-            >
-              <mat-expansion-panel-header>
-                <mat-panel-title>تفاصيل الدفع</mat-panel-title>
-              </mat-expansion-panel-header>
-
-              <div class="p-16">
-                <p><strong>رقم الفاتورة:</strong> {{ paymentDetails.invoiceId }}</p>
-                <p><strong>رقم الطالب:</strong> {{ paymentDetails.studentId }}</p>
-                <p><strong>اسم الطالب:</strong> {{ paymentDetails.userName }}</p>
-                <p><strong>البريد الإلكتروني:</strong> {{ paymentDetails.userEmail }}</p>
-
-                <p>
-                  <strong>تاريخ الإنشاء:</strong>
-                  {{
-                    paymentDetails.createDate
-                      ? (paymentDetails.createDate | date: 'short')
-                      : 'غير متوفر'
-                  }}
-                </p>
-
-                <p>
-                  <strong>تاريخ الاستحقاق:</strong>
-                  {{
-                    paymentDetails.dueDate
-                      ? (paymentDetails.dueDate | date: 'short')
-                      : 'غير متوفر'
-                  }}
-                </p>
-
-                <p>
-                  <strong>تاريخ الدفع:</strong>
-                  {{
-                    paymentDetails.paymentDate
-                      ? (paymentDetails.paymentDate | date: 'short')
-                      : 'غير متوفر'
-                  }}
-                </p>
-
-                <p><strong>المبلغ:</strong> {{ paymentDetails.amount }}</p>
-
-                <p>
-                  <strong>العملة:</strong>
-                  {{
-                    getCurrencyLabel(
-                      paymentDetails.currencyId ?? paymentDetails.currency ?? null
-                    )
-                  }}
-                </p>
-
-                <p><strong>الحالة:</strong> {{ paymentDetails.statusText }}</p>
-
-                <button
-                  mat-button
-                  color="primary"
-                  (click)="goToInvoice(paymentDetails?.invoiceId)"
-                >
-                  عرض الفاتورة
-                </button>
-              </div>
-            </mat-expansion-panel>
-
-            <!-- تحميل المزيد -->
-            <div
-              class="app-paginator"
-              #loadMoreTrigger
-              [class.d-none]="!hasMoreResults()"
-            >
+            <div class="app-paginator" #loadMoreTrigger [class.d-none]="!hasMoreResults()">
               <span class="text-muted">
                 {{ isLoadingMore ? 'جاري تحميل المزيد...' : 'اسحب لأسفل لتحميل المزيد' }}
               </span>
             </div>
+
             <div class="subscription-history-section">
               <div class="subscription-history-section__header">
                 <div>

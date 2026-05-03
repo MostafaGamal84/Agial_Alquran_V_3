@@ -9,41 +9,43 @@
     </div>
 
     <div class="details-actions">
-      <button
-        mat-flat-button
-        color="primary"
-        type="button"
-        (click)="exportDetailedReportPdf()"
-        [disabled]="monthlyReportRecords.length === 0 || pdfExportLoading"
-      >
-        @if (detailedPdfLoading) {
-          <mat-progress-spinner diameter="18" mode="indeterminate"></mat-progress-spinner>
-        } @else {
-          <mat-icon>picture_as_pdf</mat-icon>
-        }
-        <span>
-          &#1578;&#1589;&#1583;&#1610;&#1585; <span class="pdf-token" dir="ltr">PDF</span>
-          &#1575;&#1604;&#1578;&#1601;&#1589;&#1610;&#1604;&#1610;
-        </span>
-      </button>
+      @if (canExportTeacherSalary) {
+        <button
+          mat-flat-button
+          color="primary"
+          type="button"
+          (click)="exportDetailedReportPdf()"
+          [disabled]="monthlyReportRecords.length === 0 || pdfExportLoading"
+        >
+          @if (detailedPdfLoading) {
+            <mat-progress-spinner diameter="18" mode="indeterminate"></mat-progress-spinner>
+          } @else {
+            <mat-icon>picture_as_pdf</mat-icon>
+          }
+          <span>
+            &#1578;&#1589;&#1583;&#1610;&#1585; <span class="pdf-token" dir="ltr">PDF</span>
+            &#1575;&#1604;&#1578;&#1601;&#1589;&#1610;&#1604;&#1610;
+          </span>
+        </button>
 
-      <button
-        mat-flat-button
-        color="accent"
-        type="button"
-        (click)="exportSummaryPdf()"
-        [disabled]="detailSummaryMetrics.length === 0 || pdfExportLoading"
-      >
-        @if (summaryPdfLoading) {
-          <mat-progress-spinner diameter="18" mode="indeterminate"></mat-progress-spinner>
-        } @else {
-          <mat-icon>picture_as_pdf</mat-icon>
-        }
-        <span>
-          &#1578;&#1589;&#1583;&#1610;&#1585; <span class="pdf-token" dir="ltr">PDF</span>
-          &#1575;&#1604;&#1573;&#1580;&#1605;&#1575;&#1604;&#1610;
-        </span>
-      </button>
+        <button
+          mat-flat-button
+          color="accent"
+          type="button"
+          (click)="exportSummaryPdf()"
+          [disabled]="detailSummaryMetrics.length === 0 || pdfExportLoading"
+        >
+          @if (summaryPdfLoading) {
+            <mat-progress-spinner diameter="18" mode="indeterminate"></mat-progress-spinner>
+          } @else {
+            <mat-icon>picture_as_pdf</mat-icon>
+          }
+          <span>
+            &#1578;&#1589;&#1583;&#1610;&#1585; <span class="pdf-token" dir="ltr">PDF</span>
+            &#1575;&#1604;&#1573;&#1580;&#1605;&#1575;&#1604;&#1610;
+          </span>
+        </button>
+      }
     </div>
 
     <mat-card class="invoice-card">
@@ -71,7 +73,7 @@
         </div>
         <div>
           <span>&#1575;&#1604;&#1585;&#1575;&#1578;&#1576;</span>
-          <strong>{{ formatSalary() }}</strong>
+          <strong>{{ formatInvoiceSalary() }}</strong>
         </div>
       </div>
     </mat-card>
@@ -114,6 +116,11 @@
             <ng-container matColumnDef="studentName">
               <th mat-header-cell *matHeaderCellDef>&#1575;&#1604;&#1591;&#1575;&#1604;&#1576;</th>
               <td mat-cell *matCellDef="let row">{{ row.studentName ?? '—' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="sectionName">
+              <th mat-header-cell *matHeaderCellDef>&#1575;&#1604;&#1602;&#1587;&#1605;</th>
+              <td mat-cell *matCellDef="let row">{{ formatSectionName(row.sectionName) }}</td>
             </ng-container>
 
             <ng-container matColumnDef="minutes">
@@ -167,6 +174,103 @@
             </div>
           }
         </div>
+
+        @if (sectionBreakdownRows.length > 0) {
+          <div class="section-breakdown">
+            <div class="section-breakdown__header">
+              <div>
+                <h4>تفصيل الأقسام</h4>
+                <p class="report-meta">عدد الساعات والمستحق المالي لكل قسم</p>
+              </div>
+              <div class="section-breakdown__total">
+                <span>الإجمالي النهائي</span>
+                <strong>{{ formatSummarySalary() }}</strong>
+              </div>
+            </div>
+
+            <div class="section-breakdown__table-container">
+              <table mat-table [dataSource]="sectionBreakdownRows" class="section-breakdown__table">
+                <ng-container matColumnDef="sectionName">
+                  <th mat-header-cell *matHeaderCellDef>القسم</th>
+                  <td mat-cell *matCellDef="let row">{{ formatSectionName(row.sectionNameResolved) }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="hours">
+                  <th mat-header-cell *matHeaderCellDef>عدد الساعات</th>
+                  <td mat-cell *matCellDef="let row">{{ formatSectionHours(row.totalHoursResolved) }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="salary">
+                  <th mat-header-cell *matHeaderCellDef>المستحق المالي</th>
+                  <td mat-cell *matCellDef="let row">{{ formatSectionSalary(row.totalSalaryResolved) }}</td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="sectionColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: sectionColumns"></tr>
+              </table>
+            </div>
+
+            @if (sectionDetailGroups.length > 0) {
+              <div class="section-details">
+                <div class="section-details__header">
+                  <h4>تفاصيل الأقسام</h4>
+                  <p class="report-meta">السجلات الفعلية داخل كل قسم</p>
+                </div>
+
+                @for (group of sectionDetailGroups; track group.sectionName) {
+                  <div class="section-details__group">
+                    <div class="section-details__group-header">
+                      <div>
+                        <h5>{{ formatSectionName(group.sectionName) }}</h5>
+                        <p class="report-meta">{{ formatNumber(group.reportCount) }} تقرير</p>
+                      </div>
+                      <div class="section-details__group-total">
+                        <span>{{ formatSectionHours(group.totalHours) }}</span>
+                        <strong>{{ formatSectionSalary(group.totalSalary) }}</strong>
+                      </div>
+                    </div>
+
+                    <div class="section-details__group-metrics">
+                      <span>الحضور: {{ formatNumber(group.presentCount) }}</span>
+                      <span>الغياب المبرر: {{ formatNumber(group.absentWithExcuseCount) }}</span>
+                      <span>الغياب غير المبرر: {{ formatNumber(group.absentWithoutExcuseCount) }}</span>
+                      <span>الدقائق: {{ formatNumber(group.totalMinutes) }}</span>
+                    </div>
+
+                    <div class="section-details__table-container">
+                      <table class="section-details__table">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>الطالب</th>
+                            <th>الدقائق</th>
+                            <th>الراتب</th>
+                            <th>حالة الحضور</th>
+                            <th>تاريخ التقرير</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (record of group.records; track record.id) {
+                            <tr>
+                              <td>{{ record.displayIndex }}</td>
+                              <td>{{ record.studentName ?? '—' }}</td>
+                              <td>{{ formatNumber(record.minutes) }}</td>
+                              <td>{{ formatRecordSalary(record.salary) }}</td>
+                              <td>{{ getAttendStatusLabel(record.attendStatusId) }}</td>
+                              <td>
+                                <span class="date-display" dir="ltr">{{ formatRecordDate(record.recordCreatedAt) }}</span>
+                              </td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
       } @else {
         <p class="empty-state">
           &#1604;&#1575; &#1578;&#1608;&#1580;&#1583; &#1576;&#1610;&#1575;&#1606;&#1575;&#1578; &#1573;&#1580;&#1605;&#1575;&#1604;&#1610;&#1577;

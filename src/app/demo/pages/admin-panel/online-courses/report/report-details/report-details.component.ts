@@ -15,6 +15,7 @@ import { ToastService } from 'src/app/@theme/services/toast.service';
 import { AttendStatusEnum } from 'src/app/@theme/types/AttendStatusEnum';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
+import { formatDateTimeForBusinessUser } from 'src/app/@theme/utils/cairo-date-time';
 
 type ReportDetails = Omit<CircleReportAddDto, 'creationTime'> &
   Partial<CircleReportListDto> & {
@@ -146,6 +147,17 @@ export class ReportDetailsComponent implements OnInit {
   }
 
   formatDate(value?: string | Date | null): string {
+    const formatted = formatDateTimeForBusinessUser(value, 'ar-EG', {
+      year: 'numeric',
+      month: 'long',
+      day: '2-digit',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+    if (formatted) {
+      return formatted;
+    }
     if (!value) {
       return '—';
     }

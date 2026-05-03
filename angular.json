@@ -21,7 +21,7 @@
             "bumpVersionOnProduction": true,
             "versionScript": "scripts/write-build-version.js",
             "allowedCommonJsDependencies": ["quill", "uploader", "moment", "apexcharts", "bezier-easing", "lodash", "quill-delta"],
-            "outputPath": "dist",
+            "outputPath": "../../../publish/front",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": ["zone.js"],

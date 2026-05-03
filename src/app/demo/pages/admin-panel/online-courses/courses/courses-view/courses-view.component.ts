@@ -37,6 +37,7 @@ import { DayValue, formatDayValue } from 'src/app/@theme/types/DaysEnum';
 import { formatTimeValue } from 'src/app/@theme/utils/time';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
+import { StatusLegendComponent, StatusLegendItem } from 'src/app/shared/status-legend/status-legend.component';
 
 interface CircleScheduleEntry {
   day: string;
@@ -72,7 +73,7 @@ interface CourseTableFilters {
 
 @Component({
   selector: 'app-courses-view',
-  imports: [SharedModule, RouterModule, LoadingOverlayComponent],
+  imports: [SharedModule, RouterModule, LoadingOverlayComponent, StatusLegendComponent],
   templateUrl: './courses-view.component.html',
   styleUrl: './courses-view.component.scss'
 })
@@ -98,6 +99,18 @@ export class CoursesViewComponent implements OnInit, AfterViewInit, OnDestroy {
     { value: 'all', label: 'الكل' },
     { value: 'رجال', label: 'رجال' },
     { value: 'نساء', label: 'نساء' }
+  ];
+  readonly statusLegendItems: StatusLegendItem[] = [
+    {
+      color: 'var(--warning-600, #d97706)',
+      label: 'اسم الحلقة باللون البرتقالي',
+      description: 'الحلقة غير مكتملة الربط: ينقصها معلم أو مشرفون أو طلاب.'
+    },
+    {
+      color: '#94a3b8',
+      label: 'اسم الحلقة باللون الطبيعي',
+      description: 'الحلقة مرتبطة بالمعلم والمشرفين والطلاب بشكل مكتمل.'
+    }
   ];
   selectedGenderFilter: BranchGenderFilter = 'all';
   teacherNameFilter = '';

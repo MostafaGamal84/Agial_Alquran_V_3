@@ -38,6 +38,8 @@ export interface CircleReportListDto {
   teacherName?: string;
   attendStatueId?: number;
   minutes?: number;
+  teacherSalaryMinutes?: number;
+  teacherSalaryAmount?: number;
   [key: string]: unknown;
 }
 

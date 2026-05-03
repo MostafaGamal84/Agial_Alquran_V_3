@@ -19,10 +19,11 @@ import { UserEditComponent } from '../../user-edit/user-edit.component';
 import { DisableUserConfirmDialogComponent } from '../../student/student-list/student-list.disable-user-confirm-dialog.component';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 import { BranchManagerDetailsComponent } from '../branch-manager-details/branch-manager-details.component';
+import { UserBulkActionsComponent } from 'src/app/shared/user-bulk-actions/user-bulk-actions.component';
 
 @Component({
   selector: 'app-branch-manager-list',
-  imports: [CommonModule, SharedModule, RouterModule, MatDialogModule,LoadingOverlayComponent],
+  imports: [CommonModule, SharedModule, RouterModule, MatDialogModule, LoadingOverlayComponent, UserBulkActionsComponent],
   templateUrl: './branch-manager-list.component.html',
   styleUrl: './branch-manager-list.component.scss'
 })
@@ -35,13 +36,20 @@ export class BranchManagerListComponent implements OnInit, OnDestroy {
   isLoading = false;
 
   // public props
-  displayedColumns: string[] = ['serial', 'fullName', 'email', 'mobile', 'action'];
+  readonly canCreateBranchManagers = true;
+  readonly canEditBranchManagers = true;
+  readonly canDisableBranchManagers = true;
+  displayedColumns: string[] = this.canDisableBranchManagers
+    ? ['select', 'serial', 'fullName', 'email', 'mobile', 'action']
+    : ['serial', 'fullName', 'email', 'mobile', 'action'];
   dataSource = new MatTableDataSource<LookUpUserDto>();
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
   pageIndex = 0;
   pageSize = 10;
   private pendingBranchManagerIds = new Set<number>();
+  private selectedBranchManagerIds = new Set<number>();
+  isBulkUpdating = false;
   isLoadingMore = false;
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;
@@ -85,12 +93,81 @@ export class BranchManagerListComponent implements OnInit, OnDestroy {
     return index + 1;
   }
 
+  get selectedCount(): number {
+    return this.selectedBranchManagerIds.size;
+  }
+
+  isSelected(branchManagerId: number): boolean {
+    return this.selectedBranchManagerIds.has(branchManagerId);
+  }
+
+  clearSelection(): void {
+    this.selectedBranchManagerIds.clear();
+  }
+
+  toggleSelection(branchManagerId: number, checked: boolean): void {
+    if (checked) {
+      this.selectedBranchManagerIds.add(branchManagerId);
+      return;
+    }
+
+    this.selectedBranchManagerIds.delete(branchManagerId);
+  }
+
+  toggleSelectAllVisible(checked: boolean): void {
+    this.getSelectableVisibleBranchManagers().forEach((branchManager) => this.toggleSelection(branchManager.id, checked));
+  }
+
+  isAllVisibleSelected(): boolean {
+    const visibleBranchManagers = this.getSelectableVisibleBranchManagers();
+    return (
+      visibleBranchManagers.length > 0 &&
+      visibleBranchManagers.every((branchManager) => this.selectedBranchManagerIds.has(branchManager.id))
+    );
+  }
+
+  isSomeVisibleSelected(): boolean {
+    const visibleBranchManagers = this.getSelectableVisibleBranchManagers();
+    if (!visibleBranchManagers.length) {
+      return false;
+    }
+
+    const selectedVisibleCount = visibleBranchManagers.filter((branchManager) =>
+      this.selectedBranchManagerIds.has(branchManager.id)
+    ).length;
+    return selectedVisibleCount > 0 && selectedVisibleCount < visibleBranchManagers.length;
+  }
+
+  confirmBulkDisable(): void {
+    if (!this.selectedCount || this.isBulkUpdating) {
+      return;
+    }
+
+    const dialogRef = this.dialog.open(DisableUserConfirmDialogComponent, {
+      data: {
+        count: this.selectedCount,
+        entityLabel: 'مدير فرع',
+        title: 'إيقاف جماعي لمديري الفروع',
+        actionLabel: 'إيقاف المحددين'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (confirmed) {
+        this.disableSelectedBranchManagers();
+      }
+    });
+  }
+
 
   ngOnDestroy(): void {
     this.intersectionObserver?.disconnect();
   }
 
   private loadBranchManagers(append = false) {
+    if (!append) {
+      this.clearSelection();
+    }
     this.isLoading = !append;
     this.isLoadingMore = append;
     this.lookupService
@@ -183,6 +260,7 @@ export class BranchManagerListComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res) => {
           if (res.isSuccess) {
+            this.selectedBranchManagerIds.delete(branchManager.id);
             this.dataSource.data = this.dataSource.data.filter((manager) => manager.id !== branchManager.id);
             this.totalCount = Math.max(this.totalCount - 1, 0);
             this.toast.success(this.translate.instant('Branch manager disabled successfully'));
@@ -196,6 +274,56 @@ export class BranchManagerListComponent implements OnInit, OnDestroy {
           }
         },
         error: () => this.toast.error(this.translate.instant('Failed to disable branch manager'))
+      });
+  }
+
+  private disableSelectedBranchManagers(): void {
+    const selectedIds = Array.from(this.selectedBranchManagerIds);
+    if (!selectedIds.length) {
+      return;
+    }
+
+    selectedIds.forEach((id) => this.pendingBranchManagerIds.add(id));
+    this.isBulkUpdating = true;
+
+    this.userService
+      .disableUsers(selectedIds)
+      .pipe(
+        finalize(() => {
+          selectedIds.forEach((id) => this.pendingBranchManagerIds.delete(id));
+          this.isBulkUpdating = false;
+        })
+      )
+      .subscribe({
+        next: (res) => {
+          if (!res.isSuccess) {
+            if (res.errors?.length) {
+              res.errors.forEach((error) => this.toast.error(error.message));
+            } else {
+              this.toast.error('تعذر إيقاف مديري الفروع المحددين');
+            }
+            return;
+          }
+
+          const disabledIds = res.data?.disabledUserIds ?? [];
+          const skippedIds = res.data?.skippedUserIds ?? [];
+
+          if (disabledIds.length) {
+            const disabledIdSet = new Set(disabledIds);
+            this.dataSource.data = this.dataSource.data.filter((manager) => !disabledIdSet.has(manager.id));
+            disabledIds.forEach((id) => this.selectedBranchManagerIds.delete(id));
+            this.totalCount = Math.max(this.totalCount - disabledIds.length, 0);
+          }
+
+          if (disabledIds.length && skippedIds.length) {
+            this.toast.success(`تم إيقاف ${disabledIds.length} مدير فرع، وتعذر إيقاف ${skippedIds.length}.`);
+          } else if (disabledIds.length) {
+            this.toast.success(`تم إيقاف ${disabledIds.length} مدير فرع.`);
+          } else {
+            this.toast.error('لم يتم إيقاف أي مدير فرع من المحددين.');
+          }
+        },
+        error: () => this.toast.error('تعذر إيقاف مديري الفروع المحددين')
       });
   }
 
@@ -243,6 +371,10 @@ export class BranchManagerListComponent implements OnInit, OnDestroy {
 
   hasMoreResults(): boolean {
     return this.dataSource.data.length < this.totalCount;
+  }
+
+  private getSelectableVisibleBranchManagers(): LookUpUserDto[] {
+    return this.dataSource.data.filter((branchManager) => !!branchManager?.id && !this.pendingBranchManagerIds.has(branchManager.id));
   }
 
   branchManagerDetails(manager: LookUpUserDto): void {

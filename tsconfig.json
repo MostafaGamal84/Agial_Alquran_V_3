@@ -2,7 +2,7 @@
   "compileOnSave": false,
   "compilerOptions": {
     "baseUrl": "./",
-    "outDir": "./dist",
+    "outDir": "../../../publish/front",
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "noImplicitOverride": true,

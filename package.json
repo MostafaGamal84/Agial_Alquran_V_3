@@ -1,6 +1,6 @@
 {
   "name": "able-pro-angular-material",
-  "version": "1.2.4",
+  "version": "1.3.3",
   "builders": "./tools/versioned-build/builders.json",
   "exports": {
     "./package.json": "./package.json"

@@ -101,23 +101,12 @@ export class AdminComponent implements OnInit, AfterViewInit {
       this.sidebar()!.toggle();
     });
 
-    /**
-     * current login user role
-     */
     const currentUser = this.authenticationService.currentUserValue;
     const userRoles =
       currentUser?.user.role !== undefined && currentUser?.user.role !== null
         ? [currentUser.user.role.toString()]
         : [UserTypesEnum.Admin.toString()];
 
-    /**
-     * Role base menu filtering
-     *
-     * Clone the static menu config before filtering so that role-based
-     * disabling does not mutate the shared `menus` array. Without cloning,
-     * items disabled for one role would remain disabled when another user
-     * with different permissions logs in.
-     */
     const menuClone = JSON.parse(JSON.stringify(menus));
     this.menus = this.RoleBaseFilterMenu(menuClone, userRoles);
   }

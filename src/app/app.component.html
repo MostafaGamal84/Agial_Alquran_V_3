@@ -1,9 +1,11 @@
 <a href="#main-content" class="skip-link" (click)="onSkipToContent($event)">تخطي إلى المحتوى / Skip to content</a>
 
 <div appAutoTranslate>
-  <main id="main-content" tabindex="-1" class="app-main-content">
-    <router-outlet></router-outlet>
-  </main>
+  <app-loading-overlay [isLoading]="isSpinnerVisible" [showHadith]="true">
+    <main id="main-content" tabindex="-1" class="app-main-content">
+      <router-outlet></router-outlet>
+    </main>
+  </app-loading-overlay>
 
   <div class="sr-only" aria-live="polite" aria-atomic="true">{{ announcerService.politeMessage() }}</div>
   <div class="sr-only" aria-live="assertive" aria-atomic="true">{{ announcerService.assertiveMessage() }}</div>

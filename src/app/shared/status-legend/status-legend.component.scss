@@ -1,0 +1,97 @@
+:host {
+  --legend-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 250, 252, 0.96) 100%);
+  --legend-border: rgba(148, 163, 184, 0.28);
+  --legend-title: #0f172a;
+  --legend-text: #334155;
+  --legend-muted: #64748b;
+  display: block;
+}
+
+:host-context(.dark) {
+  --legend-bg: linear-gradient(180deg, rgba(24, 34, 49, 0.96) 0%, rgba(15, 23, 36, 0.96) 100%);
+  --legend-border: rgba(148, 163, 184, 0.2);
+  --legend-title: #f8fafc;
+  --legend-text: rgba(241, 245, 249, 0.92);
+  --legend-muted: rgba(226, 232, 240, 0.72);
+}
+
+.status-legend {
+  margin: 0 15px 16px;
+  padding: 16px 18px;
+  border: 1px solid var(--legend-border);
+  border-radius: 18px;
+  background: var(--legend-bg);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+}
+
+.status-legend__header {
+  margin-bottom: 14px;
+}
+
+.status-legend__title {
+  color: var(--legend-title);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.status-legend__description {
+  margin: 6px 0 0;
+  color: var(--legend-text);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.status-legend__items {
+  display: grid;
+  gap: 10px;
+}
+
+.status-legend__item {
+  display: grid;
+  grid-template-columns: 14px 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.status-legend__swatch {
+  --legend-swatch: #94a3b8;
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+  border-radius: 999px;
+  background: var(--legend-swatch);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--legend-swatch) 18%, transparent);
+}
+
+.status-legend__content {
+  min-width: 0;
+}
+
+.status-legend__label {
+  color: var(--legend-title);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.status-legend__text {
+  margin-top: 3px;
+  color: var(--legend-text);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.status-legend__footer {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--legend-border);
+  color: var(--legend-muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+@media (max-width: 575px) {
+  .status-legend {
+    margin-inline: 12px;
+    padding: 14px 14px 15px;
+  }
+}

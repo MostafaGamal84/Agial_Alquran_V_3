@@ -78,6 +78,13 @@ export interface UpdateProfileDto {
   branchId?: number | null;
 }
 
+export interface BulkDisableUsersResultDto {
+  requestedCount: number;
+  disabledCount: number;
+  disabledUserIds: number[];
+  skippedUserIds: number[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class UserService {
   private http = inject(HttpClient);
@@ -98,6 +105,13 @@ export class UserService {
     return this.http.get<ApiResponse<boolean>>(
       `${environment.apiUrl}/api/User/DisableUser`,
       { params }
+    );
+  }
+
+  disableUsers(userIds: number[]): Observable<ApiResponse<BulkDisableUsersResultDto>> {
+    return this.http.post<ApiResponse<BulkDisableUsersResultDto>>(
+      `${environment.apiUrl}/api/User/BulkDisableUsers`,
+      { userIds }
     );
   }
 

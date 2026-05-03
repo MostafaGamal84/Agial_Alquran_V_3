@@ -16,6 +16,19 @@ export const SUBSCRIBE_AUDIENCE_OPTIONS: readonly SubscribeAudienceOption[] = [
   { value: SubscribeAudience.NonArab, translationKey: 'Non Arab', currencyCode: 'USD' }
 ];
 
+const ATTACHED_AUDIENCE_LABELS = [
+  'مصري',
+  'المصري',
+  'عربي',
+  'العربي',
+  'أجنبي',
+  'الأجنبي',
+  'اجنبي',
+  'الاجنبي',
+  'خليجي',
+  'الخليجي'
+] as const;
+
 const AUDIENCE_CURRENCY_IDS: Record<SubscribeAudience, number> = {
   [SubscribeAudience.Egyptian]: 1,
   [SubscribeAudience.Gulf]: 2,
@@ -130,6 +143,27 @@ function normalizeCurrencyCode(value: unknown): string {
     .normalize('NFKD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[\s_.-]+/g, '');
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+export function formatAttachedAudienceLabel(value: string | null | undefined): string | null | undefined {
+  if (value === null || value === undefined) {
+    return value;
+  }
+
+  let normalized = value.replace(/\s+/g, ' ').trim();
+
+  for (const label of ATTACHED_AUDIENCE_LABELS) {
+    normalized = normalized.replace(
+      new RegExp(`(\\S)(${escapeRegExp(label)})$`, 'u'),
+      '$1 $2'
+    );
+  }
+
+  return normalized;
 }
 
 export function inferSubscribeAudience(source: SubscribePricingSource): SubscribeAudience | null {

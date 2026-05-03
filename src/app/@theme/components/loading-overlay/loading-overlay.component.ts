@@ -2,8 +2,13 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  OnDestroy,
   Input,
+  Renderer2,
+  RendererFactory2,
+  inject
 } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 import { BehaviorSubject } from 'rxjs';
 
 interface HadithCard {
@@ -22,9 +27,13 @@ interface HadithCard {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoadingOverlayComponent {
+  private static activeScrollLocks = 0;
   private loadingValue = false;
   private hadithIndex = 0;
   private showHadithValue = false;
+  private isScrollLocked = false;
+  private readonly document = inject(DOCUMENT);
+  private readonly renderer: Renderer2;
 
   private readonly defaultHadithList: HadithCard[] = [
     {
@@ -196,6 +205,7 @@ export class LoadingOverlayComponent {
   ];
 
   constructor() {
+    this.renderer = inject(RendererFactory2).createRenderer(null, null);
     this.hadithList = this.resolveHadithList();
     this.currentHadith$ = new BehaviorSubject<HadithCard>(this.hadithList[0]);
   }
@@ -205,6 +215,7 @@ export class LoadingOverlayComponent {
     if (value === this.loadingValue) return;
 
     this.loadingValue = value;
+    this.syncScrollLock();
 
     if (value && this.showHadithValue) {
       this.showNextHadith();   // أول حديث عشوائي
@@ -218,6 +229,7 @@ export class LoadingOverlayComponent {
   @Input()
   set showHadith(value: boolean) {
     this.showHadithValue = value;
+    this.syncScrollLock();
 
     if (value && this.loadingValue) {
       this.showNextHadith();
@@ -228,7 +240,49 @@ export class LoadingOverlayComponent {
     return this.showHadithValue;
   }
 
+  ngOnDestroy(): void {
+    this.releaseScrollLock();
+  }
+
   // ================= helpers =================
+
+  private syncScrollLock(): void {
+    if (this.loadingValue && this.showHadithValue) {
+      this.acquireScrollLock();
+      return;
+    }
+
+    this.releaseScrollLock();
+  }
+
+  private acquireScrollLock(): void {
+    if (this.isScrollLocked) {
+      return;
+    }
+
+    this.isScrollLocked = true;
+
+    if (LoadingOverlayComponent.activeScrollLocks === 0) {
+      this.renderer.setStyle(this.document.documentElement, 'overflow', 'hidden');
+      this.renderer.setStyle(this.document.body, 'overflow', 'hidden');
+    }
+
+    LoadingOverlayComponent.activeScrollLocks += 1;
+  }
+
+  private releaseScrollLock(): void {
+    if (!this.isScrollLocked) {
+      return;
+    }
+
+    this.isScrollLocked = false;
+    LoadingOverlayComponent.activeScrollLocks = Math.max(0, LoadingOverlayComponent.activeScrollLocks - 1);
+
+    if (LoadingOverlayComponent.activeScrollLocks === 0) {
+      this.renderer.removeStyle(this.document.documentElement, 'overflow');
+      this.renderer.removeStyle(this.document.body, 'overflow');
+    }
+  }
 
   private getRandomHadithIndex(): number {
     if (this.hadithList.length <= 1) return 0;

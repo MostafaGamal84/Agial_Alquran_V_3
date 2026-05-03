@@ -62,6 +62,13 @@
               {{ 'عرض الحلقات غير المكتملة فقط' | translate }}
             </mat-checkbox>
           </div>
+
+          <app-status-legend
+            title="توضيح اللون والفلتر"
+            description="لون اسم الحلقة يوضح هل الربط مكتمل أم توجد عناصر أساسية ناقصة."
+            footer='فلتر "عرض الحلقات غير المكتملة فقط" يعرض أسماء الحلقات البرتقالية فقط.'
+            [items]="statusLegendItems"
+          />
           <div class="table-responsive">
             <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
               <ng-container matColumnDef="index">

@@ -51,6 +51,36 @@
   min-width: 112px;
 }
 
+.report-filter-summary {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 15px 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--filter-popup-border);
+  border-radius: 16px;
+  background: var(--filter-popup-surface);
+}
+
+.report-filter-summary__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.report-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--filter-popup-surface-strong);
+  color: var(--filter-popup-text);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
 .table-responsive {
   position: relative;
   overflow-x: auto;
@@ -180,6 +210,14 @@
   background: var(--filter-popup-bg);
 }
 
+.filter-popup-note {
+  grid-column: 1 / -1;
+  padding: 2px 4px 0;
+  color: var(--filter-popup-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 :host ::ng-deep .filter-popup-card .mat-mdc-form-field-subscript-wrapper {
   display: none;
 }
@@ -234,6 +272,11 @@
 }
 
 @media (max-width: 767px) {
+  .report-filter-summary {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   .filter-popup-body {
     grid-template-columns: 1fr;
   }

@@ -22,26 +22,53 @@ import { ManagerDetailsComponent } from '../manager-details/manager-details.comp
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
 import { ToastService } from 'src/app/@theme/services/toast.service';
 import { UserEditComponent } from '../../user-edit/user-edit.component';
+import { StatusLegendComponent, StatusLegendItem } from 'src/app/shared/status-legend/status-legend.component';
+import { UserService } from 'src/app/@theme/services/user.service';
+import { TranslateService } from '@ngx-translate/core';
+import { DisableUserConfirmDialogComponent } from '../../student/student-list/student-list.disable-user-confirm-dialog.component';
+import { UserBulkActionsComponent } from 'src/app/shared/user-bulk-actions/user-bulk-actions.component';
 @Component({
   selector: 'app-manager-list',
-  imports: [CommonModule, SharedModule, RouterModule, MatDialogModule, LoadingOverlayComponent],
+  imports: [CommonModule, SharedModule, RouterModule, MatDialogModule, LoadingOverlayComponent, StatusLegendComponent, UserBulkActionsComponent],
   templateUrl: './manager-list.component.html',
   styleUrl: './manager-list.component.scss'
 })
 export class ManagerListComponent implements OnInit, OnDestroy {
   private lookupService = inject(LookupService);
+  private userService = inject(UserService);
   private toast = inject(ToastService);
+  private translate = inject(TranslateService);
   dialog = inject(MatDialog);
 
   // public props
-  displayedColumns: string[] = ['serial', 'fullName', 'email', 'mobile', 'action'];
+  readonly canCreateManagers = true;
+  readonly canEditManagers = true;
+  readonly canDisableManagers = true;
+  displayedColumns: string[] = this.canDisableManagers
+    ? ['select', 'serial', 'fullName', 'email', 'mobile', 'action']
+    : ['serial', 'fullName', 'email', 'mobile', 'action'];
   dataSource = new MatTableDataSource<LookUpUserDto>();
+  readonly statusLegendItems: StatusLegendItem[] = [
+    {
+      color: 'var(--warning-600, #d97706)',
+      label: 'الاسم البرتقالي',
+      description: 'المدير غير مكتمل الربط: ينقصه معلم أو طلاب أو حلقة مرتبطة به.'
+    },
+    {
+      color: '#94a3b8',
+      label: 'الاسم الطبيعي',
+      description: 'ربط المدير مكتمل والمعطيات الأساسية موجودة.'
+    }
+  ];
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
   pageIndex = 0;
   pageSize = 10;
   isLoading = false;
   isLoadingMore = false;
+  private pendingManagerIds = new Set<number>();
+  private selectedManagerIds = new Set<number>();
+  isBulkUpdating = false;
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;
 
@@ -85,12 +112,76 @@ export class ManagerListComponent implements OnInit, OnDestroy {
     return index + 1;
   }
 
+  get selectedCount(): number {
+    return this.selectedManagerIds.size;
+  }
+
+  isSelected(managerId: number): boolean {
+    return this.selectedManagerIds.has(managerId);
+  }
+
+  clearSelection(): void {
+    this.selectedManagerIds.clear();
+  }
+
+  toggleSelection(managerId: number, checked: boolean): void {
+    if (checked) {
+      this.selectedManagerIds.add(managerId);
+      return;
+    }
+
+    this.selectedManagerIds.delete(managerId);
+  }
+
+  toggleSelectAllVisible(checked: boolean): void {
+    this.getSelectableVisibleManagers().forEach((manager) => this.toggleSelection(manager.id, checked));
+  }
+
+  isAllVisibleSelected(): boolean {
+    const visibleManagers = this.getSelectableVisibleManagers();
+    return visibleManagers.length > 0 && visibleManagers.every((manager) => this.selectedManagerIds.has(manager.id));
+  }
+
+  isSomeVisibleSelected(): boolean {
+    const visibleManagers = this.getSelectableVisibleManagers();
+    if (!visibleManagers.length) {
+      return false;
+    }
+
+    const selectedVisibleCount = visibleManagers.filter((manager) => this.selectedManagerIds.has(manager.id)).length;
+    return selectedVisibleCount > 0 && selectedVisibleCount < visibleManagers.length;
+  }
+
+  confirmBulkDisable(): void {
+    if (!this.selectedCount || this.isBulkUpdating) {
+      return;
+    }
+
+    const dialogRef = this.dialog.open(DisableUserConfirmDialogComponent, {
+      data: {
+        count: this.selectedCount,
+        entityLabel: 'مدير',
+        title: 'إيقاف جماعي للمديرين',
+        actionLabel: 'إيقاف المحددين'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (confirmed) {
+        this.disableSelectedManagers();
+      }
+    });
+  }
+
 
   ngOnDestroy(): void {
     this.intersectionObserver?.disconnect();
   }
 
   private loadManagers(append = false) {
+    if (!append) {
+      this.clearSelection();
+    }
     this.isLoading = !append;
     this.isLoadingMore = append;
     this.lookupService
@@ -169,6 +260,106 @@ export class ManagerListComponent implements OnInit, OnDestroy {
     });
   }
 
+  confirmDisable(manager: LookUpUserDto): void {
+    if (this.isProcessing(manager.id)) {
+      return;
+    }
+
+    const dialogRef = this.dialog.open(DisableUserConfirmDialogComponent, {
+      data: { fullName: manager.fullName }
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (confirmed) {
+        this.disableManager(manager);
+      }
+    });
+  }
+
+  isProcessing(managerId: number): boolean {
+    return this.pendingManagerIds.has(managerId);
+  }
+
+  private disableManager(manager: LookUpUserDto): void {
+    if (this.pendingManagerIds.has(manager.id)) {
+      return;
+    }
+
+    this.pendingManagerIds.add(manager.id);
+
+    this.userService
+      .disableUser(manager.id, false)
+      .pipe(finalize(() => this.pendingManagerIds.delete(manager.id)))
+      .subscribe({
+        next: (res) => {
+          if (res.isSuccess) {
+            this.selectedManagerIds.delete(manager.id);
+            this.dataSource.data = this.dataSource.data.filter((item) => item.id !== manager.id);
+            this.totalCount = Math.max(this.totalCount - 1, 0);
+            this.toast.success(this.translate.instant('Manager disabled successfully'));
+            return;
+          }
+
+          if (res.errors?.length) {
+            res.errors.forEach((error) => this.toast.error(error.message));
+          } else {
+            this.toast.error(this.translate.instant('Failed to disable manager'));
+          }
+        },
+        error: () => this.toast.error(this.translate.instant('Failed to disable manager'))
+      });
+  }
+
+  private disableSelectedManagers(): void {
+    const selectedIds = Array.from(this.selectedManagerIds);
+    if (!selectedIds.length) {
+      return;
+    }
+
+    selectedIds.forEach((id) => this.pendingManagerIds.add(id));
+    this.isBulkUpdating = true;
+
+    this.userService
+      .disableUsers(selectedIds)
+      .pipe(
+        finalize(() => {
+          selectedIds.forEach((id) => this.pendingManagerIds.delete(id));
+          this.isBulkUpdating = false;
+        })
+      )
+      .subscribe({
+        next: (res) => {
+          if (!res.isSuccess) {
+            if (res.errors?.length) {
+              res.errors.forEach((error) => this.toast.error(error.message));
+            } else {
+              this.toast.error('تعذر إيقاف المديرين المحددين');
+            }
+            return;
+          }
+
+          const disabledIds = res.data?.disabledUserIds ?? [];
+          const skippedIds = res.data?.skippedUserIds ?? [];
+
+          if (disabledIds.length) {
+            const disabledIdSet = new Set(disabledIds);
+            this.dataSource.data = this.dataSource.data.filter((manager) => !disabledIdSet.has(manager.id));
+            disabledIds.forEach((id) => this.selectedManagerIds.delete(id));
+            this.totalCount = Math.max(this.totalCount - disabledIds.length, 0);
+          }
+
+          if (disabledIds.length && skippedIds.length) {
+            this.toast.success(`تم إيقاف ${disabledIds.length} مدير، وتعذر إيقاف ${skippedIds.length}.`);
+          } else if (disabledIds.length) {
+            this.toast.success(`تم إيقاف ${disabledIds.length} مدير.`);
+          } else {
+            this.toast.error('لم يتم إيقاف أي مدير من المحددين.');
+          }
+        },
+        error: () => this.toast.error('تعذر إيقاف المديرين المحددين')
+      });
+  }
+
   private setupIntersectionObserver(): void {
     if (!this.loadMoreElement) {
       return;
@@ -213,6 +404,10 @@ export class ManagerListComponent implements OnInit, OnDestroy {
 
   hasMoreResults(): boolean {
     return this.dataSource.data.length < this.totalCount;
+  }
+
+  private getSelectableVisibleManagers(): LookUpUserDto[] {
+    return this.dataSource.data.filter((manager) => !!manager?.id && !this.pendingManagerIds.has(manager.id));
   }
 
   hasMissingAssignments(manager: LookUpUserDto): boolean {

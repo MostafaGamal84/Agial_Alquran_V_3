@@ -18,7 +18,6 @@ export class AuthGuardChild implements CanActivateChild {
 
   canActivateChild(_route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | UrlTree {
     if (this.authenticationService.isLoggedIn()) {
-      // User is logged in; allow access regardless of role
       return true;
     }
 

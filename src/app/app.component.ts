@@ -13,10 +13,11 @@ import { AnnouncerService } from './core/services/announcer.service';
 // Angular material
 import { MatProgressBar } from '@angular/material/progress-bar';
 import { AutoTranslateDirective } from './demo/shared/directives/auto-translate.directive';
+import { LoadingOverlayComponent } from './@theme/components/loading-overlay/loading-overlay.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, MatProgressBar, AutoTranslateDirective],
+  imports: [RouterOutlet, MatProgressBar, AutoTranslateDirective, LoadingOverlayComponent],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })

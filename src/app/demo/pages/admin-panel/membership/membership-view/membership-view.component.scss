@@ -1,3 +1,112 @@
+.subscription-data-row td {
+  border-bottom-width: 0;
+}
+
+.subscription-detail-row {
+  height: 0;
+}
+
+.subscription-detail-row .mat-mdc-cell,
+.subscription-detail-row .mat-cell {
+  border-bottom: 0;
+  padding: 0;
+}
+
+.subscription-detail-cell {
+  padding: 0 !important;
+}
+
+.subscription-detail-panel {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  padding: 0 16px;
+  transition:
+    max-height 180ms ease,
+    opacity 180ms ease,
+    padding 180ms ease;
+}
+
+.subscription-detail-panel--expanded {
+  max-height: 1200px;
+  opacity: 1;
+  padding: 16px;
+}
+
+.subscription-consumption {
+  background: linear-gradient(180deg, rgba(26, 35, 50, 0.92) 0%, rgba(18, 25, 37, 0.96) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  margin-bottom: 16px;
+  padding: 18px;
+}
+
+.subscription-consumption__header {
+  margin-bottom: 16px;
+}
+
+.subscription-consumption__title {
+  color: #f7fafc;
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.subscription-consumption__subtitle {
+  color: #90a1b9;
+  margin: 6px 0 0;
+}
+
+.subscription-consumption__grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.subscription-consumption__metric {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.subscription-consumption__label {
+  color: #8ea0b8;
+  display: block;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.subscription-consumption__value {
+  color: #f7fafc;
+  display: block;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.subscription-payment-details {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.subscription-payment-details__title {
+  color: #f7fafc;
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 14px;
+}
+
+.subscription-payment-state {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  color: #9fb0c7;
+  padding: 16px;
+  text-align: center;
+}
+
 .subscription-history-section {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   margin-top: 24px;
@@ -161,6 +270,7 @@
 }
 
 @media (max-width: 991.98px) {
+  .subscription-consumption__grid,
   .subscription-history-card__metrics {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -172,6 +282,7 @@
     flex-direction: column;
   }
 
+  .subscription-consumption__grid,
   .subscription-history-card__plans,
   .subscription-history-card__metrics {
     grid-template-columns: minmax(0, 1fr);

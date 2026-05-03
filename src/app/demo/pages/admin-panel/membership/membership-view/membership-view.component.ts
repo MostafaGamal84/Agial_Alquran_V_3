@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
-import { MatExpansionModule } from '@angular/material/expansion';
 import { SharedModule } from 'src/app/demo/shared/shared.module';
 import {
   StudentSubscribeHistoryReDto,
@@ -19,7 +18,7 @@ import {
 
 @Component({
   selector: 'app-membership-view',
-  imports: [CommonModule, SharedModule, RouterModule, MatExpansionModule],
+  imports: [CommonModule, SharedModule, RouterModule],
   templateUrl: './membership-view.component.html',
   styleUrl: './membership-view.component.scss'
 })
@@ -30,6 +29,7 @@ export class MembershipViewComponent implements OnInit, OnDestroy {
   private router = inject(Router);
 
   displayedColumns: string[] = ['expand', 'plan', 'remainingMinutes', 'startDate', 'status'];
+  readonly detailColumns: string[] = ['detail'];
   dataSource = new MatTableDataSource<ViewStudentSubscribeReDto>();
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
@@ -82,7 +82,7 @@ export class MembershipViewComponent implements OnInit, OnDestroy {
 
   expandedElement: ViewStudentSubscribeReDto | null = null;
   paymentDetails: StudentPaymentDto | null = null;
-  panelOpen = false;
+  isPaymentLoading = false;
 
   ngOnInit() {
     this.studentId = Number(this.route.snapshot.paramMap.get('id'));
@@ -180,23 +180,36 @@ export class MembershipViewComponent implements OnInit, OnDestroy {
     if (this.expandedElement === element) {
       this.expandedElement = null;
       this.paymentDetails = null;
-      this.panelOpen = false;
+      this.isPaymentLoading = false;
       return;
     }
     this.expandedElement = element;
-    this.panelOpen = true;
+    this.paymentDetails = null;
     const paymentId = element.studentPaymentId;
     if (paymentId == null) {
+      this.isPaymentLoading = false;
       this.paymentDetails = null;
       return;
     }
-    this.paymentService.getPayment(paymentId).subscribe((res) => {
-      if (res.isSuccess && res.data) {
-        this.paymentDetails = res.data;
-      } else {
+    this.isPaymentLoading = true;
+    this.paymentService.getPayment(paymentId).subscribe({
+      next: (res) => {
+        if (res.isSuccess && res.data) {
+          this.paymentDetails = res.data;
+        } else {
+          this.paymentDetails = null;
+        }
+        this.isPaymentLoading = false;
+      },
+      error: () => {
         this.paymentDetails = null;
+        this.isPaymentLoading = false;
       }
     });
+  }
+
+  isExpanded(element: ViewStudentSubscribeReDto): boolean {
+    return this.expandedElement === element;
   }
 
   goToInvoice(invoiceId?: number | null) {
@@ -240,5 +253,16 @@ export class MembershipViewComponent implements OnInit, OnDestroy {
 
     const currencyLabel = this.getCurrencyLabel(currencyId);
     return currencyLabel ? `${amount} ${currencyLabel}` : `${amount}`;
+  }
+
+  getSubscriptionMonthLabel(startDate?: string | null): string {
+    if (!startDate) {
+      return 'الشهر المحدد';
+    }
+
+    return new Intl.DateTimeFormat('ar-EG', {
+      month: 'long',
+      year: 'numeric'
+    }).format(new Date(startDate));
   }
 }

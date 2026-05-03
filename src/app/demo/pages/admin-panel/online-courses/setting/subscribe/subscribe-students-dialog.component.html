@@ -1,0 +1,108 @@
+<app-loading-overlay [isLoading]="isLoading">
+  <div class="dialog-shell" appAutoTranslate>
+    <div class="dialog-header">
+      <div>
+        <h2 class="dialog-title">طلاب الباقة</h2>
+        <p class="dialog-subtitle">
+          {{ data.subscribe.name }}
+        </p>
+      </div>
+
+      <button mat-icon-button mat-dialog-close aria-label="إغلاق">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="meta-grid">
+      <div class="meta-card">
+        <span class="meta-label">الباقة</span>
+        <strong class="meta-value">{{ data.subscribe.name || 'غير محدد' }}</strong>
+      </div>
+
+      <div class="meta-card">
+        <span class="meta-label">القسم</span>
+        <strong class="meta-value">{{ data.subscribe.subscribeType?.name || 'غير محدد' }}</strong>
+      </div>
+
+      <div class="meta-card">
+        <span class="meta-label">الفئة</span>
+        <strong class="meta-value">{{ resolveCategoryLabel(data.subscribe.subscribeType?.group) }}</strong>
+      </div>
+
+      <div class="meta-card">
+        <span class="meta-label">عدد الطلاب الحاليين</span>
+        <strong class="meta-value">{{ totalCount }}</strong>
+      </div>
+    </div>
+
+    <div class="table-search">
+      <mat-form-field appearance="outline" class="w-100">
+        <input matInput #searchInput (keyup.enter)="applyFilter(searchInput.value)" placeholder="ابحث بالاسم أو الجوال" />
+        <button mat-icon-button matSuffix type="button" (click)="applyFilter(searchInput.value)" aria-label="بحث">
+          <mat-icon>search</mat-icon>
+        </button>
+      </mat-form-field>
+    </div>
+
+    <div class="table-responsive">
+      <table mat-table [dataSource]="rows" class="mat-elevation-z1">
+        <ng-container matColumnDef="studentName">
+          <th mat-header-cell *matHeaderCellDef>الطالب</th>
+          <td mat-cell *matCellDef="let element">{{ element.studentName || '—' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="studentMobile">
+          <th mat-header-cell *matHeaderCellDef>الجوال</th>
+          <td mat-cell *matCellDef="let element">{{ element.studentMobile || '—' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="remainingMinutes">
+          <th mat-header-cell *matHeaderCellDef>الدقائق المتبقية</th>
+          <td mat-cell *matCellDef="let element">{{ element.remainingMinutes ?? '—' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="startDate">
+          <th mat-header-cell *matHeaderCellDef>تاريخ الاشتراك</th>
+          <td mat-cell *matCellDef="let element">{{ element.startDate ? (element.startDate | date: 'yyyy/MM/dd') : '—' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="payStatus">
+          <th mat-header-cell *matHeaderCellDef>حالة الدفع</th>
+          <td mat-cell *matCellDef="let element">
+            <span class="status-badge" [class.status-badge--paid]="element.payStatus === true">
+              {{ resolvePayStatusLabel(element.payStatus) }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>عرض</th>
+          <td mat-cell *matCellDef="let element">
+            <a
+              mat-stroked-button
+              color="primary"
+              [routerLink]="['/online-course/student/details', element.studentId]"
+              mat-dialog-close
+            >
+              ملف الطالب
+            </a>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell empty-cell" [attr.colspan]="displayedColumns.length">
+            لا يوجد طلاب مطابقون لهذا الفلتر.
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="dialog-footer">
+      <button mat-stroked-button type="button" (click)="loadMore()" [disabled]="isLoadingMore || !hasMoreResults()">
+        {{ isLoadingMore ? 'جارٍ تحميل المزيد...' : hasMoreResults() ? 'تحميل المزيد' : 'تم تحميل كل الطلاب' }}
+      </button>
+    </div>
+  </div>
+</app-loading-overlay>

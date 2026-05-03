@@ -9,6 +9,7 @@ import {
   PagedResultDto,
   normalizePagedResult
 } from './lookup.service';
+import { formatAttachedAudienceLabel } from './subscribe-audience';
 import { SubscribeTypeCategory } from './subscribe.service';
 
 export interface ViewStudentSubscribeReDto {
@@ -22,6 +23,9 @@ export interface ViewStudentSubscribeReDto {
   isCancelled?: boolean | null;
   plan?: string | null;
   remainingMinutes?: number | null;
+  consumedMinutes?: number | null;
+  consumedSessionsCount?: number | null;
+  consumedHours?: number | null;
   startDate?: string | null;
   studentPaymentId?: number | null;
   subscribeTypeGroup?: SubscribeTypeCategory | null;
@@ -53,6 +57,40 @@ export interface AddStudentSubscribeDto {
   studentId?: number;
   studentSubscribeId?: number;
   actionType?: string | null;
+}
+
+function formatStudentSubscribeItem(item: ViewStudentSubscribeReDto): ViewStudentSubscribeReDto {
+  return {
+    ...item,
+    plan: formatAttachedAudienceLabel(item.plan)
+  };
+}
+
+function formatStudentSubscribeHistoryItem(
+  item: StudentSubscribeHistoryReDto
+): StudentSubscribeHistoryReDto {
+  return {
+    ...item,
+    oldPlanName: formatAttachedAudienceLabel(item.oldPlanName),
+    newPlanName: formatAttachedAudienceLabel(item.newPlanName)
+  };
+}
+
+function formatPagedItems<T>(
+  response: ApiResponse<PagedResultDto<T>>,
+  formatter: (item: T) => T
+): ApiResponse<PagedResultDto<T>> {
+  if (!response.data?.items) {
+    return response;
+  }
+
+  return {
+    ...response,
+    data: {
+      ...response.data,
+      items: response.data.items.map(formatter)
+    }
+  };
 }
 
 @Injectable({ providedIn: 'root' })
@@ -105,7 +143,10 @@ export class StudentSubscribeService {
         `${environment.apiUrl}/api/StudentSubscrib/GetStudents`,
         { params }
       )
-      .pipe(map((response) => normalizePagedResult(response, { skipCount: filter.skipCount })));
+      .pipe(
+        map((response) => formatPagedItems(response, formatStudentSubscribeItem)),
+        map((response) => normalizePagedResult(response, { skipCount: filter.skipCount }))
+      );
   }
 
   getStudentSubscribesWithPayment(
@@ -152,7 +193,61 @@ export class StudentSubscribeService {
         `${environment.apiUrl}/api/StudentSubscrib/GetStudentSubscribesWithPayment`,
         { params }
       )
-      .pipe(map((response) => normalizePagedResult(response, { skipCount: filter.skipCount })));
+      .pipe(
+        map((response) => formatPagedItems(response, formatStudentSubscribeItem)),
+        map((response) => normalizePagedResult(response, { skipCount: filter.skipCount }))
+      );
+  }
+
+  getActiveStudentsBySubscribe(
+    filter: FilteredResultRequestDto,
+    subscribeId: number,
+    residentId?: number | null
+  ): Observable<ApiResponse<PagedResultDto<ViewStudentSubscribeReDto>>> {
+    let params = new HttpParams();
+    if (filter.skipCount !== undefined) {
+      params = params.set('SkipCount', filter.skipCount.toString());
+    }
+    if (filter.maxResultCount !== undefined) {
+      params = params.set('MaxResultCount', filter.maxResultCount.toString());
+    }
+    const searchWord = filter.searchWord ?? filter.searchTerm;
+
+    if (filter.searchTerm) {
+      params = params.set('SearchTerm', filter.searchTerm);
+    }
+    if (searchWord) {
+      params = params.set('SearchWord', searchWord);
+    }
+    if (filter.filter) {
+      params = params.set('Filter', filter.filter);
+    }
+    if (filter.lang) {
+      params = params.set('Lang', filter.lang);
+    }
+    if (filter.sortingDirection) {
+      params = params.set('SortingDirection', filter.sortingDirection);
+    }
+    if (filter.sortBy) {
+      params = params.set('SortBy', filter.sortBy);
+    }
+    params = params.set('subscribeId', subscribeId.toString());
+    if (residentId && residentId > 0) {
+      params = params.set('nationalityId', residentId.toString());
+    }
+    if (filter.residentGroup && filter.residentGroup !== 'all') {
+      params = params.set('residentGroup', filter.residentGroup);
+    }
+
+    return this.http
+      .get<ApiResponse<PagedResultDto<ViewStudentSubscribeReDto>>>(
+        `${environment.apiUrl}/api/StudentSubscrib/GetActiveStudentsBySubscribe`,
+        { params }
+      )
+      .pipe(
+        map((response) => formatPagedItems(response, formatStudentSubscribeItem)),
+        map((response) => normalizePagedResult(response, { skipCount: filter.skipCount }))
+      );
   }
 
   getStudentSubscribeHistory(
@@ -193,7 +288,10 @@ export class StudentSubscribeService {
         `${environment.apiUrl}/api/StudentSubscrib/GetStudentSubscribeHistory`,
         { params }
       )
-      .pipe(map((response) => normalizePagedResult(response, { skipCount: filter.skipCount })));
+      .pipe(
+        map((response) => formatPagedItems(response, formatStudentSubscribeHistoryItem)),
+        map((response) => normalizePagedResult(response, { skipCount: filter.skipCount }))
+      );
   }
 
   create(model: AddStudentSubscribeDto): Observable<ApiResponse<boolean>> {

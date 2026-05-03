@@ -2,6 +2,13 @@ import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, OnI
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { MatDatepicker } from '@angular/material/datepicker';
+import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
+import {
+  MomentDateAdapter,
+  MAT_MOMENT_DATE_ADAPTER_OPTIONS
+} from '@angular/material-moment-adapter';
+import moment, { Moment } from 'moment';
 
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
@@ -42,6 +49,7 @@ import {
   ResidencyGroupFilter
 } from 'src/app/@theme/types/residency-group';
 import { matchesResidencyGroup } from 'src/app/@theme/utils/nationality.utils';
+import { formatDateTimeForBusinessUser, parseApiDate } from 'src/app/@theme/utils/cairo-date-time';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { Subject } from 'rxjs';
@@ -62,12 +70,30 @@ interface RawDateParts {
   second: number | null;
 }
 
+const MONTH_FORMATS = {
+  parse: { dateInput: 'MMMM YYYY' },
+  display: {
+    dateInput: 'MMMM YYYY',
+    monthYearLabel: 'MMM YYYY',
+    dateA11yLabel: 'LL',
+    monthYearA11yLabel: 'MMMM YYYY'
+  }
+};
+
 @Component({
   selector: 'app-report-list',
   standalone: true,
   imports: [CommonModule, SharedModule, RouterModule, LoadingOverlayComponent, MatDialogModule, MatButtonModule, ReactiveFormsModule],
   templateUrl: './report-list.component.html',
-  styleUrl: './report-list.component.scss'
+  styleUrl: './report-list.component.scss',
+  providers: [
+    {
+      provide: DateAdapter,
+      useClass: MomentDateAdapter,
+      deps: [MAT_DATE_LOCALE, MAT_MOMENT_DATE_ADAPTER_OPTIONS]
+    },
+    { provide: MAT_DATE_FORMATS, useValue: MONTH_FORMATS }
+  ]
 })
 export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
   private reportService = inject(CircleReportService);
@@ -83,6 +109,7 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   filterForm: FormGroup = this.fb.group({
     searchTerm: [''],
+    month: [null],
     circleId: [null],
     studentId: [null],
     residentId: [null],
@@ -150,6 +177,8 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private selectedCircleId?: number;
   private selectedStudentId?: number;
+  private selectedMonth?: string;
+  private selectedStudentName?: string;
   private selectedResidentId?: number | null;
   private selectedResidencyGroup: ResidencyGroupFilter = 'all';
   private appliedFromDate?: string;
@@ -176,6 +205,11 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loadReports();
 
     this.filterForm
+      .get('month')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((monthValue) => this.onMonthChange(monthValue));
+
+    this.filterForm
       .get('circleId')
       ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe((circleId) => this.onCircleChange(circleId));
@@ -189,6 +223,16 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
       .get('residentGroup')
       ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe((group: ResidencyGroupFilter | null) => this.onResidencyGroupChange(group));
+
+    this.filterForm
+      .get('fromDate')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((value) => this.clearDraftMonthWhenDateSelected(value));
+
+    this.filterForm
+      .get('toDate')
+      ?.valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((value) => this.clearDraftMonthWhenDateSelected(value));
   }
 
   ngAfterViewInit(): void {
@@ -235,6 +279,7 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.filterForm.patchValue(
       {
         searchTerm: '',
+        month: null,
         circleId: null,
         studentId: null,
         residentId: null,
@@ -247,6 +292,117 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.students = [];
     this.loadAllStudents();
+  }
+
+  onMonthSelected(normalizedMonthAndYear: Moment, datepicker: MatDatepicker<Moment>): void {
+    this.filterForm.patchValue(
+      {
+        month: normalizedMonthAndYear.clone().startOf('month').utc(true)
+      },
+      { emitEvent: true }
+    );
+    datepicker.close();
+  }
+
+  clearDraftMonth(): void {
+    this.filterForm.patchValue({ month: null }, { emitEvent: false });
+  }
+
+  hasDraftMonthFilter(): boolean {
+    return !!this.normalizeMonthValue(this.filterForm.get('month')?.value);
+  }
+
+  hasAppliedFilters(): boolean {
+    return Boolean(
+      this.getAppliedSearchTerm() ||
+        this.selectedMonth ||
+        this.selectedCircleId ||
+        this.selectedStudentId ||
+        this.appliedFromDate ||
+        this.appliedToDate
+    );
+  }
+
+  hasAppliedMonthFilter(): boolean {
+    return !!this.selectedMonth;
+  }
+
+  hasAppliedDateRangeFilter(): boolean {
+    return !this.selectedMonth && (!!this.appliedFromDate || !!this.appliedToDate);
+  }
+
+  hasAppliedCircleFilter(): boolean {
+    return !!this.selectedCircleId;
+  }
+
+  hasAppliedStudentFilter(): boolean {
+    return !!this.selectedStudentId;
+  }
+
+  getAppliedSearchTerm(): string {
+    return (this.filter.searchTerm || '').toString().trim();
+  }
+
+  getAppliedMonthLabel(): string {
+    if (!this.selectedMonth) {
+      return '—';
+    }
+
+    const [yearText, monthText] = this.selectedMonth.split('-');
+    const year = Number(yearText);
+    const month = Number(monthText);
+
+    if (!Number.isFinite(year) || !Number.isFinite(month) || month < 1 || month > 12) {
+      return this.selectedMonth;
+    }
+
+    const monthName = this.arabicMonthNames[month - 1] ?? monthText;
+    return `${monthName} ${this.formatArabicInteger(year)}`;
+  }
+
+  getAppliedDateRangeLabel(): string {
+    const fromLabel = this.appliedFromDate ? this.formatDateOnlyLabel(this.appliedFromDate) : null;
+    const toLabel = this.appliedToDate ? this.formatDateOnlyLabel(this.appliedToDate) : null;
+
+    if (fromLabel && toLabel) {
+      return `${fromLabel} - ${toLabel}`;
+    }
+
+    if (fromLabel) {
+      return `من ${fromLabel}`;
+    }
+
+    if (toLabel) {
+      return `إلى ${toLabel}`;
+    }
+
+    return '—';
+  }
+
+  getAppliedCircleLabel(): string {
+    return this.resolveCircleName(this.selectedCircleId) ?? '—';
+  }
+
+  getAppliedStudentLabel(): string {
+    return this.resolveStudentName(this.selectedStudentId) ?? '—';
+  }
+
+  clearAppliedFilters(): void {
+    this.filter.searchTerm = undefined;
+    this.selectedMonth = undefined;
+    this.selectedCircleId = undefined;
+    this.selectedStudentId = undefined;
+    this.selectedStudentName = undefined;
+    this.selectedResidentId = null;
+    this.selectedResidencyGroup = 'all';
+    this.appliedFromDate = undefined;
+    this.appliedToDate = undefined;
+    this.pageIndex = 0;
+    this.filter.skipCount = 0;
+    this.filter.residentGroup = 'all';
+
+    this.resetFilterPopup();
+    this.loadReports();
   }
 
   private loadCircles(): void {
@@ -375,6 +531,32 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.students = [...this.allStudents];
   }
 
+  private onMonthChange(monthValue: unknown): void {
+    if (!this.normalizeMonthValue(monthValue)) {
+      return;
+    }
+
+    if (this.filterForm.get('fromDate')?.value || this.filterForm.get('toDate')?.value) {
+      this.filterForm.patchValue(
+        {
+          fromDate: null,
+          toDate: null
+        },
+        { emitEvent: false }
+      );
+    }
+  }
+
+  private clearDraftMonthWhenDateSelected(value: unknown): void {
+    if (!value) {
+      return;
+    }
+
+    if (this.filterForm.get('month')?.value) {
+      this.filterForm.patchValue({ month: null }, { emitEvent: false });
+    }
+  }
+
   private onResidencyChange(residentId: number | null): void {
     const normalizedResidentId = residentId && residentId > 0 ? residentId : null;
     this.filterForm.patchValue({ residentId: normalizedResidentId, studentId: null }, { emitEvent: false });
@@ -441,24 +623,35 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.filterForm.patchValue(
       {
         searchTerm: this.filter.searchTerm ?? '',
+        month: this.createMonthFromValue(this.selectedMonth),
         circleId: this.selectedCircleId ?? null,
         studentId: this.selectedStudentId ?? null,
         residentId: this.selectedResidentId ?? null,
         residentGroup: this.selectedResidencyGroup,
-        fromDate: this.createDateFromDateOnly(this.appliedFromDate),
-        toDate: this.createDateFromDateOnly(this.appliedToDate)
+        fromDate: this.selectedMonth ? null : this.createDateFromDateOnly(this.appliedFromDate),
+        toDate: this.selectedMonth ? null : this.createDateFromDateOnly(this.appliedToDate)
       },
       { emitEvent: false }
     );
   }
 
-  private createDateFromDateOnly(value?: string): Date | null {
+  private createMonthFromValue(value?: string): Moment | null {
+    const normalizedMonth = this.normalizeMonthValue(value);
+    if (!normalizedMonth) {
+      return null;
+    }
+
+    const parsed = moment(normalizedMonth, 'YYYY-MM', true);
+    return parsed.isValid() ? parsed.startOf('month').utc(true) : null;
+  }
+
+  private createDateFromDateOnly(value?: string): Moment | null {
     if (!value) {
       return null;
     }
 
-    const parsed = new Date(`${value}T00:00:00`);
-    return Number.isNaN(parsed.getTime()) ? null : parsed;
+    const parsed = moment(value, 'YYYY-MM-DD', true);
+    return parsed.isValid() ? parsed.startOf('day').utc(true) : null;
   }
 
   private validateDateRange(): { fromDate?: string; toDate?: string } | null {
@@ -476,6 +669,10 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
   private toDateOnlyString(value: unknown): string | undefined {
     if (!value) {
       return undefined;
+    }
+
+    if (moment.isMoment(value)) {
+      return value.isValid() ? value.clone().format('YYYY-MM-DD') : undefined;
     }
 
     if (typeof value === 'string') {
@@ -505,23 +702,110 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.formatDateAsLocal(parsed);
   }
 
-  private formatDateAsLocal(date: Date): string {
+  private normalizeMonthValue(value: unknown): string | undefined {
+    if (!value) {
+      return undefined;
+    }
+
+    if (moment.isMoment(value)) {
+      return value.isValid() ? value.clone().startOf('month').format('YYYY-MM') : undefined;
+    }
+
+    if (value instanceof Date) {
+      return Number.isNaN(value.getTime()) ? undefined : this.formatMonthAsLocal(value);
+    }
+
+    if (typeof value !== 'string') {
+      return undefined;
+    }
+
+    const trimmed = value.trim();
+    if (/^\d{4}-\d{2}$/.test(trimmed)) {
+      return trimmed;
+    }
+
+    const parsed = new Date(trimmed);
+    return Number.isNaN(parsed.getTime()) ? undefined : this.formatMonthAsLocal(parsed);
+  }
+
+  private buildMonthDateRange(monthValue: string): { fromDate: string; toDate: string } | null {
+    const normalizedMonth = this.normalizeMonthValue(monthValue);
+    if (!normalizedMonth) {
+      return null;
+    }
+
+    const [yearText, monthText] = normalizedMonth.split('-');
+    const year = Number(yearText);
+    const month = Number(monthText);
+
+    if (!Number.isFinite(year) || !Number.isFinite(month) || month < 1 || month > 12) {
+      return null;
+    }
+
+    const monthStart = new Date(year, month - 1, 1);
+    const monthEnd = new Date(year, month, 0);
+
+    return {
+      fromDate: this.formatDateAsLocal(monthStart),
+      toDate: this.formatDateAsLocal(monthEnd)
+    };
+  }
+
+  private resolveCircleName(circleId?: number): string | undefined {
+    if (!circleId) {
+      return undefined;
+    }
+
+    return this.circles.find((circle) => circle.id === circleId)?.name ?? undefined;
+  }
+
+  private resolveStudentName(studentId?: number): string | undefined {
+    if (!studentId) {
+      return undefined;
+    }
+
+    return (
+      this.students.find((student) => student.id === studentId)?.name ??
+      this.allStudents.find((student) => student.id === studentId)?.name ??
+      (this.selectedStudentId === studentId ? this.selectedStudentName : undefined) ??
+      `Student #${studentId}`
+    );
+  }
+
+  private formatDateOnlyLabel(value: string): string {
+    const parsed = new Date(`${value}T00:00:00`);
+    if (Number.isNaN(parsed.getTime())) {
+      return value;
+    }
+
+    return this.formatArabicDateLabel(parsed.getFullYear(), parsed.getMonth() + 1, parsed.getDate());
+  }
+
+  private formatMonthAsLocal(date: Date): string {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}`;
+  }
+
+  private formatDateAsLocal(date: Date | Moment): string {
+    const normalizedDate = moment.isMoment(date) ? date.toDate() : date;
+    const year = normalizedDate.getFullYear();
+    const month = String(normalizedDate.getMonth() + 1).padStart(2, '0');
+    const day = String(normalizedDate.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   }
 
   onSearch(): void {
-    const dateRange = this.validateDateRange();
-    if (!dateRange) {
-      return;
-    }
+    const selectedMonth = this.normalizeMonthValue(this.filterForm.get('month')?.value);
+    const dateRange = selectedMonth ? this.buildMonthDateRange(selectedMonth) : this.validateDateRange();
+    if (!dateRange) return;
 
     const term = (this.filterForm.value.searchTerm || '').toString().trim();
     this.filter.searchTerm = term.length ? term : undefined;
+    this.selectedMonth = selectedMonth;
     this.selectedCircleId = this.getDraftSelectedCircleId();
     this.selectedStudentId = this.normalizeOptionalNumber(this.filterForm.get('studentId')?.value);
+    this.selectedStudentName = this.resolveStudentName(this.selectedStudentId);
     this.selectedResidentId = this.getDraftSelectedResidentId();
     this.selectedResidencyGroup = this.getDraftSelectedResidencyGroup();
     this.appliedFromDate = dateRange.fromDate;
@@ -672,6 +956,17 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   formatDate(value?: string | Date | null): string {
+    const formatted = formatDateTimeForBusinessUser(value, 'ar-EG', {
+      year: 'numeric',
+      month: 'long',
+      day: '2-digit',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+    if (formatted) {
+      return formatted;
+    }
     if (!value) {
       return '—';
     }
@@ -799,6 +1094,11 @@ export class ReportListComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private toSortableRawDateValue(value?: string | Date | null): number {
+    const parsed = parseApiDate(value);
+    if (parsed) {
+      return parsed.getTime();
+    }
+
     if (!value) {
       return 0;
     }

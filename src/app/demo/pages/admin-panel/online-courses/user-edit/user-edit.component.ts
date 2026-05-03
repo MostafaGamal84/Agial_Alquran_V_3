@@ -1,7 +1,7 @@
 // angular import
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
@@ -21,7 +21,13 @@ import {
   LookUpUserDto,
   FilteredResultRequestDto
 } from 'src/app/@theme/services/lookup.service';
-import { CircleService, CircleDto } from 'src/app/@theme/services/circle.service';
+import {
+  CircleService,
+  CircleDto,
+  CircleDayDto,
+  CircleDayRequestDto,
+  UpdateCircleDto
+} from 'src/app/@theme/services/circle.service';
 import { CountryService, Country } from 'src/app/@theme/services/country.service';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import {
@@ -30,11 +36,18 @@ import {
 } from 'src/app/@theme/services/student-subscribe.service';
 import { SubscribeTypeCategory } from 'src/app/@theme/services/subscribe.service';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
+import { DAY_OPTIONS, DayValue, coerceDayValue } from 'src/app/@theme/types/DaysEnum';
 import { ResidencyGroupFilter } from 'src/app/@theme/types/residency-group';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { isArabNationality, isEgyptianNationality } from 'src/app/@theme/utils/nationality.utils';
+import { formatTimeValue, timeStringToTimeSpanString } from 'src/app/@theme/utils/time';
 import { StudentSubscribeDialogComponent } from '../../membership/membership-list/student-subscribe-dialog/student-subscribe-dialog.component';
 import { ResidencySubscribeWarningDialogComponent } from './residency-subscribe-warning-dialog.component';
+
+interface TeacherScheduleFormValue {
+  dayId: DayValue | null;
+  startTime: string | null;
+}
 
 @Component({
   selector: 'app-user-edit',
@@ -82,6 +95,11 @@ export class UserEditComponent implements OnInit, OnDestroy {
   managers: LookUpUserDto[] = [];
   students: LookUpUserDto[] = [];
   circles: CircleDto[] = [];
+  teacherScheduleForm!: FormGroup;
+  teacherScheduleDays = DAY_OPTIONS;
+  activeTeacherCircle: CircleDto | null = null;
+  isTeacherScheduleLoading = false;
+  private initialTeacherScheduleSignature = '';
   teachersLoading = false;
   selectedManagers: number[] = [];
   private initialTeacherIds: number[] = [];
@@ -146,7 +164,7 @@ export class UserEditComponent implements OnInit, OnDestroy {
   }
 
   get isSubmitDisabled(): boolean {
-    return this.isSaving || this.basicInfoForm.invalid;
+    return this.isSaving || this.isTeacherScheduleLoading || this.basicInfoForm.invalid;
   }
 
   get isDialogMode(): boolean {
@@ -167,6 +185,41 @@ export class UserEditComponent implements OnInit, OnDestroy {
 
   private getEffectiveManagerId(managerId?: number | null): number {
     return this.loggedInManagerId ?? managerId ?? 0;
+  }
+
+  get selectedTeacherCircleId(): number | null {
+    return this.isTeacher ? this.toNumberOrNull(this.basicInfoForm.get('circleId')?.value) : null;
+  }
+
+  get selectedTeacherCircleName(): string {
+    const selectedCircleId = this.selectedTeacherCircleId;
+    if (!selectedCircleId) {
+      return '';
+    }
+
+    return (
+      this.activeTeacherCircle?.name ??
+      this.circles.find((circle) => circle.id === selectedCircleId)?.name ??
+      this.currentUser?.circleName ??
+      ''
+    );
+  }
+
+  get teacherScheduleDaysArray(): FormArray<FormGroup> {
+    return this.teacherScheduleForm.get('days') as FormArray<FormGroup>;
+  }
+
+  get teacherScheduleValidationMessage(): string {
+    if (!this.isTeacher || !this.submitted || !this.teacherScheduleForm?.enabled || !this.teacherScheduleForm?.dirty) {
+      return '';
+    }
+
+    const payload = this.buildTeacherSchedulePayload();
+    if (payload.length > 0) {
+      return '';
+    }
+
+    return 'يرجى إدخال موعد حصص صحيح واحد على الأقل للحلقة المختارة.';
   }
 
   ngOnInit(): void {
@@ -195,6 +248,10 @@ export class UserEditComponent implements OnInit, OnDestroy {
       circleIds: [[]],
       circleId: [null]
     });
+    this.teacherScheduleForm = this.fb.group({
+      days: this.fb.array([this.createTeacherScheduleDayGroup()])
+    });
+    this.teacherScheduleForm.disable({ emitEvent: false });
 
     this.updateStudentTeacherValidation();
 
@@ -210,6 +267,15 @@ export class UserEditComponent implements OnInit, OnDestroy {
         this.applyGovernorateRequirement(residentId);
         this.resetPendingStudentSubscribeSelection(residentId);
       });
+
+    if (this.isTeacher) {
+      this.basicInfoForm
+        .get('circleId')
+        ?.valueChanges.pipe(takeUntil(this.destroy$))
+        .subscribe((circleId) => {
+          this.loadTeacherScheduleForCircle(this.toNumberOrNull(circleId));
+        });
+    }
 
     this.setupMissingRequiredFieldsTracking();
 
@@ -645,6 +711,10 @@ export class UserEditComponent implements OnInit, OnDestroy {
     this.circleService.getAll(circleFilter, effectiveManagerId).subscribe((res) => {
       if (res.isSuccess) {
         this.circles = res.data.items;
+        const currentCircleId = this.toNumberOrNull(this.basicInfoForm.get('circleId')?.value);
+        if (currentCircleId && !this.circles.some((circle) => circle.id === currentCircleId)) {
+          this.basicInfoForm.patchValue({ circleId: null });
+        }
       }
     });
     this.basicInfoForm.get('studentIds')?.enable();
@@ -701,6 +771,237 @@ export class UserEditComponent implements OnInit, OnDestroy {
         this.circles = Array.from(existing.values());
       }
     });
+  }
+
+  addTeacherScheduleDay(): void {
+    if (this.teacherScheduleForm.disabled) {
+      return;
+    }
+
+    this.teacherScheduleDaysArray.push(this.createTeacherScheduleDayGroup());
+    this.teacherScheduleDaysArray.markAsDirty();
+    this.teacherScheduleDaysArray.markAsTouched();
+  }
+
+  removeTeacherScheduleDay(index: number): void {
+    if (this.teacherScheduleForm.disabled) {
+      return;
+    }
+
+    if (this.teacherScheduleDaysArray.length <= 1) {
+      this.teacherScheduleDaysArray.at(0).reset({ dayId: null, startTime: '' });
+      this.teacherScheduleDaysArray.markAsDirty();
+      this.teacherScheduleDaysArray.markAsTouched();
+      return;
+    }
+
+    this.teacherScheduleDaysArray.removeAt(index);
+    this.teacherScheduleDaysArray.markAsDirty();
+    this.teacherScheduleDaysArray.markAsTouched();
+  }
+
+  trackByIndex(index: number): number {
+    return index;
+  }
+
+  private createTeacherScheduleDayGroup(initial?: Partial<TeacherScheduleFormValue>): FormGroup {
+    return this.fb.group({
+      dayId: [initial?.dayId ?? null, Validators.required],
+      startTime: [initial?.startTime ?? '', Validators.required]
+    });
+  }
+
+  private resetTeacherScheduleForm(schedule: TeacherScheduleFormValue[] = []): void {
+    while (this.teacherScheduleDaysArray.length > 0) {
+      this.teacherScheduleDaysArray.removeAt(this.teacherScheduleDaysArray.length - 1);
+    }
+
+    if (schedule.length === 0) {
+      this.teacherScheduleDaysArray.push(this.createTeacherScheduleDayGroup());
+    } else {
+      schedule.forEach((entry) => this.teacherScheduleDaysArray.push(this.createTeacherScheduleDayGroup(entry)));
+    }
+
+    this.teacherScheduleForm.markAsPristine();
+    this.teacherScheduleForm.markAsUntouched();
+  }
+
+  private clearTeacherScheduleState(): void {
+    this.activeTeacherCircle = null;
+    this.initialTeacherScheduleSignature = '';
+    this.resetTeacherScheduleForm();
+    this.teacherScheduleForm.disable({ emitEvent: false });
+  }
+
+  private async loadTeacherScheduleForCircle(circleId: number | null): Promise<void> {
+    if (!this.isTeacher) {
+      return;
+    }
+
+    if (!circleId) {
+      this.isTeacherScheduleLoading = false;
+      this.clearTeacherScheduleState();
+      return;
+    }
+
+    this.isTeacherScheduleLoading = true;
+    this.teacherScheduleForm.disable({ emitEvent: false });
+
+    try {
+      const response = await firstValueFrom(this.circleService.get(circleId));
+      if (!response?.isSuccess || !response.data) {
+        throw new Error('Failed to load teacher circle schedule');
+      }
+
+      if (this.selectedTeacherCircleId !== circleId) {
+        return;
+      }
+
+      this.activeTeacherCircle = response.data;
+      const schedule = this.extractTeacherSchedule(response.data);
+      this.initialTeacherScheduleSignature = this.serializeTeacherSchedulePayload(
+        this.buildTeacherSchedulePayloadFromFormValues(schedule)
+      );
+      this.resetTeacherScheduleForm(schedule);
+      this.teacherScheduleForm.enable({ emitEvent: false });
+    } catch {
+      if (this.selectedTeacherCircleId === circleId) {
+        this.clearTeacherScheduleState();
+        this.toast.error('تعذر تحميل مواعيد الحصص للحلقة المختارة');
+      }
+    } finally {
+      if (this.selectedTeacherCircleId === circleId || !this.selectedTeacherCircleId) {
+        this.isTeacherScheduleLoading = false;
+      }
+    }
+  }
+
+  private extractTeacherSchedule(circle?: CircleDto | null): TeacherScheduleFormValue[] {
+    if (!circle || !Array.isArray(circle.days) || circle.days.length === 0) {
+      return [];
+    }
+
+    return circle.days
+      .map((day: CircleDayDto) => {
+        const dayId = coerceDayValue(day?.dayId ?? day?.dayName ?? undefined);
+        const startTime = formatTimeValue(day?.time);
+
+        return {
+          dayId: (dayId ?? null) as DayValue | null,
+          startTime: startTime || ''
+        };
+      })
+      .filter((entry) => entry.dayId !== null);
+  }
+
+  private buildTeacherSchedulePayload(): CircleDayRequestDto[] {
+    return this.buildTeacherSchedulePayloadFromFormValues(
+      this.teacherScheduleDaysArray.getRawValue() as TeacherScheduleFormValue[]
+    );
+  }
+
+  private buildTeacherSchedulePayloadFromFormValues(values: TeacherScheduleFormValue[]): CircleDayRequestDto[] {
+    return values.reduce<CircleDayRequestDto[]>((acc, value) => {
+      const resolvedDay = coerceDayValue(value?.dayId ?? undefined);
+      const time = timeStringToTimeSpanString(value?.startTime ?? undefined);
+
+      if (resolvedDay === undefined || !time) {
+        return acc;
+      }
+
+      acc.push({
+        dayId: resolvedDay,
+        time
+      });
+
+      return acc;
+    }, []);
+  }
+
+  private serializeTeacherSchedulePayload(values: CircleDayRequestDto[]): string {
+    return values
+      .map((item) => `${Number(item.dayId)}-${item.time ?? ''}`)
+      .sort()
+      .join('|');
+  }
+
+  private async saveTeacherScheduleIfNeeded(circleId: number | null): Promise<boolean> {
+    if (!this.isTeacher || !circleId || !this.teacherScheduleForm.enabled || !this.teacherScheduleForm.dirty) {
+      return true;
+    }
+
+    const schedulePayload = this.buildTeacherSchedulePayload();
+    const scheduleSignature = this.serializeTeacherSchedulePayload(schedulePayload);
+
+    if (scheduleSignature === this.initialTeacherScheduleSignature) {
+      return true;
+    }
+
+    this.teacherScheduleForm.markAllAsTouched();
+
+    if (schedulePayload.length === 0) {
+      this.toast.error('يرجى إدخال موعد حصص صحيح واحد على الأقل للحلقة المختارة');
+      return false;
+    }
+
+    let circleDetails = this.activeTeacherCircle && this.activeTeacherCircle.id === circleId ? this.activeTeacherCircle : null;
+
+    if (!circleDetails) {
+      try {
+        const circleResponse = await firstValueFrom(this.circleService.get(circleId));
+        circleDetails = circleResponse?.data ?? null;
+      } catch {
+        this.toast.error('تعذر تحميل بيانات الحلقة المطلوبة لحفظ المواعيد');
+        return false;
+      }
+    }
+
+    const circleName =
+      circleDetails?.name ??
+      this.circles.find((circle) => circle.id === circleId)?.name ??
+      this.selectedTeacherCircleName;
+
+    if (!circleName) {
+      this.toast.error('تعذر تحديد بيانات الحلقة المطلوبة لحفظ المواعيد');
+      return false;
+    }
+
+    const model: UpdateCircleDto = {
+      id: circleId,
+      name: circleName,
+      branchId: this.toNumberOrNull(this.basicInfoForm.get('branchId')?.value) ?? circleDetails?.branchId ?? null,
+      teacherId: this.userId,
+      days: schedulePayload
+    };
+
+    try {
+      const response = await firstValueFrom(this.circleService.update(model));
+      if (!response?.isSuccess) {
+        response?.errors?.forEach((error) => this.toast.error(error.message));
+        if (!response?.errors?.length) {
+          this.toast.error('تم تحديث بيانات المعلم لكن تعذر حفظ مواعيد الحصص');
+        }
+        return false;
+      }
+
+      this.activeTeacherCircle = {
+        ...(circleDetails ?? {}),
+        id: circleId,
+        name: circleName,
+        branchId: model.branchId ?? circleDetails?.branchId ?? null,
+        teacherId: this.userId,
+        days: schedulePayload.map((item) => ({
+          dayId: item.dayId,
+          time: item.time
+        }))
+      };
+      this.initialTeacherScheduleSignature = scheduleSignature;
+      this.teacherScheduleForm.markAsPristine();
+      return true;
+    } catch {
+      this.toast.error('تم تحديث بيانات المعلم لكن تعذر حفظ مواعيد الحصص');
+      return false;
+    }
   }
 
   onCountryCodeChange(control: 'mobileCountryDialCode' | 'secondMobileCountryDialCode') {
@@ -1015,7 +1316,15 @@ export class UserEditComponent implements OnInit, OnDestroy {
     }
 
     this.submitted = true;
-    if (this.basicInfoForm.valid) {
+    if (!this.basicInfoForm.valid) {
+      this.validationService.markAllAsTouched(this.basicInfoForm);
+      if (this.isTeacher && this.teacherScheduleForm.enabled) {
+        this.teacherScheduleForm.markAllAsTouched();
+      }
+      return;
+    }
+
+    {
       // Use getRawValue so disabled controls like circleId are included
       const formValue = this.basicInfoForm.getRawValue();
       const clean = (v: string) => v.replace(/\D/g, '');
@@ -1080,6 +1389,61 @@ export class UserEditComponent implements OnInit, OnDestroy {
       }
 
       this.isSaving = true;
+      try {
+        const response = await firstValueFrom(this.userService.updateUser(model));
+        if (!response?.isSuccess) {
+          if (response?.errors?.length) {
+            response.errors.forEach((error) => this.toast.error(error.message));
+          } else {
+            this.toast.error('Ø®Ø·Ø£ ÙÙŠ ØªØ­Ø¯ÙŠØ« Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª');
+          }
+          return;
+        }
+
+        const scheduleSaved = await this.saveTeacherScheduleIfNeeded(currentCircleId);
+        if (!scheduleSaved) {
+          return;
+        }
+
+        this.pendingStudentSubscribeSelection = null;
+        this.currentStudentSubscription = null;
+        this.toast.success(
+          response.message || (this.isManager ? 'ØªÙ… ØªØ­Ø¯ÙŠØ« Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª ÙˆØ§Ù„Ø¹Ù„Ø§Ù‚Ø§Øª Ø¨Ù†Ø¬Ø§Ø­' : 'ØªÙ… ØªØ­Ø¯ÙŠØ« Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ø¨Ù†Ø¬Ø§Ø­')
+        );
+
+        if (this.dialogRef) {
+          try {
+            const detailsRes = await firstValueFrom(this.lookupService.getUserDetails(this.userId));
+            if (detailsRes.isSuccess && detailsRes.data) {
+              this.dialogRef?.close(detailsRes.data);
+              return;
+            }
+          } catch {
+            // Fall back to the locally edited values below.
+          }
+
+          this.dialogRef?.close({
+            id: this.userId,
+            fullName: formValue.fullName,
+            email: formValue.email,
+            mobile: `${formValue.mobileCountryDialCode}${clean(formValue.mobile)}`,
+            secondMobile: formValue.secondMobile
+              ? `${formValue.secondMobileCountryDialCode}${clean(formValue.secondMobile)}`
+              : null
+          });
+          return;
+        }
+
+        const navigationState = this.isStudent ? { refreshStudentList: true } : undefined;
+        this.router.navigate([this.getListRoute()], navigationState ? { state: navigationState } : undefined);
+      } catch {
+        this.toast.error('Ø®Ø·Ø£ ÙÙŠ ØªØ­Ø¯ÙŠØ« Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª');
+      } finally {
+        this.isSaving = false;
+      }
+      return;
+
+      this.isSaving = true;
       this.userService
         .updateUser(model)
         .pipe(finalize(() => (this.isSaving = false)))
@@ -1129,8 +1493,6 @@ export class UserEditComponent implements OnInit, OnDestroy {
         },
           error: () => this.toast.error('خطأ في تحديث البيانات')
         });
-    } else {
-      this.validationService.markAllAsTouched(this.basicInfoForm);
     }
   }
 

@@ -20,6 +20,7 @@ export interface TeacherSalaryInvoice {
   id: number;
   teacherId?: number;
   teacherName?: string;
+  teacherMobile?: string | null;
   month?: string;
   salary?: number;
   salaryAmount?: number;
@@ -69,6 +70,7 @@ export interface TeacherMonthlySummary {
   takeHomePay?: number;
   hourlyRate?: number;
   attendanceRate?: number;
+  sectionBreakdown?: TeacherSalarySectionBreakdown[];
   invoice?: TeacherSalaryInvoice | null;
   [key: string]: unknown;
 }
@@ -76,6 +78,14 @@ export interface TeacherMonthlySummary {
 export interface TeacherSalaryInvoiceDetails {
   invoice: TeacherSalaryInvoice | null;
   monthlySummary?: TeacherMonthlySummary | null;
+  [key: string]: unknown;
+}
+
+export interface TeacherSalarySectionBreakdown {
+  sectionName?: string | null;
+  totalMinutes?: number;
+  totalHours?: number;
+  totalSalary?: number;
   [key: string]: unknown;
 }
 
@@ -87,6 +97,7 @@ export interface TeacherMonthlyReportRecordDto {
   circleId?: number | null;
   studentId?: number | null;
   studentName?: string | null;
+  sectionName?: string | null;
   minutes: number;
   salary: number;
   attendStatusId?: number | null;

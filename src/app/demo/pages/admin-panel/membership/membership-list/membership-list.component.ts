@@ -26,10 +26,11 @@ import { StudentSubscribeDialogComponent } from './student-subscribe-dialog/stud
 import { RESIDENCY_GROUP_OPTIONS, ResidencyGroupFilter } from 'src/app/@theme/types/residency-group';
 import { isArabNationality, isEgyptianNationality } from 'src/app/@theme/utils/nationality.utils';
 import { LoadingOverlayComponent } from 'src/app/@theme/components/loading-overlay/loading-overlay.component';
+import { StatusLegendComponent, StatusLegendItem } from 'src/app/shared/status-legend/status-legend.component';
 
 @Component({
   selector: 'app-membership-list',
-  imports: [CommonModule, SharedModule, RouterModule, LoadingOverlayComponent],
+  imports: [CommonModule, SharedModule, RouterModule, LoadingOverlayComponent, StatusLegendComponent],
   templateUrl: './membership-list.component.html',
   styleUrl: './membership-list.component.scss'
 })
@@ -54,6 +55,23 @@ export class MembershipListComponent implements OnInit, AfterViewInit, OnDestroy
   selectedResidencyGroup: ResidencyGroupFilter = 'all';
   isLoading = false;
   isLoadingMore = false;
+  readonly statusLegendItems: StatusLegendItem[] = [
+    {
+      color: 'var(--warn-500, #dc2626)',
+      label: 'الاسم الأحمر',
+      description: 'الطالب ليس لديه باقة مفعلة حاليًا.'
+    },
+    {
+      color: '#f0b60a',
+      label: 'الاسم الأصفر',
+      description: 'الطالب لديه باقة، لكن الدقائق المتبقية صفر أو أقل، لذلك تعتبر منتهية.'
+    },
+    {
+      color: '#94a3b8',
+      label: 'الاسم الطبيعي',
+      description: 'الطالب لديه باقة قائمة وما زال فيها دقائق متبقية.'
+    }
+  ];
   readonly sort = viewChild(MatSort);
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;

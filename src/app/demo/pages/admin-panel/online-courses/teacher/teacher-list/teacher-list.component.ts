@@ -25,10 +25,12 @@ import { UserService } from 'src/app/@theme/services/user.service';
 import { DisableUserConfirmDialogComponent } from '../../student/student-list/student-list.disable-user-confirm-dialog.component';
 import { TranslateService } from '@ngx-translate/core';
 import { getUserManagers } from 'src/app/demo/shared/utils/user-managers';
+import { StatusLegendComponent, StatusLegendItem } from 'src/app/shared/status-legend/status-legend.component';
+import { UserBulkActionsComponent } from 'src/app/shared/user-bulk-actions/user-bulk-actions.component';
 
 @Component({
   selector: 'app-teacher-list',
-  imports: [CommonModule, SharedModule, RouterModule, MatDialogModule, LoadingOverlayComponent],
+  imports: [CommonModule, SharedModule, RouterModule, MatDialogModule, LoadingOverlayComponent, StatusLegendComponent, UserBulkActionsComponent],
   templateUrl: './teacher-list.component.html',
   styleUrl: './teacher-list.component.scss'
 })
@@ -40,10 +42,27 @@ export class TeacherListComponent implements OnInit, OnDestroy {
   dialog = inject(MatDialog);
 
   // public props
-  displayedColumns: string[] = ['serial', 'fullName', 'email', 'mobile', 'action'];
+  readonly canCreateTeachers = true;
+  readonly canEditTeachers = true;
+  readonly canDisableTeachers = true;
+  displayedColumns: string[] = this.canDisableTeachers
+    ? ['select', 'serial', 'fullName', 'email', 'mobile', 'action']
+    : ['serial', 'fullName', 'email', 'mobile', 'action'];
   dataSource = new MatTableDataSource<LookUpUserDto>();
   allLoadedTeachers: LookUpUserDto[] = [];
   showMissingAssignmentsOnly = false;
+  readonly statusLegendItems: StatusLegendItem[] = [
+    {
+      color: 'var(--warning-600, #d97706)',
+      label: 'الاسم البرتقالي',
+      description: 'المعلم غير مكتمل الربط: ينقصه مشرف أو حلقة أو طلاب مرتبطون به.'
+    },
+    {
+      color: '#94a3b8',
+      label: 'الاسم الطبيعي',
+      description: 'بيانات المعلم وروابطه الأساسية مكتملة.'
+    }
+  ];
   totalCount = 0;
   filter: FilteredResultRequestDto = { skipCount: 0, maxResultCount: 10 };
   pageIndex = 0;
@@ -51,6 +70,8 @@ export class TeacherListComponent implements OnInit, OnDestroy {
   isLoading = false;
   isLoadingMore = false;
   private pendingTeacherIds = new Set<number>();
+  private selectedTeacherIds = new Set<number>();
+  isBulkUpdating = false;
   private intersectionObserver?: IntersectionObserver;
   private loadMoreElement?: ElementRef<HTMLElement>;
 
@@ -94,6 +115,67 @@ export class TeacherListComponent implements OnInit, OnDestroy {
     return index + 1;
   }
 
+  get selectedCount(): number {
+    return this.selectedTeacherIds.size;
+  }
+
+  isSelected(teacherId: number): boolean {
+    return this.selectedTeacherIds.has(teacherId);
+  }
+
+  clearSelection(): void {
+    this.selectedTeacherIds.clear();
+  }
+
+  toggleSelection(teacherId: number, checked: boolean): void {
+    if (checked) {
+      this.selectedTeacherIds.add(teacherId);
+      return;
+    }
+
+    this.selectedTeacherIds.delete(teacherId);
+  }
+
+  toggleSelectAllVisible(checked: boolean): void {
+    this.getSelectableVisibleTeachers().forEach((teacher) => this.toggleSelection(teacher.id, checked));
+  }
+
+  isAllVisibleSelected(): boolean {
+    const visibleTeachers = this.getSelectableVisibleTeachers();
+    return visibleTeachers.length > 0 && visibleTeachers.every((teacher) => this.selectedTeacherIds.has(teacher.id));
+  }
+
+  isSomeVisibleSelected(): boolean {
+    const visibleTeachers = this.getSelectableVisibleTeachers();
+    if (!visibleTeachers.length) {
+      return false;
+    }
+
+    const selectedVisibleCount = visibleTeachers.filter((teacher) => this.selectedTeacherIds.has(teacher.id)).length;
+    return selectedVisibleCount > 0 && selectedVisibleCount < visibleTeachers.length;
+  }
+
+  confirmBulkDisable(): void {
+    if (!this.selectedCount || this.isBulkUpdating) {
+      return;
+    }
+
+    const dialogRef = this.dialog.open(DisableUserConfirmDialogComponent, {
+      data: {
+        count: this.selectedCount,
+        entityLabel: 'معلم',
+        title: 'إيقاف جماعي للمعلمين',
+        actionLabel: 'إيقاف المحددين'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed) => {
+      if (confirmed) {
+        this.disableSelectedTeachers();
+      }
+    });
+  }
+
   onMissingAssignmentsOnlyChange(checked: boolean): void {
     this.showMissingAssignmentsOnly = checked;
     this.applyDisplayData();
@@ -105,6 +187,9 @@ export class TeacherListComponent implements OnInit, OnDestroy {
   }
 
   private loadTeachers(append = false) {
+    if (!append) {
+      this.clearSelection();
+    }
     this.isLoading = !append;
     this.isLoadingMore = append;
     this.lookupService
@@ -220,6 +305,7 @@ export class TeacherListComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res) => {
           if (res.isSuccess) {
+            this.selectedTeacherIds.delete(teacher.id);
             this.allLoadedTeachers = this.allLoadedTeachers.filter((item) => item.id !== teacher.id);
             this.applyDisplayData();
             this.totalCount = Math.max(this.totalCount - 1, 0);
@@ -234,6 +320,57 @@ export class TeacherListComponent implements OnInit, OnDestroy {
           }
         },
         error: () => this.toast.error(this.translate.instant('Failed to disable teacher'))
+      });
+  }
+
+  private disableSelectedTeachers(): void {
+    const selectedIds = Array.from(this.selectedTeacherIds);
+    if (!selectedIds.length) {
+      return;
+    }
+
+    selectedIds.forEach((id) => this.pendingTeacherIds.add(id));
+    this.isBulkUpdating = true;
+
+    this.userService
+      .disableUsers(selectedIds)
+      .pipe(
+        finalize(() => {
+          selectedIds.forEach((id) => this.pendingTeacherIds.delete(id));
+          this.isBulkUpdating = false;
+        })
+      )
+      .subscribe({
+        next: (res) => {
+          if (!res.isSuccess) {
+            if (res.errors?.length) {
+              res.errors.forEach((error) => this.toast.error(error.message));
+            } else {
+              this.toast.error('تعذر إيقاف المعلمين المحددين');
+            }
+            return;
+          }
+
+          const disabledIds = res.data?.disabledUserIds ?? [];
+          const skippedIds = res.data?.skippedUserIds ?? [];
+
+          if (disabledIds.length) {
+            const disabledIdSet = new Set(disabledIds);
+            this.allLoadedTeachers = this.allLoadedTeachers.filter((teacher) => !disabledIdSet.has(teacher.id));
+            disabledIds.forEach((id) => this.selectedTeacherIds.delete(id));
+            this.applyDisplayData();
+            this.totalCount = Math.max(this.totalCount - disabledIds.length, 0);
+          }
+
+          if (disabledIds.length && skippedIds.length) {
+            this.toast.success(`تم إيقاف ${disabledIds.length} معلم، وتعذر إيقاف ${skippedIds.length}.`);
+          } else if (disabledIds.length) {
+            this.toast.success(`تم إيقاف ${disabledIds.length} معلم.`);
+          } else {
+            this.toast.error('لم يتم إيقاف أي معلم من المحددين.');
+          }
+        },
+        error: () => this.toast.error('تعذر إيقاف المعلمين المحددين')
       });
   }
 
@@ -283,11 +420,25 @@ export class TeacherListComponent implements OnInit, OnDestroy {
     return this.allLoadedTeachers.length < this.totalCount;
   }
 
+  private getSelectableVisibleTeachers(): LookUpUserDto[] {
+    return this.dataSource.data.filter((teacher) => !!teacher?.id && !this.pendingTeacherIds.has(teacher.id));
+  }
+
+  private syncSelectionWithLoadedTeachers(): void {
+    const availableIds = new Set(this.allLoadedTeachers.map((teacher) => teacher.id));
+    Array.from(this.selectedTeacherIds).forEach((id) => {
+      if (!availableIds.has(id)) {
+        this.selectedTeacherIds.delete(id);
+      }
+    });
+  }
+
   private applyDisplayData(): void {
     const filtered = this.showMissingAssignmentsOnly
       ? this.allLoadedTeachers.filter((teacher) => this.hasMissingAssignments(teacher))
       : this.allLoadedTeachers;
 
+    this.syncSelectionWithLoadedTeachers();
     this.dataSource.data = [...filtered];
   }
 
