@@ -18,6 +18,7 @@ import { FieldErrorComponent } from 'src/app/shared/validation/field-error/field
 import { ValidationService } from 'src/app/shared/validation/validation.service';
 import { LiveErrorStateMatcher } from 'src/app/shared/validation/live-error-state-matcher';
 import { finalize, merge, startWith } from 'rxjs';
+import { computeEducationSystemTypeId } from 'src/app/@theme/utils/education-system.utils';
 
 @Component({
   selector: 'app-manager-add',
@@ -66,6 +67,9 @@ export class ManagerAddComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       mobileCountryDialCode: [null, Validators.required],
       mobile: ['', Validators.required],
+      includeQuranSystem: [true],
+      includeAcademicSystem: [false],
+      educationSystemTypeId: [1, Validators.required],
       secondMobileCountryDialCode: [''],
       secondMobile: [''],
       passwordHash: ['', [Validators.required, Validators.minLength(6)]],
@@ -96,6 +100,7 @@ export class ManagerAddComponent implements OnInit {
       this.countries = data;
     });
 
+    this.setupEducationSystemMembershipHandling();
     this.setupMissingRequiredFieldsTracking();
   }
 
@@ -126,6 +131,52 @@ export class ManagerAddComponent implements OnInit {
     }
   }
 
+  private normalizeLocalPhoneNumber(value: string | null | undefined): string {
+    return `${value ?? ''}`
+      .replace(/\D/g, '')
+      .replace(/^0+/, '');
+  }
+
+  private buildInternationalPhoneNumber(
+    dialCode: string | null | undefined,
+    value: string | null | undefined
+  ): string | undefined {
+    const normalizedDialCode = `${dialCode ?? ''}`.trim();
+    const normalizedLocalNumber = this.normalizeLocalPhoneNumber(value);
+
+    if (!normalizedDialCode || !normalizedLocalNumber) {
+      return undefined;
+    }
+
+    return `${normalizedDialCode}${normalizedLocalNumber}`;
+  }
+
+  private setupEducationSystemMembershipHandling(): void {
+    const quranControl = this.basicInfoForm.get('includeQuranSystem');
+    const academicControl = this.basicInfoForm.get('includeAcademicSystem');
+
+    merge(quranControl!.valueChanges, academicControl!.valueChanges)
+      .pipe(startWith(null))
+      .subscribe(() => this.updateEducationSystemTypeControl());
+  }
+
+  private updateEducationSystemTypeControl(): void {
+    const membershipControl = this.basicInfoForm.get('educationSystemTypeId');
+    const computedValue = computeEducationSystemTypeId(
+      !!this.basicInfoForm.get('includeQuranSystem')?.value,
+      !!this.basicInfoForm.get('includeAcademicSystem')?.value
+    );
+
+    membershipControl?.setValue(computedValue, { emitEvent: false });
+    if (computedValue === null) {
+      membershipControl?.setErrors({ required: true });
+      return;
+    }
+
+    membershipControl?.setErrors(null);
+    membershipControl?.updateValueAndValidity({ emitEvent: false });
+  }
+
   get isSubmitDisabled(): boolean {
     return this.isSubmitting || this.basicInfoForm.invalid;
   }
@@ -148,6 +199,7 @@ export class ManagerAddComponent implements OnInit {
       email: 'البريد الإلكتروني',
       mobileCountryDialCode: 'مفتاح الدولة للجوال',
       mobile: 'رقم الجوال',
+      educationSystemTypeId: 'الانتماء للنظام',
       passwordHash: 'كلمة المرور',
       nationalityId: 'الجنسية',
       residentId: 'مكان الإقامة',
@@ -183,38 +235,48 @@ export class ManagerAddComponent implements OnInit {
     this.submitted = true;
     if (this.basicInfoForm.valid) {
       const formValue = this.basicInfoForm.value;
-      const clean = (v: string) => v.replace(/\D/g, '');
       const model: CreateUserDto = {
         fullName: formValue.fullName,
         email: formValue.email,
-        mobile: `${formValue.mobileCountryDialCode}${clean(formValue.mobile)}`,
-        secondMobile: formValue.secondMobile
-          ? `${formValue.secondMobileCountryDialCode}${clean(formValue.secondMobile)}`
-          : undefined,
+        mobile:
+          this.buildInternationalPhoneNumber(
+            formValue.mobileCountryDialCode,
+            formValue.mobile
+          ) ?? '',
+        secondMobile: this.buildInternationalPhoneNumber(
+          formValue.secondMobileCountryDialCode,
+          formValue.secondMobile
+        ),
+        educationSystemTypeId: formValue.educationSystemTypeId,
         passwordHash: formValue.passwordHash,
         nationalityId: formValue.nationalityId,
         residentId: formValue.residentId,
         governorateId: formValue.governorateId,
         branchId: formValue.branchId,
-        userTypeId: Number(UserTypesEnum.Manager),
+        userTypeId: Number(UserTypesEnum.Manager)
       };
       this.isSubmitting = true;
       this.userService
         .createUser(model)
         .pipe(finalize(() => (this.isSubmitting = false)))
         .subscribe({
-        next: (res) => {
-          if (res?.isSuccess) {
-            this.toast.success(res.message || this.translate.instant('تمت الاضافة بنجاح'));
-            this.basicInfoForm.reset();
-            this.submitted = false;
-          } else if (res?.errors?.length) {
-            res.errors.forEach((e) => this.toast.error(e.message));
-          } else {
-            this.toast.error(this.translate.instant('خطا في الاضافة'));
-          }
-        },
-          error: () => this.toast.error(this.translate.instant('خطا في الاضافة'))
+          next: (res) => {
+            if (res?.isSuccess) {
+              this.toast.success(res.message || this.translate.instant('تمت الإضافة بنجاح'));
+              this.basicInfoForm.reset({
+                includeQuranSystem: true,
+                includeAcademicSystem: false,
+                educationSystemTypeId: 1
+              });
+              this.updateEducationSystemTypeControl();
+              this.submitted = false;
+            } else if (res?.errors?.length) {
+              res.errors.forEach((e) => this.toast.error(e.message));
+            } else {
+              this.toast.error(this.translate.instant('خطأ في الإضافة'));
+            }
+          },
+          error: () => this.toast.error(this.translate.instant('خطأ في الإضافة'))
         });
     } else {
       this.validationService.markAllAsTouched(this.basicInfoForm);

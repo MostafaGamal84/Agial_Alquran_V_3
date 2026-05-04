@@ -8,7 +8,9 @@ export interface CreateUserDto {
   fullName?: string;
   email?: string;
   mobile?: string;
-  secondMobile?: string;
+  secondMobile?: string | null;
+  salaryReceiveMethodId?: number;
+  educationSystemTypeId?: number;
   passwordHash?: string;
   userTypeId?: number;
   nationalityId?: number;
@@ -22,7 +24,9 @@ export interface UpdateUserDto {
   fullName?: string;
   email?: string;
   mobile?: string;
-  secondMobile?: string;
+  secondMobile?: string | null;
+  salaryReceiveMethodId?: number | null;
+  educationSystemTypeId?: number | null;
   nationalityId?: number;
   residentId?: number;
   governorateId?: number;
@@ -61,6 +65,8 @@ export interface ProfileDto {
   email: string;
   mobile: string | null;
   secondMobile: string | null;
+  salaryReceiveMethodId: number | null;
+  educationSystemTypeId: number | null;
   nationalityId: number | null;
   residentId: number | null;
   governorateId: number | null;
@@ -72,6 +78,8 @@ export interface UpdateProfileDto {
   email?: string | null;
   mobile?: string | null;
   secondMobile?: string | null;
+  salaryReceiveMethodId?: number | null;
+  educationSystemTypeId?: number | null;
   nationalityId?: number | null;
   residentId?: number | null;
   governorateId?: number | null;

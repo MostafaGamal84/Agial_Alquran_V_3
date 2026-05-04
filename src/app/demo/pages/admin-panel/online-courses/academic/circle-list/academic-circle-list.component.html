@@ -1,0 +1,245 @@
+<app-loading-overlay [isLoading]="isLoading">
+  <section class="academic-page">
+    <div class="row">
+      <div class="col-12">
+        <app-card cardTitle="الحلقات الدراسية" [showHeader]="false" [padding]="0" cardClass="sm-block">
+          <div class="academic-shell">
+            <header class="academic-hero">
+              <div class="academic-hero__content">
+                <span class="academic-hero__eyebrow">
+                  <i class="ti ti-users-group"></i>
+                  الحلقات الدراسية
+                </span>
+                <h1 class="academic-hero__title">إدارة الحلقات الدراسية</h1>
+                <p class="academic-hero__subtitle">
+                  راجع الحلقات الخاصة بنظام المواد الدراسية، وفلتر النتائج حسب المشرف أو المعلم، ثم افتح أو عدّل الحلقة من نفس الصفحة.
+                </p>
+              </div>
+
+              <div class="academic-hero__actions">
+                <div class="academic-hero__badge">
+                  <i class="ti ti-layout-grid"></i>
+                  <span>{{ totalPages }} صفحة</span>
+                </div>
+
+                <button mat-flat-button color="primary" type="button" *ngIf="canManage" (click)="goToAdd()">
+                  <i class="ti ti-plus m-l-5"></i>
+                  إضافة حلقة دراسية
+                </button>
+              </div>
+            </header>
+
+            <div class="academic-stats">
+              <div class="academic-stat">
+                <span class="academic-stat__label">الحلقات في الصفحة الحالية</span>
+                <strong class="academic-stat__value">{{ circles.length }}</strong>
+              </div>
+              <div class="academic-stat">
+                <span class="academic-stat__label">إجمالي النتائج</span>
+                <strong class="academic-stat__value">{{ totalCount }}</strong>
+              </div>
+              <div class="academic-stat">
+                <span class="academic-stat__label">عدد الفلاتر المطبقة</span>
+                <strong class="academic-stat__value">{{ activeFilterCount }}</strong>
+              </div>
+            </div>
+
+            <div class="academic-panel">
+              <div class="academic-panel__header">
+                <div class="academic-panel__heading">
+                  <span class="academic-panel__icon">
+                    <i class="ti ti-adjustments-horizontal"></i>
+                  </span>
+                  <div>
+                    <h2 class="academic-panel__title">تصفية النتائج</h2>
+                    <p class="academic-panel__subtitle">ابحث باسم الحلقة أو اختر المشرف والمعلم للوصول بسرعة إلى الحلقة المطلوبة.</p>
+                  </div>
+                </div>
+              </div>
+
+              <form [formGroup]="filterForm" (ngSubmit)="loadCircles(true)">
+                <div class="row academic-filter-grid">
+                  <div class="col-12 col-xl-5">
+                    <div class="academic-field">
+                      <label class="academic-filter-label">بحث</label>
+                      <div class="academic-field__control">
+                        <mat-form-field appearance="outline" class="w-100">
+                          <input matInput formControlName="searchTerm" placeholder="اسم الحلقة أو المعلم أو الطالب" />
+                          <button mat-icon-button matSuffix type="submit" aria-label="بحث">
+                            <mat-icon>search</mat-icon>
+                          </button>
+                        </mat-form-field>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-12 col-md-6 col-xl-3">
+                    <div class="academic-field">
+                      <label class="academic-filter-label">المشرف</label>
+                      <div class="academic-field__control">
+                        <ng-select
+                          class="w-100 themed-ng-select"
+                          formControlName="managerId"
+                          [items]="managers"
+                          bindLabel="name"
+                          bindValue="id"
+                          [clearable]="true"
+                          [searchable]="true"
+                          placeholder="كل المشرفين"
+                        ></ng-select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-12 col-md-6 col-xl-2">
+                    <div class="academic-field">
+                      <label class="academic-filter-label">المعلم</label>
+                      <div class="academic-field__control">
+                        <ng-select
+                          class="w-100 themed-ng-select"
+                          formControlName="teacherId"
+                          [items]="teachers"
+                          bindLabel="name"
+                          bindValue="id"
+                          [clearable]="true"
+                          [searchable]="true"
+                          placeholder="كل المعلمين"
+                        ></ng-select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-12 col-xl-2">
+                    <div class="academic-filter-actions-wrap">
+                      <span class="academic-filter-label academic-filter-label--ghost">إجراءات</span>
+                      <div class="academic-filter-actions">
+                        <button mat-flat-button color="primary" type="submit">تطبيق الفلاتر</button>
+                        <button mat-stroked-button color="primary" type="button" (click)="clearFilters()">إعادة التعيين</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <div class="academic-panel academic-panel--table">
+              <div class="academic-panel__header academic-panel__header--flush">
+                <div class="academic-panel__heading">
+                  <span class="academic-panel__icon">
+                    <i class="ti ti-list-details"></i>
+                  </span>
+                  <div>
+                    <h2 class="academic-panel__title">قائمة الحلقات</h2>
+                    <p class="academic-panel__subtitle">عرض منظم للحلقات مع المعلم والمشرفين والطلاب المرتبطين بكل حلقة.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="table-responsive academic-table-wrap">
+                <table class="academic-table academic-circle-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>الحلقة</th>
+                      <th>المعلم</th>
+                      <th>المشرفون</th>
+                      <th>الطلاب</th>
+                      <th>العدد</th>
+                      <th class="text-center" *ngIf="canManage">الإجراءات</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <tr *ngFor="let circle of circles; let index = index; trackBy: trackByCircleId">
+                      <td class="academic-table__index">{{ pageIndex * pageSize + index + 1 }}</td>
+                      <td>
+                        <div class="academic-meta">
+                          <div class="academic-meta__title">{{ circle.name || '-' }}</div>
+                          <div class="academic-meta__subtitle">حلقة دراسية مرتبطة بنظام المواد</div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="academic-meta">
+                          <div class="academic-meta__title">{{ circle.teacherName || '-' }}</div>
+                          <div class="academic-meta__subtitle">المعلم المسند للحلقة</div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="academic-chip-row" *ngIf="circle.managerNames?.length; else noManagers">
+                          <span class="academic-chip academic-chip--primary" *ngFor="let name of getVisibleNames(circle.managerNames)">{{ name }}</span>
+                          <span class="academic-chip academic-chip--accent" *ngIf="getHiddenNamesCount(circle.managerNames) > 0">
+                            +{{ getHiddenNamesCount(circle.managerNames) }}
+                          </span>
+                        </div>
+                        <ng-template #noManagers>—</ng-template>
+                      </td>
+                      <td>
+                        <div class="academic-chip-row" *ngIf="circle.studentNames?.length; else noStudents">
+                          <span class="academic-chip academic-chip--accent" *ngFor="let name of getVisibleNames(circle.studentNames)">{{ name }}</span>
+                          <span class="academic-chip academic-chip--accent" *ngIf="getHiddenNamesCount(circle.studentNames) > 0">
+                            +{{ getHiddenNamesCount(circle.studentNames) }}
+                          </span>
+                        </div>
+                        <ng-template #noStudents>—</ng-template>
+                      </td>
+                      <td>
+                        <span class="academic-count-badge">{{ circle.studentCount }}</span>
+                      </td>
+                      <td class="text-center" *ngIf="canManage">
+                        <div class="academic-actions">
+                          <a href="javascript:" class="academic-action-btn" matTooltip="تعديل" (click)="goToEdit(circle.id)">
+                            <i class="ti ti-edit"></i>
+                          </a>
+                          <a
+                            href="javascript:"
+                            class="academic-action-btn academic-action-btn--danger"
+                            [class.is-disabled]="isDeletingId === circle.id"
+                            matTooltip="حذف"
+                            (click)="deleteCircle(circle)"
+                          >
+                            <i class="ti ti-trash"></i>
+                          </a>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <tr *ngIf="!circles.length">
+                      <td [attr.colspan]="canManage ? 7 : 6">
+                        <div class="academic-empty">
+                          <i class="ti ti-book-off academic-empty__icon"></i>
+                          <h3 class="academic-empty__title">لا توجد حلقات دراسية للعرض</h3>
+                          <p class="academic-empty__text" *ngIf="activeFilterCount > 0">
+                            لا توجد نتائج بهذه الفلاتر. جرّب توسيع البحث أو إعادة تعيين الفلاتر.
+                          </p>
+                          <p class="academic-empty__text" *ngIf="activeFilterCount === 0">
+                            فعّل المستخدمين على مدرسة المواد الدراسية ثم أضف أول حلقة لتظهر هنا.
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="academic-paginator">
+                <button mat-stroked-button color="primary" type="button" [disabled]="pageIndex === 0 || isLoading" (click)="previousPage()">
+                  السابق
+                </button>
+                <span class="academic-paginator__summary">الصفحة {{ pageIndex + 1 }} من {{ totalPages }}، وإجمالي النتائج {{ totalCount }}</span>
+                <button
+                  mat-stroked-button
+                  color="primary"
+                  type="button"
+                  [disabled]="isLoading || (pageIndex + 1) * pageSize >= totalCount"
+                  (click)="nextPage()"
+                >
+                  التالي
+                </button>
+              </div>
+            </div>
+          </div>
+        </app-card>
+      </div>
+    </div>
+  </section>
+</app-loading-overlay>

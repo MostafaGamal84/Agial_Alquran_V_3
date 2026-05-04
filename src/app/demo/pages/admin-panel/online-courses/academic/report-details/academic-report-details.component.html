@@ -1,0 +1,154 @@
+<section class="academic-page">
+  <div class="row">
+    <div class="col-12">
+      <app-card cardTitle="تفاصيل تقرير المادة" [showHeader]="false" [padding]="0">
+        <div class="academic-shell">
+          <header class="academic-hero">
+            <div class="academic-hero__content">
+              <span class="academic-hero__eyebrow">
+                <i class="ti ti-file-description"></i>
+                تفاصيل التقرير
+              </span>
+              <h1 class="academic-hero__title">{{ report?.studentName || 'تقرير مادة دراسية' }}</h1>
+              <p class="academic-hero__subtitle">
+                مراجعة سريعة لجميع عناصر التقرير: الطالب، المعلم، المادة، التقييم، الواجب، ومدة الحصة في تنسيق واضح ومريح.
+              </p>
+            </div>
+
+            <div class="academic-hero__actions">
+              <div class="academic-hero__badge" *ngIf="report">
+                <i class="ti ti-calendar-event"></i>
+                <span>{{ formatReportDate(report.reportDate) }}</span>
+              </div>
+
+              <button mat-stroked-button color="primary" type="button" (click)="goBack()">رجوع للتقارير</button>
+            </div>
+          </header>
+
+          @if (isLoading) {
+            <div class="academic-loading-block">جارٍ تحميل بيانات التقرير...</div>
+          } @else if (!report) {
+            <div class="academic-banner academic-banner--warning">
+              <span class="academic-banner__icon">
+                <i class="ti ti-alert-circle"></i>
+              </span>
+              <div>
+                <h2 class="academic-banner__title">لا توجد بيانات للعرض</h2>
+                <p class="academic-banner__text">تعذر العثور على التقرير المطلوب أو قد لا تملك صلاحية الوصول إليه.</p>
+              </div>
+            </div>
+          } @else {
+            <div class="academic-stats">
+              <div class="academic-stat">
+                <span class="academic-stat__label">المادة</span>
+                <strong class="academic-stat__value">{{ report.subjectName || '-' }}</strong>
+              </div>
+              <div class="academic-stat">
+                <span class="academic-stat__label">مدة الحصة</span>
+                <strong class="academic-stat__value">{{ report.sessionDurationMinutes || '-' }} دقيقة</strong>
+              </div>
+              <div class="academic-stat">
+                <span class="academic-stat__label">درجة الواجب</span>
+                <strong class="academic-stat__value">{{ report.homeworkScore || '-' }}</strong>
+              </div>
+            </div>
+
+            <div class="academic-banner">
+              <span class="academic-banner__icon">
+                <i class="ti ti-users"></i>
+              </span>
+              <div>
+                <h2 class="academic-banner__title">ملخص التقرير</h2>
+                <p class="academic-banner__text">
+                  المعلم: {{ report.teacherName || '-' }}، الحلقة: {{ report.academicCircleName || '-' }}، المرحلة:
+                  {{ resolveStageName(report.stageId) }}.
+                </p>
+              </div>
+            </div>
+
+            <div class="academic-panel">
+              <div class="academic-panel__header">
+                <div class="academic-panel__heading">
+                  <span class="academic-panel__icon">
+                    <i class="ti ti-layout-grid"></i>
+                  </span>
+                  <div>
+                    <h2 class="academic-panel__title">تفاصيل التقرير كاملة</h2>
+                    <p class="academic-panel__subtitle">جميع عناصر التقرير موزعة في بطاقات لتسهيل القراءة والمراجعة.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="academic-detail-grid">
+                <div class="academic-detail-card">
+                  <span class="academic-detail-card__label">الطالب</span>
+                  <div class="academic-detail-card__value">{{ report.studentName || '-' }}</div>
+                </div>
+
+                <div class="academic-detail-card">
+                  <span class="academic-detail-card__label">المعلم</span>
+                  <div class="academic-detail-card__value">{{ report.teacherName || '-' }}</div>
+                </div>
+
+                <div class="academic-detail-card">
+                  <span class="academic-detail-card__label">التاريخ</span>
+                  <div class="academic-detail-card__value">{{ formatReportDate(report.reportDate) }}</div>
+                </div>
+
+                <div class="academic-detail-card">
+                  <span class="academic-detail-card__label">المرحلة</span>
+                  <div class="academic-detail-card__value">{{ resolveStageName(report.stageId) }}</div>
+                </div>
+
+                <div class="academic-detail-card">
+                  <span class="academic-detail-card__label">المادة</span>
+                  <div class="academic-detail-card__value">{{ report.subjectName || '-' }}</div>
+                </div>
+
+                <div class="academic-detail-card">
+                  <span class="academic-detail-card__label">الحلقة</span>
+                  <div class="academic-detail-card__value">{{ report.academicCircleName || '-' }}</div>
+                </div>
+
+                <div class="academic-detail-card academic-detail-card--wide">
+                  <span class="academic-detail-card__label">درس اليوم</span>
+                  <div class="academic-detail-card__value">{{ report.lessonTitle || '-' }}</div>
+                </div>
+
+                <div class="academic-detail-card academic-detail-card--half">
+                  <span class="academic-detail-card__label">تقييم أداء الطالب</span>
+                  <div class="academic-detail-card__value">{{ resolvePerformanceName(report.studentPerformanceId) }}</div>
+                </div>
+
+                <div class="academic-detail-card academic-detail-card--half">
+                  <span class="academic-detail-card__label">تقييم واجب الحصة الماضية</span>
+                  <div class="academic-detail-card__value">{{ resolveHomeworkStatusName(report.previousHomeworkStatusId) }}</div>
+                </div>
+
+                <div class="academic-detail-card">
+                  <span class="academic-detail-card__label">درجة الواجب</span>
+                  <div class="academic-detail-card__value">{{ report.homeworkScore || '-' }}</div>
+                </div>
+
+                <div class="academic-detail-card">
+                  <span class="academic-detail-card__label">مدة الحصة</span>
+                  <div class="academic-detail-card__value">{{ report.sessionDurationMinutes || '-' }} دقيقة</div>
+                </div>
+
+                <div class="academic-detail-card academic-detail-card--wide">
+                  <span class="academic-detail-card__label">واجب الحصة القادمة</span>
+                  <div class="academic-detail-card__value">{{ report.nextHomework || '-' }}</div>
+                </div>
+
+                <div class="academic-detail-card academic-detail-card--wide">
+                  <span class="academic-detail-card__label">ملاحظات المعلم</span>
+                  <div class="academic-detail-card__value">{{ report.teacherNotes || '-' }}</div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </app-card>
+    </div>
+  </div>
+</section>

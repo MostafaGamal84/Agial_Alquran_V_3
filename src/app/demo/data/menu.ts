@@ -361,6 +361,57 @@ export const menus: Navigation[] = [
               }
             ]
           },
+          {
+            id: 'academic-school',
+            title: 'مدرسة المواد',
+            type: 'collapse',
+            role: [
+              UserTypesEnum.Admin.toString(),
+              UserTypesEnum.Manager.toString(),
+              UserTypesEnum.BranchLeader.toString(),
+              UserTypesEnum.Student.toString(),
+              UserTypesEnum.Teacher.toString()
+            ],
+            children: [
+              {
+                id: 'academic-subjects',
+                title: 'المواد الدراسية',
+                type: 'item',
+                url: '/online-course/academic/subjects',
+                role: [
+                  UserTypesEnum.Admin.toString(),
+                  UserTypesEnum.Manager.toString(),
+                  UserTypesEnum.BranchLeader.toString()
+                ]
+              },
+              {
+                id: 'academic-circles',
+                title: 'الحلقات الدراسية',
+                type: 'item',
+                url: '/online-course/academic/circles',
+                role: [
+                  UserTypesEnum.Admin.toString(),
+                  UserTypesEnum.Manager.toString(),
+                  UserTypesEnum.BranchLeader.toString(),
+                  UserTypesEnum.Student.toString(),
+                  UserTypesEnum.Teacher.toString()
+                ]
+              },
+              {
+                id: 'academic-reports',
+                title: 'تقارير المواد',
+                type: 'item',
+                url: '/online-course/academic/reports',
+                role: [
+                  UserTypesEnum.Admin.toString(),
+                  UserTypesEnum.Manager.toString(),
+                  UserTypesEnum.BranchLeader.toString(),
+                  UserTypesEnum.Student.toString(),
+                  UserTypesEnum.Teacher.toString()
+                ]
+              }
+            ]
+          },
 
           {
             id: 'deleted-objects',

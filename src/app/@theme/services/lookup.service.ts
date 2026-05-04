@@ -13,6 +13,8 @@ export interface LookUpUserDto {
   email: string;
   mobile: string;
   secondMobile: string;
+  salaryReceiveMethodId?: number | null;
+  educationSystemTypeId?: number | null;
   nationality: string;
   nationalityId: number;
   resident?: string;
@@ -45,6 +47,8 @@ export interface ApiResponse<T> {
   isSuccess: boolean;
   errors: ApiError[];
   data: T;
+  message?: string;
+  messageCode?: number;
 }
 
 export interface FilteredResultRequestDto {

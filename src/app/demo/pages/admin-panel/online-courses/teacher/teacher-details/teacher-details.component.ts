@@ -5,6 +5,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatButtonModule } from '@angular/material/button';
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
+import { TeacherSalaryReceiveMethodEnum } from 'src/app/@theme/types/TeacherSalaryReceiveMethodEnum';
 import { getUserManagers } from 'src/app/demo/shared/utils/user-managers';
 
 interface Person {
@@ -32,6 +33,7 @@ type TeacherVM = {
   email?: string;
   mobile?: string;
   secondMobile?: string;
+  salaryReceiveMethodId?: number | null;
   nationality?: string;
   nationalityId?: number;
   resident?: string;
@@ -94,6 +96,7 @@ export class TeacherDetailsComponent {
     email: 'البريد الإلكتروني',
     mobile: 'رقم الجوال',
     secondMobile: 'جوال إضافي',
+    salaryReceiveMethodId: 'طريقة استلام الراتب',
     nationality: 'الجنسية',
     nationalityId: 'معرّف الجنسية',
     resident: 'الإقامة',
@@ -153,7 +156,10 @@ export class TeacherDetailsComponent {
         if (!value) return null;
 
         const icon = this.getContactIcon(k as string);
-        const label = this.labelMap[k as string] ?? this.humanizeKey(k as string);
+        const label =
+          k === 'secondMobile' && data.salaryReceiveMethodId === TeacherSalaryReceiveMethodEnum.Wallet
+            ? 'رقم المحفظة'
+            : this.labelMap[k as string] ?? this.humanizeKey(k as string);
 
         const href =
           k === 'email' ? `mailto:${value}` :
@@ -231,6 +237,9 @@ export class TeacherDetailsComponent {
   private formatValue(key: string, val: unknown): string {
     if (key === 'inactive') return val ? 'غير نشط' : 'نشط';
     if (key === 'branchId') return this.getBranchLabel(val);
+    if (key === 'salaryReceiveMethodId') {
+      return Number(val) === TeacherSalaryReceiveMethodEnum.Instapay ? 'انستاباي' : 'محفظة';
+    }
     return String(val);
   }
 

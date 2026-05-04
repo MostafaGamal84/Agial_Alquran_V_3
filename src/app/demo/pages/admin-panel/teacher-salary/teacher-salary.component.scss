@@ -355,6 +355,23 @@
   color: #fff !important;
 }
 
+.payment-method-pill {
+  min-width: auto;
+  width: auto;
+  height: 40px;
+  padding-inline: 0.85rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  background: rgba(0, 137, 123, 0.12);
+  border: 1px dashed rgba(0, 137, 123, 0.34);
+  color: #00796b;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
 .cash-wallet-button--vodafone {
   background: linear-gradient(135deg, #e60000, #b40018);
   box-shadow:
@@ -462,6 +479,12 @@
 :host-context(.dark) .action-button--instapay {
   background: rgba(38, 166, 154, 0.2);
   color: #80cbc4;
+}
+
+:host-context(.dark) .payment-method-pill {
+  background: rgba(38, 166, 154, 0.18);
+  border-color: rgba(128, 203, 196, 0.34);
+  color: #9ce7df;
 }
 
 .action-button .spin {
@@ -574,7 +597,8 @@
   }
 
   .view-action-button,
-  .cash-wallet-button {
+  .cash-wallet-button,
+  .payment-method-pill {
     height: 36px;
     padding-inline: 0.7rem;
     gap: 0.3rem;
@@ -647,7 +671,8 @@
   }
 
   .view-action-button,
-  .cash-wallet-button {
+  .cash-wallet-button,
+  .payment-method-pill {
     height: 34px;
     padding-inline: 0.58rem;
   }
@@ -664,6 +689,10 @@
 
   .cash-wallet-label--compact {
     display: inline;
+    font-size: 0.72rem;
+  }
+
+  .payment-method-pill {
     font-size: 0.72rem;
   }
 

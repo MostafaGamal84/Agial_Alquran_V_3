@@ -1,0 +1,193 @@
+<app-loading-overlay [isLoading]="isLoading">
+  <section class="academic-page">
+    <div class="row">
+      <div class="col-12">
+        <app-card cardTitle="المواد الدراسية" [showHeader]="false" [padding]="0" cardClass="sm-block">
+          <div class="academic-shell">
+            <header class="academic-hero">
+              <div class="academic-hero__content">
+                <span class="academic-hero__eyebrow">
+                  <i class="ti ti-books"></i>
+                  المواد الدراسية
+                </span>
+                <h1 class="academic-hero__title">إدارة المواد الدراسية</h1>
+                <p class="academic-hero__subtitle">
+                  أدر قائمة المواد المتاحة داخل مدرسة المواد الدراسية، ثم استخدمها مباشرة داخل تقارير المعلمين بدل إدخال أسماء المواد يدويًا.
+                </p>
+              </div>
+
+              <div class="academic-hero__actions">
+                <div class="academic-hero__badge">
+                  <i class="ti ti-layout-list"></i>
+                  <span>{{ totalPages }} صفحة</span>
+                </div>
+
+                <button mat-flat-button color="primary" type="button" *ngIf="canManage" (click)="goToAdd()">
+                  <i class="ti ti-plus m-l-5"></i>
+                  إضافة مادة
+                </button>
+              </div>
+            </header>
+
+            <div class="academic-stats">
+              <div class="academic-stat">
+                <span class="academic-stat__label">المواد في الصفحة الحالية</span>
+                <strong class="academic-stat__value">{{ subjects.length }}</strong>
+              </div>
+              <div class="academic-stat">
+                <span class="academic-stat__label">إجمالي المواد</span>
+                <strong class="academic-stat__value">{{ totalCount }}</strong>
+              </div>
+              <div class="academic-stat">
+                <span class="academic-stat__label">مواد مستخدمة في التقارير</span>
+                <strong class="academic-stat__value">{{ usedSubjectsCount }}</strong>
+              </div>
+            </div>
+
+            <div class="academic-panel">
+              <div class="academic-panel__header">
+                <div class="academic-panel__heading">
+                  <span class="academic-panel__icon">
+                    <i class="ti ti-adjustments-horizontal"></i>
+                  </span>
+                  <div>
+                    <h2 class="academic-panel__title">تصفية المواد</h2>
+                    <p class="academic-panel__subtitle">ابحث باسم المادة للوصول السريع، ثم أضف أو عدّل من نفس الصفحة.</p>
+                  </div>
+                </div>
+              </div>
+
+              <form [formGroup]="filterForm" (ngSubmit)="loadSubjects(true)">
+                <div class="row academic-filter-grid">
+                  <div class="col-12 col-xl-8">
+                    <div class="academic-field">
+                      <label class="academic-filter-label">بحث</label>
+                      <div class="academic-field__control">
+                        <mat-form-field appearance="outline" class="w-100">
+                          <input matInput formControlName="searchTerm" placeholder="اسم المادة الدراسية" />
+                          <button mat-icon-button matSuffix type="submit" aria-label="بحث">
+                            <mat-icon>search</mat-icon>
+                          </button>
+                        </mat-form-field>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-12 col-xl-4">
+                    <div class="academic-filter-actions-wrap">
+                      <span class="academic-filter-label academic-filter-label--ghost">إجراءات</span>
+                      <div class="academic-filter-actions">
+                        <button mat-flat-button color="primary" type="submit">تطبيق البحث</button>
+                        <button mat-stroked-button color="primary" type="button" (click)="clearFilters()">إعادة التعيين</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <div class="academic-panel academic-panel--table">
+              <div class="academic-panel__header academic-panel__header--flush">
+                <div class="academic-panel__heading">
+                  <span class="academic-panel__icon">
+                    <i class="ti ti-list-details"></i>
+                  </span>
+                  <div>
+                    <h2 class="academic-panel__title">قائمة المواد</h2>
+                    <p class="academic-panel__subtitle">كل مادة يمكن استخدامها داخل تقارير المواد الدراسية، مع ترتيب العرض وحالة الاستخدام.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="table-responsive academic-table-wrap">
+                <table class="academic-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>المادة</th>
+                      <th>ترتيب العرض</th>
+                      <th>الاستخدام</th>
+                      <th class="text-center" *ngIf="canManage">الإجراءات</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <tr *ngFor="let subject of subjects; let index = index; trackBy: trackBySubjectId">
+                      <td class="academic-table__index">{{ pageIndex * pageSize + index + 1 }}</td>
+                      <td>
+                        <div class="academic-meta">
+                          <div class="academic-meta__title">{{ subject.name || '-' }}</div>
+                          <div class="academic-meta__subtitle">مادة متاحة داخل شاشة تقارير المواد</div>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="academic-count-badge">{{ subject.displayOrder || '-' }}</span>
+                      </td>
+                      <td>
+                        <div class="academic-chip-row">
+                          <span class="academic-chip" [ngClass]="subject.isUsed ? 'academic-chip--success' : 'academic-chip--accent'">
+                            {{ subject.isUsed ? 'مستخدمة' : 'غير مستخدمة' }}
+                          </span>
+                          <span class="academic-chip academic-chip--primary">
+                            {{ subject.reportsCount || 0 }} تقرير
+                          </span>
+                        </div>
+                      </td>
+                      <td class="text-center" *ngIf="canManage">
+                        <div class="academic-actions">
+                          <a href="javascript:" class="academic-action-btn" matTooltip="تعديل" (click)="goToEdit(subject.id)">
+                            <i class="ti ti-edit"></i>
+                          </a>
+                          <a
+                            href="javascript:"
+                            class="academic-action-btn academic-action-btn--danger"
+                            [class.is-disabled]="isDeletingId === subject.id || subject.isUsed"
+                            matTooltip="{{ subject.isUsed ? 'لا يمكن حذف مادة مرتبطة بتقارير' : 'حذف' }}"
+                            (click)="deleteSubject(subject)"
+                          >
+                            <i class="ti ti-trash"></i>
+                          </a>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <tr *ngIf="!subjects.length">
+                      <td [attr.colspan]="canManage ? 5 : 4">
+                        <div class="academic-empty">
+                          <i class="ti ti-books-off academic-empty__icon"></i>
+                          <h3 class="academic-empty__title">لا توجد مواد دراسية للعرض</h3>
+                          <p class="academic-empty__text" *ngIf="activeFilterCount > 0">
+                            لا توجد نتائج بهذا البحث. جرّب تعديل كلمة البحث أو إعادة التعيين.
+                          </p>
+                          <p class="academic-empty__text" *ngIf="activeFilterCount === 0">
+                            أضف أول مادة دراسية لتظهر هنا وتصبح متاحة داخل تقارير المواد.
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="academic-paginator">
+                <button mat-stroked-button color="primary" type="button" [disabled]="pageIndex === 0 || isLoading" (click)="previousPage()">
+                  السابق
+                </button>
+                <span class="academic-paginator__summary">الصفحة {{ pageIndex + 1 }} من {{ totalPages }}، وإجمالي النتائج {{ totalCount }}</span>
+                <button
+                  mat-stroked-button
+                  color="primary"
+                  type="button"
+                  [disabled]="isLoading || (pageIndex + 1) * pageSize >= totalCount"
+                  (click)="nextPage()"
+                >
+                  التالي
+                </button>
+              </div>
+            </div>
+          </div>
+        </app-card>
+      </div>
+    </div>
+  </section>
+</app-loading-overlay>

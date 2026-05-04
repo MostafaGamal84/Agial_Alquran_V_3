@@ -1,0 +1,109 @@
+<section class="academic-page">
+  <div class="row justify-content-center">
+    <div class="col-12 col-xxl-9">
+      <app-card [cardTitle]="mode === 'edit' ? 'تعديل المادة الدراسية' : 'إضافة مادة دراسية'" [showHeader]="false" [padding]="0">
+        <div class="academic-shell">
+          <header class="academic-hero">
+            <div class="academic-hero__content">
+              <span class="academic-hero__eyebrow">
+                <i class="ti ti-book-2"></i>
+                {{ mode === 'edit' ? 'تعديل المادة الدراسية' : 'إضافة مادة دراسية' }}
+              </span>
+              <h1 class="academic-hero__title">{{ mode === 'edit' ? 'تحديث بيانات المادة' : 'إنشاء مادة دراسية جديدة' }}</h1>
+              <p class="academic-hero__subtitle">
+                أضف المواد التي سيختار منها المعلم داخل تقرير الحصة، وحدد ترتيب الظهور إذا أردت أن تظهر مادة بعينها أولًا في القوائم.
+              </p>
+            </div>
+
+            <div class="academic-hero__actions">
+              <div class="academic-hero__badge">
+                <i class="ti ti-edit-circle"></i>
+                <span>{{ mode === 'edit' ? 'وضع التعديل' : 'وضع الإضافة' }}</span>
+              </div>
+            </div>
+          </header>
+
+          <div class="academic-stats">
+            <div class="academic-stat">
+              <span class="academic-stat__label">وضع الشاشة</span>
+              <strong class="academic-stat__value">{{ mode === 'edit' ? 'تعديل' : 'إضافة' }}</strong>
+            </div>
+            <div class="academic-stat">
+              <span class="academic-stat__label">عدد التقارير المرتبطة</span>
+              <strong class="academic-stat__value">{{ reportsCount }}</strong>
+            </div>
+            <div class="academic-stat">
+              <span class="academic-stat__label">ترتيب تلقائي</span>
+              <strong class="academic-stat__value">متاح</strong>
+            </div>
+          </div>
+
+          <div class="academic-banner">
+            <span class="academic-banner__icon">
+              <i class="ti ti-info-circle"></i>
+            </span>
+            <div>
+              <h2 class="academic-banner__title">ملاحظة مهمة</h2>
+              <p class="academic-banner__text">إذا تركت ترتيب العرض فارغًا أثناء الإضافة، سيتم وضع المادة تلقائيًا في آخر القائمة.</p>
+            </div>
+          </div>
+
+          @if (isLoading) {
+            <div class="academic-loading-block">جارٍ تحميل بيانات المادة...</div>
+          } @else {
+            <div class="academic-panel">
+              <div class="academic-panel__header">
+                <div class="academic-panel__heading">
+                  <span class="academic-panel__icon">
+                    <i class="ti ti-book-upload"></i>
+                  </span>
+                  <div>
+                    <h2 class="academic-panel__title">نموذج المادة الدراسية</h2>
+                    <p class="academic-panel__subtitle">اكتب اسم المادة، ثم حدّد ترتيبها إذا رغبت، وبعدها احفظ التغييرات.</p>
+                  </div>
+                </div>
+              </div>
+
+              <form [formGroup]="form" (ngSubmit)="submit()">
+                <div class="row academic-form-grid">
+                  <div class="col-lg-7">
+                    <div class="academic-field">
+                      <label class="academic-field-label">اسم المادة</label>
+                      <div class="academic-field__control">
+                        <mat-form-field appearance="outline" class="w-100">
+                          <input matInput formControlName="name" placeholder="اكتب اسم المادة الدراسية" />
+                        </mat-form-field>
+                      </div>
+                      <app-field-error [control]="form.get('name')" [label]="'اسم المادة'"></app-field-error>
+                    </div>
+                  </div>
+
+                  <div class="col-lg-5">
+                    <div class="academic-field">
+                      <label class="academic-field-label">ترتيب العرض</label>
+                      <div class="academic-field__control">
+                        <mat-form-field appearance="outline" class="w-100">
+                          <input matInput type="number" min="1" formControlName="displayOrder" placeholder="اختياري" />
+                        </mat-form-field>
+                      </div>
+                      <app-field-error [control]="form.get('displayOrder')" [label]="'ترتيب العرض'"></app-field-error>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="academic-form-actions">
+                      <button mat-stroked-button color="primary" type="button" (click)="cancel()" [disabled]="isSaving">إلغاء</button>
+                      <button mat-flat-button color="primary" class="academic-submit-btn" type="submit" [disabled]="isSaving">
+                        {{ isSaving ? 'جارٍ الحفظ...' : (mode === 'edit' ? 'تحديث المادة' : 'حفظ المادة') }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          }
+        </div>
+      </app-card>
+    </div>
+  </div>
+</section>

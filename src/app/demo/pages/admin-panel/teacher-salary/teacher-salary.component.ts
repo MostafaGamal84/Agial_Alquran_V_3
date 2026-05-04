@@ -63,6 +63,7 @@ import {
 } from 'src/app/@theme/services/lookup.service';
 import { AuthenticationService } from 'src/app/@theme/services/authentication.service';
 import { UserService } from 'src/app/@theme/services/user.service';
+import { TeacherSalaryReceiveMethodEnum } from 'src/app/@theme/types/TeacherSalaryReceiveMethodEnum';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
 import { environment } from 'src/environments/environment';
 import { TranslateModule } from '@ngx-translate/core';
@@ -604,13 +605,13 @@ export class TeacherSalaryComponent
     const ussdCode = walletConfig.dialCode;
     const dialLink = this.getCashWalletDialLink(invoice);
     if (!dialLink || !walletConfig.dialCode) {
-      this.toastService.error('تعذر تجهيز تحويل فودافون كاش بدون رقم جوال أو مبلغ صحيح.');
+      this.toastService.error('تعذر تجهيز تحويل المحفظة دون رقم محفظة أو مبلغ صحيح.');
       return;
     }
 
     if (!this.isLikelyMobileDevice()) {
       this.copyVodafoneCashCode(walletConfig.dialCode);
-      this.toastService.success(`كود التحويل كاش: ${ussdCode}`, 'Close', 7000);
+      this.toastService.success(`كود تحويل المحفظة: ${ussdCode}`, 'إغلاق', 7000);
       this.showVodafoneCashPrompt(invoice, walletConfig);
       return;
     }
@@ -1405,7 +1406,7 @@ export class TeacherSalaryComponent
     return digitsOnly;
   }
 
-  private resolveTeacherMobile(invoice: TeacherSalaryInvoice | null): string | null {
+  private resolveTeacherPrimaryMobile(invoice: TeacherSalaryInvoice | null): string | null {
     if (!invoice) {
       return null;
     }
@@ -1451,6 +1452,127 @@ export class TeacherSalaryComponent
     }
 
     return null;
+  }
+
+  private resolveTeacherWalletNumber(invoice: TeacherSalaryInvoice | null): string | null {
+    if (!invoice) {
+      return null;
+    }
+
+    const sources: Array<Record<string, unknown> | null | undefined> = [
+      invoice,
+      this.invoiceDetails?.invoice,
+      this.selectedInvoice
+    ];
+    const keys = [
+      'secondMobile',
+      'secondMobileNumber',
+      'alternateMobile',
+      'alternateMobileNumber',
+      'walletNumber',
+      'walletMobile',
+      'teacherSecondMobile',
+      'teacherSecondMobileNumber',
+      'teacherWalletNumber',
+      'teacherWalletMobile'
+    ];
+
+    for (const source of sources) {
+      if (!source) {
+        continue;
+      }
+      for (const key of keys) {
+        const value = source[key];
+        if (typeof value === 'string' && value.trim().length > 0) {
+          return value.trim();
+        }
+      }
+    }
+
+    const teacherId = invoice.teacherId;
+    if (teacherId && this.teachers.length > 0) {
+      const teacher = this.teachers.find((item) => item.id === teacherId);
+      if (teacher?.secondMobile) {
+        return teacher.secondMobile;
+      }
+    }
+
+    return null;
+  }
+
+  private resolveSalaryReceiveMethodId(invoice: TeacherSalaryInvoice | null): number | null {
+    if (!invoice) {
+      return null;
+    }
+
+    const sources: Array<Record<string, unknown> | null | undefined> = [
+      invoice,
+      this.invoiceDetails?.invoice,
+      this.selectedInvoice
+    ];
+    const keys = ['salaryReceiveMethodId', 'teacherSalaryReceiveMethodId'];
+
+    for (const source of sources) {
+      if (!source) {
+        continue;
+      }
+
+      for (const key of keys) {
+        const rawValue = source[key];
+        const numericValue = Number(rawValue);
+        if (Number.isFinite(numericValue) && numericValue > 0) {
+          return numericValue;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  private resolveTeacherSalaryReceiveMethod(
+    invoice: TeacherSalaryInvoice | null
+  ): TeacherSalaryReceiveMethodEnum {
+    return this.resolveSalaryReceiveMethodId(invoice) ===
+      TeacherSalaryReceiveMethodEnum.Instapay
+      ? TeacherSalaryReceiveMethodEnum.Instapay
+      : TeacherSalaryReceiveMethodEnum.Wallet;
+  }
+
+  isWalletSalaryMethod(invoice: TeacherSalaryInvoice | null): boolean {
+    return (
+      this.resolveTeacherSalaryReceiveMethod(invoice) ===
+      TeacherSalaryReceiveMethodEnum.Wallet
+    );
+  }
+
+  isInstapaySalaryMethod(invoice: TeacherSalaryInvoice | null): boolean {
+    return (
+      this.resolveTeacherSalaryReceiveMethod(invoice) ===
+      TeacherSalaryReceiveMethodEnum.Instapay
+    );
+  }
+
+  getSalaryReceiveMethodLabel(invoice: TeacherSalaryInvoice | null): string {
+    return this.isInstapaySalaryMethod(invoice)
+      ? 'انستاباي'
+      : this.getCashWalletLabel(invoice);
+  }
+
+  private resolveTeacherMobile(invoice: TeacherSalaryInvoice | null): string | null {
+    if (this.isInstapaySalaryMethod(invoice)) {
+      return null;
+    }
+
+    const walletNumber = this.resolveTeacherWalletNumber(invoice);
+    if (walletNumber) {
+      return walletNumber;
+    }
+
+    if (this.resolveSalaryReceiveMethodId(invoice) === TeacherSalaryReceiveMethodEnum.Wallet) {
+      return null;
+    }
+
+    return this.resolveTeacherPrimaryMobile(invoice);
   }
 
   private formatTransferAmount(amount: number | null): string {
@@ -1631,12 +1753,15 @@ export class TeacherSalaryComponent
   }
 
   canTransferVodafoneCash(invoice: TeacherSalaryInvoice | null): boolean {
-    return Boolean(this.getCashWalletDialLink(invoice));
+    return this.isWalletSalaryMethod(invoice) && Boolean(this.getCashWalletDialLink(invoice));
   }
 
   canTransferInstapay(invoice: TeacherSalaryInvoice | null): boolean {
     const amount = this.getSalaryAmount(invoice);
-    return Boolean(amount !== null && Number.isFinite(amount));
+    return (
+      this.isInstapaySalaryMethod(invoice) &&
+      Boolean(amount !== null && Number.isFinite(amount))
+    );
   }
 
   private buildSummaryMetrics(

@@ -21,6 +21,8 @@ export interface TeacherSalaryInvoice {
   teacherId?: number;
   teacherName?: string;
   teacherMobile?: string | null;
+  teacherSecondMobile?: string | null;
+  salaryReceiveMethodId?: number | null;
   month?: string;
   salary?: number;
   salaryAmount?: number;

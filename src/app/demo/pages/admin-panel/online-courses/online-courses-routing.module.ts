@@ -100,6 +100,19 @@ const routes: Routes = [
             UserTypesEnum.Teacher
           ]
         }
+      },
+      {
+        path: 'academic',
+        loadChildren: () => import('./academic/academic-routing.module').then((m) => m.AcademicRoutingModule),
+        data: {
+          roles: [
+            UserTypesEnum.Admin,
+            UserTypesEnum.Manager,
+            UserTypesEnum.BranchLeader,
+            UserTypesEnum.Student,
+            UserTypesEnum.Teacher
+          ]
+        }
       }
     ]
   }

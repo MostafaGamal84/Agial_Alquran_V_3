@@ -1,0 +1,181 @@
+<section class="academic-page">
+  <div class="row justify-content-center">
+    <div class="col-12 col-xxl-10">
+      <app-card [cardTitle]="mode === 'edit' ? 'تعديل الحلقة الدراسية' : 'إضافة حلقة دراسية'" [showHeader]="false" [padding]="0">
+        <div class="academic-shell">
+          <header class="academic-hero">
+            <div class="academic-hero__content">
+              <span class="academic-hero__eyebrow">
+                <i class="ti ti-book-2"></i>
+                {{ mode === 'edit' ? 'تعديل الحلقة الدراسية' : 'إضافة حلقة دراسية' }}
+              </span>
+              <h1 class="academic-hero__title">{{ mode === 'edit' ? 'تحديث بيانات الحلقة الدراسية' : 'إنشاء حلقة دراسية جديدة' }}</h1>
+              <p class="academic-hero__subtitle">
+                اربط المعلم والمشرفين والطلاب داخل نظام المواد الدراسية من شاشة أكثر اتساعًا وتنظيمًا، وبنفس روح تصميم النظام.
+              </p>
+            </div>
+
+            <div class="academic-hero__actions">
+              <div class="academic-hero__badge">
+                <i class="ti ti-edit-circle"></i>
+                <span>{{ mode === 'edit' ? 'وضع التعديل' : 'وضع الإضافة' }}</span>
+              </div>
+            </div>
+          </header>
+
+          <div class="academic-stats">
+            <div class="academic-stat">
+              <span class="academic-stat__label">المعلمين المتاحين</span>
+              <strong class="academic-stat__value">{{ teachers.length }}</strong>
+            </div>
+            <div class="academic-stat" *ngIf="!isManagerRole">
+              <span class="academic-stat__label">المشرفين المتاحين</span>
+              <strong class="academic-stat__value">{{ managers.length }}</strong>
+            </div>
+            <div class="academic-stat">
+              <span class="academic-stat__label">الطلاب المتاحين</span>
+              <strong class="academic-stat__value">{{ students.length }}</strong>
+            </div>
+          </div>
+
+          <div class="academic-banner">
+            <span class="academic-banner__icon">
+              <i class="ti ti-info-circle"></i>
+            </span>
+            <div>
+              <h2 class="academic-banner__title">بيانات الإسناد</h2>
+              <p class="academic-banner__text">اكتب اسم الحلقة، ثم اختر المعلم والمشرفين والطلاب المنتمين إلى مدرسة المواد الدراسية.</p>
+            </div>
+          </div>
+
+          <div class="academic-banner academic-banner--warning" *ngIf="!isLookupLoading && !hasLookupData">
+            <span class="academic-banner__icon">
+              <i class="ti ti-alert-triangle"></i>
+            </span>
+            <div>
+              <h2 class="academic-banner__title">لا توجد بيانات كافية داخل القوائم</h2>
+              <p class="academic-banner__text">
+                إذا كنت فعّلت المستخدمين على مدرسة المواد الدراسية منذ قليل، حدّث الصفحة أو أعد تشغيل الـ API حتى تظهر القوائم.
+              </p>
+            </div>
+          </div>
+
+          @if (isLoading) {
+            <div class="academic-loading-block">جارٍ تحميل بيانات الحلقة...</div>
+          } @else {
+            <div class="academic-panel">
+              <div class="academic-panel__header">
+                <div class="academic-panel__heading">
+                  <span class="academic-panel__icon">
+                    <i class="ti ti-users-plus"></i>
+                  </span>
+                  <div>
+                    <h2 class="academic-panel__title">نموذج الحلقة الدراسية</h2>
+                    <p class="academic-panel__subtitle">املأ الحقول التالية ثم احفظ الحلقة مع العلاقات المرتبطة بها.</p>
+                  </div>
+                </div>
+              </div>
+
+              <form [formGroup]="form" (ngSubmit)="submit()">
+                <div class="row academic-form-grid">
+                  <div class="col-lg-6">
+                    <div class="academic-field">
+                      <label class="academic-field-label">اسم الحلقة</label>
+                      <div class="academic-field__control">
+                        <mat-form-field appearance="outline" class="w-100">
+                          <input matInput formControlName="name" placeholder="اكتب اسم الحلقة" />
+                        </mat-form-field>
+                      </div>
+                      <app-field-error [control]="form.get('name')" [label]="'اسم الحلقة'"></app-field-error>
+                    </div>
+                  </div>
+
+                  <div class="col-lg-6">
+                    <div class="academic-field">
+                      <label class="academic-field-label">المعلم</label>
+                      <div class="academic-field__control">
+                        <ng-select
+                          class="w-100 themed-ng-select"
+                          formControlName="teacherId"
+                          [items]="teachers"
+                          bindLabel="name"
+                          bindValue="id"
+                          [searchable]="true"
+                          [loading]="isLoadingTeachers"
+                          [clearable]="true"
+                          [notFoundText]="teacherNotFoundText"
+                          [loadingText]="loadingLookupText"
+                          placeholder="اختر المعلم"
+                        ></ng-select>
+                      </div>
+                      <app-field-error [control]="form.get('teacherId')" [label]="'المعلم'"></app-field-error>
+                    </div>
+                  </div>
+
+                  @if (!isManagerRole) {
+                    <div class="col-lg-6">
+                      <div class="academic-field">
+                        <label class="academic-field-label">المشرفون</label>
+                        <div class="academic-field__control">
+                          <ng-select
+                            class="w-100 themed-ng-select"
+                            formControlName="managerIds"
+                            [items]="managers"
+                            bindLabel="name"
+                            bindValue="id"
+                            [multiple]="true"
+                            [closeOnSelect]="false"
+                            [searchable]="true"
+                            [loading]="isLoadingManagers"
+                            [clearable]="true"
+                            [notFoundText]="managerNotFoundText"
+                            [loadingText]="loadingLookupText"
+                            placeholder="اختر المشرفين"
+                          ></ng-select>
+                        </div>
+                        <app-field-error [control]="form.get('managerIds')" [label]="'المشرفون'"></app-field-error>
+                      </div>
+                    </div>
+                  }
+
+                  <div class="col-lg-6">
+                    <div class="academic-field">
+                      <label class="academic-field-label">الطلاب</label>
+                      <div class="academic-field__control">
+                        <ng-select
+                          class="w-100 themed-ng-select"
+                          formControlName="studentIds"
+                          [items]="students"
+                          bindLabel="name"
+                          bindValue="id"
+                          [multiple]="true"
+                          [closeOnSelect]="false"
+                          [searchable]="true"
+                          [loading]="isLoadingStudents"
+                          [clearable]="true"
+                          [notFoundText]="studentNotFoundText"
+                          [loadingText]="loadingLookupText"
+                          placeholder="اختر الطلاب"
+                        ></ng-select>
+                      </div>
+                      <app-field-error [control]="form.get('studentIds')" [label]="'الطلاب'"></app-field-error>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="academic-form-actions">
+                      <button mat-stroked-button color="primary" type="button" (click)="cancel()" [disabled]="isSaving">إلغاء</button>
+                      <button mat-flat-button color="primary" class="academic-submit-btn" type="submit" [disabled]="isSaving || isLookupLoading">
+                        {{ isSaving ? 'جارٍ الحفظ...' : (mode === 'edit' ? 'تحديث الحلقة' : 'حفظ الحلقة') }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          }
+        </div>
+      </app-card>
+    </div>
+  </div>
+</section>

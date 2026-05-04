@@ -242,33 +242,38 @@
                 </button>
               }
               @if (canManagePayments) {
-                <button
-                  mat-flat-button
-                  type="button"
-                  color="accent"
-                  [class]="getCashWalletButtonClass(row)"
-                  [matTooltip]="getCashWalletTooltip(row)"
-                  [attr.aria-label]="getCashWalletTooltip(row)"
-                  (click)="onVodafoneCashTransfer($event, row)"
-                  (mousedown)="$event.preventDefault()"
-                >
-                  <span class="cash-wallet-badge" aria-hidden="true">{{ getCashWalletBadge(row) }}</span>
-                  <span class="cash-wallet-label">{{ getCashWalletLabel(row) }}</span>
-                  <span class="cash-wallet-label cash-wallet-label--compact">{{ getCashWalletShortLabel(row) }}</span>
-                </button>
-                <button
-                  mat-icon-button
-                  type="button"
-                  color="accent"
-                  class="action-button action-button--instapay"
-                  [matTooltip]="'Instapay Transfer' | translate"
-                  [attr.aria-label]="'Instapay Transfer' | translate"
-                  (click)="onInstapayTransfer($event, row)"
-                  (mousedown)="$event.preventDefault()"
-                  [disabled]="!canTransferInstapay(row)"
-                >
-                  <mat-icon>account_balance_wallet</mat-icon>
-                </button>
+                @if (isWalletSalaryMethod(row)) {
+                  <button
+                    mat-flat-button
+                    type="button"
+                    color="accent"
+                    [class]="getCashWalletButtonClass(row)"
+                    [matTooltip]="getCashWalletTooltip(row)"
+                    [attr.aria-label]="getCashWalletTooltip(row)"
+                    (click)="onVodafoneCashTransfer($event, row)"
+                    (mousedown)="$event.preventDefault()"
+                    [disabled]="!canTransferVodafoneCash(row)"
+                  >
+                    <span class="cash-wallet-badge" aria-hidden="true">{{ getCashWalletBadge(row) }}</span>
+                    <span class="cash-wallet-label">{{ getCashWalletLabel(row) }}</span>
+                    <span class="cash-wallet-label cash-wallet-label--compact">{{ getCashWalletShortLabel(row) }}</span>
+                  </button>
+                } @else {
+                  <span class="payment-method-pill">{{ getSalaryReceiveMethodLabel(row) }}</span>
+                  <button
+                    mat-icon-button
+                    type="button"
+                    color="accent"
+                    class="action-button action-button--instapay"
+                    [matTooltip]="'Instapay Transfer' | translate"
+                    [attr.aria-label]="'Instapay Transfer' | translate"
+                    (click)="onInstapayTransfer($event, row)"
+                    (mousedown)="$event.preventDefault()"
+                    [disabled]="!canTransferInstapay(row)"
+                  >
+                    <mat-icon>account_balance_wallet</mat-icon>
+                  </button>
+                }
               }
               <button
                 mat-flat-button

@@ -1,6 +1,6 @@
 <div class="row justify-content-center">
   <div class="col-xl-10 col-lg-11 col-12">
-    <app-card cardTitle="إضافة قائد فرع جديد">
+    <app-card cardTitle="إضافة طالب جديد">
       <form [formGroup]="basicInfoForm" (ngSubmit)="onSubmit()" class="user-form row g-3">
         <div class="col-md-6">
           <mat-form-field appearance="outline" class="w-100">
@@ -9,6 +9,7 @@
             <app-field-error [control]="basicInfoForm.get('fullName')" [label]="'الاسم الكامل'"></app-field-error>
           </mat-form-field>
         </div>
+
         <div class="col-md-6">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>البريد الإلكتروني</mat-label>
@@ -16,6 +17,7 @@
             <app-field-error [control]="basicInfoForm.get('email')" [label]="'البريد الإلكتروني'"></app-field-error>
           </mat-form-field>
         </div>
+
         <div class="col-md-6">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>كلمة المرور</mat-label>
@@ -26,45 +28,106 @@
 
         <div class="col-md-6">
           <label>الجوال</label>
-          <ng-select formControlName="mobileCountryDialCode" [items]="countries" bindLabel="name" bindValue="dialCode" [ngClass]="{ 'p-invalid': validationService.shouldShowError(basicInfoForm.get('mobileCountryDialCode')) }"></ng-select>
+          <ng-select
+            formControlName="mobileCountryDialCode"
+            [items]="countries"
+            bindLabel="name"
+            bindValue="dialCode"
+            [ngClass]="{ 'p-invalid': validationService.shouldShowError(basicInfoForm.get('mobileCountryDialCode')) }"
+            (change)="onCountryCodeChange('mobileCountryDialCode')"
+          ></ng-select>
           <app-field-error [control]="basicInfoForm.get('mobileCountryDialCode')" [label]="'مفتاح الدولة للجوال'"></app-field-error>
           <mat-form-field appearance="outline" class="w-100 mt-2">
-            <input matInput [errorStateMatcher]="liveErrorStateMatcher" formControlName="mobile" [mask]="mobileMask" [placeholder]="mobilePlaceholder" [dropSpecialCharacters]="false" [validation]="!!mobileMask" />
+            <input
+              matInput
+              [errorStateMatcher]="liveErrorStateMatcher"
+              formControlName="mobile"
+              [mask]="mobileMask"
+              [placeholder]="mobilePlaceholder"
+              [dropSpecialCharacters]="false"
+              [validation]="!!mobileMask"
+            />
             <app-field-error [control]="basicInfoForm.get('mobile')" [label]="'رقم الجوال'"></app-field-error>
           </mat-form-field>
         </div>
 
         <div class="col-md-6">
+          <label>الانتماء للنظام</label>
+          <div class="d-flex flex-column gap-2 mt-2">
+            <mat-checkbox formControlName="includeQuranSystem">مدرسة القرآن</mat-checkbox>
+            <mat-checkbox formControlName="includeAcademicSystem">مدرسة المواد الدراسية</mat-checkbox>
+          </div>
+          <app-field-error [control]="basicInfoForm.get('educationSystemTypeId')" [label]="'الانتماء للنظام'"></app-field-error>
+        </div>
+
+        <div class="col-md-6">
           <label>الجوال البديل</label>
-          <ng-select formControlName="secondMobileCountryDialCode" [items]="countries" bindLabel="name" bindValue="dialCode"></ng-select>
+          <ng-select
+            formControlName="secondMobileCountryDialCode"
+            [items]="countries"
+            bindLabel="name"
+            bindValue="dialCode"
+            (change)="onCountryCodeChange('secondMobileCountryDialCode')"
+          ></ng-select>
           <mat-form-field appearance="outline" class="w-100 mt-2">
-            <input matInput [errorStateMatcher]="liveErrorStateMatcher" formControlName="secondMobile" [mask]="secondMobileMask" [placeholder]="secondMobilePlaceholder" [dropSpecialCharacters]="false" [validation]="!!secondMobileMask" />
+            <input
+              matInput
+              [errorStateMatcher]="liveErrorStateMatcher"
+              formControlName="secondMobile"
+              [mask]="secondMobileMask"
+              [placeholder]="secondMobilePlaceholder"
+              [dropSpecialCharacters]="false"
+              [validation]="!!secondMobileMask"
+            />
           </mat-form-field>
         </div>
 
         <div class="col-md-6">
           <label>الجنسية</label>
-          <ng-select formControlName="nationalityId" [items]="nationalities" bindLabel="name" bindValue="id" [ngClass]="{ 'p-invalid': validationService.shouldShowError(basicInfoForm.get('nationalityId')) }"></ng-select>
+          <ng-select
+            formControlName="nationalityId"
+            [items]="nationalities"
+            bindLabel="name"
+            bindValue="id"
+            [ngClass]="{ 'p-invalid': validationService.shouldShowError(basicInfoForm.get('nationalityId')) }"
+          ></ng-select>
           <app-field-error [control]="basicInfoForm.get('nationalityId')" [label]="'الجنسية'"></app-field-error>
         </div>
+
         <div class="col-md-6">
           <label>مكان الإقامة</label>
-          <ng-select formControlName="residentId" [items]="nationalities" bindLabel="name" bindValue="id" [ngClass]="{ 'p-invalid': validationService.shouldShowError(basicInfoForm.get('residentId')) }"></ng-select>
+          <ng-select
+            formControlName="residentId"
+            [items]="nationalities"
+            bindLabel="name"
+            bindValue="id"
+            [ngClass]="{ 'p-invalid': validationService.shouldShowError(basicInfoForm.get('residentId')) }"
+          ></ng-select>
           <app-field-error [control]="basicInfoForm.get('residentId')" [label]="'مكان الإقامة'"></app-field-error>
         </div>
+
         @if (showGovernorateSelect) {
           <div class="col-md-6">
             <label>المحافظة</label>
             <ng-select formControlName="governorateId" [items]="governorates" bindLabel="name" bindValue="id"></ng-select>
           </div>
         }
+
         <div class="col-md-6">
           <label>الفرع</label>
-          <ng-select formControlName="branchId" [items]="Branch" bindLabel="label" bindValue="id" [ngClass]="{ 'p-invalid': validationService.shouldShowError(basicInfoForm.get('branchId')) }"></ng-select>
+          <ng-select
+            formControlName="branchId"
+            [items]="Branch"
+            bindLabel="label"
+            bindValue="id"
+            [ngClass]="{ 'p-invalid': validationService.shouldShowError(basicInfoForm.get('branchId')) }"
+          ></ng-select>
           <app-field-error [control]="basicInfoForm.get('branchId')" [label]="'الفرع'"></app-field-error>
         </div>
 
-        <div class="col-12"><button mat-flat-button color="primary" type="submit" [disabled]="isSubmitting">حفظ</button></div>
+        <div class="col-12">
+          <button mat-flat-button color="primary" type="submit" [disabled]="isSubmitting">حفظ</button>
+        </div>
       </form>
     </app-card>
   </div>

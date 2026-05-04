@@ -8,7 +8,7 @@ import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dial
 import { FieldErrorComponent } from 'src/app/shared/validation/field-error/field-error.component';
 import { ValidationService } from 'src/app/shared/validation/validation.service';
 import { LiveErrorStateMatcher } from 'src/app/shared/validation/live-error-state-matcher';
-import { Subject, catchError, debounceTime, finalize, firstValueFrom, forkJoin, merge, of, startWith, switchMap, takeUntil, tap } from 'rxjs';
+import { Subject, catchError, debounceTime, firstValueFrom, forkJoin, merge, of, startWith, switchMap, takeUntil, tap } from 'rxjs';
 
 // project import
 import { SharedModule } from 'src/app/demo/shared/shared.module';
@@ -39,6 +39,11 @@ import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 import { DAY_OPTIONS, DayValue, coerceDayValue } from 'src/app/@theme/types/DaysEnum';
 import { ResidencyGroupFilter } from 'src/app/@theme/types/residency-group';
 import { UserTypesEnum } from 'src/app/@theme/types/UserTypesEnum';
+import { TeacherSalaryReceiveMethodEnum } from 'src/app/@theme/types/TeacherSalaryReceiveMethodEnum';
+import {
+  computeEducationSystemTypeId,
+  parseEducationSystemTypeSelection
+} from 'src/app/@theme/utils/education-system.utils';
 import { isArabNationality, isEgyptianNationality } from 'src/app/@theme/utils/nationality.utils';
 import { formatTimeValue, timeStringToTimeSpanString } from 'src/app/@theme/utils/time';
 import { StudentSubscribeDialogComponent } from '../../membership/membership-list/student-subscribe-dialog/student-subscribe-dialog.component';
@@ -73,6 +78,7 @@ export class UserEditComponent implements OnInit, OnDestroy {
     optional: true
   });
   readonly validationService = inject(ValidationService);
+  readonly TeacherSalaryReceiveMethodEnum = TeacherSalaryReceiveMethodEnum;
 
   basicInfoForm!: FormGroup;
   userId!: number;
@@ -140,6 +146,22 @@ export class UserEditComponent implements OnInit, OnDestroy {
   mobilePlaceholder = '';
   secondMobileMask = '';
   secondMobilePlaceholder = '';
+
+  get isTeacherWalletMethod(): boolean {
+    return (
+      this.isTeacher &&
+      Number(this.basicInfoForm.get('salaryReceiveMethodId')?.value) ===
+        TeacherSalaryReceiveMethodEnum.Wallet
+    );
+  }
+
+  get showSecondMobileField(): boolean {
+    return !this.isTeacher || this.isTeacherWalletMethod;
+  }
+
+  get secondMobileFieldLabel(): string {
+    return this.isTeacher ? 'رقم المحفظة' : 'الجوال البديل';
+  }
 
   private get loggedInManagerId(): number | null {
     if (this.auth.getRole() !== UserTypesEnum.Manager) {
@@ -233,6 +255,10 @@ export class UserEditComponent implements OnInit, OnDestroy {
       email: ['', [Validators.required, Validators.email]],
       mobileCountryDialCode: [null, Validators.required],
       mobile: ['', Validators.required],
+      includeQuranSystem: [true],
+      includeAcademicSystem: [false],
+      educationSystemTypeId: [1, Validators.required],
+      salaryReceiveMethodId: [null],
       secondMobileCountryDialCode: [''],
       secondMobile: [''],
       nationalityId: [null, Validators.required],
@@ -252,6 +278,15 @@ export class UserEditComponent implements OnInit, OnDestroy {
       days: this.fb.array([this.createTeacherScheduleDayGroup()])
     });
     this.teacherScheduleForm.disable({ emitEvent: false });
+
+    if (this.isTeacher) {
+      this.basicInfoForm
+        .get('salaryReceiveMethodId')
+        ?.setValue(TeacherSalaryReceiveMethodEnum.Wallet, { emitEvent: false });
+      this.setupTeacherSalaryReceiveMethodHandling();
+    }
+
+    this.setupEducationSystemMembershipHandling();
 
     this.updateStudentTeacherValidation();
 
@@ -330,17 +365,28 @@ export class UserEditComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const clean = (phone: string) => phone.replace(/\D/g, '');
+    const clean = (phone: string) => this.normalizeLocalPhoneNumber(phone);
+    const membershipSelection = parseEducationSystemTypeSelection(
+      this.currentUser.educationSystemTypeId
+    );
     this.basicInfoForm.patchValue({
       fullName: this.currentUser.fullName,
       email: this.currentUser.email,
       mobile: clean(this.currentUser.mobile),
+      includeQuranSystem: membershipSelection.includeQuran,
+      includeAcademicSystem: membershipSelection.includeAcademic,
+      educationSystemTypeId:
+        this.currentUser.educationSystemTypeId ?? computeEducationSystemTypeId(true, false),
+      salaryReceiveMethodId: this.isTeacher
+        ? this.currentUser.salaryReceiveMethodId ?? TeacherSalaryReceiveMethodEnum.Wallet
+        : null,
       secondMobile: this.currentUser.secondMobile ? clean(this.currentUser.secondMobile) : '',
       nationalityId: this.currentUser.nationalityId,
       residentId: this.currentUser.residentId ?? null,
       governorateId: this.currentUser.governorateId,
       branchId: this.currentUser.branchId
     });
+    this.updateEducationSystemTypeControl();
 
     this.applyGovernorateRequirement(this.currentUser.residentId ?? null);
 
@@ -1016,12 +1062,99 @@ export class UserEditComponent implements OnInit, OnDestroy {
     }
   }
 
+  private normalizeLocalPhoneNumber(value: string | null | undefined): string {
+    return `${value ?? ''}`
+      .replace(/\D/g, '')
+      .replace(/^0+/, '');
+  }
+
+  private buildInternationalPhoneNumber(
+    dialCode: string | null | undefined,
+    value: string | null | undefined
+  ): string | undefined {
+    const normalizedDialCode = `${dialCode ?? ''}`.trim();
+    const normalizedLocalNumber = this.normalizeLocalPhoneNumber(value);
+
+    if (!normalizedDialCode || !normalizedLocalNumber) {
+      return undefined;
+    }
+
+    return `${normalizedDialCode}${normalizedLocalNumber}`;
+  }
+
+  private setupTeacherSalaryReceiveMethodHandling(): void {
+    const salaryMethodControl = this.basicInfoForm.get('salaryReceiveMethodId');
+    salaryMethodControl?.valueChanges
+      .pipe(startWith(salaryMethodControl.value), takeUntil(this.destroy$))
+      .subscribe((methodValue) => this.applyTeacherWalletValidators(methodValue));
+  }
+
+  private setupEducationSystemMembershipHandling(): void {
+    const quranControl = this.basicInfoForm.get('includeQuranSystem');
+    const academicControl = this.basicInfoForm.get('includeAcademicSystem');
+
+    merge(quranControl!.valueChanges, academicControl!.valueChanges)
+      .pipe(startWith(null), takeUntil(this.destroy$))
+      .subscribe(() => this.updateEducationSystemTypeControl());
+  }
+
+  private updateEducationSystemTypeControl(): void {
+    const membershipControl = this.basicInfoForm.get('educationSystemTypeId');
+    const computedValue = computeEducationSystemTypeId(
+      !!this.basicInfoForm.get('includeQuranSystem')?.value,
+      !!this.basicInfoForm.get('includeAcademicSystem')?.value
+    );
+
+    membershipControl?.setValue(computedValue, { emitEvent: false });
+    if (computedValue === null) {
+      membershipControl?.setErrors({ required: true });
+      return;
+    }
+
+    membershipControl?.setErrors(null);
+    membershipControl?.updateValueAndValidity({ emitEvent: false });
+  }
+
+  private applyTeacherWalletValidators(methodValue: number | null): void {
+    const secondMobileControl = this.basicInfoForm.get('secondMobile');
+    const secondMobileCountryControl = this.basicInfoForm.get(
+      'secondMobileCountryDialCode'
+    );
+
+    if (!secondMobileControl || !secondMobileCountryControl) {
+      return;
+    }
+
+    if (!this.isTeacher) {
+      secondMobileControl.clearValidators();
+      secondMobileCountryControl.clearValidators();
+      secondMobileControl.updateValueAndValidity({ emitEvent: false });
+      secondMobileCountryControl.updateValueAndValidity({ emitEvent: false });
+      return;
+    }
+
+    if (Number(methodValue) === TeacherSalaryReceiveMethodEnum.Wallet) {
+      secondMobileControl.setValidators([Validators.required]);
+      secondMobileCountryControl.setValidators([Validators.required]);
+    } else {
+      secondMobileControl.clearValidators();
+      secondMobileCountryControl.clearValidators();
+    }
+
+    secondMobileControl.updateValueAndValidity({ emitEvent: false });
+    secondMobileCountryControl.updateValueAndValidity({ emitEvent: false });
+    this.refreshMissingRequiredFields();
+  }
+
   private detectDialCode(phone: string, countries: Country[]): { dialCode: string; number: string } | null {
     const digits = phone.replace(/\D/g, '');
     const codes = countries.map((c) => c.dialCode.replace('+', '')).sort((a, b) => b.length - a.length);
     for (const code of codes) {
       if (digits.startsWith(code)) {
-        return { dialCode: `+${code}`, number: digits.slice(code.length) };
+        return {
+          dialCode: `+${code}`,
+          number: this.normalizeLocalPhoneNumber(digits.slice(code.length))
+        };
       }
     }
     return null;
@@ -1327,7 +1460,15 @@ export class UserEditComponent implements OnInit, OnDestroy {
     {
       // Use getRawValue so disabled controls like circleId are included
       const formValue = this.basicInfoForm.getRawValue();
-      const clean = (v: string) => v.replace(/\D/g, '');
+      const primaryMobile =
+        this.buildInternationalPhoneNumber(
+          formValue.mobileCountryDialCode,
+          formValue.mobile
+        ) ?? '';
+      const secondaryMobile = this.buildInternationalPhoneNumber(
+        formValue.secondMobileCountryDialCode,
+        formValue.secondMobile
+      );
       const managerTeacherIds = this.isManager ? this.normalizeTeacherIds(formValue.teacherIds ?? []) : undefined;
       const managerIdsFromForm = this.normalizeIds(formValue.managerIds ?? []);
       const fallbackManagerId =
@@ -1359,8 +1500,14 @@ export class UserEditComponent implements OnInit, OnDestroy {
         id: this.userId,
         fullName: formValue.fullName,
         email: formValue.email,
-        mobile: `${formValue.mobileCountryDialCode}${clean(formValue.mobile)}`,
-        secondMobile: formValue.secondMobile ? `${formValue.secondMobileCountryDialCode}${clean(formValue.secondMobile)}` : undefined,
+        mobile: primaryMobile,
+        educationSystemTypeId: formValue.educationSystemTypeId,
+        salaryReceiveMethodId: this.isTeacher ? formValue.salaryReceiveMethodId : undefined,
+        secondMobile: this.isTeacher
+          ? this.isTeacherWalletMethod
+            ? secondaryMobile
+            : null
+          : secondaryMobile,
         nationalityId: formValue.nationalityId,
         residentId: formValue.residentId,
         governorateId: formValue.governorateId,
@@ -1395,7 +1542,7 @@ export class UserEditComponent implements OnInit, OnDestroy {
           if (response?.errors?.length) {
             response.errors.forEach((error) => this.toast.error(error.message));
           } else {
-            this.toast.error('Ø®Ø·Ø£ ÙÙŠ ØªØ­Ø¯ÙŠØ« Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª');
+            this.toast.error('خطأ في تحديث البيانات');
           }
           return;
         }
@@ -1408,7 +1555,7 @@ export class UserEditComponent implements OnInit, OnDestroy {
         this.pendingStudentSubscribeSelection = null;
         this.currentStudentSubscription = null;
         this.toast.success(
-          response.message || (this.isManager ? 'ØªÙ… ØªØ­Ø¯ÙŠØ« Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª ÙˆØ§Ù„Ø¹Ù„Ø§Ù‚Ø§Øª Ø¨Ù†Ø¬Ø§Ø­' : 'ØªÙ… ØªØ­Ø¯ÙŠØ« Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ø¨Ù†Ø¬Ø§Ø­')
+          response.message || (this.isManager ? 'تم تحديث البيانات والعلاقات بنجاح' : 'تم تحديث البيانات بنجاح')
         );
 
         if (this.dialogRef) {
@@ -1426,10 +1573,8 @@ export class UserEditComponent implements OnInit, OnDestroy {
             id: this.userId,
             fullName: formValue.fullName,
             email: formValue.email,
-            mobile: `${formValue.mobileCountryDialCode}${clean(formValue.mobile)}`,
-            secondMobile: formValue.secondMobile
-              ? `${formValue.secondMobileCountryDialCode}${clean(formValue.secondMobile)}`
-              : null
+            mobile: primaryMobile,
+            secondMobile: secondaryMobile ?? null
           });
           return;
         }
@@ -1437,62 +1582,10 @@ export class UserEditComponent implements OnInit, OnDestroy {
         const navigationState = this.isStudent ? { refreshStudentList: true } : undefined;
         this.router.navigate([this.getListRoute()], navigationState ? { state: navigationState } : undefined);
       } catch {
-        this.toast.error('Ø®Ø·Ø£ ÙÙŠ ØªØ­Ø¯ÙŠØ« Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª');
+        this.toast.error('خطأ في تحديث البيانات');
       } finally {
         this.isSaving = false;
       }
-      return;
-
-      this.isSaving = true;
-      this.userService
-        .updateUser(model)
-        .pipe(finalize(() => (this.isSaving = false)))
-        .subscribe({
-        next: (res) => {
-          if (res?.isSuccess) {
-            this.pendingStudentSubscribeSelection = null;
-            this.currentStudentSubscription = null;
-            this.toast.success(res.message || (this.isManager ? 'تم تحديث البيانات والعلاقات بنجاح' : 'تم تحديث البيانات بنجاح'));
-            if (this.dialogRef) {
-              this.lookupService.getUserDetails(this.userId).subscribe({
-                next: (detailsRes) => {
-                  if (detailsRes.isSuccess && detailsRes.data) {
-                    this.dialogRef?.close(detailsRes.data);
-                    return;
-                  }
-                  this.dialogRef?.close({
-                    id: this.userId,
-                    fullName: formValue.fullName,
-                    email: formValue.email,
-                    mobile: `${formValue.mobileCountryDialCode}${clean(formValue.mobile)}`,
-                    secondMobile: formValue.secondMobile
-                      ? `${formValue.secondMobileCountryDialCode}${clean(formValue.secondMobile)}`
-                      : null
-                  });
-                },
-                error: () =>
-                  this.dialogRef?.close({
-                    id: this.userId,
-                    fullName: formValue.fullName,
-                    email: formValue.email,
-                    mobile: `${formValue.mobileCountryDialCode}${clean(formValue.mobile)}`,
-                    secondMobile: formValue.secondMobile
-                      ? `${formValue.secondMobileCountryDialCode}${clean(formValue.secondMobile)}`
-                      : null
-                  })
-              });
-              return;
-            }
-            const navigationState = this.isStudent ? { refreshStudentList: true } : undefined;
-            this.router.navigate([this.getListRoute()], navigationState ? { state: navigationState } : undefined);
-          } else if (res?.errors?.length) {
-            res.errors.forEach((e) => this.toast.error(e.message));
-          } else {
-            this.toast.error('خطأ في تحديث البيانات');
-          }
-        },
-          error: () => this.toast.error('خطأ في تحديث البيانات')
-        });
     }
   }
 
@@ -1598,6 +1691,10 @@ export class UserEditComponent implements OnInit, OnDestroy {
       email: 'البريد الإلكتروني',
       mobileCountryDialCode: 'مفتاح الدولة للجوال',
       mobile: 'رقم الجوال',
+      educationSystemTypeId: 'النظام',
+      salaryReceiveMethodId: 'طريقة استلام الراتب',
+      secondMobileCountryDialCode: 'مفتاح الدولة لرقم المحفظة',
+      secondMobile: 'رقم المحفظة',
       nationalityId: 'الجنسية',
       residentId: 'مكان الإقامة',
       governorateId: 'المحافظة',

@@ -69,6 +69,36 @@
           </div>
         </div>
 
+        <div class="col-12">
+          <div class="section-card">
+            <div class="section-header">
+              <div class="section-icon section-icon-purple">
+                <mat-icon>account_tree</mat-icon>
+              </div>
+              <div>
+                <h5 class="section-title">الأنظمة المتاحة</h5>
+                <p class="section-subtitle">
+                  اختر هل هذا المستخدم يعمل داخل مدرسة القرآن أو مدرسة المواد الدراسية أو النظامين معًا.
+                </p>
+              </div>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-12">
+                <div class="d-flex flex-wrap gap-3 align-items-center">
+                  <mat-checkbox formControlName="includeQuranSystem">مدرسة القرآن</mat-checkbox>
+                  <mat-checkbox formControlName="includeAcademicSystem">مدرسة المواد الدراسية</mat-checkbox>
+                </div>
+
+                <app-field-error
+                  [control]="basicInfoForm.get('educationSystemTypeId')"
+                  [label]="'النظام'"
+                ></app-field-error>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- ============ القسم 2: بيانات التواصل ============ -->
         <div class="col-12">
           <div class="section-card">
@@ -116,35 +146,56 @@
                 <app-field-error [control]="basicInfoForm.get('mobile')" [label]="'رقم الجوال'"></app-field-error>
               </div>
 
-              <!-- الجوال البديل -->
-              <div class="col-md-6">
-                <label class="form-label form-label-sm d-block">الجوال البديل</label>
-                <div class="d-flex gap-2 align-items-start phone-row">
-                  <ng-select
-                    class="flex-shrink-0 w-100 phone-country-select"
-                    [items]="countries"
-                    bindLabel="name"
-                    bindValue="dialCode"
-                    formControlName="secondMobileCountryDialCode"
-                    (change)="onCountryCodeChange('secondMobileCountryDialCode')"
-                    placeholder="+1"
-                    [searchable]="true"
-                  ></ng-select>
-
-                  <mat-form-field appearance="outline" class="w-100">
-                    <input
-                      matInput
-                      type="text"
-                      formControlName="secondMobile"
-                      [mask]="secondMobileMask"
-                      [placeholder]="secondMobilePlaceholder"
-                      [dropSpecialCharacters]="false"
-                      [validation]="!!secondMobileMask"
-                      (click)="$event.stopPropagation()"
-                    />
-                  </mat-form-field>
+              @if (isTeacher) {
+                <div class="col-md-6">
+                  <label class="form-label form-label-sm d-block">طريقة استلام الراتب</label>
+                  <mat-radio-group formControlName="salaryReceiveMethodId" class="d-flex flex-wrap gap-3 mt-2">
+                    <mat-radio-button [value]="TeacherSalaryReceiveMethodEnum.Wallet">محفظة</mat-radio-button>
+                    <mat-radio-button [value]="TeacherSalaryReceiveMethodEnum.Instapay">انستاباي</mat-radio-button>
+                  </mat-radio-group>
+                  <app-field-error [control]="basicInfoForm.get('salaryReceiveMethodId')" [label]="'طريقة استلام الراتب'"></app-field-error>
                 </div>
-              </div>
+              }
+
+              @if (showSecondMobileField) {
+                <div class="col-md-6">
+                  <label class="form-label form-label-sm d-block">{{ secondMobileFieldLabel }}</label>
+                  <div class="d-flex gap-2 align-items-start phone-row">
+                    <ng-select
+                      class="flex-shrink-0 w-100 phone-country-select"
+                      [items]="countries"
+                      bindLabel="name"
+                      bindValue="dialCode"
+                      formControlName="secondMobileCountryDialCode"
+                      [ngClass]="{ 'p-invalid': validationService.shouldShowError(basicInfoForm.get('secondMobileCountryDialCode')) }"
+                      (change)="onCountryCodeChange('secondMobileCountryDialCode')"
+                      placeholder="+1"
+                      [searchable]="true"
+                    ></ng-select>
+
+                    <mat-form-field appearance="outline" class="w-100">
+                      <input
+                        matInput
+                        type="text"
+                        formControlName="secondMobile"
+                        [mask]="secondMobileMask"
+                        [placeholder]="secondMobilePlaceholder"
+                        [dropSpecialCharacters]="false"
+                        [validation]="!!secondMobileMask"
+                        (click)="$event.stopPropagation()"
+                      />
+                    </mat-form-field>
+                  </div>
+                  <app-field-error
+                    [control]="basicInfoForm.get('secondMobileCountryDialCode')"
+                    [label]="isTeacher ? 'مفتاح الدولة لرقم المحفظة' : 'مفتاح الدولة للجوال البديل'"
+                  ></app-field-error>
+                  <app-field-error
+                    [control]="basicInfoForm.get('secondMobile')"
+                    [label]="secondMobileFieldLabel"
+                  ></app-field-error>
+                </div>
+              }
             </div>
           </div>
         </div>

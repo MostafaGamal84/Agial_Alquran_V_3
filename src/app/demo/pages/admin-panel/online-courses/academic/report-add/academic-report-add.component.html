@@ -1,0 +1,312 @@
+<section class="academic-page">
+  <div class="row justify-content-center">
+    <div class="col-12 col-xxl-10">
+      <app-card [cardTitle]="mode === 'edit' ? 'تعديل تقرير مادة' : 'إضافة تقرير مادة'" [showHeader]="false" [padding]="0">
+        <div class="academic-shell">
+          <header class="academic-hero">
+            <div class="academic-hero__content">
+              <span class="academic-hero__eyebrow">
+                <i class="ti ti-notebook"></i>
+                {{ mode === 'edit' ? 'تعديل تقرير المادة' : 'إضافة تقرير مادة' }}
+              </span>
+              <h1 class="academic-hero__title">{{ mode === 'edit' ? 'تحديث تقرير المادة الدراسية' : 'إنشاء تقرير مادة دراسية' }}</h1>
+              <p class="academic-hero__subtitle">
+                اختر الحلقة والطالب والمادة، ثم أكمل تقييم الحصة والواجب والملاحظات من نموذج واضح ومتناسق مع صفحات النظام.
+              </p>
+            </div>
+
+            <div class="academic-hero__actions">
+              <div class="academic-hero__badge">
+                <i class="ti ti-report-analytics"></i>
+                <span>{{ mode === 'edit' ? 'وضع التعديل' : 'وضع الإضافة' }}</span>
+              </div>
+            </div>
+          </header>
+
+          <div class="academic-stats">
+            <div class="academic-stat">
+              <span class="academic-stat__label">الحلقات المتاحة</span>
+              <strong class="academic-stat__value">{{ circles.length }}</strong>
+            </div>
+            <div class="academic-stat">
+              <span class="academic-stat__label">المواد المتاحة</span>
+              <strong class="academic-stat__value">{{ subjects.length }}</strong>
+            </div>
+            <div class="academic-stat">
+              <span class="academic-stat__label">طلاب الحلقة المختارة</span>
+              <strong class="academic-stat__value">{{ students.length }}</strong>
+            </div>
+          </div>
+
+          <div class="academic-banner">
+            <span class="academic-banner__icon">
+              <i class="ti ti-bulb"></i>
+            </span>
+            <div>
+              <h2 class="academic-banner__title">خطوة البداية</h2>
+              <p class="academic-banner__text">ابدأ باختيار الحلقة الدراسية أولًا حتى يتم تحميل المعلم والطلاب المرتبطين بها تلقائيًا.</p>
+            </div>
+          </div>
+
+          <div class="academic-banner academic-banner--warning" *ngIf="!isLookupLoading && !circles.length">
+            <span class="academic-banner__icon">
+              <i class="ti ti-alert-circle"></i>
+            </span>
+            <div>
+              <h2 class="academic-banner__title">لا توجد حلقات متاحة</h2>
+              <p class="academic-banner__text">أنشئ حلقة دراسية أولًا حتى تتمكن من إضافة تقارير المواد الخاصة بها.</p>
+            </div>
+          </div>
+
+          @if (isLoading) {
+            <div class="academic-loading-block">جارٍ تحميل بيانات التقرير...</div>
+          } @else {
+            <div class="academic-panel">
+              <div class="academic-panel__header">
+                <div class="academic-panel__heading">
+                  <span class="academic-panel__icon">
+                    <i class="ti ti-file-pencil"></i>
+                  </span>
+                  <div>
+                    <h2 class="academic-panel__title">نموذج التقرير</h2>
+                    <p class="academic-panel__subtitle">املأ حقول التقرير التالية ثم احفظه ليظهر في تقارير المواد الدراسية.</p>
+                  </div>
+                </div>
+              </div>
+
+              <form [formGroup]="form" (ngSubmit)="submit()">
+                <div class="row academic-form-grid">
+                  <div class="col-lg-6">
+                    <div class="academic-field">
+                      <label class="academic-field-label">الحلقة الدراسية</label>
+                      <div class="academic-field__control">
+                        <ng-select
+                          class="w-100 themed-ng-select"
+                          formControlName="academicCircleId"
+                          [items]="circles"
+                          bindLabel="name"
+                          bindValue="id"
+                          [searchable]="true"
+                          [loading]="isLoadingCircles"
+                          [clearable]="true"
+                          [notFoundText]="circlesNotFoundText"
+                          [loadingText]="loadingLookupText"
+                          placeholder="اختر الحلقة الدراسية"
+                        ></ng-select>
+                      </div>
+                      <app-field-error [control]="getControl('academicCircleId')" [label]="'الحلقة الدراسية'"></app-field-error>
+                    </div>
+                  </div>
+
+                  <div class="col-lg-6">
+                    <div class="academic-field">
+                      <label class="academic-field-label">المعلم</label>
+                      <div class="academic-field__control">
+                        <div class="academic-readonly">
+                          <strong class="academic-readonly__value" [class.academic-readonly__value--muted]="!selectedTeacherName">
+                            {{ selectedTeacherName || 'سيظهر تلقائيًا بعد اختيار الحلقة' }}
+                          </strong>
+                        </div>
+                      </div>
+                      <app-field-error [control]="getControl('teacherId')" [label]="'المعلم'"></app-field-error>
+                    </div>
+                  </div>
+
+                  <div class="col-lg-6">
+                    <div class="academic-field">
+                      <label class="academic-field-label">الطالب</label>
+                      <div class="academic-field__control">
+                        <ng-select
+                          class="w-100 themed-ng-select"
+                          formControlName="studentId"
+                          [items]="students"
+                          bindLabel="name"
+                          bindValue="id"
+                          [searchable]="true"
+                          [loading]="isLoadingStudents"
+                          [clearable]="true"
+                          [notFoundText]="studentsNotFoundText"
+                          [loadingText]="loadingLookupText"
+                          [disabled]="!form.get('academicCircleId')?.value"
+                          placeholder="اختر الطالب"
+                        ></ng-select>
+                      </div>
+                      <app-field-error [control]="getControl('studentId')" [label]="'الطالب'"></app-field-error>
+                    </div>
+                  </div>
+
+                  <div class="col-lg-6">
+                    <div class="academic-field">
+                      <label class="academic-field-label">التاريخ</label>
+                      <div class="academic-field__control">
+                        <mat-form-field appearance="outline" class="w-100">
+                          <input matInput [matDatepicker]="reportDatePicker" formControlName="reportDate" placeholder="اختر التاريخ" />
+                          <mat-datepicker-toggle matIconSuffix [for]="reportDatePicker"></mat-datepicker-toggle>
+                          <mat-datepicker #reportDatePicker></mat-datepicker>
+                        </mat-form-field>
+                      </div>
+                      <app-field-error [control]="getControl('reportDate')" [label]="'التاريخ'"></app-field-error>
+                    </div>
+                  </div>
+
+                  <div class="col-lg-6">
+                    <div class="academic-field">
+                      <label class="academic-field-label">المرحلة</label>
+                      <div class="academic-field__control">
+                        <ng-select
+                          class="w-100 themed-ng-select"
+                          formControlName="stageId"
+                          [items]="stageOptions"
+                          bindLabel="name"
+                          bindValue="id"
+                          [clearable]="true"
+                          placeholder="اختر المرحلة"
+                        ></ng-select>
+                      </div>
+                      <app-field-error [control]="getControl('stageId')" [label]="'المرحلة'"></app-field-error>
+                    </div>
+                  </div>
+
+                  <div class="col-lg-6">
+                    <div class="academic-field">
+                      <label class="academic-field-label">المادة</label>
+                      <div class="academic-field__control">
+                        <ng-select
+                          class="w-100 themed-ng-select"
+                          formControlName="subjectId"
+                          [items]="subjects"
+                          bindLabel="name"
+                          bindValue="id"
+                          [searchable]="true"
+                          [loading]="isLoadingSubjects"
+                          [clearable]="true"
+                          [notFoundText]="subjectsNotFoundText"
+                          [loadingText]="loadingLookupText"
+                          placeholder="اختر المادة"
+                        ></ng-select>
+                      </div>
+                      <app-field-error [control]="getControl('subjectId')" [label]="'المادة'"></app-field-error>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="academic-field">
+                      <label class="academic-field-label">درس اليوم</label>
+                      <div class="academic-field__control">
+                        <mat-form-field appearance="outline" class="w-100">
+                          <input matInput formControlName="lessonTitle" placeholder="اكتب عنوان الدرس أو الجزء المشروح" />
+                        </mat-form-field>
+                      </div>
+                      <app-field-error [control]="getControl('lessonTitle')" [label]="'درس اليوم'"></app-field-error>
+                    </div>
+                  </div>
+
+                  <div class="col-lg-6">
+                    <div class="academic-field">
+                      <label class="academic-field-label">تقييم أداء الطالب</label>
+                      <div class="academic-field__control">
+                        <ng-select
+                          class="w-100 themed-ng-select"
+                          formControlName="studentPerformanceId"
+                          [items]="performanceOptions"
+                          bindLabel="name"
+                          bindValue="id"
+                          [clearable]="true"
+                          placeholder="اختر التقييم"
+                        ></ng-select>
+                      </div>
+                      <app-field-error [control]="getControl('studentPerformanceId')" [label]="'تقييم أداء الطالب'"></app-field-error>
+                    </div>
+                  </div>
+
+                  <div class="col-lg-6">
+                    <div class="academic-field">
+                      <label class="academic-field-label">تقييم واجب الحصة الماضية</label>
+                      <div class="academic-field__control">
+                        <ng-select
+                          class="w-100 themed-ng-select"
+                          formControlName="previousHomeworkStatusId"
+                          [items]="homeworkStatusOptions"
+                          bindLabel="name"
+                          bindValue="id"
+                          [clearable]="true"
+                          placeholder="اختر حالة الواجب"
+                        ></ng-select>
+                      </div>
+                      <app-field-error
+                        [control]="getControl('previousHomeworkStatusId')"
+                        [label]="'تقييم واجب الحصة الماضية'"
+                      ></app-field-error>
+                    </div>
+                  </div>
+
+                  <div class="col-lg-6">
+                    <div class="academic-field">
+                      <label class="academic-field-label">درجة الواجب</label>
+                      <div class="academic-field__control">
+                        <ng-select
+                          class="w-100 themed-ng-select"
+                          formControlName="homeworkScore"
+                          [items]="homeworkScoreOptions"
+                          bindLabel="name"
+                          bindValue="id"
+                          [clearable]="true"
+                          placeholder="اختر الدرجة"
+                        ></ng-select>
+                      </div>
+                      <app-field-error [control]="getControl('homeworkScore')" [label]="'درجة الواجب'"></app-field-error>
+                    </div>
+                  </div>
+
+                  <div class="col-lg-6">
+                    <div class="academic-field">
+                      <label class="academic-field-label">مدة الحصة بالدقائق</label>
+                      <div class="academic-field__control">
+                        <mat-form-field appearance="outline" class="w-100">
+                          <input matInput type="number" min="1" formControlName="sessionDurationMinutes" placeholder="مثال: 45" />
+                        </mat-form-field>
+                      </div>
+                      <app-field-error [control]="getControl('sessionDurationMinutes')" [label]="'مدة الحصة'"></app-field-error>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="academic-field">
+                      <label class="academic-field-label">واجب الحصة القادمة</label>
+                      <div class="academic-field__control">
+                        <mat-form-field appearance="outline" class="w-100">
+                          <textarea matInput rows="3" formControlName="nextHomework" placeholder="اكتب واجب الحصة القادمة"></textarea>
+                        </mat-form-field>
+                      </div>
+                      <app-field-error [control]="getControl('nextHomework')" [label]="'واجب الحصة القادمة'"></app-field-error>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="academic-field">
+                      <label class="academic-field-label">ملاحظات المعلم</label>
+                      <div class="academic-field__control">
+                        <mat-form-field appearance="outline" class="w-100">
+                          <textarea matInput rows="4" formControlName="teacherNotes" placeholder="اكتب أي ملاحظات إضافية"></textarea>
+                        </mat-form-field>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="academic-form-actions">
+                      <button mat-stroked-button color="primary" type="button" (click)="cancel()" [disabled]="isSaving">إلغاء</button>
+                      <button mat-flat-button color="primary" class="academic-submit-btn" type="submit" [disabled]="isSaving || isLookupLoading">
+                        {{ isSaving ? 'جارٍ الحفظ...' : (mode === 'edit' ? 'تحديث التقرير' : 'حفظ التقرير') }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          }
+        </div>
+      </app-card>
+    </div>
+  </div>
+</section>

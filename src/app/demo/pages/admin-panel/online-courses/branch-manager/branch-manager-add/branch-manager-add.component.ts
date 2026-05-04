@@ -14,10 +14,11 @@ import { CountryService, Country } from 'src/app/@theme/services/country.service
 import { BranchesEnum } from 'src/app/@theme/types/branchesEnum';
 import { isEgyptianNationality } from 'src/app/@theme/utils/nationality.utils';
 import { TranslateService } from '@ngx-translate/core';
-import { finalize } from 'rxjs';
+import { finalize, merge, startWith } from 'rxjs';
 import { FieldErrorComponent } from 'src/app/shared/validation/field-error/field-error.component';
 import { ValidationService } from 'src/app/shared/validation/validation.service';
 import { LiveErrorStateMatcher } from 'src/app/shared/validation/live-error-state-matcher';
+import { computeEducationSystemTypeId } from 'src/app/@theme/utils/education-system.utils';
 
 @Component({
   selector: 'app-branch-manager-add',
@@ -65,6 +66,9 @@ export class BranchManagerAddComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       mobileCountryDialCode: [null, Validators.required],
       mobile: ['', Validators.required],
+      includeQuranSystem: [true],
+      includeAcademicSystem: [false],
+      educationSystemTypeId: [1, Validators.required],
       secondMobileCountryDialCode: [''],
       secondMobile: [''],
       passwordHash: ['', [Validators.required, Validators.minLength(6)]],
@@ -94,6 +98,8 @@ export class BranchManagerAddComponent implements OnInit {
     this.countryService.getCountries().subscribe((data) => {
       this.countries = data;
     });
+
+    this.setupEducationSystemMembershipHandling();
   }
 
   private updateGovernorateVisibility(residentId: number | null): void {
@@ -121,6 +127,52 @@ export class BranchManagerAddComponent implements OnInit {
     }
   }
 
+  private normalizeLocalPhoneNumber(value: string | null | undefined): string {
+    return `${value ?? ''}`
+      .replace(/\D/g, '')
+      .replace(/^0+/, '');
+  }
+
+  private buildInternationalPhoneNumber(
+    dialCode: string | null | undefined,
+    value: string | null | undefined
+  ): string | undefined {
+    const normalizedDialCode = `${dialCode ?? ''}`.trim();
+    const normalizedLocalNumber = this.normalizeLocalPhoneNumber(value);
+
+    if (!normalizedDialCode || !normalizedLocalNumber) {
+      return undefined;
+    }
+
+    return `${normalizedDialCode}${normalizedLocalNumber}`;
+  }
+
+  private setupEducationSystemMembershipHandling(): void {
+    const quranControl = this.basicInfoForm.get('includeQuranSystem');
+    const academicControl = this.basicInfoForm.get('includeAcademicSystem');
+
+    merge(quranControl!.valueChanges, academicControl!.valueChanges)
+      .pipe(startWith(null))
+      .subscribe(() => this.updateEducationSystemTypeControl());
+  }
+
+  private updateEducationSystemTypeControl(): void {
+    const membershipControl = this.basicInfoForm.get('educationSystemTypeId');
+    const computedValue = computeEducationSystemTypeId(
+      !!this.basicInfoForm.get('includeQuranSystem')?.value,
+      !!this.basicInfoForm.get('includeAcademicSystem')?.value
+    );
+
+    membershipControl?.setValue(computedValue, { emitEvent: false });
+    if (computedValue === null) {
+      membershipControl?.setErrors({ required: true });
+      return;
+    }
+
+    membershipControl?.setErrors(null);
+    membershipControl?.updateValueAndValidity({ emitEvent: false });
+  }
+
   onSubmit() {
     if (this.isSubmitting) {
       return;
@@ -129,12 +181,19 @@ export class BranchManagerAddComponent implements OnInit {
     this.submitted = true;
     if (this.basicInfoForm.valid) {
       const formValue = this.basicInfoForm.value;
-      const clean = (v: string) => v.replace(/\D/g, '');
       const model: CreateUserDto = {
         fullName: formValue.fullName,
         email: formValue.email,
-        mobile: `${formValue.mobileCountryDialCode}${clean(formValue.mobile)}`,
-        secondMobile: formValue.secondMobile ? `${formValue.secondMobileCountryDialCode}${clean(formValue.secondMobile)}` : undefined,
+        mobile:
+          this.buildInternationalPhoneNumber(
+            formValue.mobileCountryDialCode,
+            formValue.mobile
+          ) ?? '',
+        secondMobile: this.buildInternationalPhoneNumber(
+          formValue.secondMobileCountryDialCode,
+          formValue.secondMobile
+        ),
+        educationSystemTypeId: formValue.educationSystemTypeId,
         passwordHash: formValue.passwordHash,
         nationalityId: formValue.nationalityId,
         residentId: formValue.residentId,
@@ -147,18 +206,23 @@ export class BranchManagerAddComponent implements OnInit {
         .createUser(model)
         .pipe(finalize(() => (this.isSubmitting = false)))
         .subscribe({
-        next: (res) => {
-          if (res?.isSuccess) {
-            this.toast.success(res.message || this.translate.instant('تمت الاضافة بنجاح'));
-            this.basicInfoForm.reset();
-            this.submitted = false;
-          } else if (res?.errors?.length) {
-            res.errors.forEach((e) => this.toast.error(e.message));
-          } else {
-            this.toast.error(this.translate.instant('خطا في الاضافة'));
-          }
-        },
-          error: () => this.toast.error(this.translate.instant('خطا في الاضافة'))
+          next: (res) => {
+            if (res?.isSuccess) {
+              this.toast.success(res.message || this.translate.instant('تمت الإضافة بنجاح'));
+              this.basicInfoForm.reset({
+                includeQuranSystem: true,
+                includeAcademicSystem: false,
+                educationSystemTypeId: 1
+              });
+              this.updateEducationSystemTypeControl();
+              this.submitted = false;
+            } else if (res?.errors?.length) {
+              res.errors.forEach((e) => this.toast.error(e.message));
+            } else {
+              this.toast.error(this.translate.instant('خطأ في الإضافة'));
+            }
+          },
+          error: () => this.toast.error(this.translate.instant('خطأ في الإضافة'))
         });
     } else {
       this.validationService.markAllAsTouched(this.basicInfoForm);

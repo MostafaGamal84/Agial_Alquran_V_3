@@ -1,0 +1,297 @@
+<app-loading-overlay [isLoading]="isLoading">
+  <section class="academic-page">
+    <div class="row">
+      <div class="col-12">
+        <app-card cardTitle="تقارير المواد الدراسية" [showHeader]="false" [padding]="0" cardClass="sm-block">
+          <div class="academic-shell">
+            <header class="academic-hero">
+              <div class="academic-hero__content">
+                <span class="academic-hero__eyebrow">
+                  <i class="ti ti-notebook"></i>
+                  تقارير المواد الدراسية
+                </span>
+                <h1 class="academic-hero__title">متابعة تقارير المواد الدراسية</h1>
+                <p class="academic-hero__subtitle">
+                  اعرض التقارير حسب الحلقة أو الطالب أو المادة، وراجع التقييمات والواجبات من شاشة واحدة أكثر اتساعًا ووضوحًا.
+                </p>
+              </div>
+
+              <div class="academic-hero__actions">
+                <div class="academic-hero__badge">
+                  <i class="ti ti-chart-bar"></i>
+                  <span>{{ totalPages }} صفحة</span>
+                </div>
+
+                <button mat-flat-button color="primary" type="button" *ngIf="canManage" (click)="goToAdd()">
+                  <i class="ti ti-plus m-l-5"></i>
+                  إضافة تقرير مادة
+                </button>
+              </div>
+            </header>
+
+            <div class="academic-stats">
+              <div class="academic-stat">
+                <span class="academic-stat__label">التقارير في الصفحة الحالية</span>
+                <strong class="academic-stat__value">{{ reports.length }}</strong>
+              </div>
+              <div class="academic-stat">
+                <span class="academic-stat__label">إجمالي التقارير</span>
+                <strong class="academic-stat__value">{{ totalCount }}</strong>
+              </div>
+              <div class="academic-stat">
+                <span class="academic-stat__label">عدد الفلاتر المطبقة</span>
+                <strong class="academic-stat__value">{{ activeFilterCount }}</strong>
+              </div>
+            </div>
+
+            <div class="academic-panel">
+              <div class="academic-panel__header">
+                <div class="academic-panel__heading">
+                  <span class="academic-panel__icon">
+                    <i class="ti ti-filter-search"></i>
+                  </span>
+                  <div>
+                    <h2 class="academic-panel__title">فلاتر البحث</h2>
+                    <p class="academic-panel__subtitle">فلتر النتائج بالتاريخ أو الحلقة أو الطالب أو المادة للوصول السريع إلى التقرير المطلوب.</p>
+                  </div>
+                </div>
+              </div>
+
+              <form [formGroup]="filterForm" (ngSubmit)="loadReports(true)">
+                <div class="row academic-filter-grid">
+                  <div class="col-12 col-xl-4">
+                    <div class="academic-field">
+                      <label class="academic-filter-label">بحث</label>
+                      <div class="academic-field__control">
+                        <mat-form-field appearance="outline" class="w-100">
+                          <input matInput formControlName="searchTerm" placeholder="الطالب أو المعلم أو المادة" />
+                          <button mat-icon-button matSuffix type="submit" aria-label="بحث">
+                            <mat-icon>search</mat-icon>
+                          </button>
+                        </mat-form-field>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-12 col-md-6 col-xl-2">
+                    <div class="academic-field">
+                      <label class="academic-filter-label">الحلقة</label>
+                      <div class="academic-field__control">
+                        <ng-select
+                          class="w-100 themed-ng-select"
+                          formControlName="circleId"
+                          [items]="circles"
+                          bindLabel="name"
+                          bindValue="id"
+                          [clearable]="true"
+                          [searchable]="true"
+                          placeholder="الكل"
+                        ></ng-select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-12 col-md-6 col-xl-2">
+                    <div class="academic-field">
+                      <label class="academic-filter-label">المادة</label>
+                      <div class="academic-field__control">
+                        <ng-select
+                          class="w-100 themed-ng-select"
+                          formControlName="subjectId"
+                          [items]="subjects"
+                          bindLabel="name"
+                          bindValue="id"
+                          [clearable]="true"
+                          [searchable]="true"
+                          placeholder="الكل"
+                        ></ng-select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-12 col-md-6 col-xl-2">
+                    <div class="academic-field">
+                      <label class="academic-filter-label">الطالب</label>
+                      <div class="academic-field__control">
+                        <ng-select
+                          class="w-100 themed-ng-select"
+                          formControlName="studentId"
+                          [items]="students"
+                          bindLabel="name"
+                          bindValue="id"
+                          [clearable]="true"
+                          [searchable]="true"
+                          placeholder="الكل"
+                        ></ng-select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-6 col-md-3 col-xl-1">
+                    <div class="academic-field">
+                      <label class="academic-filter-label">من</label>
+                      <div class="academic-field__control">
+                        <mat-form-field appearance="outline" class="w-100">
+                          <input matInput [matDatepicker]="fromDatePicker" formControlName="fromDate" placeholder="اختر التاريخ" />
+                          <mat-datepicker-toggle matIconSuffix [for]="fromDatePicker"></mat-datepicker-toggle>
+                          <mat-datepicker #fromDatePicker></mat-datepicker>
+                        </mat-form-field>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-6 col-md-3 col-xl-1">
+                    <div class="academic-field">
+                      <label class="academic-filter-label">إلى</label>
+                      <div class="academic-field__control">
+                        <mat-form-field appearance="outline" class="w-100">
+                          <input matInput [matDatepicker]="toDatePicker" formControlName="toDate" placeholder="اختر التاريخ" />
+                          <mat-datepicker-toggle matIconSuffix [for]="toDatePicker"></mat-datepicker-toggle>
+                          <mat-datepicker #toDatePicker></mat-datepicker>
+                        </mat-form-field>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <div class="academic-filter-actions">
+                      <button mat-flat-button color="primary" type="submit">تطبيق الفلاتر</button>
+                      <button mat-stroked-button color="primary" type="button" (click)="clearFilters()">إعادة التعيين</button>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <div class="academic-panel academic-panel--table">
+              <div class="academic-panel__header academic-panel__header--flush">
+                <div class="academic-panel__heading">
+                  <span class="academic-panel__icon">
+                    <i class="ti ti-file-text"></i>
+                  </span>
+                  <div>
+                    <h2 class="academic-panel__title">قائمة التقارير</h2>
+                    <p class="academic-panel__subtitle">عرض مختصر لكل تقرير مع الطالب والمعلم والمادة والتقييمات الأساسية.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="table-responsive academic-table-wrap">
+                <table class="academic-table academic-report-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>التقرير</th>
+                      <th>الطالب</th>
+                      <th>المعلم والحلقة</th>
+                      <th>التقييم</th>
+                      <th>الواجب السابق</th>
+                      <th>المدة</th>
+                      <th class="text-center">الإجراءات</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+                    <tr *ngFor="let report of reports; let index = index">
+                      <td class="academic-table__index">{{ pageIndex * pageSize + index + 1 }}</td>
+                      <td>
+                        <div class="academic-meta">
+                          <div class="academic-meta__title">{{ formatReportDate(report.reportDate) }}</div>
+                          <div class="academic-meta__subtitle">{{ report.lessonTitle || report.subjectName || '-' }}</div>
+                          <div class="academic-chip-row">
+                            <span class="academic-chip academic-chip--primary">{{ report.subjectName || '-' }}</span>
+                            <span class="academic-chip academic-chip--accent">{{ resolveStageName(report.stageId) }}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="academic-meta">
+                          <div class="academic-meta__title">{{ report.studentName || '-' }}</div>
+                          <div class="academic-meta__subtitle">الطالب المستهدف بالتقرير</div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="academic-meta">
+                          <div class="academic-meta__title">{{ report.teacherName || '-' }}</div>
+                          <div class="academic-meta__subtitle">{{ report.academicCircleName || 'بدون حلقة محددة' }}</div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="academic-chip-row">
+                          <span class="academic-chip academic-chip--success">{{ resolvePerformanceName(report.studentPerformanceId) }}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="academic-meta">
+                          <div class="academic-meta__title">{{ resolveHomeworkStatusName(report.previousHomeworkStatusId) }}</div>
+                          <div class="academic-meta__subtitle">درجة الواجب: {{ report.homeworkScore || '-' }}</div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="academic-meta">
+                          <div class="academic-meta__title">{{ report.sessionDurationMinutes || '-' }} دقيقة</div>
+                          <div class="academic-meta__subtitle">مدة الحصة</div>
+                        </div>
+                      </td>
+                      <td class="text-center">
+                        <div class="academic-actions">
+                          <a href="javascript:" class="academic-action-btn" matTooltip="التفاصيل" (click)="goToDetails(report.id)">
+                            <i class="ti ti-eye"></i>
+                          </a>
+                          <a href="javascript:" class="academic-action-btn" matTooltip="تعديل" *ngIf="canManage" (click)="goToEdit(report.id)">
+                            <i class="ti ti-edit"></i>
+                          </a>
+                          <a
+                            href="javascript:"
+                            class="academic-action-btn academic-action-btn--danger"
+                            *ngIf="canManage"
+                            [class.is-disabled]="isDeletingId === report.id"
+                            matTooltip="حذف"
+                            (click)="deleteReport(report)"
+                          >
+                            <i class="ti ti-trash"></i>
+                          </a>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <tr *ngIf="!reports.length">
+                      <td colspan="8">
+                        <div class="academic-empty">
+                          <i class="ti ti-file-off academic-empty__icon"></i>
+                          <h3 class="academic-empty__title">لا توجد تقارير للعرض</h3>
+                          <p class="academic-empty__text" *ngIf="activeFilterCount > 0">
+                            لا توجد نتائج بهذه الفلاتر. جرّب تعديل شروط البحث أو إعادة التعيين.
+                          </p>
+                          <p class="academic-empty__text" *ngIf="activeFilterCount === 0">
+                            أضف حلقة دراسية أولًا، ثم أنشئ تقارير المواد المرتبطة بها لتظهر هنا.
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="academic-paginator">
+                <button mat-stroked-button color="primary" type="button" [disabled]="pageIndex === 0 || isLoading" (click)="previousPage()">
+                  السابق
+                </button>
+                <span class="academic-paginator__summary">الصفحة {{ pageIndex + 1 }} من {{ totalPages }}، وإجمالي النتائج {{ totalCount }}</span>
+                <button
+                  mat-stroked-button
+                  color="primary"
+                  type="button"
+                  [disabled]="isLoading || (pageIndex + 1) * pageSize >= totalCount"
+                  (click)="nextPage()"
+                >
+                  التالي
+                </button>
+              </div>
+            </div>
+          </div>
+        </app-card>
+      </div>
+    </div>
+  </section>
+</app-loading-overlay>
